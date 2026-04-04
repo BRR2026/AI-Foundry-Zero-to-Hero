@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Summary — AI Foundry Training Curriculum</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            padding: 70px 100px;
+            position: absolute;
+            top: 0; left: 0;
+            animation: fadeIn 0.4s ease;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Backgrounds */
+        .bg-title { background: linear-gradient(135deg, #0078d4 0%, #5c2d91 100%); }
+        .bg-dark { background: #0f0f0f; }
+        .bg-close { background: linear-gradient(135deg, #003366 0%, #1a1a2e 100%); }
+
+        /* Slide number */
+        .slide-num {
+            position: fixed;
+            bottom: 32px;
+            right: 50px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.3);
+            z-index: 100;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 32px;
+            left: 50px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* Title slide */
+        .title-center {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+        .title-center h1 {
+            font-size: 54px;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+        .title-center .sub {
+            font-size: 22px;
+            opacity: 0.85;
+            max-width: 650px;
+            line-height: 1.5;
+        }
+        .title-center .meta {
+            margin-top: 48px;
+            font-size: 14px;
+            opacity: 0.45;
+        }
+        .ms-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+            font-size: 15px;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+        .ms-logo svg { width: 22px; height: 22px; }
+
+        /* Section header */
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            opacity: 0.4;
+            margin-bottom: 16px;
+        }
+        h2 {
+            font-size: 40px;
+            font-weight: 600;
+            line-height: 1.15;
+            margin-bottom: 32px;
+        }
+        h2 span.highlight { color: #4dabf7; }
+        h2 span.red { color: #ff6b6b; }
+        h2 span.green { color: #51cf66; }
+
+        /* Big stat row */
+        .big-stats {
+            display: flex;
+            gap: 40px;
+            margin: 32px 0;
+        }
+        .big-stat {
+            text-align: center;
+        }
+        .big-stat .num {
+            font-size: 72px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .big-stat .lbl {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.5;
+            margin-top: 8px;
+        }
+        .big-stat.red .num { color: #ff6b6b; }
+        .big-stat.green .num { color: #51cf66; }
+        .big-stat.blue .num { color: #4dabf7; }
+        .big-stat.yellow .num { color: #ffd93d; }
+
+        /* Divider line */
+        .divider {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #0078d4, #5c2d91);
+            margin: 24px 0;
+        }
+
+        /* Key points */
+        .key-points {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 48px;
+            margin-top: 8px;
+        }
+        .key-point {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .key-point .icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .key-point h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .key-point p {
+            font-size: 14px;
+            opacity: 0.6;
+            line-height: 1.5;
+        }
+
+        /* Three columns */
+        .three-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin-top: 16px;
+            flex: 1;
+        }
+        .col-card {
+            border-radius: 12px;
+            padding: 28px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .col-card h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        .col-card .weeks-label {
+            font-size: 12px;
+            opacity: 0.5;
+            margin-bottom: 16px;
+        }
+        .col-card ul {
+            list-style: none;
+            flex: 1;
+        }
+        .col-card li {
+            font-size: 13px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            line-height: 1.5;
+        }
+        .col-card li:last-child { border-bottom: none; }
+        .col-card li strong { font-weight: 600; }
+        .col-green {
+            background: rgba(16,124,16,0.1);
+            border: 1px solid rgba(16,124,16,0.25);
+        }
+        .col-green h3 { color: #51cf66; }
+        .col-yellow {
+            background: rgba(255,140,0,0.08);
+            border: 1px solid rgba(255,140,0,0.25);
+        }
+        .col-yellow h3 { color: #ffd93d; }
+        .col-red {
+            background: rgba(209,52,56,0.08);
+            border: 1px solid rgba(209,52,56,0.25);
+        }
+        .col-red h3 { color: #ff6b6b; }
+
+        /* Bottom bar */
+        .bottom-bar {
+            margin-top: auto;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+            opacity: 0.4;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Ask */
+        .ask-box {
+            background: rgba(0,120,212,0.12);
+            border: 1px solid rgba(0,120,212,0.3);
+            border-radius: 12px;
+            padding: 32px 40px;
+            margin-top: 32px;
+            text-align: center;
+        }
+        .ask-box h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #4dabf7;
+        }
+        .ask-box p {
+            font-size: 16px;
+            opacity: 0.7;
+            line-height: 1.6;
+        }
+
+        @media print {
+            .slide { display: flex !important; position: relative; page-break-after: always; height: 100vh; }
+            .nav-hint, .slide-num { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: TITLE                                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide bg-title active" id="s1">
+    <div class="title-center">
+        <div class="ms-logo">
+            <svg viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+            Microsoft
+        </div>
+        <h1>Azure AI Foundry<br>Training Curriculum</h1>
+        <p class="sub">Executive Review: Opportunities for Improvement<br>& Proposed Path Forward</p>
+        <div class="meta">Confidential · April 2025 · 45-Week Program</div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: THE GAP                                      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide bg-dark" id="s2">
+    <div class="section-label">Opportunity Assessment</div>
+    <h2><span class="red">30%</span> of content needs realignment<br>to match AI Foundry's actual capabilities</h2>
+
+    <div class="big-stats">
+        <div class="big-stat red">
+            <div class="num">7</div>
+            <div class="lbl">Weeks teach<br>wrong platform</div>
+        </div>
+        <div class="big-stat yellow">
+            <div class="num">5</div>
+            <div class="lbl">Critical features<br>not covered</div>
+        </div>
+        <div class="big-stat blue">
+            <div class="num">3</div>
+            <div class="lbl">Key topics placed<br>too late</div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="key-points">
+        <div class="key-point">
+            <div class="icon">❌</div>
+            <div>
+                <h4>Azure ML ≠ AI Foundry</h4>
+                <p>Data labeling, feature engineering, hyperparameter tuning, and model training from scratch are Azure ML features — they don't exist in AI Foundry.</p>
+            </div>
+        </div>
+        <div class="key-point">
+            <div class="icon">⏳</div>
+            <div>
+                <h4>RAG at Week 31 Is Too Late</h4>
+                <p>80% of AI Foundry apps use RAG. Teaching it under "Advanced" means 30 weeks without the platform's most common pattern.</p>
+            </div>
+        </div>
+        <div class="key-point">
+            <div class="icon">🕳️</div>
+            <div>
+                <h4>Prompt Engineering Is Missing</h4>
+                <p>The #1 skill for AI Foundry users has no dedicated week. Neither do Prompt Flow, function calling, or cost optimization.</p>
+            </div>
+        </div>
+        <div class="key-point">
+            <div class="icon">🏷️</div>
+            <div>
+                <h4>No Difficulty Levels</h4>
+                <p>All 45 weeks appear at the same level. Learners can't self-assess or skip to their proficiency.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <span>15 improvement items documented in detail</span>
+        <span>Full review: CURRICULUM-REVIEW-FEEDBACK.txt</span>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: THE PROPOSAL                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide bg-dark" id="s3">
+    <div class="section-label">Proposed Curriculum</div>
+    <h2>Three-tier structure: <span class="green">Beginner</span> → <span class="highlight">Intermediate</span> → <span class="red">Advanced</span></h2>
+
+    <div class="three-cols">
+        <div class="col-card col-green">
+            <h3>🟢 Beginner</h3>
+            <div class="weeks-label">Weeks 1–15 · 3 Arcs</div>
+            <ul>
+                <li><strong>ARC 1:</strong> Foundations — What is Foundry, lifecycle, architecture, Responsible AI, setup</li>
+                <li><strong>ARC 2:</strong> Prompts & Models — Prompt engineering, model catalog, comparing models, fine-tuning, evaluation</li>
+                <li><strong>ARC 3:</strong> Data & RAG — Data sources, AI Search, vector indexes, first RAG app, advanced RAG</li>
+            </ul>
+        </div>
+        <div class="col-card col-yellow">
+            <h3>🟡 Intermediate</h3>
+            <div class="weeks-label">Weeks 16–30 · 3 Arcs</div>
+            <ul>
+                <li><strong>ARC 4:</strong> AI Agents — Agent framework, tools, memory, function calling, agent evaluation</li>
+                <li><strong>ARC 5:</strong> Orchestration — Prompt Flow, multi-model routing, Copilot Studio, M365, Teams</li>
+                <li><strong>ARC 6:</strong> Deploy & MLOps — Endpoints, CI/CD, monitoring, scaling, cost optimization</li>
+            </ul>
+        </div>
+        <div class="col-card col-red">
+            <h3>🔴 Advanced</h3>
+            <div class="weeks-label">Weeks 31–45 · 3 Arcs</div>
+            <ul>
+                <li><strong>ARC 7:</strong> Security & Governance — RBAC, Purview, audit trails, content safety at scale, VNet</li>
+                <li><strong>ARC 8:</strong> Enterprise — Multi-agent systems, real-time inference, partner offerings, case studies</li>
+                <li><strong>ARC 9:</strong> Capstone — Choose project, build, deploy, secure, publish final blog</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <span>45 weeks · 9 arcs · 225 deliverables (5 per week)</span>
+        <span>Each week: Guide · Blog · Slides · Lab · Quiz</span>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: THE ASK                                      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide bg-close" id="s4">
+    <div class="title-center">
+        <div class="section-label">Recommendation</div>
+        <h2 style="font-size:38px;">Approve revised curriculum &<br>continue building Weeks 6–45</h2>
+
+        <div class="big-stats" style="margin:40px 0;">
+            <div class="big-stat green">
+                <div class="num">5</div>
+                <div class="lbl">Weeks<br>built today</div>
+            </div>
+            <div class="big-stat blue">
+                <div class="num">40</div>
+                <div class="lbl">Weeks<br>remaining</div>
+            </div>
+            <div class="big-stat" style="opacity:1;">
+                <div class="num" style="color:#fff;">225</div>
+                <div class="lbl">Total<br>deliverables</div>
+            </div>
+        </div>
+
+        <div class="ask-box">
+            <h3>Next Step</h3>
+            <p>Review the 15 improvement items in the feedback document,<br>
+            confirm the revised curriculum direction, and greenlight production of Weeks 6–15 (Beginner tier).</p>
+        </div>
+
+        <div style="margin-top:40px; display:flex; gap:32px; font-size:14px; opacity:0.5;">
+            <span>📄 CURRICULUM-REVIEW-FEEDBACK.txt</span>
+            <span>🌐 brr2026.github.io/AI-Foundry-Zero-to-Hero</span>
+        </div>
+    </div>
+</div>
+
+<!-- Nav -->
+<div class="slide-num" id="sn">1 / 4</div>
+<div class="nav-hint">← → Arrow keys</div>
+
+<script>
+    const S = document.querySelectorAll('.slide'), T = S.length;
+    let c = 0;
+    function go(n) {
+        S[c].classList.remove('active');
+        c = Math.max(0, Math.min(n, T - 1));
+        S[c].classList.add('active');
+        document.getElementById('sn').textContent = (c+1) + ' / ' + T;
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === ' ') go(c + 1);
+        if (e.key === 'ArrowLeft') go(c - 1);
+    });
+</script>
+
+</body>
+</html>
