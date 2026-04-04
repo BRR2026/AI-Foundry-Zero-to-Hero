@@ -1,0 +1,379 @@
+================================================================================
+        AZURE AI FOUNDRY — 45-WEEK TRAINING CURRICULUM REVIEW
+                    Feedback & Improvement Report
+================================================================================
+
+Reviewer: ___________________________
+Date:     ___________________________
+Version:  Draft v1.0
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+
+This document provides a detailed review of the proposed 45-week "Zero to Hero:
+Azure AI Foundry" training curriculum. The review identifies 15 key areas for
+improvement, categorized into: Wrong Platform, Wrong Placement, Missing Topics,
+and Structural Issues.
+
+Overall Assessment: The curriculum has a strong foundation and logical arc 
+structure, but approximately 30% of the content covers Azure Machine Learning 
+features that do not exist in Azure AI Foundry. Additionally, the most critical 
+AI Foundry capabilities (prompt engineering, RAG, Prompt Flow) are either missing 
+or placed too late in the curriculum.
+
+Recommendation: Accept the structure with major revisions to Weeks 6-15 and 
+reordering of Weeks 16-35.
+
+
+================================================================================
+SECTION 1: FLAWS IDENTIFIED (15 Items)
+================================================================================
+
+--------------------------------------------------------------------------------
+CATEGORY A: WRONG PLATFORM — Topics That Belong to Azure ML, Not AI Foundry
+--------------------------------------------------------------------------------
+
+FLAW #1: Data Labeling & Annotation (Week 7)
+Current:    "Data labeling & annotation workflows"
+Problem:    AI Foundry has NO data labeling tool. This is an Azure Machine 
+            Learning feature (Azure ML Data Labeling). Including this misleads 
+            learners about what AI Foundry can do.
+Suggested:  Replace with "Model Catalog Deep Dive — Choosing the Right Model"
+            (comparing GPT-4o, Phi, Llama, Mistral by task, cost, and latency)
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #2: Feature Engineering Inside Foundry (Week 9)
+Current:    "Feature engineering inside Foundry"
+Problem:    Feature engineering is a traditional ML concept (creating input 
+            variables for ML models). AI Foundry works with pre-trained LLMs — 
+            users don't build feature pipelines. This concept doesn't apply.
+Suggested:  Replace with "Fine-Tuning Models with Your Data"
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #3: Hyperparameter Tuning & Optimization (Week 14)
+Current:    "Hyperparameter tuning & optimization"
+Problem:    Hyperparameter tuning (learning rate, batch size, epochs) is an 
+            Azure ML feature. In AI Foundry, the equivalent is prompt 
+            optimization and temperature/parameter tuning — very different.
+Suggested:  Replace with "Advanced RAG Patterns (chunking, hybrid search, 
+            reranking)"
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #4: Model Training from Scratch (Week 11)
+Current:    "Intro to model training in AI Foundry"
+Problem:    AI Foundry does NOT train models from scratch. You select pre-built 
+            models from the catalog (1,800+) and optionally fine-tune them. 
+            Training from scratch requires Azure ML or external tools.
+Suggested:  Replace with "Connecting Data Sources & Azure AI Search"
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #5: Data Versioning & Lineage (Week 8)
+Current:    "Data versioning & lineage"
+Problem:    Data versioning and lineage tracking are Azure ML / Microsoft 
+            Purview features. AI Foundry manages evaluation datasets and 
+            grounding data, but not traditional data lineage.
+Suggested:  Replace with "Deploying & Comparing Models Side-by-Side"
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+--------------------------------------------------------------------------------
+CATEGORY B: WRONG PLACEMENT — Right Topic, Wrong Position in Curriculum
+--------------------------------------------------------------------------------
+
+FLAW #6: RAG Placed at Week 31 (Too Late)
+Current:    Week 31 — "RAG (Retrieval Augmented Generation) in AI Foundry"
+Problem:    RAG is THE most fundamental pattern in AI Foundry. Approximately 
+            80% of real-world AI Foundry applications use RAG. Placing it at 
+            Week 31 under "Advanced AI" means learners spend 30 weeks without 
+            learning the most common use case.
+Suggested:  Move to Weeks 13-14 in the Beginner section. Week 31 can cover 
+            "Advanced RAG Patterns" or "Multi-Agent Systems" instead.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #7: Agents Placed at Week 21 (Could Be Earlier)
+Current:    Week 21 — "Intro to AI agents"
+Problem:    AI Agents are AI Foundry's flagship feature and primary product 
+            direction. Waiting until Week 21 means 20 weeks of setup before 
+            touching the platform's core capability. Agents can be taught 
+            right after models and RAG.
+Suggested:  Move Agents arc to Weeks 16-20 (Intermediate start)
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #8: Responsible AI — One-and-Done at Week 4
+Current:    Week 4 only, then not revisited until Week 29
+Problem:    Responsible AI should be a thread throughout the curriculum, not 
+            just an early intro and a late dashboard review. Learners may 
+            forget principles by the time they build real apps.
+Suggested:  Keep Week 4 intro, but add Responsible AI touchpoints in agent 
+            development (Week 17), deployment (Week 27), and a deep-dive 
+            in the Advanced section (content safety at scale, Week 34).
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+--------------------------------------------------------------------------------
+CATEGORY C: MISSING CRITICAL TOPICS
+--------------------------------------------------------------------------------
+
+FLAW #9: No Prompt Engineering Week
+Current:    Not covered anywhere as a dedicated topic
+Problem:    Prompt engineering (system prompts, few-shot learning, chain-of-
+            thought, prompt templates, output formatting) is the #1 most 
+            important skill for AI Foundry users. It's how you get value from 
+            any LLM. Omitting it is a critical gap.
+Suggested:  Add as Week 6: "Prompt Engineering Fundamentals"
+Mini Hack:  Build a prompt that transforms unstructured text into structured 
+            JSON output using system prompts and few-shot examples.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #10: No Prompt Flow / Orchestration
+Current:    Not mentioned in any week
+Problem:    Prompt Flow is a core AI Foundry tool for building multi-step AI 
+            workflows visually or in code. It's how you chain prompts, add 
+            logic, connect data, and build production pipelines. Missing this 
+            means learners can't build real applications.
+Suggested:  Add as Week 21: "Prompt Flow — Visual AI Orchestration"
+Mini Hack:  Build a Prompt Flow that takes user input, searches a knowledge 
+            base, and generates a grounded response.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #11: No Azure AI Search / Vector Indexes
+Current:    Not covered as a dedicated topic
+Problem:    Azure AI Search with vector indexes is the backbone of every RAG 
+            application in AI Foundry. Without it, learners can't build the 
+            most common AI Foundry pattern.
+Suggested:  Add as Week 12: "Azure AI Search & Building Vector Indexes"
+Mini Hack:  Upload 10 PDF documents, create a vector index, and query it 
+            with semantic search.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #12: No Function Calling / Custom Tools
+Current:    Not mentioned anywhere
+Problem:    Function calling is how AI agents interact with the real world — 
+            calling APIs, querying databases, running code. It's fundamental 
+            to building useful agents in AI Foundry. Without it, agents can 
+            only chat, not act.
+Suggested:  Add as Week 19: "Custom Tools & Function Calling"
+Mini Hack:  Build an agent that can check weather, look up stock prices, 
+            and send email summaries using custom function tools.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #13: No Cost Optimization Week
+Current:    Not covered
+Problem:    Token costs, provisioned vs. pay-as-you-go throughput, quota 
+            management, and model selection for cost efficiency are critical 
+            for real-world usage. Enterprises won't adopt without cost 
+            understanding.
+Suggested:  Add as Week 30: "Cost Optimization & Quota Management"
+Mini Hack:  Compare costs of running the same workload on GPT-4o vs. 
+            GPT-4o-mini vs. Phi-4. Calculate monthly projections.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+--------------------------------------------------------------------------------
+CATEGORY D: STRUCTURAL ISSUES
+--------------------------------------------------------------------------------
+
+FLAW #14: No Difficulty Level Labels
+Current:    All 45 weeks presented at same level
+Problem:    Learners can't self-assess where to start or skip. A senior 
+            developer doesn't need 5 weeks of foundations. A beginner 
+            shouldn't jump to multi-agent systems.
+Suggested:  Label each arc clearly:
+            - Weeks 1-15:  🟢 BEGINNER
+            - Weeks 16-30: 🟡 INTERMEDIATE
+            - Weeks 31-45: 🔴 ADVANCED
+            Add prerequisites and "skip if you know X" guidance.
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+FLAW #15: ARC 8 (Partner Scenarios) Is Too Niche — 5 Weeks
+Current:    Weeks 36-40 dedicated to partner/CSP scenarios
+Problem:    5 full weeks on partner packaging, CSP, and managed services 
+            limits the audience to Microsoft partners only. Most learners 
+            (internal developers, enterprise teams, students) won't benefit.
+Suggested:  Reduce to 2-3 weeks. Use freed weeks for enterprise patterns 
+            that benefit everyone:
+            - Multi-agent systems
+            - Real-time inference & streaming
+            - Performance optimization at scale
+Author Notes: ____________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+Decision:   [ ] Accept suggestion  [ ] Modify  [ ] Keep as-is
+Reason:     ______________________________________________________________
+
+
+================================================================================
+SECTION 2: PROPOSED REVISED CURRICULUM (For Reference)
+================================================================================
+
+🟢 BEGINNER (Weeks 1-15)
+─────────────────────────
+ARC 1: Foundations (Weeks 1-5)
+  1. What is AI Foundry?
+  2. Understanding the AI lifecycle
+  3. AI Foundry architecture & components
+  4. Responsible AI principles in Foundry
+  5. Setting up your environment + Hello World
+
+ARC 2: Prompt Engineering & Models (Weeks 6-10)
+  6. Prompt engineering fundamentals
+  7. Model Catalog deep dive — choosing the right model
+  8. Deploying & comparing models (GPT-4o vs Phi vs Llama)
+  9. Fine-tuning models with your data
+  10. Evaluation & testing (metrics, benchmarks, safety)
+
+ARC 3: Data & RAG (Weeks 11-15)
+  11. Connecting data sources (Blob, SQL, SharePoint)
+  12. Azure AI Search & vector indexes
+  13. Building your first RAG application
+  14. Advanced RAG patterns (chunking, hybrid search, reranking)
+  15. Evaluation datasets & quality measurement
+
+🟡 INTERMEDIATE (Weeks 16-30)
+──────────────────────────────
+ARC 4: AI Agents (Weeks 16-20)
+  16. Intro to AI agents & Agent Framework
+  17. Building your first agent (tools, code interpreter)
+  18. Multi-turn conversations & memory
+  19. Custom tools & function calling
+  20. Agent evaluation & testing
+
+ARC 5: Orchestration & Integration (Weeks 21-25)
+  21. Prompt Flow — visual AI orchestration
+  22. Multi-model orchestration & routing
+  23. Connecting to Copilot Studio
+  24. Integrating with Microsoft 365 Copilot
+  25. Real-world integration (Teams, Power Platform, APIs)
+
+ARC 6: Deployment & MLOps (Weeks 26-30)
+  26. Deploying model endpoints
+  27. CI/CD pipelines for AI (GitHub Actions + Azure DevOps)
+  28. Monitoring, observability & drift detection
+  29. Scaling deployments across environments
+  30. Cost optimization & quota management
+
+🔴 ADVANCED (Weeks 31-45)
+──────────────────────────
+ARC 7: Security, Governance & Compliance (Weeks 31-35)
+  31. Identity & access management (RBAC, Managed Identity)
+  32. Data governance & Purview integration
+  33. Model governance & audit trails
+  34. Responsible AI dashboards & content safety at scale
+  35. Securing AI workloads end-to-end (VNet, Private Endpoints)
+
+ARC 8: Advanced Patterns & Enterprise (Weeks 36-40)
+  36. Multi-agent systems & orchestration
+  37. Real-time inference & streaming
+  38. Building repeatable AI offerings for customers
+  39. AI Foundry in CSP & managed services
+  40. Enterprise case studies & partner success patterns
+
+ARC 9: Capstone & Mastery (Weeks 41-45)
+  41. Choose your capstone project
+  42. Build the data + model + RAG pipeline
+  43. Deploy & integrate with agents/Copilot
+  44. Add governance, monitoring & security
+  45. Publish your final blog: "What I Learned in 45 Weeks"
+
+
+================================================================================
+SECTION 3: AUTHOR RESPONSE
+================================================================================
+
+Overall feedback on the review:
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+
+Agreed changes:
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+
+Disagreed changes (with reasoning):
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+
+Additional topics to consider:
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+
+Target completion date for revised curriculum: ____________________________
+
+Signed: ___________________________    Date: ____________________________
+
+
+================================================================================
+                            END OF REVIEW DOCUMENT
+================================================================================
