@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 1: What is Azure AI Foundry? — Zero to Hero Training</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-bg: #ffffff;
+            --ms-text: #1a1a1a;
+            --ms-text-secondary: #505050;
+            --ms-border: #e1e1e1;
+            --ms-code-bg: #1e1e1e;
+            --ms-callout-blue: #f0f8ff;
+            --ms-callout-yellow: #fffbeb;
+            --ms-callout-green: #f0fdf4;
+            --ms-callout-red: #fef2f2;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --content-width: 780px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ms-text);
+            background: #f5f5f5;
+            line-height: 1.75;
+            font-size: 16px;
+        }
+
+        /* ── Progress Bar ── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+
+        /* ── Top Nav ── */
+        .top-nav {
+            background: #1a1a1a;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .top-nav .ms-logo {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-nav .ms-logo svg { width: 20px; height: 20px; }
+        .top-nav .blog-title {
+            color: #b3b3b3;
+            font-size: 14px;
+            padding-left: 24px;
+            border-left: 1px solid #444;
+        }
+        .top-nav .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+        }
+        .top-nav .nav-links a {
+            color: #b3b3b3;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-links a:hover { color: #fff; }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, var(--ms-blue) 0%, var(--ms-purple) 100%);
+            padding: 60px 24px 50px;
+            color: #fff;
+        }
+        .hero-inner {
+            max-width: var(--content-width);
+            margin: 0 auto;
+        }
+        .hero .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+        .hero .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .hero .meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero .meta .avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .hero .meta .author-info .name { font-weight: 600; }
+        .hero .meta .divider { opacity: 0.4; }
+        .hero .meta .reading-time { display: flex; align-items: center; gap: 4px; }
+
+        /* ── Main Layout ── */
+        .main-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+        }
+
+        /* ── Table of Contents Sidebar ── */
+        .toc {
+            position: sticky;
+            top: 60px;
+            align-self: start;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .toc h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .toc ul { list-style: none; }
+        .toc ul li { margin-bottom: 6px; }
+        .toc ul li a {
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            line-height: 1.5;
+            display: block;
+            padding: 3px 0 3px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .toc ul li a:hover,
+        .toc ul li a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+        }
+
+        /* ── Article Content ── */
+        .article {
+            background: var(--ms-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 48px 56px;
+            min-width: 0;
+        }
+
+        .article h2 {
+            font-size: 26px;
+            font-weight: 600;
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-light-blue);
+            color: var(--ms-dark-blue);
+        }
+        .article h2:first-child { margin-top: 0; }
+
+        .article h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 32px 0 12px;
+            color: var(--ms-text);
+        }
+
+        .article p {
+            margin-bottom: 16px;
+            color: var(--ms-text);
+        }
+
+        .article a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .article a:hover { border-bottom-color: var(--ms-blue); }
+
+        .article strong { font-weight: 600; }
+
+        .article ul, .article ol {
+            margin: 0 0 16px 24px;
+        }
+        .article li { margin-bottom: 6px; }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .callout-blue {
+            background: var(--ms-callout-blue);
+            border-left: 4px solid var(--ms-blue);
+        }
+        .callout-yellow {
+            background: var(--ms-callout-yellow);
+            border-left: 4px solid var(--ms-warning);
+        }
+        .callout-green {
+            background: var(--ms-callout-green);
+            border-left: 4px solid var(--ms-success);
+        }
+        .callout-red {
+            background: var(--ms-callout-red);
+            border-left: 4px solid var(--ms-error);
+        }
+        .callout-icon { margin-right: 6px; }
+
+        /* ── Factory Box (large highlight) ── */
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f8ff 0%, #eef2ff 100%);
+            border: 1px solid var(--ms-light-blue);
+            border-radius: 8px;
+            padding: 24px 28px;
+            margin: 24px 0;
+            font-size: 17px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--ms-dark-blue);
+        }
+
+        /* ── Tables ── */
+        .article table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .article table th {
+            background: var(--ms-blue);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .article table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--ms-border);
+        }
+        .article table tr:nth-child(even) td {
+            background: #f9f9f9;
+        }
+        .article table tr:hover td {
+            background: #f0f4fa;
+        }
+
+        /* ── Code Blocks ── */
+        .code-block {
+            background: var(--ms-code-bg);
+            color: #d4d4d4;
+            padding: 20px 24px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+            white-space: pre;
+        }
+
+        code {
+            font-family: 'Consolas', 'Fira Code', monospace;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        /* ── Use Case Cards ── */
+        .usecase-card {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .usecase-card h4 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--ms-dark-blue);
+        }
+        .usecase-card .problem { color: var(--ms-error); font-weight: 600; }
+        .usecase-card .solution { color: var(--ms-blue); font-weight: 600; }
+        .usecase-card .result { color: var(--ms-success); font-weight: 600; }
+
+        /* ── Portal Tour Cards ── */
+        .tour-card {
+            background: #fafbfc;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .tour-card .tour-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        .tour-card h4 {
+            font-size: 16px;
+            margin-bottom: 6px;
+            color: var(--ms-dark-blue);
+        }
+        .tour-card p { margin-bottom: 4px; font-size: 14px; }
+        .tour-card .analogy {
+            font-style: italic;
+            color: var(--ms-text-secondary);
+            font-size: 13px;
+        }
+
+        /* ── Glossary Grid ── */
+        .glossary-item {
+            border-bottom: 1px solid var(--ms-border);
+            padding: 12px 0;
+        }
+        .glossary-item:last-child { border-bottom: none; }
+        .glossary-item dt {
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            font-size: 15px;
+        }
+        .glossary-item dd {
+            color: var(--ms-text-secondary);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .glossary-item .analogy-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-top: 4px;
+            color: var(--ms-text-secondary);
+        }
+
+        /* ── Comparison Row ── */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .comparison-col {
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .comparison-col.without {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+        .comparison-col.with {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .comparison-col h4 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .comparison-col.without h4 { color: var(--ms-error); }
+        .comparison-col.with h4 { color: var(--ms-success); }
+        .comparison-col ul { margin-left: 16px; font-size: 14px; }
+        .comparison-col li { margin-bottom: 4px; }
+
+        /* ── Key Takeaways ── */
+        .takeaways {
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 24px 28px;
+            margin: 24px 0;
+        }
+        .takeaways h3 { color: var(--ms-success); margin-top: 0; }
+        .takeaways ol { margin-left: 20px; }
+        .takeaways li { margin-bottom: 10px; font-size: 15px; }
+
+        /* ── Series Navigation ── */
+        .series-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            margin-top: 40px;
+            border-top: 2px solid var(--ms-border);
+        }
+        .series-nav a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .series-nav .current {
+            color: var(--ms-text-secondary);
+            font-size: 13px;
+        }
+
+        /* ── Tags ── */
+        .tags {
+            margin: 24px 0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background: #f0f0f0;
+            color: var(--ms-text-secondary);
+            padding: 4px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+        }
+
+        /* ── About Author ── */
+        .author-box {
+            background: #fafbfc;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 32px 0;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .author-box .avatar-lg {
+            width: 64px;
+            height: 64px;
+            background: var(--ms-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .author-box h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .author-box p {
+            font-size: 14px;
+            color: var(--ms-text-secondary);
+            margin: 0;
+        }
+
+        /* ── Related Posts ── */
+        .related-posts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .related-card {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--ms-text);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .related-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .related-card .week-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-blue);
+            font-weight: 600;
+        }
+        .related-card h4 {
+            font-size: 15px;
+            margin-top: 4px;
+        }
+
+        /* ── Back to Top ── */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 900;
+        }
+        .back-to-top.visible { opacity: 1; }
+        .back-to-top:hover { background: var(--ms-dark-blue); }
+
+        /* ── Footer ── */
+        .site-footer {
+            background: #1a1a1a;
+            color: #999;
+            text-align: center;
+            padding: 24px;
+            font-size: 13px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .toc {
+                position: static;
+                max-height: none;
+                border-bottom: 1px solid var(--ms-border);
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+            }
+            .article { padding: 24px 20px; }
+            .hero h1 { font-size: 28px; }
+            .comparison-grid { grid-template-columns: 1fr; }
+            .related-posts { grid-template-columns: 1fr; }
+        }
+
+        /* ── Print ── */
+        @media print {
+            .top-nav, .progress-bar, .toc, .back-to-top, .series-nav, .related-posts { display: none; }
+            .article { box-shadow: none; padding: 0; }
+            body { background: #fff; }
+        }
+
+        /* ── Capability Cards ── */
+        .capability {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0;
+            border-left: 4px solid var(--ms-blue);
+        }
+        .capability h4 {
+            font-size: 17px;
+            margin-bottom: 8px;
+            color: var(--ms-dark-blue);
+        }
+        .capability p { font-size: 14px; margin-bottom: 8px; }
+        .capability .cap-analogy {
+            font-style: italic;
+            color: var(--ms-text-secondary);
+            font-size: 13px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* ── Real Example boxes ── */
+        .real-example {
+            background: #faf5ff;
+            border-left: 4px solid var(--ms-purple);
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Top Navigation -->
+<nav class="top-nav">
+    <div class="top-nav-inner">
+        <div class="ms-logo">
+            <svg viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+            Microsoft
+        </div>
+        <span class="blog-title">AI Foundry Training Blog</span>
+        <div class="nav-links">
+            <a href="#">Curriculum</a>
+            <a href="#">Resources</a>
+            <a href="https://ai.azure.com" target="_blank">AI Foundry Portal</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<header class="hero">
+    <div class="hero-inner">
+        <span class="series-badge">ARC 1 · FOUNDATIONS</span>
+        <h1>Week 1: What is Azure AI Foundry?</h1>
+        <p class="subtitle">Your comprehensive guide to Microsoft's unified AI development platform — from concept to capabilities, ecosystem, and real-world impact.</p>
+        <div class="meta">
+            <div class="avatar">🤖</div>
+            <div class="author-info">
+                <div class="name">Zero to Hero Training Team</div>
+                <div>Azure AI Foundry Course</div>
+            </div>
+            <span class="divider">|</span>
+            <span>January 2025</span>
+            <span class="divider">|</span>
+            <span class="reading-time">📖 ~15 min read</span>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="main-wrapper">
+
+    <!-- Table of Contents Sidebar -->
+    <aside class="toc">
+        <h4>On This Page</h4>
+        <ul>
+            <li><a href="#why-ai-matters">Why AI Matters Now</a></li>
+            <li><a href="#what-is-foundry">What is AI Foundry?</a></li>
+            <li><a href="#capabilities">Key Capabilities</a></li>
+            <li><a href="#azure-ecosystem">Azure Ecosystem Fit</a></li>
+            <li><a href="#use-cases">Real-World Use Cases</a></li>
+            <li><a href="#portal-tour">Portal Tour</a></li>
+            <li><a href="#glossary">Key Terminology</a></li>
+            <li><a href="#exercise">Hands-On Exercise</a></li>
+            <li><a href="#takeaways">Key Takeaways</a></li>
+            <li><a href="#week2-preview">Week 2 Preview</a></li>
+            <li><a href="#resources">Resources</a></li>
+        </ul>
+    </aside>
+
+    <!-- Article -->
+    <article class="article">
+
+        <!-- Section 1: Why AI Matters -->
+        <h2 id="why-ai-matters">Why AI Matters Now (And Why You're Here)</h2>
+
+        <p>Artificial Intelligence has moved from science fiction to business reality faster than almost any technology in history. Consider what's happened in just the last two years:</p>
+
+        <ul>
+            <li>AI models can now <strong>write code, analyze images, generate art, and hold nuanced conversations</strong></li>
+            <li>Businesses of every size are integrating AI into products, services, and operations</li>
+            <li>The demand for AI skills has <strong>exploded</strong> across every industry</li>
+        </ul>
+
+        <p>But here's the challenge: Building AI applications is still complex. Even with powerful models available, you still need to figure out how to select, deploy, evaluate, secure, and monitor them. Without a unified platform, you'd need to:</p>
+
+        <ol>
+            <li>Find the right AI model for your task</li>
+            <li>Figure out how to access it (API keys? SDKs? Containers?)</li>
+            <li>Write and test your prompts manually</li>
+            <li>Build custom evaluation pipelines</li>
+            <li>Set up deployment infrastructure</li>
+            <li>Add safety guardrails yourself</li>
+            <li>Monitor everything in production</li>
+        </ol>
+
+        <p>That's <strong>seven different problems</strong> before you even ship version 1.</p>
+
+        <div class="highlight-box">
+            🏭 <strong>Azure AI Foundry is Microsoft's answer:</strong> a single, unified platform that handles all of this in one place.
+        </div>
+
+        <!-- Comparison -->
+        <div class="comparison-grid">
+            <div class="comparison-col without">
+                <h4>❌ Without AI Foundry</h4>
+                <ul>
+                    <li>Visit 5+ different portals</li>
+                    <li>Manually compare models</li>
+                    <li>Build your own eval pipeline</li>
+                    <li>DIY safety guardrails</li>
+                    <li>Stitch together services</li>
+                </ul>
+            </div>
+            <div class="comparison-col with">
+                <h4>✅ With AI Foundry</h4>
+                <ul>
+                    <li>One portal: <a href="https://ai.azure.com">ai.azure.com</a></li>
+                    <li>Browse 1,800+ models in a catalog</li>
+                    <li>Built-in evaluation tools</li>
+                    <li>Responsible AI built-in</li>
+                    <li>Integrated end-to-end workflow</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2: What is AI Foundry? -->
+        <h2 id="what-is-foundry">What is Azure AI Foundry?</h2>
+
+        <h3>The Simple Definition</h3>
+
+        <p><strong>Azure AI Foundry</strong> is Microsoft's unified platform for building, evaluating, and deploying AI applications and agents at scale.</p>
+
+        <p>Think of it as an <strong>AI app and agent factory</strong> — a single workbench where you go from <em>idea</em> to <em>production-ready AI application</em>.</p>
+
+        <h3>A Brief History</h3>
+
+        <p>You might see references to "Azure AI Studio" in older documentation or blog posts. Here's what happened:</p>
+
+        <table>
+            <tr><th>Timeline</th><th>Name</th><th>What Changed</th></tr>
+            <tr><td>2023</td><td>Azure AI Studio (Preview)</td><td>Launched as a new AI development experience</td></tr>
+            <tr><td>November 2024</td><td><strong>Azure AI Foundry</strong></td><td>Rebranded and expanded with agent capabilities, deeper integrations, and GA features</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+            <span class="callout-icon">📝</span> <strong>Note:</strong> If you see "Azure AI Studio" anywhere, it's the <em>same product</em> — just the older name. Microsoft renamed it to <strong>AI Foundry</strong> to better reflect its role as a comprehensive AI development platform.
+        </div>
+
+        <h3>The "AI App and Agent Factory" Concept</h3>
+
+        <p>Microsoft describes AI Foundry as a <strong>factory</strong> — and that analogy is worth unpacking:</p>
+
+        <div class="code-block">┌─────────────────────────────────────────────────────────┐
+│                   AI FOUNDRY = FACTORY                  │
+│                                                         │
+│   Raw Materials     →  Assembly Line  →  Finished       │
+│   (Models, Data)       (Build, Test,     Product        │
+│                         Evaluate)        (AI App or     │
+│                                           Agent)        │
+│                                                         │
+│   ┌───────────┐     ┌─────────────┐   ┌─────────────┐  │
+│   │ Model     │     │ Playground  │   │ Deployed    │  │
+│   │ Catalog   │ ──▸ │ Prompt Flow │ ─▸│ Endpoint    │  │
+│   │ Your Data │     │ Evaluation  │   │ Monitoring  │  │
+│   └───────────┘     └─────────────┘   └─────────────┘  │
+│                                                         │
+│          🔒 Responsible AI & Security Throughout        │
+└─────────────────────────────────────────────────────────┘</div>
+
+        <p>Just like a real factory:</p>
+        <ul>
+            <li><strong>Raw materials</strong> = AI models and your data</li>
+            <li><strong>Assembly line</strong> = tools to build, test, and refine your AI application</li>
+            <li><strong>Quality control</strong> = evaluation and responsible AI checks</li>
+            <li><strong>Finished product</strong> = a deployed, monitored AI application or agent</li>
+        </ul>
+
+        <!-- Section 3: Key Capabilities -->
+        <h2 id="capabilities">Key Capabilities</h2>
+
+        <p>Let's walk through the six major capabilities of Azure AI Foundry. Don't worry about mastering these now — we'll dive deep into each one in later weeks.</p>
+
+        <div class="capability">
+            <h4>🗂️ Model Catalog</h4>
+            <p>A library of <strong>1,800+ AI models</strong> you can browse, compare, and deploy — all from one place.</p>
+            <table>
+                <tr><th>Provider</th><th>Example Models</th><th>Strengths</th></tr>
+                <tr><td><strong>OpenAI</strong></td><td>GPT-4o, GPT-4.1, o3</td><td>Best-in-class language understanding</td></tr>
+                <tr><td><strong>Meta</strong></td><td>Llama 4 Scout, Maverick</td><td>Open-weight, customizable, multilingual</td></tr>
+                <tr><td><strong>Microsoft</strong></td><td>Phi-4, MAI</td><td>Small but powerful, efficient for edge</td></tr>
+                <tr><td><strong>Mistral</strong></td><td>Mistral Large, Small</td><td>Fast, great price-performance</td></tr>
+                <tr><td><strong>And more</strong></td><td>Cohere, AI21, JAIS</td><td>Specialized for different tasks</td></tr>
+            </table>
+            <p class="cap-analogy">💡 <strong>Analogy:</strong> Think of the Model Catalog like an <em>app store for AI brains</em>. Instead of downloading apps, you're browsing AI models — each with different strengths, sizes, and price points.</p>
+        </div>
+
+        <div class="capability">
+            <h4>🤖 Agent Framework</h4>
+            <p>A built-in system for creating <strong>intelligent AI agents</strong> — systems that can reason, plan, use tools, and take actions on behalf of users.</p>
+            <p>An AI agent isn't just a chatbot. It can:</p>
+            <ul>
+                <li><strong>Reason</strong> through multi-step problems</li>
+                <li><strong>Use tools</strong> (search the web, query databases, call APIs)</li>
+                <li><strong>Remember context</strong> across a conversation</li>
+                <li><strong>Take actions</strong> (create tickets, send emails, update records)</li>
+            </ul>
+            <p class="cap-analogy">💡 <strong>Example:</strong> An IT support agent that understands "My VPN won't connect," looks up device configuration, checks for outages, walks through troubleshooting, and escalates to a human if unresolved.</p>
+        </div>
+
+        <div class="capability">
+            <h4>✍️ Prompt Engineering & Playground</h4>
+            <p>An interactive environment to <strong>write, test, and refine prompts</strong> — the instructions you give to AI models.</p>
+            <ul>
+                <li>Send messages and see responses in real-time</li>
+                <li>Adjust parameters (temperature, max tokens, etc.)</li>
+                <li>Compare outputs from different models side-by-side</li>
+                <li>Test with your own data</li>
+            </ul>
+            <p class="cap-analogy">💡 <strong>Analogy:</strong> The Playground is like a <em>test kitchen</em> for AI. Before serving dishes to customers, you experiment with recipes until the flavor is just right.</p>
+        </div>
+
+        <div class="capability">
+            <h4>📊 Evaluation & Testing Tools</h4>
+            <p>Built-in tools to <strong>measure how well your AI performs</strong> before deployment:</p>
+            <ul>
+                <li><strong>Accuracy</strong> — Is the model giving correct answers?</li>
+                <li><strong>Groundedness</strong> — Are responses based on data (not hallucinated)?</li>
+                <li><strong>Relevance</strong> — Are responses on-topic and useful?</li>
+                <li><strong>Coherence</strong> — Do responses make logical sense?</li>
+                <li><strong>Safety</strong> — Are responses free from harmful content?</li>
+            </ul>
+            <p class="cap-analogy">💡 You wouldn't ship software without testing it. The same applies to AI.</p>
+        </div>
+
+        <div class="capability">
+            <h4>🚀 Deployment & Monitoring</h4>
+            <p>Tools to <strong>deploy to production</strong> and <strong>monitor performance</strong> over time.</p>
+            <ul>
+                <li><strong>Managed endpoints</strong> — Microsoft handles the infrastructure</li>
+                <li><strong>Serverless APIs</strong> — Pay-per-call, no infrastructure to manage</li>
+                <li><strong>Container-based</strong> — For custom hosting requirements</li>
+            </ul>
+            <p>Once deployed, monitor: latency, token usage/cost, error rates, and user feedback.</p>
+        </div>
+
+        <div class="capability">
+            <h4>🛡️ Responsible AI Built-In</h4>
+            <p>Safety features and guardrails integrated throughout the platform to build AI that is <strong>fair, reliable, safe, private, inclusive, transparent, and accountable</strong>.</p>
+            <ul>
+                <li><strong>Content filters</strong> — Block harmful outputs</li>
+                <li><strong>Groundedness detection</strong> — Flag unsupported responses</li>
+                <li><strong>Jailbreak protection</strong> — Prevent AI manipulation</li>
+                <li><strong>Fairness analysis</strong> — Check for bias</li>
+            </ul>
+        </div>
+
+        <div class="callout callout-red">
+            <span class="callout-icon">⚠️</span> <strong>Important:</strong> Responsible AI isn't optional — it's a core part of building with AI Foundry. Microsoft provides these tools because deploying AI without safety measures can cause real harm. We'll cover this extensively in ARC 6 (Weeks 26–30).
+        </div>
+
+        <!-- Section 4: Azure Ecosystem -->
+        <h2 id="azure-ecosystem">How AI Foundry Fits in the Azure Ecosystem</h2>
+
+        <p>If you've explored Azure before, you may have heard of other AI-related services. Here's the big picture:</p>
+
+        <div class="code-block">┌─────────────────────────────────────────────────────────────┐
+│                      AZURE AI FOUNDRY                       │
+│          (Unified platform — your "front door")             │
+│                                                             │
+│   ┌──────────────┐  ┌──────────────┐  ┌────────────────┐   │
+│   │  Azure       │  │  Azure       │  │  Azure AI      │   │
+│   │  OpenAI      │  │  Machine     │  │  Services      │   │
+│   │  Service     │  │  Learning    │  │  (Vision,      │   │
+│   │              │  │              │  │   Speech, etc.) │   │
+│   │  GPT-4, o3,  │  │  Custom ML   │  │  Pre-built     │   │
+│   │  DALL-E,     │  │  Training,   │  │  AI APIs       │   │
+│   │  Whisper     │  │  MLOps       │  │                │   │
+│   └──────────────┘  └──────────────┘  └────────────────┘   │
+│                                                             │
+│          All accessible through AI Foundry                  │
+└─────────────────────────────────────────────────────────────┘</div>
+
+        <h3>Service Comparison</h3>
+
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>AI Foundry</th>
+                <th>Azure OpenAI</th>
+                <th>Azure ML</th>
+                <th>AI Services</th>
+            </tr>
+            <tr>
+                <td><strong>What is it?</strong></td>
+                <td>Unified AI platform</td>
+                <td>Access to OpenAI models</td>
+                <td>Custom ML training</td>
+                <td>Pre-built AI APIs</td>
+            </tr>
+            <tr>
+                <td><strong>Best for</strong></td>
+                <td>End-to-end AI apps</td>
+                <td>Using GPT/DALL-E directly</td>
+                <td>Training own models</td>
+                <td>Quick AI capabilities</td>
+            </tr>
+            <tr>
+                <td><strong>Model selection</strong></td>
+                <td>1,800+ multi-provider</td>
+                <td>OpenAI only</td>
+                <td>Bring your own</td>
+                <td>Pre-built, task-specific</td>
+            </tr>
+            <tr>
+                <td><strong>Agents</strong></td>
+                <td>✅ Built-in</td>
+                <td>❌</td>
+                <td>❌</td>
+                <td>❌</td>
+            </tr>
+            <tr>
+                <td><strong>Code required?</strong></td>
+                <td>Optional</td>
+                <td>Yes (API-based)</td>
+                <td>Yes (heavy code)</td>
+                <td>Minimal</td>
+            </tr>
+            <tr>
+                <td><strong>Skill level</strong></td>
+                <td>Beginner–Advanced</td>
+                <td>Intermediate</td>
+                <td>Advanced</td>
+                <td>Beginner–Intermediate</td>
+            </tr>
+        </table>
+
+        <h3>When to Use What</h3>
+
+        <ul>
+            <li><strong>"I want to build an AI app from scratch"</strong> → <strong>AI Foundry</strong></li>
+            <li><strong>"I just need to call GPT-4 from my code"</strong> → Azure OpenAI Service (also accessible through Foundry)</li>
+            <li><strong>"I need to train a custom ML model"</strong> → Azure Machine Learning</li>
+            <li><strong>"I just need speech-to-text or image analysis"</strong> → Azure AI Services</li>
+        </ul>
+
+        <div class="callout callout-blue">
+            <span class="callout-icon">💡</span> <strong>Tip:</strong> AI Foundry acts as a <em>unifying layer</em> on top of many Azure AI services. You can access Azure OpenAI models, Azure AI Services, and more — all from within the AI Foundry portal. Think of AI Foundry as the "front door" to Azure's entire AI ecosystem.
+        </div>
+
+        <!-- Section 5: Real-World Use Cases -->
+        <h2 id="use-cases">Real-World Use Cases</h2>
+
+        <p>AI Foundry isn't theoretical — companies are using it right now to solve real business problems.</p>
+
+        <div class="usecase-card">
+            <h4>🗣️ Customer Support Chatbot</h4>
+            <p><span class="problem">The problem:</span> A telecom company receives 50,000 support tickets per month. Wait times are long, and customers are frustrated.</p>
+            <p><span class="solution">The AI Foundry solution:</span></p>
+            <ul>
+                <li>Deploy a GPT-4o model from the Model Catalog</li>
+                <li>Connect it to the company's knowledge base using RAG</li>
+                <li>Build an agent that can look up account info and troubleshoot</li>
+                <li>Use evaluation tools to ensure accuracy before going live</li>
+            </ul>
+            <p><span class="result">The result:</span> 60% of tickets resolved without human intervention. Average response time drops from 4 hours to 30 seconds.</p>
+        </div>
+
+        <div class="usecase-card">
+            <h4>📄 Document Q&A Over Enterprise Data</h4>
+            <p><span class="problem">The problem:</span> A law firm has 10 years of legal documents. Lawyers spend hours searching for relevant precedents and clauses.</p>
+            <p><span class="solution">The AI Foundry solution:</span></p>
+            <ul>
+                <li>Index the document library using Azure AI Search (integrated with Foundry)</li>
+                <li>Deploy a model that answers questions grounded in actual documents</li>
+                <li>Build a simple chat interface for natural language queries</li>
+            </ul>
+            <p><span class="result">The result:</span> Research that used to take 3 hours now takes 5 minutes.</p>
+        </div>
+
+        <div class="real-example">🏢 <strong>Real Example — KPMG:</strong> KPMG uses Azure AI Foundry to power AI solutions for audit, tax, and advisory services. They leverage the platform to build AI agents that analyze complex documents and provide insights faster than manual review.</div>
+
+        <div class="usecase-card">
+            <h4>💻 Code Generation Assistant</h4>
+            <p><span class="problem">The problem:</span> A development team wants to accelerate coding and reduce bugs.</p>
+            <p><span class="solution">The solution:</span> Deploy a code-capable model, fine-tune it on internal coding standards, and integrate into the development workflow.</p>
+            <p><span class="result">The result:</span> Developers report 30–40% faster coding for routine tasks.</p>
+        </div>
+
+        <div class="usecase-card">
+            <h4>📈 Predictive Analytics</h4>
+            <p><span class="problem">The problem:</span> An e-commerce company wants to predict trending products next quarter.</p>
+            <p><span class="solution">The solution:</span> Use Azure ML (through Foundry) to train a forecasting model, combine with a language model for plain-English explanations, and deploy as an internal dashboard.</p>
+            <p><span class="result">The result:</span> Inventory planning accuracy improves by 25%.</p>
+        </div>
+
+        <div class="real-example">🏢 <strong>Real Example — Carvana:</strong> Carvana leverages Azure AI services for vehicle image processing and personalized recommendations, using AI to streamline the car-buying journey.</div>
+
+        <div class="real-example">🏢 <strong>Real Example — Fujitsu:</strong> Fujitsu partners with Microsoft to deliver AI-powered transformation, building industry-specific solutions for manufacturing, healthcare, and finance.</div>
+
+        <!-- Section 6: Portal Tour -->
+        <h2 id="portal-tour">The AI Foundry Portal Tour</h2>
+
+        <p>Let's take a virtual tour of the AI Foundry portal. Follow along at <a href="https://ai.azure.com" target="_blank">ai.azure.com</a>.</p>
+
+        <div class="callout callout-blue">
+            <span class="callout-icon">📝</span> <strong>Note:</strong> You can browse the portal and explore the Model Catalog without an Azure subscription. To create projects and deploy models, you'll need one — we'll set that up in Week 2.
+        </div>
+
+        <div class="tour-card">
+            <div class="tour-icon">🏠</div>
+            <div>
+                <h4>Home Page</h4>
+                <p>A clean landing page with a welcome banner, quick-start options ("Create a project," "Explore models," "Try the playground"), recent projects, and learning resources.</p>
+                <p class="analogy">Think of it as: The lobby of the AI factory — a directory to help you find where to go.</p>
+            </div>
+        </div>
+
+        <div class="tour-card">
+            <div class="tour-icon">📚</div>
+            <div>
+                <h4>Model Catalog</h4>
+                <p>A searchable, filterable gallery of 1,800+ models. Filter by provider, task, license, and more. Each model card shows name, description, capabilities, and a "Deploy" button.</p>
+                <p class="analogy">Think of it as: The warehouse floor — rows of "AI brains" ready to be selected.</p>
+            </div>
+        </div>
+
+        <div class="tour-card">
+            <div class="tour-icon">🧪</div>
+            <div>
+                <h4>Playground</h4>
+                <p>A split-screen interface with system message and parameters on the left, chat interface on the right. Includes a "View Code" button that generates API code for your conversation.</p>
+                <p class="analogy">Think of it as: The R&D lab — where you experiment before committing to production.</p>
+            </div>
+        </div>
+
+        <div class="tour-card">
+            <div class="tour-icon">📁</div>
+            <div>
+                <h4>Projects</h4>
+                <p>Your AI Foundry projects — each containing deployed models, data connections, evaluation runs, prompt flow configs, and team access settings.</p>
+                <p class="analogy">Think of it as: Individual production lines — each project is a separate product you're building.</p>
+            </div>
+        </div>
+
+        <div class="tour-card">
+            <div class="tour-icon">🚀</div>
+            <div>
+                <h4>Deployments</h4>
+                <p>A dashboard of all deployed models showing name, version, deployment type, endpoint URL, status, and usage metrics.</p>
+                <p class="analogy">Think of it as: The shipping dock — where finished AI products go out into the world.</p>
+            </div>
+        </div>
+
+        <div class="tour-card">
+            <div class="tour-icon">🤖</div>
+            <div>
+                <h4>Agents</h4>
+                <p>An interface for building and managing AI agents with model configuration, tool integration (code interpreter, file search, custom functions), testing, and deployment.</p>
+                <p class="analogy">Think of it as: The robotics assembly area — where you build AI workers that can think and act.</p>
+            </div>
+        </div>
+
+        <!-- Section 7: Glossary -->
+        <h2 id="glossary">Key Terminology Glossary</h2>
+
+        <p>Bookmark this section — you'll refer back to it often throughout the course!</p>
+
+        <table>
+            <tr><th>Term</th><th>Definition</th><th>Analogy</th></tr>
+            <tr><td><strong>Model</strong></td><td>A trained AI system that performs specific tasks</td><td>A skilled worker trained for a job</td></tr>
+            <tr><td><strong>LLM</strong></td><td>Large Language Model — trained on vast text data</td><td>A worker who has read every book</td></tr>
+            <tr><td><strong>Foundation Model</strong></td><td>General-purpose model adaptable to many tasks</td><td>A Swiss Army knife</td></tr>
+            <tr><td><strong>Fine-Tuning</strong></td><td>Further training a model on your specific data</td><td>Teaching a general chef Italian cuisine</td></tr>
+            <tr><td><strong>Prompt</strong></td><td>Text instruction you send to an AI model</td><td>A question to a knowledgeable colleague</td></tr>
+            <tr><td><strong>System Prompt</strong></td><td>Instructions defining the AI's behavior</td><td>A job description before work starts</td></tr>
+            <tr><td><strong>Token</strong></td><td>Smallest text unit a model processes (~¾ of a word)</td><td>Individual LEGO bricks</td></tr>
+            <tr><td><strong>Embedding</strong></td><td>Numerical representation capturing meaning</td><td>GPS coordinates for concepts</td></tr>
+            <tr><td><strong>RAG</strong></td><td>Retrieval-Augmented Generation — lookup before answer</td><td>Looking up answers vs. answering from memory</td></tr>
+            <tr><td><strong>Agent</strong></td><td>AI system that reasons, plans, and uses tools</td><td>A virtual employee with software skills</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>Making a model available via an endpoint</td><td>Opening your store for business</td></tr>
+            <tr><td><strong>Endpoint</strong></td><td>URL where a deployed model listens for requests</td><td>The front counter for orders</td></tr>
+            <tr><td><strong>Inference</strong></td><td>Model generating a response (vs. training)</td><td>A chef cooking (vs. in cooking school)</td></tr>
+            <tr><td><strong>Grounding</strong></td><td>Connecting responses to verifiable data</td><td>Citing sources in a paper</td></tr>
+            <tr><td><strong>Hallucination</strong></td><td>Plausible-sounding but incorrect output</td><td>A student writing wrong answers confidently</td></tr>
+            <tr><td><strong>Responsible AI</strong></td><td>Principles for fair, safe, transparent AI</td><td>Safety regulations in a factory</td></tr>
+            <tr><td><strong>Temperature</strong></td><td>Controls creativity/randomness of outputs</td><td>The "wildness dial" on the AI</td></tr>
+            <tr><td><strong>Context Window</strong></td><td>Max text a model processes at once</td><td>The size of the model's working memory</td></tr>
+        </table>
+
+        <!-- Section 8: Exercise -->
+        <h2 id="exercise">Hands-On Exercise: Explore the Model Catalog</h2>
+
+        <div class="callout callout-green">
+            <span class="callout-icon">🧪</span> <strong>Try It Now!</strong> This exercise requires no Azure subscription — just a web browser.
+        </div>
+
+        <ol>
+            <li><strong>Open</strong> <a href="https://ai.azure.com" target="_blank">ai.azure.com</a> in your browser</li>
+            <li><strong>Navigate</strong> to the <strong>Model Catalog</strong></li>
+            <li><strong>Browse</strong> the available models — try filtering by:
+                <ul>
+                    <li>Provider: "OpenAI" → note the available GPT models</li>
+                    <li>Provider: "Meta" → find the Llama models</li>
+                    <li>Provider: "Microsoft" → find the Phi models</li>
+                    <li>Task: "Chat completion" → see which models support conversations</li>
+                </ul>
+            </li>
+            <li><strong>Click</strong> on any model card to read its details</li>
+            <li><strong>Answer</strong> these questions in your notes:
+                <ul>
+                    <li>How many total models are available?</li>
+                    <li>Which providers have the most models?</li>
+                    <li>What's the difference between "Managed Compute" and "Serverless API" deployment options?</li>
+                </ul>
+            </li>
+        </ol>
+
+        <div class="callout callout-blue">
+            <span class="callout-icon">💡</span> <strong>Tip:</strong> Don't worry if you don't understand everything on the model cards yet. The goal is to get comfortable navigating the portal. We'll explain all technical details in coming weeks.
+        </div>
+
+        <!-- Section 9: Key Takeaways -->
+        <h2 id="takeaways">Key Takeaways</h2>
+
+        <div class="takeaways">
+            <h3>📌 What You Learned This Week</h3>
+            <ol>
+                <li><strong>Azure AI Foundry is Microsoft's unified platform</strong> for building, evaluating, and deploying AI applications and agents — think of it as an "AI app and agent factory."</li>
+                <li><strong>You don't need to build AI from scratch.</strong> The Model Catalog gives you access to 1,800+ pre-built models from OpenAI, Meta, Microsoft, and more.</li>
+                <li><strong>AI Foundry covers the entire lifecycle</strong> — from selecting a model, to testing prompts, to evaluating quality, to deploying and monitoring.</li>
+                <li><strong>Responsible AI is built in, not bolted on.</strong> Content filters, groundedness detection, and fairness tools are integrated throughout.</li>
+                <li><strong>AI Foundry is the "front door" to Azure's AI ecosystem.</strong> It brings together Azure OpenAI, Azure ML, and Azure AI Services into one experience.</li>
+            </ol>
+        </div>
+
+        <!-- Section 10: Week 2 Preview -->
+        <h2 id="week2-preview">Preview: Week 2 — Understanding the AI Lifecycle</h2>
+
+        <p>Next week, we'll explore the <strong>end-to-end journey</strong> of building an AI application:</p>
+
+        <ul>
+            <li>The 6 stages of the AI development lifecycle</li>
+            <li>How each stage maps to AI Foundry's tools</li>
+            <li>Setting up your Azure account and creating your first project</li>
+            <li>The difference between training, fine-tuning, and prompt engineering</li>
+            <li>Your first hands-on lab: deploying a model and sending your first prompt!</li>
+        </ul>
+
+        <div class="callout callout-green">
+            <span class="callout-icon">🚀</span> <strong>Get ready!</strong> Week 2 is where we go from <em>understanding</em> to <em>doing</em>. Make sure you have a Microsoft account ready.
+        </div>
+
+        <!-- Section 11: Resources -->
+        <h2 id="resources">Additional Resources</h2>
+
+        <h3>📖 Microsoft Learn</h3>
+        <table>
+            <tr><th>Resource</th><th>Description</th></tr>
+            <tr><td><a href="https://learn.microsoft.com/azure/ai-foundry/what-is-azure-ai-foundry" target="_blank">What is Azure AI Foundry?</a></td><td>Official overview documentation</td></tr>
+            <tr><td><a href="https://learn.microsoft.com/azure/ai-foundry/quickstarts/get-started-playground" target="_blank">AI Foundry Quickstart</a></td><td>Get started with the Playground</td></tr>
+            <tr><td><a href="https://learn.microsoft.com/azure/ai-foundry/how-to/model-catalog-overview" target="_blank">Model Catalog Overview</a></td><td>Browse and deploy models</td></tr>
+            <tr><td><a href="https://learn.microsoft.com/azure/ai-foundry/concepts/responsible-ai" target="_blank">Responsible AI Overview</a></td><td>Responsible AI principles</td></tr>
+        </table>
+
+        <h3>📺 Videos & Community</h3>
+        <ul>
+            <li><a href="https://ignite.microsoft.com" target="_blank">Azure AI Foundry sessions at Microsoft Ignite</a></li>
+            <li><a href="https://www.youtube.com/@MicrosoftAI" target="_blank">Microsoft AI YouTube Channel</a></li>
+            <li><a href="https://techcommunity.microsoft.com/category/ai" target="_blank">Microsoft Tech Community — AI</a></li>
+            <li><a href="https://github.com/azure-samples" target="_blank">Azure AI Foundry GitHub Samples</a></li>
+        </ul>
+
+        <!-- Series Navigation -->
+        <div class="series-nav">
+            <span style="color:#ccc;">← Previous (none)</span>
+            <span class="current">Week 1 of 45</span>
+            <a href="#">Week 2: AI Lifecycle →</a>
+        </div>
+
+        <!-- Tags -->
+        <div class="tags">
+            <span class="tag">Azure AI Foundry</span>
+            <span class="tag">Introduction</span>
+            <span class="tag">AI Platform</span>
+            <span class="tag">Model Catalog</span>
+            <span class="tag">Responsible AI</span>
+            <span class="tag">Agents</span>
+            <span class="tag">Week 1</span>
+        </div>
+
+        <!-- About Author -->
+        <div class="author-box">
+            <div class="avatar-lg">🎓</div>
+            <div>
+                <h4>Zero to Hero Training Team</h4>
+                <p>A 45-week comprehensive training program designed to take you from absolute beginner to confident Azure AI Foundry practitioner. Each week builds on the last, combining theory, hands-on labs, and real-world scenarios.</p>
+            </div>
+        </div>
+
+        <!-- Related Posts -->
+        <h3>Up Next in This Series</h3>
+        <div class="related-posts">
+            <a class="related-card" href="#">
+                <span class="week-label">Week 2</span>
+                <h4>Understanding the AI Lifecycle</h4>
+            </a>
+            <a class="related-card" href="#">
+                <span class="week-label">Week 3</span>
+                <h4>AI Foundry Architecture & Components</h4>
+            </a>
+        </div>
+
+        <!-- Course Roadmap -->
+        <div class="code-block">✅ WEEK 1  — What is AI Foundry? (YOU ARE HERE)
+   WEEK 2  — Understanding the AI Lifecycle
+   WEEK 3  — Azure Fundamentals for AI
+   WEEK 4  — AI Foundry Architecture Deep Dive
+   WEEK 5  — Your First AI Project (End-to-End)
+   ─────────────────────────────────────────────
+   ARC 2: Data & Prep (Weeks 6–10)
+   ARC 3: Model Building (Weeks 11–15)
+   ARC 4: Deployment & MLOps (Weeks 16–20)
+   ARC 5: Agents & Copilot Integration (Weeks 21–25)
+   ARC 6: Security, Governance & Compliance (Weeks 26–30)
+   ARC 7: Advanced AI (Weeks 31–35)
+   ARC 8: Partner & Business Scenarios (Weeks 36–40)
+   ARC 9: Capstone & Mastery (Weeks 41–45)</div>
+
+    </article>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+    © 2025 Zero to Hero: Azure AI Foundry Training Program. All rights reserved.<br>
+    Powered by Azure AI Foundry
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0})">↑</button>
+
+<script>
+    // Progress bar
+    window.addEventListener('scroll', () => {
+        const h = document.documentElement;
+        const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('backToTop').classList.toggle('visible', h.scrollTop > 400);
+    });
+
+    // TOC active highlighting
+    const sections = document.querySelectorAll('h2[id]');
+    const tocLinks = document.querySelectorAll('.toc a');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                tocLinks.forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-80px 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
