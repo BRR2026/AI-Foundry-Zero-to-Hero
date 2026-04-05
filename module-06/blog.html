@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 6 — Prompt Engineering Fundamentals | Azure AI Foundry: Zero to Hero</title>
+<meta name="description" content="Master prompt engineering fundamentals for Azure AI Foundry — system prompts, zero-shot, few-shot, chain-of-thought, parameters, templates, and best practices.">
+<meta name="author" content="Zero to Hero Training Team">
+<style>
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #50e6ff;
+  --ms-green: #107c10;
+  --ms-yellow: #ffb900;
+  --ms-red: #d13438;
+  --ms-orange: #ff8c00;
+  --bg-white: #ffffff;
+  --bg-light: #f9f9f9;
+  --bg-code: #1e1e1e;
+  --text-primary: #1a1a1a;
+  --text-secondary: #505050;
+  --text-muted: #6e6e6e;
+  --border-light: #e1e1e1;
+  --border-medium: #d2d2d2;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  --content-max: 780px;
+  --toc-width: 220px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body { font-family: var(--font-sans); color: var(--text-primary); background: var(--bg-white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+.scroll-progress { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple)); z-index: 10000; transition: width 0.1s linear; }
+
+.top-nav { position: sticky; top: 0; z-index: 9000; background: #1b1b1b; border-bottom: 1px solid #333; padding: 0 32px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+.top-nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+.top-nav-brand svg { flex-shrink: 0; }
+.top-nav-brand span { font-size: 0.92rem; font-weight: 600; letter-spacing: 0.02em; }
+.top-nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
+.top-nav-links a { color: #ccc; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+.top-nav-links a:hover { color: #fff; }
+
+.hero { background: linear-gradient(135deg, #0078d4, #5c2d91); color: #fff; padding: 72px 32px 64px; text-align: center; }
+.hero-badge { display: inline-block; background: rgba(255,255,255,0.18); color: #fff; padding: 6px 18px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; backdrop-filter: blur(8px); }
+.hero h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.15; margin-bottom: 16px; max-width: 700px; margin-left: auto; margin-right: auto; }
+.hero-meta { font-size: 0.92rem; opacity: 0.85; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-top: 8px; }
+.hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+.page-layout { display: flex; max-width: 1120px; margin: 0 auto; padding: 40px 24px; gap: 48px; }
+
+.toc-sidebar { position: sticky; top: 68px; width: var(--toc-width); min-width: var(--toc-width); max-height: calc(100vh - 88px); overflow-y: auto; padding-right: 8px; align-self: flex-start; }
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+.toc-sidebar h4 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; }
+.toc-sidebar ul { list-style: none; }
+.toc-sidebar li { margin-bottom: 4px; }
+.toc-sidebar a { display: block; padding: 5px 12px; font-size: 0.82rem; color: var(--text-secondary); text-decoration: none; border-left: 2px solid transparent; border-radius: 0 4px 4px 0; transition: all 0.2s; line-height: 1.4; }
+.toc-sidebar a:hover { color: var(--ms-blue); background: #f0f6ff; }
+.toc-sidebar a.active { color: var(--ms-blue); border-left-color: var(--ms-blue); background: #e8f2ff; font-weight: 600; }
+
+.content { flex: 1; max-width: var(--content-max); min-width: 0; }
+.content h2 { font-size: 1.75rem; font-weight: 700; color: var(--ms-dark-blue); margin-top: 56px; margin-bottom: 16px; padding-top: 20px; border-top: 1px solid var(--border-light); scroll-margin-top: 72px; }
+.content h2:first-of-type { border-top: none; margin-top: 0; }
+.content h3 { font-size: 1.3rem; font-weight: 600; color: var(--text-primary); margin-top: 36px; margin-bottom: 12px; scroll-margin-top: 72px; }
+.content h4 { font-size: 1.05rem; font-weight: 600; margin-top: 24px; margin-bottom: 8px; }
+.content p { margin-bottom: 16px; color: var(--text-secondary); font-size: 1rem; line-height: 1.75; }
+.content ul, .content ol { margin-bottom: 16px; padding-left: 24px; }
+.content li { margin-bottom: 8px; color: var(--text-secondary); line-height: 1.65; }
+.content strong { color: var(--text-primary); }
+.content a { color: var(--ms-blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+.content a:hover { border-bottom-color: var(--ms-blue); }
+
+.content code { font-family: var(--font-mono); background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: #c7254e; }
+.content pre { background: var(--bg-code); color: #d4d4d4; padding: 20px 24px; border-radius: var(--radius-md); overflow-x: auto; font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.6; margin: 20px 0; border: 1px solid #333; position: relative; }
+.content pre code { background: none; color: inherit; padding: 0; border-radius: 0; font-size: inherit; }
+.code-label { position: absolute; top: 0; right: 0; background: #333; color: #aaa; padding: 4px 12px; font-size: 0.72rem; font-family: var(--font-mono); border-radius: 0 var(--radius-md) 0 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+.kw { color: #569cd6; }
+.str { color: #ce9178; }
+.cm { color: #6a9955; }
+.fn { color: #dcdcaa; }
+.num { color: #b5cea8; }
+.type { color: #4ec9b0; }
+.param { color: #9cdcfe; }
+
+.callout { padding: 18px 22px; border-radius: var(--radius-md); margin: 24px 0; border-left: 4px solid; background: #f9f9f9; }
+.callout p { margin-bottom: 6px; color: var(--text-secondary); }
+.callout p:last-child { margin-bottom: 0; }
+.callout-title { font-weight: 700; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.callout.info { border-left-color: var(--ms-blue); background: #f0f6ff; }
+.callout.info .callout-title { color: var(--ms-blue); }
+.callout.tip { border-left-color: var(--ms-yellow); background: #fffbf0; }
+.callout.tip .callout-title { color: #996600; }
+.callout.success { border-left-color: var(--ms-green); background: #f0fff0; }
+.callout.success .callout-title { color: var(--ms-green); }
+.callout.warning { border-left-color: var(--ms-red); background: #fff5f5; }
+.callout.warning .callout-title { color: var(--ms-red); }
+
+.content table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.92rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; }
+.content th { background: #f5f5f5; padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-medium); }
+.content td { padding: 10px 16px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+.content tbody tr:hover { background: #fafbfc; }
+
+.diagram { background: #fafbfc; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 24px; margin: 24px 0; text-align: center; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8; color: var(--text-secondary); overflow-x: auto; white-space: pre; }
+
+.back-to-top { position: fixed; bottom: 32px; right: 32px; width: 44px; height: 44px; border-radius: 50%; background: var(--ms-blue); color: #fff; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; z-index: 8000; }
+.back-to-top.visible { opacity: 1; transform: translateY(0); }
+.back-to-top:hover { background: var(--ms-dark-blue); }
+
+.module-nav { display: flex; justify-content: space-between; align-items: center; margin: 48px 0 0; padding: 24px 0; border-top: 2px solid var(--border-light); }
+.module-nav a { display: flex; align-items: center; gap: 8px; color: var(--ms-blue); text-decoration: none; font-weight: 600; font-size: 0.95rem; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); transition: all 0.2s; }
+.module-nav a:hover { background: #f0f6ff; border-color: var(--ms-blue); }
+
+.site-footer { background: #f5f5f5; border-top: 1px solid var(--border-light); padding: 32px; text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+
+@media (max-width: 960px) {
+  .toc-sidebar { display: none; }
+  .page-layout { padding: 24px 16px; }
+  .hero h1 { font-size: 2rem; }
+  .hero { padding: 48px 20px 40px; }
+}
+@media (max-width: 600px) {
+  .top-nav { padding: 0 16px; }
+  .top-nav-links { gap: 12px; }
+  .top-nav-links a { font-size: 0.78rem; }
+  .content pre { padding: 14px 16px; font-size: 0.82rem; }
+  .hero h1 { font-size: 1.6rem; }
+  .module-nav { flex-direction: column; gap: 12px; }
+}
+@media print {
+  .top-nav, .toc-sidebar, .back-to-top, .scroll-progress, .module-nav { display: none !important; }
+  .hero { background: #eee !important; color: #000 !important; padding: 24px; }
+  .hero h1 { color: #000; }
+  .content { max-width: 100%; }
+  .page-layout { display: block; padding: 0; }
+  .content pre { background: #f5f5f5 !important; color: #000 !important; border: 1px solid #ccc; }
+  body { font-size: 11pt; }
+  .callout { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<nav class="top-nav">
+  <a href="#" class="top-nav-brand">
+    <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="10" height="10" fill="#f25022"/>
+      <rect x="11" y="0" width="10" height="10" fill="#7fba00"/>
+      <rect x="0" y="11" width="10" height="10" fill="#00a4ef"/>
+      <rect x="11" y="11" width="10" height="10" fill="#ffb900"/>
+    </svg>
+    <span>AI Foundry Training Blog</span>
+  </a>
+  <ul class="top-nav-links">
+    <li><a href="../index.html">Curriculum</a></li>
+    <li><a href="../resources.html">Resources</a></li>
+    <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal &#8599;</a></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <div class="hero-badge">ARC 2 &middot; PROMPT ENGINEERING &amp; MODELS</div>
+  <h1>Prompt Engineering Fundamentals</h1>
+  <p style="max-width:600px; margin:0 auto 16px; opacity:0.9; font-size:1.05rem;">
+    Master the art and science of communicating with large language models &mdash; from basic message roles to advanced prompting techniques and parameter tuning.
+  </p>
+  <div class="hero-meta">
+    <span>&#9998; Zero to Hero Training Team</span>
+    <span>&#128197; April 2026</span>
+    <span>&#9202; 35 min read</span>
+    <span>Module 6 of 45</span>
+  </div>
+</header>
+
+<div class="page-layout">
+  <aside class="toc-sidebar">
+    <h4>On This Page</h4>
+    <ul>
+      <li><a href="#introduction" class="active">Introduction</a></li>
+      <li><a href="#message-roles">Message Roles</a></li>
+      <li><a href="#zero-shot">Zero-Shot Prompting</a></li>
+      <li><a href="#few-shot">Few-Shot Prompting</a></li>
+      <li><a href="#chain-of-thought">Chain-of-Thought</a></li>
+      <li><a href="#templates">Prompt Templates</a></li>
+      <li><a href="#parameters">Parameters Deep Dive</a></li>
+      <li><a href="#playground">AI Foundry Playground</a></li>
+      <li><a href="#best-practices">Best Practices</a></li>
+      <li><a href="#anti-patterns">Anti-Patterns</a></li>
+      <li><a href="#mini-hack">Mini Hack</a></li>
+      <li><a href="#takeaways">Key Takeaways</a></li>
+      <li><a href="#next-module">Module 7 Preview</a></li>
+      <li><a href="#resources">Resources</a></li>
+    </ul>
+  </aside>
+
+  <main class="content">
+
+    <!-- SECTION 1: INTRODUCTION -->
+    <h2 id="introduction">Introduction: Why Prompt Engineering Matters</h2>
+
+    <p>Welcome back to <strong>Azure AI Foundry: Zero to Hero</strong>. In Module 5, you explored the model catalogue and learned how to deploy foundation models inside your AI Foundry project. Now that you have a model running, the obvious question is: <em>how do you get it to do what you want?</em></p>
+
+    <p>The answer is <strong>prompt engineering</strong> &mdash; the discipline of crafting inputs (prompts) that guide a large language model (LLM) to produce accurate, consistent, and useful outputs. If the model is the engine, the prompt is the steering wheel, the accelerator, and the brakes all in one.</p>
+
+    <p>Prompt engineering is not merely &ldquo;asking a question.&rdquo; It is a structured practice that involves:</p>
+
+    <ul>
+      <li><strong>Defining the model&rsquo;s persona and constraints</strong> through system messages</li>
+      <li><strong>Selecting the right technique</strong> &mdash; zero-shot, few-shot, or chain-of-thought &mdash; for the complexity of the task</li>
+      <li><strong>Building reusable templates</strong> that separate logic from data</li>
+      <li><strong>Tuning generation parameters</strong> like temperature, top_p, and penalties to control output behaviour</li>
+      <li><strong>Iterating and testing</strong> systematically to handle edge cases</li>
+    </ul>
+
+    <div class="callout info">
+      <div class="callout-title">&#8505;&#65039; Why This Matters for Production</div>
+      <p>In a prototype, a mediocre prompt might seem &ldquo;good enough.&rdquo; In production, that same prompt will fail on 15% of inputs, generate inconsistent formats, waste tokens, and confuse downstream systems. Investing in prompt engineering upfront saves debugging time, reduces API costs, and builds user trust.</p>
+    </div>
+
+    <p>In this module, you will build a working customer feedback classifier in the AI Foundry Playground &mdash; step by step, technique by technique. By the end, you will have a robust prompt that handles ambiguity, edge cases, and multi-language input with confidence.</p>
+
+    <p>Let&rsquo;s begin with the foundation: understanding how messages are structured in the chat-completion API.</p>
+
+    <!-- SECTION 2: MESSAGE ROLES -->
+    <h2 id="message-roles">Understanding Message Roles</h2>
+
+    <p>Every call to a chat-completion model (GPT-4o, GPT-4.1, and similar models deployed in AI Foundry) uses an array of <strong>messages</strong>. Each message has a <strong>role</strong> and <strong>content</strong>. There are three roles you need to know:</p>
+
+    <h3>The System Message</h3>
+
+    <p>The <code>system</code> message is the most important part of your prompt. It is processed first and establishes the model&rsquo;s persona, ground rules, output format, and behavioural constraints. Think of it as the &ldquo;operating manual&rdquo; you hand to the model before it sees any user input.</p>
+
+    <pre><code>{
+  <span class="str">"role"</span>: <span class="str">"system"</span>,
+  <span class="str">"content"</span>: <span class="str">"You are a senior customer support agent for Contoso Electronics.\nYou respond in a professional, empathetic tone.\nAlways suggest a concrete next step.\nIf you don't know the answer, say so — never fabricate information.\nRespond in valid JSON with keys: response, next_step, confidence."</span>
+}</code></pre>
+
+    <div class="callout tip">
+      <div class="callout-title">&#128161; Tip &mdash; System Message Best Practices</div>
+      <p><strong>Be explicit.</strong> Don&rsquo;t assume the model will infer your constraints. If you want JSON output, say &ldquo;respond in valid JSON.&rdquo; If you want short answers, say &ldquo;respond in 2&ndash;3 sentences maximum.&rdquo; Ambiguity in the system prompt leads to ambiguity in the output.</p>
+    </div>
+
+    <h3>The User Message</h3>
+
+    <p>The <code>user</code> message contains the end user&rsquo;s input &mdash; their question, the data they want processed, or the task they need completed. In a multi-turn conversation, each new user turn adds another user message to the array.</p>
+
+    <pre><code>{
+  <span class="str">"role"</span>: <span class="str">"user"</span>,
+  <span class="str">"content"</span>: <span class="str">"My order #12345 arrived with a broken screen. I need a replacement."</span>
+}</code></pre>
+
+    <h3>The Assistant Message</h3>
+
+    <p>The <code>assistant</code> message represents the model&rsquo;s previous responses. It serves two critical purposes:</p>
+
+    <ol>
+      <li><strong>Conversation continuity:</strong> In multi-turn conversations, assistant messages preserve context so the model &ldquo;remembers&rdquo; what it said earlier.</li>
+      <li><strong>Few-shot examples:</strong> You can insert synthetic assistant messages to show the model the exact output format you expect (more on this in the Few-Shot section).</li>
+    </ol>
+
+    <h3>How Messages Flow Together</h3>
+
+    <p>Here is a complete multi-turn conversation showing all three roles:</p>
+
+    <pre><code><span class="cm">// Complete messages array for a chat-completion API call</span>
+{
+  <span class="str">"messages"</span>: [
+    {
+      <span class="str">"role"</span>: <span class="str">"system"</span>,
+      <span class="str">"content"</span>: <span class="str">"You are a helpful travel assistant. Respond in JSON."</span>
+    },
+    {
+      <span class="str">"role"</span>: <span class="str">"user"</span>,
+      <span class="str">"content"</span>: <span class="str">"Plan a 3-day trip to Tokyo for a food lover."</span>
+    },
+    {
+      <span class="str">"role"</span>: <span class="str">"assistant"</span>,
+      <span class="str">"content"</span>: <span class="str">"{\"destination\": \"Tokyo\", \"itinerary\": [...]}"</span>
+    },
+    {
+      <span class="str">"role"</span>: <span class="str">"user"</span>,
+      <span class="str">"content"</span>: <span class="str">"Add a day trip to Nikko and increase the budget."</span>
+    }
+  ],
+  <span class="str">"temperature"</span>: <span class="num">0.7</span>,
+  <span class="str">"max_tokens"</span>: <span class="num">800</span>
+}</code></pre>
+
+    <div class="callout info">
+      <div class="callout-title">&#8505;&#65039; Message Order Matters</div>
+      <p>The model processes messages sequentially. The system message is always first and carries the most weight in shaping behaviour. User and assistant messages alternate to create a conversation history. The model&rsquo;s new response is based on <em>all</em> messages in the array &mdash; not just the last one.</p>
+    </div>
+
+    <h3>The Anatomy of a Great System Prompt</h3>
+
+    <p>A production-grade system prompt typically contains these components, in order:</p>
+
+    <ol>
+      <li><strong>Role definition:</strong> &ldquo;You are a [specific role] for [company/context].&rdquo;</li>
+      <li><strong>Task description:</strong> Exactly what the model should do.</li>
+      <li><strong>Constraints:</strong> What the model must NOT do.</li>
+      <li><strong>Output format:</strong> The exact structure of the expected response (JSON schema, markdown, bullets).</li>
+      <li><strong>Tone/style:</strong> Professional, casual, technical, empathetic.</li>
+      <li><strong>Edge case handling:</strong> What to do with unknown inputs, empty data, or off-topic queries.</li>
+    </ol>
+
+    <pre><code><span class="cm">// Production-grade system prompt template</span>
+<span class="str">"You are a senior medical triage assistant for HealthFirst Clinic.
+
+TASK:
+Given a patient's symptom description, assess urgency and recommend
+the appropriate care pathway.
+
+CONSTRAINTS:
+- Never diagnose specific conditions.
+- Never recommend medications.
+- Always advise seeing a medical professional for serious symptoms.
+- If symptoms suggest an emergency, respond with urgency 'EMERGENCY'.
+
+OUTPUT FORMAT:
+Respond ONLY with valid JSON:
+{
+  \"urgency\": \"EMERGENCY | URGENT | ROUTINE | SELF_CARE\",
+  \"care_pathway\": \"string\",
+  \"reasoning\": \"one sentence\",
+  \"disclaimer\": \"This is not a medical diagnosis.\"
+}
+
+TONE: Professional, calm, empathetic.
+
+EDGE CASES:
+- Empty input: urgency = 'UNKNOWN'.
+- Non-medical queries: urgency = 'NOT_APPLICABLE'."</span></code></pre>
+
+    <div class="diagram">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;  SYSTEM        &#9474;     &#9474;  USER          &#9474;     &#9474;  ASSISTANT     &#9474;
+&#9474;  Persona +     &#9474; ──▶ &#9474;  Input data +  &#9474; ──▶ &#9474;  Model        &#9474;
+&#9474;  Rules +       &#9474;     &#9474;  Question      &#9474;     &#9474;  Response      &#9474;
+&#9474;  Format        &#9474;     &#9474;               &#9474;     &#9474;               &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+
+     Processed first         Contains the task          Generated output
+     Sets the rules          Carries the data           Follows the rules
+    </div>
+
+    <!-- SECTION 3: ZERO-SHOT PROMPTING -->
+    <h2 id="zero-shot">Zero-Shot Prompting</h2>
+
+    <p><strong>Zero-shot prompting</strong> means giving the model a task description without any examples. You rely entirely on the model&rsquo;s pre-training to understand what you want. This is the simplest technique and works surprisingly well for straightforward tasks.</p>
+
+    <h3>When Zero-Shot Works Well</h3>
+
+    <ul>
+      <li><strong>Simple classification:</strong> Sentiment analysis, spam detection, topic categorisation</li>
+      <li><strong>Translation:</strong> &ldquo;Translate the following English text to French.&rdquo;</li>
+      <li><strong>Summarisation:</strong> &ldquo;Summarise this article in 3 bullet points.&rdquo;</li>
+      <li><strong>Extraction:</strong> &ldquo;Extract all email addresses from this text.&rdquo;</li>
+      <li><strong>Q&amp;A:</strong> &ldquo;What is the capital of Norway?&rdquo;</li>
+    </ul>
+
+    <h3>Zero-Shot Examples</h3>
+
+    <h4>Example 1: Sentiment Classification</h4>
+
+    <pre><code><span class="cm">// System message</span>
+<span class="str">"Classify the sentiment of the user's text as exactly one of:
+positive, negative, or neutral. Respond with a single word."</span>
+
+<span class="cm">// User message</span>
+<span class="str">"The battery life on this phone is absolutely incredible.
+I can go two full days without charging!"</span>
+
+<span class="cm">// Expected response</span>
+<span class="str">"positive"</span></code></pre>
+
+    <h4>Example 2: Entity Extraction</h4>
+
+    <pre><code><span class="cm">// System message</span>
+<span class="str">"Extract all named entities (people, places, organisations) from the
+user's text. Return as a JSON array of objects with 'entity' and 'type'."</span>
+
+<span class="cm">// User message</span>
+<span class="str">"Satya Nadella announced at Microsoft Build that Azure AI Foundry
+will expand to three new regions in Europe by Q3 2026."</span>
+
+<span class="cm">// Expected response</span>
+[
+  {"entity": "Satya Nadella", "type": "person"},
+  {"entity": "Microsoft Build", "type": "event"},
+  {"entity": "Azure AI Foundry", "type": "product"},
+  {"entity": "Europe", "type": "location"}
+]</code></pre>
+
+    <h4>Example 3: Summarisation</h4>
+
+    <pre><code><span class="cm">// System message</span>
+<span class="str">"You are a news editor. Summarise the user's article in exactly
+3 bullet points. Each bullet must be one sentence, max 20 words."</span>
+
+<span class="cm">// User message</span>
+<span class="str">"[Long article about renewable energy policy changes in the EU...]"</span>
+
+<span class="cm">// Expected response</span>
+<span class="str">"- The EU approved a 45% renewable energy target by 2030.
+- Solar and wind subsidies will increase by €12 billion annually.
+- Member states must submit updated energy plans by March 2027."</span></code></pre>
+
+    <h3>When Zero-Shot Falls Short</h3>
+
+    <p>Zero-shot prompting struggles when:</p>
+
+    <ul>
+      <li>The output format is complex or domain-specific</li>
+      <li>The task requires nuanced judgement across many categories</li>
+      <li>You need high consistency across many different inputs</li>
+      <li>The model hasn&rsquo;t seen enough similar tasks in pre-training</li>
+    </ul>
+
+    <p>When zero-shot doesn&rsquo;t produce reliable results, it&rsquo;s time to bring in examples. That&rsquo;s <strong>few-shot prompting</strong>.</p>
+
+    <!-- SECTION 4: FEW-SHOT PROMPTING -->
+    <h2 id="few-shot">Few-Shot Prompting</h2>
+
+    <p><strong>Few-shot prompting</strong> provides the model with 2&ndash;5 examples of the desired input&#8594;output pattern before presenting the actual task. The examples act as a &ldquo;teaching&rdquo; mechanism, showing the model exactly what format, style, and level of detail you expect.</p>
+
+    <h3>Why Few-Shot Works So Well</h3>
+
+    <p>LLMs are exceptional pattern matchers. When you provide examples, the model identifies the pattern &mdash; the structure, the vocabulary, the formatting &mdash; and replicates it for new inputs. This is called <strong>in-context learning</strong>, and it is one of the most powerful capabilities of modern language models.</p>
+
+    <div class="callout success">
+      <div class="callout-title">&#9989; Key Benefit</div>
+      <p>Few-shot prompting can increase output consistency from ~70% to ~95% for classification and formatting tasks &mdash; without any model fine-tuning.</p>
+    </div>
+
+    <h3>Building Effective Few-Shot Prompts</h3>
+
+    <h4>Step 1: Choose Diverse Examples</h4>
+
+    <p>Your examples should cover the <em>range</em> of expected inputs &mdash; not just the easy cases. Include at least one example from each category or output type.</p>
+
+    <h4>Step 2: Use Consistent Formatting</h4>
+
+    <p>Every example must follow the exact same format. If your output is JSON, every example must be valid JSON. If it&rsquo;s a single word, every example must be a single word.</p>
+
+    <h4>Step 3: Place Examples in the Right Location</h4>
+
+    <p>Few-shot examples can be placed in the system message or as alternating user/assistant message pairs. Both work; the choice depends on your use case:</p>
+
+    <table>
+      <thead>
+        <tr><th>Approach</th><th>Pros</th><th>Cons</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>In system message</strong></td>
+          <td>Clean conversation; invisible to end users</td>
+          <td>Uses system token budget</td>
+        </tr>
+        <tr>
+          <td><strong>As user/assistant pairs</strong></td>
+          <td>Natural structure; easy to add/remove</td>
+          <td>Visible in conversation history</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Few-Shot Example: Customer Feedback Classifier</h3>
+
+    <pre><code><span class="cm">// System message</span>
+<span class="str">"You are a customer feedback classifier for Contoso Electronics.
+
+Classify each message into ONE category:
+- product_quality
+- shipping
+- customer_service
+- pricing
+- website_app
+
+Also determine sentiment (positive, negative, neutral)
+and confidence (high, medium, low).
+
+Respond ONLY with valid JSON:
+{
+  \"category\": \"...\",
+  \"sentiment\": \"...\",
+  \"confidence\": \"...\",
+  \"reasoning\": \"One sentence.\"
+}"</span>
+
+<span class="cm">// Few-shot example 1</span>
+{ "role": "user",
+  "content": "The headphones broke after one week." }
+{ "role": "assistant",
+  "content": "{\"category\":\"product_quality\",\"sentiment\":\"negative\",\"confidence\":\"high\",\"reasoning\":\"Product defect reported.\"}" }
+
+<span class="cm">// Few-shot example 2</span>
+{ "role": "user",
+  "content": "Delivery took 3 weeks — way too long!" }
+{ "role": "assistant",
+  "content": "{\"category\":\"shipping\",\"sentiment\":\"negative\",\"confidence\":\"high\",\"reasoning\":\"Slow delivery complaint.\"}" }
+
+<span class="cm">// Few-shot example 3</span>
+{ "role": "user",
+  "content": "Love the new app update — checkout is so smooth!" }
+{ "role": "assistant",
+  "content": "{\"category\":\"website_app\",\"sentiment\":\"positive\",\"confidence\":\"high\",\"reasoning\":\"Customer praises app experience.\"}" }
+
+<span class="cm">// Actual user input to classify</span>
+{ "role": "user",
+  "content": "$299 seems steep but the build quality is decent." }</code></pre>
+
+    <div class="callout tip">
+      <div class="callout-title">&#128161; Tip &mdash; The Magic Number</div>
+      <p>Research shows that <strong>3&ndash;5 examples</strong> is the sweet spot for most tasks. Fewer than 3 may not establish a clear pattern; more than 5 rarely improves performance and wastes tokens. Prioritise <em>diversity</em> over quantity.</p>
+    </div>
+
+    <h3>Few-Shot for Code Generation</h3>
+
+    <pre><code><span class="cm">// Show the model your coding style</span>
+<span class="cm">// Example 1:</span>
+User: "Write a function that doubles a number."
+Assistant:
+<span class="kw">def</span> <span class="fn">double</span>(<span class="param">n</span>: <span class="type">int</span>) -&gt; <span class="type">int</span>:
+    <span class="str">"""Return the input multiplied by 2."""</span>
+    <span class="kw">return</span> n * <span class="num">2</span>
+
+<span class="cm">// Example 2:</span>
+User: "Write a function to check if a string is a palindrome."
+Assistant:
+<span class="kw">def</span> <span class="fn">is_palindrome</span>(<span class="param">text</span>: <span class="type">str</span>) -&gt; <span class="type">bool</span>:
+    <span class="str">"""Return True if text reads the same forwards and backwards."""</span>
+    cleaned = text.lower().replace(<span class="str">" "</span>, <span class="str">""</span>)
+    <span class="kw">return</span> cleaned == cleaned[::-<span class="num">1</span>]
+
+<span class="cm">// Now the model will follow the same pattern:</span>
+<span class="cm">// - Type hints</span>
+<span class="cm">// - Docstring</span>
+<span class="cm">// - Concise implementation</span>
+User: "Write a function to calculate compound interest."</code></pre>
+
+    <!-- SECTION 5: CHAIN-OF-THOUGHT -->
+    <h2 id="chain-of-thought">Chain-of-Thought (CoT) Prompting</h2>
+
+    <p><strong>Chain-of-thought prompting</strong> instructs the model to show its reasoning process step by step before arriving at a final answer. Instead of jumping directly to a conclusion, the model &ldquo;thinks aloud,&rdquo; which dramatically improves accuracy for complex tasks.</p>
+
+    <h3>Why CoT Works</h3>
+
+    <p>LLMs generate text token by token. When you ask the model to output intermediate reasoning steps, those tokens become part of the context for subsequent tokens &mdash; effectively giving the model a &ldquo;scratchpad&rdquo; to work through the problem. This is particularly effective for:</p>
+
+    <ul>
+      <li><strong>Multi-step arithmetic:</strong> &ldquo;If a shirt costs $85 and is discounted 30%, then taxed at 8.5%...&rdquo;</li>
+      <li><strong>Logical reasoning:</strong> &ldquo;If all cats are mammals, and some mammals are pets...&rdquo;</li>
+      <li><strong>Ambiguous classification:</strong> Feedback that mentions multiple topics</li>
+      <li><strong>Code debugging:</strong> &ldquo;Trace through this code step by step to find the bug.&rdquo;</li>
+    </ul>
+
+    <h3>CoT Approach 1: Simple Trigger Phrase</h3>
+
+    <pre><code><span class="cm">// User message</span>
+<span class="str">"A store offers 25% off a $120 jacket. There's an additional
+10% loyalty discount applied AFTER the first discount.
+What's the final price?
+
+Let's think step by step."</span>
+
+<span class="cm">// Model response</span>
+<span class="str">"Step 1: Calculate the 25% discount.
+  $120 x 0.25 = $30 discount
+  Price after first discount: $120 - $30 = $90
+
+Step 2: Calculate the 10% loyalty discount on the new price.
+  $90 x 0.10 = $9 discount
+  Price after loyalty discount: $90 - $9 = $81
+
+Final price: $81"</span></code></pre>
+
+    <h3>CoT Approach 2: Structured Reasoning Framework</h3>
+
+    <pre><code><span class="cm">// System message with reasoning framework</span>
+<span class="str">"You are a decision analysis assistant.
+
+When presented with a problem, follow this framework:
+1. IDENTIFY: State the key facts and variables.
+2. ANALYZE: Break down into sub-problems.
+3. EVALUATE: Consider each sub-problem independently.
+4. SYNTHESIZE: Combine evaluations into a coherent answer.
+5. CONCLUDE: State your final answer clearly.
+
+Output your reasoning, then your answer in JSON:
+{\"answer\": \"...\", \"confidence\": \"high|medium|low\"}"</span></code></pre>
+
+    <h3>CoT Approach 3: CoT + Few-Shot (Most Powerful)</h3>
+
+    <p>Combine chain-of-thought with few-shot examples for maximum effectiveness. Show the model <em>how</em> to reason by including reasoning traces in your examples:</p>
+
+    <pre><code><span class="cm">// Few-shot example with reasoning trace</span>
+User: <span class="str">"Product is amazing but shipping was terrible. Classify."</span>
+
+Assistant: <span class="str">"REASONING:
+1. The feedback mentions two topics: product (amazing) and shipping (terrible).
+2. The primary complaint is about shipping — the negative sentiment is stronger.
+3. Product mention is secondary and positive.
+4. Primary category: shipping. Sentiment: negative.
+
+{\"category\": \"shipping\", \"sentiment\": \"negative\", \"confidence\": \"medium\",
+ \"reasoning\": \"Primary complaint is slow shipping despite positive product mention.\"}"</span></code></pre>
+
+    <div class="callout success">
+      <div class="callout-title">&#9989; CoT Accuracy Gains</div>
+      <p>Studies show that chain-of-thought prompting improves accuracy by <strong>15&ndash;30%</strong> on reasoning-heavy tasks compared to direct prompting. For math word problems, the improvement can exceed 40%. The key insight: letting the model "show its work" produces better final answers.</p>
+    </div>
+
+    <h3>When NOT to Use CoT</h3>
+
+    <p>Chain-of-thought adds tokens (and cost). Skip it when:</p>
+
+    <ul>
+      <li>The task is simple and well-defined (e.g., &ldquo;translate this sentence&rdquo;)</li>
+      <li>You need the shortest possible response</li>
+      <li>The model already achieves high accuracy without reasoning</li>
+      <li>Latency is critical and every token counts</li>
+    </ul>
+
+    <!-- SECTION 6: PROMPT TEMPLATES -->
+    <h2 id="templates">Prompt Templates &amp; Best Practices</h2>
+
+    <p>As your prompt engineering matures, you will find yourself reusing the same prompt structures across different inputs. This is where <strong>prompt templates</strong> come in &mdash; reusable prompt skeletons with variable placeholders that separate logic from data.</p>
+
+    <h3>Why Templates Matter</h3>
+
+    <ul>
+      <li><strong>Consistency:</strong> Every invocation uses the same structure, reducing drift</li>
+      <li><strong>Testability:</strong> You can unit-test a template with different inputs</li>
+      <li><strong>Collaboration:</strong> Teams can share, review, and version templates</li>
+      <li><strong>Maintenance:</strong> Update the template once, and all consumers benefit</li>
+    </ul>
+
+    <h3>Template Syntax</h3>
+
+    <p>Use double-curly-brace placeholders for variables. This is the convention used by most prompt engineering frameworks, including Azure AI Foundry&rsquo;s Prompt Flow:</p>
+
+    <pre><code><span class="cm">// Prompt template with placeholders</span>
+<span class="str">"You are a {{role}} assistant for {{company}}.
+
+TASK:
+Summarise the following article in {{num_points}} bullet points.
+Use {{language}} language. Be concise and factual.
+
+ARTICLE:
+{{article_text}}
+
+OUTPUT FORMAT:
+Respond in JSON:
+{
+  \"summary\": [\"bullet 1\", \"bullet 2\", ...],
+  \"word_count\": number,
+  \"key_topics\": [\"topic1\", \"topic2\"]
+}"</span></code></pre>
+
+    <h3>Template Variables for the Feedback Classifier</h3>
+
+    <pre><code><span class="cm">// Parameterised version of our feedback classifier</span>
+<span class="str">"You are a customer feedback classifier for {{company_name}}.
+
+Classify each message into ONE of these categories:
+{{#each categories}}
+- {{this}}
+{{/each}}
+
+Determine sentiment ({{sentiment_options}}) and confidence ({{confidence_levels}}).
+
+Respond in JSON:
+{
+  \"category\": \"...\",
+  \"sentiment\": \"...\",
+  \"confidence\": \"...\",
+  \"reasoning\": \"...\" 
+}"</span>
+
+<span class="cm">// Variables:</span>
+<span class="cm">// company_name = "Contoso Electronics"</span>
+<span class="cm">// categories = ["product_quality", "shipping", "customer_service", "pricing", "website_app"]</span>
+<span class="cm">// sentiment_options = "positive, negative, neutral"</span>
+<span class="cm">// confidence_levels = "high, medium, low"</span></code></pre>
+
+    <h3>Managing Templates in AI Foundry</h3>
+
+    <p>Azure AI Foundry provides several ways to manage prompt templates:</p>
+
+    <ol>
+      <li><strong>Prompt Flow:</strong> Build visual workflows with template nodes. Each node can have its own prompt template with variables wired to inputs and outputs.</li>
+      <li><strong>Playground saved configurations:</strong> Save system prompts as named configurations for quick switching and A/B testing.</li>
+      <li><strong>Code-based templates:</strong> Use Python string formatting, Jinja2, or Handlebars syntax in your application code.</li>
+    </ol>
+
+    <pre><code><span class="cm"># Python example using f-strings</span>
+<span class="kw">def</span> <span class="fn">build_classifier_prompt</span>(<span class="param">company</span>: <span class="type">str</span>, <span class="param">categories</span>: <span class="type">list</span>) -&gt; <span class="type">str</span>:
+    cats = "\n".join(f"- {c}" <span class="kw">for</span> c <span class="kw">in</span> categories)
+    <span class="kw">return</span> <span class="str">f"""You are a feedback classifier for {company}.
+
+Classify each message into ONE category:
+{cats}
+
+Respond in JSON with: category, sentiment, confidence, reasoning."""</span>
+
+<span class="cm"># Usage</span>
+prompt = build_classifier_prompt(
+    company=<span class="str">"Contoso Electronics"</span>,
+    categories=[<span class="str">"product_quality"</span>, <span class="str">"shipping"</span>, <span class="str">"customer_service"</span>]
+)
+print(prompt)</code></pre>
+
+    <div class="callout tip">
+      <div class="callout-title">&#128161; Tip &mdash; Version Your Prompts</div>
+      <p>Treat prompts like code: store them in version control, tag releases (v1.0, v1.1), write changelogs, and run regression tests when you make changes. A &ldquo;small tweak&rdquo; to a prompt can change behaviour across thousands of inputs.</p>
+    </div>
+
+    <!-- SECTION 7: PARAMETERS DEEP DIVE -->
+    <h2 id="parameters">Parameters Deep Dive</h2>
+
+    <p>Beyond the prompt text itself, you can control model behaviour through <strong>generation parameters</strong>. These settings determine how the model selects tokens during generation and directly affect the creativity, length, and consistency of outputs.</p>
+
+    <h3>Temperature</h3>
+
+    <p><strong>Temperature</strong> (range: 0&ndash;2) controls the randomness of token selection. It is the single most important parameter to understand.</p>
+
+    <table>
+      <thead>
+        <tr><th>Temperature</th><th>Behaviour</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>0.0</code></td><td>Deterministic &mdash; always picks the highest-probability token</td><td>Classification, extraction, factual Q&amp;A</td></tr>
+        <tr><td><code>0.3</code></td><td>Low variation &mdash; mostly predictable with slight flexibility</td><td>Summarisation, code generation</td></tr>
+        <tr><td><code>0.7</code></td><td>Balanced &mdash; good mix of quality and creativity</td><td>General conversation, content creation</td></tr>
+        <tr><td><code>1.0</code></td><td>High variation &mdash; diverse and creative outputs</td><td>Brainstorming, creative writing</td></tr>
+        <tr><td><code>1.5&ndash;2.0</code></td><td>Very high randomness &mdash; may produce incoherent text</td><td>Rarely recommended</td></tr>
+      </tbody>
+    </table>
+
+    <pre><code><span class="cm">// Deterministic classification</span>
+{
+  <span class="str">"temperature"</span>: <span class="num">0.0</span>,
+  <span class="str">"messages"</span>: [...]
+}
+<span class="cm">// Same input always produces the same output</span>
+
+<span class="cm">// Creative brainstorming</span>
+{
+  <span class="str">"temperature"</span>: <span class="num">0.9</span>,
+  <span class="str">"messages"</span>: [...]
+}
+<span class="cm">// Each call produces different creative ideas</span></code></pre>
+
+    <h3>Top-P (Nucleus Sampling)</h3>
+
+    <p><strong>Top-P</strong> (range: 0&ndash;1) is an alternative to temperature that controls token selection by filtering the probability distribution. Instead of adjusting <em>how random</em> the selection is, top_p defines <em>how many tokens</em> are in the candidate pool.</p>
+
+    <ul>
+      <li><code>top_p: 0.1</code> &mdash; Only the top 10% of probability mass is considered. Very focused.</li>
+      <li><code>top_p: 0.5</code> &mdash; Top 50% of tokens are candidates. Moderate diversity.</li>
+      <li><code>top_p: 0.95</code> &mdash; Nearly all tokens are candidates. High diversity.</li>
+      <li><code>top_p: 1.0</code> &mdash; All tokens are candidates (default).</li>
+    </ul>
+
+    <div class="callout warning">
+      <div class="callout-title">&#9888;&#65039; Warning &mdash; Don&rsquo;t Tune Both</div>
+      <p>Adjust <strong>either</strong> temperature <strong>or</strong> top_p &mdash; not both at the same time. They both affect randomness, and tuning both simultaneously creates unpredictable interactions. Most practitioners prefer temperature because it&rsquo;s more intuitive.</p>
+    </div>
+
+    <h3>Max Tokens</h3>
+
+    <p><strong>Max tokens</strong> sets an upper limit on how many tokens the model can generate in its response. This does <em>not</em> guarantee the response will be that long &mdash; it only prevents it from exceeding the limit.</p>
+
+    <pre><code><span class="cm">// Short response for classification</span>
+{ <span class="str">"max_tokens"</span>: <span class="num">150</span> }
+
+<span class="cm">// Longer response for detailed analysis</span>
+{ <span class="str">"max_tokens"</span>: <span class="num">2000</span> }
+
+<span class="cm">// Very long response for code generation</span>
+{ <span class="str">"max_tokens"</span>: <span class="num">4096</span> }</code></pre>
+
+    <div class="callout tip">
+      <div class="callout-title">&#128161; Tip &mdash; Token Budgeting</div>
+      <p>Remember: <strong>input tokens + output tokens = total tokens</strong>, and both count toward billing. A long system prompt with many few-shot examples uses input tokens, leaving fewer for the output. Monitor token usage in the AI Foundry Playground&rsquo;s token counter.</p>
+    </div>
+
+    <h3>Frequency Penalty</h3>
+
+    <p><strong>Frequency penalty</strong> (range: -2 to 2) penalises tokens that have already appeared in the output, proportional to how many times they&rsquo;ve appeared. Higher values discourage repetition.</p>
+
+    <ul>
+      <li><code>0.0</code> &mdash; No penalty (default). The model may repeat phrases.</li>
+      <li><code>0.5&ndash;1.0</code> &mdash; Mild to moderate penalty. Reduces obvious repetition.</li>
+      <li><code>1.5&ndash;2.0</code> &mdash; Strong penalty. May force awkward word choices to avoid repetition.</li>
+    </ul>
+
+    <h3>Presence Penalty</h3>
+
+    <p><strong>Presence penalty</strong> (range: -2 to 2) is similar to frequency penalty but applies a <em>flat</em> penalty to any token that has appeared at all &mdash; regardless of how many times. It encourages the model to introduce new topics.</p>
+
+    <ul>
+      <li><code>0.0</code> &mdash; No penalty (default). Model may stay on one topic.</li>
+      <li><code>0.5&ndash;1.0</code> &mdash; Encourages topic diversity.</li>
+      <li><code>1.5&ndash;2.0</code> &mdash; Strongly pushes the model to explore new topics.</li>
+    </ul>
+
+    <h3>Recommended Parameter Presets</h3>
+
+    <table>
+      <thead>
+        <tr><th>Use Case</th><th>temperature</th><th>top_p</th><th>max_tokens</th><th>freq_penalty</th><th>pres_penalty</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Classification</td><td>0.0</td><td>1.0</td><td>150</td><td>0.0</td><td>0.0</td></tr>
+        <tr><td>Data extraction</td><td>0.0</td><td>1.0</td><td>500</td><td>0.0</td><td>0.0</td></tr>
+        <tr><td>Summarisation</td><td>0.3</td><td>0.95</td><td>500</td><td>0.3</td><td>0.0</td></tr>
+        <tr><td>General Q&amp;A</td><td>0.5</td><td>0.95</td><td>800</td><td>0.0</td><td>0.0</td></tr>
+        <tr><td>Creative writing</td><td>0.9</td><td>0.95</td><td>2000</td><td>0.5</td><td>0.5</td></tr>
+        <tr><td>Code generation</td><td>0.2</td><td>0.95</td><td>4000</td><td>0.0</td><td>0.0</td></tr>
+        <tr><td>Brainstorming</td><td>1.0</td><td>0.95</td><td>1000</td><td>0.8</td><td>0.8</td></tr>
+      </tbody>
+    </table>
+
+    <!-- SECTION 8: AI FOUNDRY PLAYGROUND -->
+    <h2 id="playground">Prompt Engineering in the AI Foundry Playground</h2>
+
+    <p>The <strong>Azure AI Foundry Playground</strong> is your primary tool for developing, testing, and iterating on prompts. It provides a visual interface that lets you experiment without writing any code. Here&rsquo;s how to make the most of it.</p>
+
+    <h3>Accessing the Playground</h3>
+
+    <ol>
+      <li>Go to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a> and sign in.</li>
+      <li>Select your project from the dashboard.</li>
+      <li>In the left navigation, click <strong>Playgrounds</strong> &rarr; <strong>Chat</strong>.</li>
+      <li>In the deployment dropdown at the top, select your deployed model (e.g., GPT-4o, GPT-4.1).</li>
+    </ol>
+
+    <h3>Playground Layout</h3>
+
+    <div class="diagram">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;  MODEL DEPLOYMENT SELECTOR             [GPT-4o &#9660;]   &#9474;
+&#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+&#9474;                &#9474;                             &#9474;                  &#9474;
+&#9474;  SYSTEM MSG     &#9474;  CHAT WINDOW                &#9474;  PARAMETERS       &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;                             &#9474;                  &#9474;
+&#9474;  &#9474; Persona   &#9474; &#9474;  User: Hello...              &#9474;  Temperature: 0.7 &#9474;
+&#9474;  &#9474; Rules     &#9474; &#9474;  Assistant: Hi there...      &#9474;  Top P: 0.95      &#9474;
+&#9474;  &#9474; Format    &#9474; &#9474;  User: Classify this...      &#9474;  Max tokens: 800  &#9474;
+&#9474;  &#9474; Examples  &#9474; &#9474;  Assistant: {"cat":"..."}    &#9474;  Freq penalty: 0  &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;                             &#9474;  Pres penalty: 0  &#9474;
+&#9474;  [Save] [Clear] &#9474;  [Type a message...]         &#9474;                  &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+    </div>
+
+    <h3>Playground Workflow for Prompt Development</h3>
+
+    <ol>
+      <li><strong>Start with a clear system prompt.</strong> Write the role, task, constraints, and output format.</li>
+      <li><strong>Test with zero-shot first.</strong> See if the model understands the task without examples.</li>
+      <li><strong>Add few-shot examples</strong> if zero-shot results are inconsistent.</li>
+      <li><strong>Tune parameters.</strong> Start with temperature 0.0 for classification, 0.7 for general tasks.</li>
+      <li><strong>Test edge cases.</strong> Empty input, long input, multi-language, off-topic queries.</li>
+      <li><strong>Save your configuration.</strong> Name it descriptively (e.g., <code>feedback-classifier-v2</code>).</li>
+      <li><strong>Export.</strong> Use the configuration in Prompt Flow, your application code, or the REST API.</li>
+    </ol>
+
+    <h3>Using the Compare Feature</h3>
+
+    <p>AI Foundry&rsquo;s Playground includes a <strong>Compare</strong> feature that lets you test two different prompts or parameter configurations side by side. This is invaluable for A/B testing:</p>
+
+    <ul>
+      <li>Compare zero-shot vs. few-shot on the same inputs</li>
+      <li>Compare temperature 0.0 vs. 0.3 for classification accuracy</li>
+      <li>Compare two different system prompt versions</li>
+      <li>Compare responses from different model deployments</li>
+    </ul>
+
+    <div class="callout info">
+      <div class="callout-title">&#8505;&#65039; Token Counter</div>
+      <p>The Playground displays a <strong>token count</strong> for each request and response. Use this to monitor costs and ensure your prompts fit within the model&rsquo;s context window. A GPT-4o deployment supports up to 128K tokens of context, but costs scale with usage.</p>
+    </div>
+
+    <h3>Exporting from the Playground</h3>
+
+    <p>Once your prompt is working well in the Playground, you can export it in several ways:</p>
+
+    <pre><code><span class="cm"># Python SDK example — using your Playground prompt in code</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+client = AIProjectClient(
+    credential=DefaultAzureCredential(),
+    endpoint=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+response = client.inference.get_chat_completions(
+    model=<span class="str">"gpt-4o"</span>,
+    messages=[
+        {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"You are a feedback classifier..."</span>},
+        {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"The battery died after 2 days."</span>}
+    ],
+    temperature=<span class="num">0.0</span>,
+    max_tokens=<span class="num">200</span>
+)
+
+print(response.choices[<span class="num">0</span>].message.content)</code></pre>
+
+    <!-- SECTION 9: BEST PRACTICES -->
+    <h2 id="best-practices">Best Practices</h2>
+
+    <p>After working through techniques and parameters, let&rsquo;s consolidate the most important best practices for prompt engineering in production systems.</p>
+
+    <h3>1. Be Specific and Explicit</h3>
+
+    <p>Vague prompts produce vague results. Compare these two approaches:</p>
+
+    <pre><code><span class="cm">// Bad — vague</span>
+<span class="str">"Analyze this customer feedback."</span>
+
+<span class="cm">// Good — specific</span>
+<span class="str">"Classify this customer feedback into one of five categories
+(product_quality, shipping, customer_service, pricing, website_app).
+Determine sentiment (positive, negative, neutral).
+Respond in JSON with keys: category, sentiment, confidence, reasoning."</span></code></pre>
+
+    <h3>2. Specify the Output Format Upfront</h3>
+
+    <p>Always tell the model exactly what format to use. Include a JSON schema, markdown structure, or explicit formatting rules in your system prompt.</p>
+
+    <h3>3. Provide Context Before the Task</h3>
+
+    <p>Structure your prompt as: <strong>Context &rarr; Task &rarr; Format</strong>. Give the model background information before asking it to act.</p>
+
+    <h3>4. Use Delimiters for Input Data</h3>
+
+    <p>When including user data in your prompt, use clear delimiters to separate instructions from data:</p>
+
+    <pre><code><span class="str">"Classify the customer feedback between the triple backticks.
+
+```
+The laptop screen is flickering after the update.
+```
+
+Respond in JSON."</span></code></pre>
+
+    <h3>5. Iterate Systematically</h3>
+
+    <ol>
+      <li>Write v1 of the prompt</li>
+      <li>Test with 10&ndash;20 diverse inputs</li>
+      <li>Identify failure patterns</li>
+      <li>Update the prompt to address failures</li>
+      <li>Re-test all inputs (regression testing)</li>
+      <li>Repeat until accuracy meets your threshold</li>
+    </ol>
+
+    <h3>6. Handle Edge Cases Explicitly</h3>
+
+    <p>Models don&rsquo;t infer edge case handling. If you don&rsquo;t tell the model what to do with empty input, it will hallucinate. Add explicit rules for:</p>
+
+    <ul>
+      <li>Empty or whitespace-only input</li>
+      <li>Extremely long input</li>
+      <li>Non-English input (if your system is English-only)</li>
+      <li>Off-topic or adversarial input</li>
+      <li>Input that matches multiple categories</li>
+    </ul>
+
+    <h3>7. Minimise Token Usage</h3>
+
+    <p>Every token costs money. Write concise system prompts that cover all requirements without unnecessary verbosity. Remove filler words, redundant instructions, and examples that don&rsquo;t add value.</p>
+
+    <div class="callout success">
+      <div class="callout-title">&#9989; The 80/20 Rule of Prompting</div>
+      <p>80% of prompt quality comes from three things: (1) a clear role definition, (2) an explicit output format, and (3) 3 good few-shot examples. Get these right first before optimising everything else.</p>
+    </div>
+
+    <!-- SECTION 10: ANTI-PATTERNS -->
+    <h2 id="anti-patterns">Common Mistakes &amp; Anti-Patterns</h2>
+
+    <p>Even experienced developers make these mistakes. Learn to recognise and avoid them.</p>
+
+    <h3>Anti-Pattern 1: The Vague Prompt</h3>
+
+    <pre><code><span class="cm">// &#10060; Bad</span>
+<span class="str">"Do something useful with this data."</span>
+
+<span class="cm">// &#9989; Good</span>
+<span class="str">"Extract all email addresses from the following text and return them
+as a JSON array of strings. If no emails are found, return []."</span></code></pre>
+
+    <h3>Anti-Pattern 2: No Output Format</h3>
+
+    <pre><code><span class="cm">// &#10060; Bad — no format specified</span>
+<span class="str">"Analyze this customer review."</span>
+
+<span class="cm">// &#9989; Good — explicit format</span>
+<span class="str">"Analyze this customer review. Respond in JSON:
+{\"sentiment\": \"positive|negative|neutral\",
+ \"topics\": [\"array of topics\"],
+ \"summary\": \"one sentence\"}"</span></code></pre>
+
+    <h3>Anti-Pattern 3: Prompt Stuffing</h3>
+
+    <pre><code><span class="cm">// &#10060; Bad — too much, contradictory</span>
+<span class="str">"You are an expert in everything. You know all languages, all
+domains, all frameworks. You are the best at everything. Consider
+all perspectives, all possibilities, all edge cases, all nuances,
+all contexts, all implications..."</span>
+
+<span class="cm">// &#9989; Good — focused</span>
+<span class="str">"You are a Python backend developer specialising in FastAPI.
+Generate clean, type-hinted code with docstrings."</span></code></pre>
+
+    <h3>Anti-Pattern 4: Ignoring Edge Cases</h3>
+
+    <pre><code><span class="cm">// &#10060; Bad — no edge case handling</span>
+<span class="str">"Classify this feedback."</span>
+<span class="cm">// What happens with empty input? Non-English? Off-topic?</span>
+
+<span class="cm">// &#9989; Good — explicit guardrails</span>
+<span class="str">"Classify this feedback into one of 5 categories.
+If empty: return {\"category\": \"unclassifiable\"}.
+If off-topic: return {\"category\": \"off_topic\"}.
+If non-English: attempt classification on translated meaning."</span></code></pre>
+
+    <h3>Anti-Pattern 5: Tuning Temperature AND Top-P</h3>
+
+    <pre><code><span class="cm">// &#10060; Bad — both parameters adjusted</span>
+{ <span class="str">"temperature"</span>: <span class="num">0.9</span>, <span class="str">"top_p"</span>: <span class="num">0.3</span> }
+
+<span class="cm">// &#9989; Good — one or the other</span>
+{ <span class="str">"temperature"</span>: <span class="num">0.9</span>, <span class="str">"top_p"</span>: <span class="num">1.0</span> }  <span class="cm">// Tune temperature only</span>
+{ <span class="str">"temperature"</span>: <span class="num">1.0</span>, <span class="str">"top_p"</span>: <span class="num">0.3</span> }  <span class="cm">// Tune top_p only</span></code></pre>
+
+    <h3>Anti-Pattern 6: No Regression Testing</h3>
+
+    <p>You update the prompt to fix one failing case, but don&rsquo;t re-test previous cases. The fix breaks something that was working before. Always maintain a test suite of 10&ndash;20 inputs and run all of them after every prompt change.</p>
+
+    <!-- SECTION 11: MINI HACK -->
+    <h2 id="mini-hack">Mini Hack: Build a Customer Feedback Classifier</h2>
+
+    <p>Time to put everything together. In this hands-on exercise, you&rsquo;ll build a complete customer feedback classifier in the AI Foundry Playground.</p>
+
+    <h3>Scenario</h3>
+
+    <p>You work for <strong>Contoso Electronics</strong>. Your team receives thousands of customer feedback messages daily and needs to classify each one into categories for routing to the right team.</p>
+
+    <h3>Requirements</h3>
+
+    <ul>
+      <li>Classify into 5 categories: <code>product_quality</code>, <code>shipping</code>, <code>customer_service</code>, <code>pricing</code>, <code>website_app</code></li>
+      <li>Determine sentiment: positive, negative, neutral</li>
+      <li>Assign confidence: high, medium, low</li>
+      <li>Output valid JSON</li>
+      <li>Handle edge cases: empty input, off-topic, multi-language</li>
+      <li>Use temperature 0.0 for deterministic results</li>
+    </ul>
+
+    <h3>Step-by-Step Instructions</h3>
+
+    <h4>Step 1: Write the System Prompt</h4>
+
+    <pre><code><span class="str">"You are a customer feedback classifier for Contoso Electronics.
+
+Given a customer feedback message, classify it into exactly ONE
+of these categories:
+- product_quality: Issues or praise about the physical product
+- shipping: Delivery speed, packaging, tracking
+- customer_service: Interactions with support agents
+- pricing: Cost, discounts, value for money
+- website_app: Online experience, bugs, usability
+
+Also determine:
+- sentiment: positive, negative, or neutral
+- confidence: high, medium, or low
+
+For ambiguous messages, think step by step:
+1. Identify the primary topic.
+2. Determine if a secondary topic exists.
+3. Choose the category matching the PRIMARY concern.
+4. Assess sentiment based on overall tone.
+
+Respond ONLY with valid JSON:
+{
+  \"category\": \"one of the 5 categories\",
+  \"sentiment\": \"positive|negative|neutral\",
+  \"confidence\": \"high|medium|low\",
+  \"reasoning\": \"One sentence explaining your classification.\"
+}
+
+Edge case rules:
+- Empty/unintelligible input: {\"category\": \"unclassifiable\", ...}
+- Off-topic (not feedback): {\"category\": \"off_topic\", ...}
+- Non-English: Attempt classification based on content."</span></code></pre>
+
+    <h4>Step 2: Add Few-Shot Examples</h4>
+
+    <p>Add these as user/assistant message pairs in the Playground:</p>
+
+    <pre><code><span class="cm">// Example 1: product_quality / negative</span>
+User: <span class="str">"The headphones broke after just one week of use."</span>
+Assistant: <span class="str">"{\"category\":\"product_quality\",\"sentiment\":\"negative\",\"confidence\":\"high\",\"reasoning\":\"Product defect reported within short timeframe.\"}"</span>
+
+<span class="cm">// Example 2: customer_service / negative</span>
+User: <span class="str">"Called support 3 times and nobody could help."</span>
+Assistant: <span class="str">"{\"category\":\"customer_service\",\"sentiment\":\"negative\",\"confidence\":\"high\",\"reasoning\":\"Repeated unsuccessful support interactions.\"}"</span>
+
+<span class="cm">// Example 3: website_app / positive</span>
+User: <span class="str">"Love the new app update, checkout is so smooth!"</span>
+Assistant: <span class="str">"{\"category\":\"website_app\",\"sentiment\":\"positive\",\"confidence\":\"high\",\"reasoning\":\"Customer praises improved app experience.\"}"</span></code></pre>
+
+    <h4>Step 3: Set Parameters</h4>
+
+    <pre><code>temperature:       <span class="num">0.0</span>   <span class="cm">// Deterministic</span>
+top_p:             <span class="num">1.0</span>   <span class="cm">// Default</span>
+max_tokens:        <span class="num">200</span>   <span class="cm">// Sufficient for JSON</span>
+frequency_penalty: <span class="num">0.0</span>   <span class="cm">// No penalty needed</span>
+presence_penalty:  <span class="num">0.0</span>   <span class="cm">// No penalty needed</span></code></pre>
+
+    <h4>Step 4: Test with These Messages</h4>
+
+    <pre><code><span class="cm">// Test 1: Clear category</span>
+<span class="str">"The laptop arrived with a cracked screen. Very disappointed."</span>
+<span class="cm">// Expected: product_quality / negative / high</span>
+
+<span class="cm">// Test 2: Clear category</span>
+<span class="str">"Delivery was super fast, got it in 2 days! Great job."</span>
+<span class="cm">// Expected: shipping / positive / high</span>
+
+<span class="cm">// Test 3: Clear category</span>
+<span class="str">"Website keeps crashing when I try to checkout on mobile."</span>
+<span class="cm">// Expected: website_app / negative / high</span>
+
+<span class="cm">// Test 4: Ambiguous — pricing or product_quality?</span>
+<span class="str">"$299 is steep for what you get, but the build quality is decent."</span>
+<span class="cm">// Expected: pricing / negative / medium (primary concern is cost)</span>
+
+<span class="cm">// Test 5: Multiple categories</span>
+<span class="str">"Product is great but shipping took forever and support was useless."</span>
+<span class="cm">// Expected: CoT reasoning, then primary category</span>
+
+<span class="cm">// Test 6: Edge case — empty</span>
+<span class="str">""</span>
+<span class="cm">// Expected: unclassifiable</span>
+
+<span class="cm">// Test 7: Edge case — off-topic</span>
+<span class="str">"What time does the store close on Sundays?"</span>
+<span class="cm">// Expected: off_topic</span>
+
+<span class="cm">// Test 8: Edge case — non-English</span>
+<span class="str">"Die Lieferung war sehr schnell, danke!"</span>
+<span class="cm">// Expected: shipping / positive / high</span></code></pre>
+
+    <h4>Step 5: Evaluate and Iterate</h4>
+
+    <p>If any test produces unexpected results, refine your prompt. Common fixes:</p>
+
+    <ul>
+      <li>If the model picks the wrong category for ambiguous input, strengthen the CoT instructions</li>
+      <li>If JSON format is inconsistent, add another few-shot example</li>
+      <li>If edge cases fail, add more explicit rules</li>
+      <li>If responses are too verbose, add &ldquo;be concise&rdquo; to the system prompt</li>
+    </ul>
+
+    <div class="callout success">
+      <div class="callout-title">&#9989; Success Criteria</div>
+      <p>Your classifier passes the Mini Hack when it correctly handles all 8 test messages with the expected categories and sentiments. Bonus points for handling the ambiguous cases (Tests 4 and 5) with clear reasoning.</p>
+    </div>
+
+    <!-- SECTION 12: KEY TAKEAWAYS -->
+    <h2 id="takeaways">Key Takeaways</h2>
+
+    <ol>
+      <li><strong>System prompts are the foundation.</strong> Invest time crafting a clear role, task, constraints, and output format.</li>
+      <li><strong>Zero-shot works for simple tasks.</strong> Start here and add complexity only when needed.</li>
+      <li><strong>Few-shot examples (3&ndash;5) dramatically improve consistency</strong> for classification, formatting, and domain-specific tasks.</li>
+      <li><strong>Chain-of-thought improves reasoning accuracy by 15&ndash;30%</strong> on complex, multi-step problems.</li>
+      <li><strong>Prompt templates</strong> separate logic from data, enabling reuse, testing, and collaboration.</li>
+      <li><strong>Temperature 0.0</strong> for deterministic tasks; <strong>0.7&ndash;0.9</strong> for creative tasks. Don&rsquo;t tune both temperature and top_p.</li>
+      <li><strong>Always specify output format</strong> (JSON schema, markdown, etc.) and handle edge cases explicitly.</li>
+      <li><strong>The AI Foundry Playground</strong> is your laboratory &mdash; use Compare, token counting, and saved configurations.</li>
+      <li><strong>Treat prompts like code:</strong> version control, regression test, iterate systematically.</li>
+      <li><strong>80% of use cases</strong> can be solved with the right prompt &mdash; no fine-tuning required.</li>
+    </ol>
+
+    <!-- SECTION 13: MODULE 7 PREVIEW -->
+    <h2 id="next-module">Module 7 Preview: Advanced Prompt Engineering Patterns</h2>
+
+    <p>In Module 7, we&rsquo;ll build on these fundamentals with advanced techniques:</p>
+
+    <ul>
+      <li><strong>Meta-prompting:</strong> Using prompts to generate better prompts</li>
+      <li><strong>Self-consistency:</strong> Running the same prompt multiple times and aggregating results</li>
+      <li><strong>Prompt chaining:</strong> Breaking complex tasks into sequential prompt calls</li>
+      <li><strong>RAG prompt design:</strong> Structuring prompts that incorporate retrieved context from knowledge bases</li>
+      <li><strong>Structured outputs with JSON mode:</strong> Guaranteeing valid JSON responses</li>
+      <li><strong>Guardrails and content safety:</strong> Building responsible AI practices into your prompts</li>
+    </ul>
+
+    <p>You&rsquo;ll refine the feedback classifier from this module, adding retrieval-augmented context and multi-step chaining. Come prepared with your saved Playground configurations.</p>
+
+    <!-- SECTION 14: RESOURCES -->
+    <h2 id="resources">Resources</h2>
+
+    <h3>Official Documentation</h3>
+    <ul>
+      <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/prompt-engineering" target="_blank" rel="noopener">Prompt Engineering Techniques &mdash; Azure OpenAI Service</a></li>
+      <li><a href="https://learn.microsoft.com/en-us/azure/ai-studio/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/understanding-prompt-engineering-fundamentals-generative-ai-for-beginners" target="_blank" rel="noopener">Understanding Prompt Engineering Fundamentals &mdash; Generative AI for Beginners (Video)</a></li>
+      <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/system-message" target="_blank" rel="noopener">System Message Framework &mdash; Azure OpenAI</a></li>
+    </ul>
+
+    <h3>Research Papers</h3>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">Chain-of-Thought Prompting Elicits Reasoning (Wei et al., 2022)</a></li>
+      <li><a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">Language Models are Few-Shot Learners (Brown et al., 2020)</a></li>
+    </ul>
+
+    <h3>Tools</h3>
+    <ul>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry Portal</a></li>
+    </ul>
+
+    <!-- MODULE NAVIGATION -->
+    <nav class="module-nav">
+      <a href="../module-05/blog.html">&larr; Module 5: Deploying Models</a>
+      <a href="../module-07/blog.html">Module 7: Advanced Prompt Engineering &rarr;</a>
+    </nav>
+
+  </main>
+</div>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">&uarr;</button>
+
+<footer class="site-footer">
+  <p>&copy; 2026 Azure AI Foundry &mdash; Zero to Hero Training Team. All rights reserved.</p>
+  <p style="margin-top:6px;">Built with &#10084;&#65039; for the AI community. Not an official Microsoft publication.</p>
+</footer>
+
+<script>
+(function() {
+  // Scroll progress bar
+  const progressBar = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', function() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = scrollPercent + '%';
+  });
+
+  // IntersectionObserver for TOC active states
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+  const sections = document.querySelectorAll('.content h2[id]');
+
+  if (sections.length > 0 && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          tocLinks.forEach(function(link) { link.classList.remove('active'); });
+          const activeLink = document.querySelector('.toc-sidebar a[href="#' + entry.target.id + '"]');
+          if (activeLink) activeLink.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+
+    sections.forEach(function(section) { observer.observe(section); });
+  }
+
+  // Back to top button
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  });
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>

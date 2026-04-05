@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 9: Fine-Tuning Models with Your Data — Azure AI Foundry Zero to Hero Training Course. Learn when and how to fine-tune models, prepare JSONL training data, and deploy custom models in AI Foundry.">
+    <meta name="author" content="Zero to Hero Training Team">
+    <meta name="date" content="2026-04">
+    <title>Module 9: Fine-Tuning Models with Your Data | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ===== CSS Custom Properties ===== */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-light-purple: #f3e8ff;
+            --ms-green: #107c10;
+            --ms-yellow: #ffb900;
+            --ms-red: #d13438;
+            --ms-orange: #ff8c00;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-80: #605e5c;
+            --ms-gray-130: #323130;
+            --ms-gray-150: #252423;
+            --ms-gray-190: #201f1e;
+            --font-primary: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', monospace;
+            --content-max-width: 780px;
+            --sidebar-width: 220px;
+            --transition-speed: 0.3s;
+        }
+
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            color: var(--ms-gray-130);
+            background: var(--ms-gray-10);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== Scroll Progress Bar ===== */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* ===== Top Navigation ===== */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: var(--ms-gray-190);
+            color: #fff;
+            padding: 0 2rem;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #d0d0d0;
+            text-decoration: none;
+            font-size: 0.8125rem;
+            transition: color var(--transition-speed);
+        }
+
+        .nav-links a:hover { color: #fff; }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #fff;
+            padding: 4rem 2rem 3.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+
+        .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero h1 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.92;
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+            line-height: 1.5;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            flex-wrap: wrap;
+        }
+
+        .hero-meta span { display: flex; align-items: center; gap: 0.35rem; }
+
+        .module-number-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 2rem;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        /* ===== Layout: Sidebar + Main ===== */
+        .page-layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        /* ===== Sticky TOC Sidebar ===== */
+        .toc-sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            padding: 1.25rem 0;
+        }
+
+        .toc-sidebar::-webkit-scrollbar { width: 3px; }
+        .toc-sidebar::-webkit-scrollbar-thumb { background: var(--ms-gray-40); border-radius: 3px; }
+
+        .toc-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--ms-gray-80);
+            margin-bottom: 0.75rem;
+            padding-left: 0.75rem;
+        }
+
+        .toc-list { list-style: none; }
+
+        .toc-list a {
+            display: block;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.78rem;
+            color: var(--ms-gray-80);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: all var(--transition-speed);
+            line-height: 1.4;
+        }
+
+        .toc-list a:hover {
+            color: var(--ms-blue);
+            background: var(--ms-light-blue);
+            border-left-color: var(--ms-blue);
+        }
+
+        .toc-list a.active {
+            color: var(--ms-blue);
+            font-weight: 600;
+            border-left-color: var(--ms-blue);
+            background: rgba(0, 120, 212, 0.06);
+        }
+
+        /* ===== Main Content ===== */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: var(--content-max-width);
+        }
+
+        .main-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--ms-gray-150);
+            margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--ms-light-blue);
+            scroll-margin-top: 70px;
+        }
+
+        .main-content h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--ms-gray-150);
+            margin: 2rem 0 0.75rem;
+            scroll-margin-top: 70px;
+        }
+
+        .main-content h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        .main-content p {
+            margin-bottom: 1rem;
+            color: var(--ms-gray-130);
+        }
+
+        .main-content ul, .main-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .main-content li { margin-bottom: 0.4rem; }
+
+        .main-content a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color var(--transition-speed);
+        }
+
+        .main-content a:hover { border-bottom-color: var(--ms-blue); }
+
+        .main-content strong { color: var(--ms-gray-150); }
+
+        /* ===== Code Blocks ===== */
+        pre {
+            background: var(--ms-gray-190);
+            color: #d4d4d4;
+            padding: 1.25rem 1.5rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+
+        code {
+            background: var(--ms-gray-20);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            color: var(--ms-dark-blue);
+        }
+
+        .code-label {
+            display: inline-block;
+            background: var(--ms-gray-80);
+            color: #fff;
+            padding: 0.15rem 0.6rem;
+            border-radius: 4px 4px 0 0;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: -1px;
+        }
+
+        /* ===== Callout Boxes ===== */
+        .callout {
+            border-left: 4px solid;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.92rem;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .callout-info {
+            border-color: var(--ms-blue);
+            background: rgba(0, 120, 212, 0.06);
+        }
+        .callout-info .callout-title { color: var(--ms-blue); }
+
+        .callout-tip {
+            border-color: var(--ms-yellow);
+            background: rgba(255, 185, 0, 0.08);
+        }
+        .callout-tip .callout-title { color: #986f0b; }
+
+        .callout-success {
+            border-color: var(--ms-green);
+            background: rgba(16, 124, 16, 0.06);
+        }
+        .callout-success .callout-title { color: var(--ms-green); }
+
+        .callout-warning {
+            border-color: var(--ms-red);
+            background: rgba(209, 52, 56, 0.06);
+        }
+        .callout-warning .callout-title { color: var(--ms-red); }
+
+        /* ===== Video Container ===== */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .video-card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--ms-gray-30);
+        }
+
+        .video-card .video-container { margin: 0; border-radius: 0; box-shadow: none; }
+
+        .video-card-info {
+            padding: 0.75rem 1rem;
+        }
+
+        .video-card-info h4 { margin: 0 0 0.25rem; font-size: 0.9rem; }
+        .video-card-info p { margin: 0; font-size: 0.8rem; color: var(--ms-gray-80); }
+
+        /* ===== Tables ===== */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 6px;
+            border: 1px solid var(--ms-gray-30);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        thead { background: var(--ms-gray-20); }
+
+        th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--ms-gray-150);
+            border-bottom: 2px solid var(--ms-gray-40);
+        }
+
+        td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+
+        tbody tr:hover { background: rgba(0, 120, 212, 0.03); }
+
+        /* ===== Decision Framework Visual ===== */
+        .decision-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .decision-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.25rem;
+            border: 1px solid var(--ms-gray-30);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .decision-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .decision-card h4 {
+            margin: 0 0 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .decision-card ul { font-size: 0.85rem; padding-left: 1.25rem; }
+
+        .card-prompt { border-top: 3px solid var(--ms-blue); }
+        .card-rag { border-top: 3px solid var(--ms-green); }
+        .card-finetune { border-top: 3px solid var(--ms-purple); }
+
+        /* ===== Step Cards ===== */
+        .step-flow {
+            display: grid;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .step-card {
+            display: flex;
+            gap: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.25rem;
+            border: 1px solid var(--ms-gray-30);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .step-body { flex: 1; }
+        .step-body h4 { margin: 0 0 0.4rem; color: var(--ms-gray-150); }
+        .step-body p { margin: 0; font-size: 0.9rem; }
+
+        /* ===== Hyperparameter Grid ===== */
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .param-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--ms-gray-30);
+            text-align: center;
+        }
+
+        .param-card .param-name {
+            font-weight: 700;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--ms-purple);
+            margin-bottom: 0.4rem;
+        }
+
+        .param-card .param-default {
+            font-size: 0.8rem;
+            color: var(--ms-gray-80);
+            margin-bottom: 0.4rem;
+        }
+
+        .param-card .param-desc {
+            font-size: 0.85rem;
+        }
+
+        /* ===== Mini Hack Section ===== */
+        .mini-hack {
+            background: linear-gradient(135deg, rgba(92,45,145,0.04), rgba(0,120,212,0.04));
+            border: 2px solid var(--ms-purple);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .mini-hack h3 {
+            color: var(--ms-purple);
+            margin-top: 0;
+        }
+
+        /* ===== Key Takeaways ===== */
+        .takeaways {
+            background: linear-gradient(135deg, rgba(0,120,212,0.05), rgba(16,124,16,0.05));
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+        }
+
+        .takeaways h3 { color: var(--ms-dark-blue); margin-top: 0; }
+
+        .takeaways ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .takeaways li {
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .takeaways li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--ms-green);
+            font-weight: 700;
+        }
+
+        /* ===== Module Navigation ===== */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 3rem 0 1rem;
+            padding: 1.25rem 0;
+            border-top: 2px solid var(--ms-gray-30);
+        }
+
+        .module-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            background: #fff;
+            border: 1px solid var(--ms-gray-40);
+            border-radius: 6px;
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all var(--transition-speed);
+        }
+
+        .module-nav a:hover {
+            background: var(--ms-light-blue);
+            border-color: var(--ms-blue);
+        }
+
+        /* ===== Footer ===== */
+        .site-footer {
+            background: var(--ms-gray-190);
+            color: var(--ms-gray-40);
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+
+        .site-footer a { color: var(--ms-light-blue); text-decoration: none; }
+        .site-footer a:hover { text-decoration: underline; }
+
+        /* ===== Back to Top Button ===== */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,120,212,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all var(--transition-speed);
+            z-index: 1000;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            background: var(--ms-dark-blue);
+            transform: translateY(-2px);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 1024px) {
+            .toc-sidebar { display: none; }
+            .page-layout { padding: 1.5rem; }
+            .video-grid { grid-template-columns: 1fr; }
+            .decision-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero { padding: 2.5rem 1.5rem 2rem; }
+            .module-number-badge { display: none; }
+            .page-layout { padding: 1rem; }
+            .top-nav { padding: 0 1rem; }
+            .nav-links { gap: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero-meta { flex-direction: column; gap: 0.5rem; }
+            .module-nav { flex-direction: column; gap: 0.75rem; }
+            .module-nav a { width: 100%; justify-content: center; }
+        }
+
+        /* ===== Print Styles ===== */
+        @media print {
+            .top-nav, .toc-sidebar, .back-to-top, .scroll-progress, .module-number-badge { display: none !important; }
+            .hero { background: #f0f0f0 !important; color: #000 !important; padding: 2rem; }
+            .series-badge { border: 1px solid #999; }
+            .page-layout { display: block; padding: 0; }
+            .main-content { max-width: 100%; }
+            body { font-size: 11pt; }
+            pre { white-space: pre-wrap; word-wrap: break-word; border: 1px solid #ccc; }
+            .video-container { display: none; }
+            .video-grid { display: none; }
+            a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+            .callout { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="#" class="nav-brand">
+            <svg class="ms-logo" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+                <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+                <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+                <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+            </svg>
+            AI Foundry Training Blog
+        </a>
+        <ul class="nav-links">
+            <li><a href="../index.html">Curriculum</a></li>
+            <li><a href="../resources.html">Resources</a></li>
+            <li><a href="https://ai.azure.com" target="_blank" rel="noopener noreferrer">AI Foundry Portal ↗</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="module-number-badge">09</div>
+        <div class="hero-content">
+            <div class="series-badge">ARC 2 · PROMPT ENGINEERING &amp; MODELS</div>
+            <h1>Fine-Tuning Models with Your Data</h1>
+            <p class="subtitle">Go beyond prompt engineering — customize foundation models to speak your domain language, match your brand tone, and deliver expert-level accuracy on your specific tasks.</p>
+            <div class="hero-meta">
+                <span>✍️ Zero to Hero Training Team</span>
+                <span>📅 April 2026</span>
+                <span>⏱️ 28 min read</span>
+                <span>📘 Module 9 of 45</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Layout: Sidebar + Content -->
+    <div class="page-layout">
+
+        <!-- Sticky TOC Sidebar -->
+        <aside class="toc-sidebar" id="tocSidebar">
+            <div class="toc-title">On This Page</div>
+            <ul class="toc-list" id="tocList">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#featured-videos">Featured Videos</a></li>
+                <li><a href="#decision-framework">Decision Framework</a></li>
+                <li><a href="#preparing-data">Preparing Training Data</a></li>
+                <li><a href="#fine-tuning-workflow">Fine-Tuning Workflow</a></li>
+                <li><a href="#supported-models">Supported Models</a></li>
+                <li><a href="#hyperparameters">Hyperparameter Configuration</a></li>
+                <li><a href="#monitoring">Monitoring Training</a></li>
+                <li><a href="#validating">Validating Your Model</a></li>
+                <li><a href="#deploying">Deploying Your Model</a></li>
+                <li><a href="#cost-performance">Cost &amp; Performance</a></li>
+                <li><a href="#mini-hack">Mini Hack Exercise</a></li>
+                <li><a href="#key-takeaways">Key Takeaways</a></li>
+                <li><a href="#module-10-preview">Module 10 Preview</a></li>
+                <li><a href="#resources">Resources</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- SECTION: Introduction -->
+            <h2 id="introduction">Introduction: When Prompting Isn't Enough</h2>
+            <p>Throughout ARC 2, we've explored how careful prompt engineering can dramatically improve model outputs. We've crafted system messages, used few-shot examples, and tuned parameters. But sometimes — no matter how sophisticated your prompt — you need the model itself to <strong>internalize</strong> your domain knowledge, terminology, and output patterns.</p>
+
+            <p>That's where <strong>fine-tuning</strong> comes in. Fine-tuning takes a pre-trained foundation model and trains it further on your specific data, adjusting the model's weights so that it naturally produces outputs aligned with your requirements — without needing lengthy system prompts or dozens of in-context examples.</p>
+
+            <div class="callout callout-info">
+                <div class="callout-title">ℹ️ What You'll Learn</div>
+                <p>By the end of this module, you'll understand when fine-tuning is the right choice, how to prepare JSONL training data, execute the fine-tuning workflow in Azure AI Foundry, evaluate your custom model's performance, and deploy it to production.</p>
+            </div>
+
+            <p>Fine-tuning is ideal when you need to:</p>
+            <ul>
+                <li><strong>Reduce token usage</strong> — eliminate long system prompts and few-shot examples</li>
+                <li><strong>Improve consistency</strong> — enforce a specific output format, style, or tone</li>
+                <li><strong>Encode domain expertise</strong> — teach the model your company's terminology and processes</li>
+                <li><strong>Decrease latency</strong> — shorter prompts mean faster responses</li>
+                <li><strong>Improve reliability</strong> — the model "knows" the patterns rather than inferring them from context</li>
+            </ul>
+
+            <!-- SECTION: Featured Videos -->
+            <h2 id="featured-videos">Featured Videos</h2>
+            <p>Before diving into the technical details, watch these two essential sessions from Microsoft that cover the end-to-end fine-tuning experience in AI Foundry.</p>
+
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/NbResO8QcSM" title="Fine-Tuning Models in Microsoft Foundry: Boost Accuracy, Speed & Cost Efficiency" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <div class="video-card-info">
+                        <h4>Fine-Tuning Models in Microsoft Foundry</h4>
+                        <p>Boost accuracy, speed &amp; cost efficiency — Microsoft Azure</p>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dXUy9evg1yo" title="AI fine-tuning in Microsoft Foundry to make your agents unstoppable | BRK188" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <div class="video-card-info">
+                        <h4>AI Fine-Tuning for Unstoppable Agents</h4>
+                        <p>BRK188 — Microsoft Events / Ignite</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: Decision Framework -->
+            <h2 id="decision-framework">The Decision Framework: Prompt Engineering vs. RAG vs. Fine-Tuning</h2>
+            <p>One of the most common questions is: <em>"When should I fine-tune versus improve my prompts or add RAG?"</em> Each approach solves a different problem, and they aren't mutually exclusive — you can combine them.</p>
+
+            <div class="decision-grid">
+                <div class="decision-card card-prompt">
+                    <h4>🎯 Prompt Engineering</h4>
+                    <ul>
+                        <li>Quick iterations, no training</li>
+                        <li>Adjusting behavior/format</li>
+                        <li>Small task variations</li>
+                        <li>Zero additional cost</li>
+                        <li><strong>Best for:</strong> Getting started, prototyping, general tasks</li>
+                    </ul>
+                </div>
+                <div class="decision-card card-rag">
+                    <h4>📚 RAG (Retrieval-Augmented)</h4>
+                    <ul>
+                        <li>Dynamic/changing data</li>
+                        <li>Need source citations</li>
+                        <li>Large knowledge bases</li>
+                        <li>Data freshness matters</li>
+                        <li><strong>Best for:</strong> Grounding answers in current facts</li>
+                    </ul>
+                </div>
+                <div class="decision-card card-finetune">
+                    <h4>🔧 Fine-Tuning</h4>
+                    <ul>
+                        <li>Specific style/format/tone</li>
+                        <li>Domain-specific expertise</li>
+                        <li>Reduce prompt size/latency</li>
+                        <li>Consistent, repeatable output</li>
+                        <li><strong>Best for:</strong> Specialized tasks at scale</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <div class="callout-title">💡 Pro Tip</div>
+                <p>Fine-tuning + RAG is a powerful combination. Fine-tune for output style and domain terminology, then use RAG to ground responses in the latest data. This gives you the best of both worlds: a model that "speaks your language" while staying factually current.</p>
+            </div>
+
+            <h3>Decision Flowchart</h3>
+            <p>Ask yourself these questions in order:</p>
+            <ol>
+                <li><strong>Can I solve this with a better prompt?</strong> → Start with prompt engineering. It's free and fast.</li>
+                <li><strong>Does the model need access to specific/changing data?</strong> → Add RAG for grounded, up-to-date answers.</li>
+                <li><strong>Do I need a specific output style, format, or domain expertise that prompts can't reliably achieve?</strong> → Fine-tune the model.</li>
+                <li><strong>Do I need all of the above?</strong> → Fine-tune for style + RAG for data = production-grade solution.</li>
+            </ol>
+
+            <!-- SECTION: Preparing Training Data -->
+            <h2 id="preparing-data">Preparing Training Data</h2>
+            <p>The quality of your fine-tuned model is directly proportional to the quality of your training data. AI Foundry uses the <strong>JSONL (JSON Lines)</strong> format, where each line is a self-contained JSON object representing one training example.</p>
+
+            <h3>JSONL Format for Chat Models</h3>
+            <p>Each training example follows the chat completions format with a list of messages:</p>
+
+            <div class="code-label">training_data.jsonl</div>
+<pre><code>{"messages": [{"role": "system", "content": "You are a helpful medical coding assistant that maps clinical descriptions to ICD-10 codes."}, {"role": "user", "content": "Patient presents with acute bronchitis."}, {"role": "assistant", "content": "J20.9 — Acute bronchitis, unspecified"}]}
+{"messages": [{"role": "system", "content": "You are a helpful medical coding assistant that maps clinical descriptions to ICD-10 codes."}, {"role": "user", "content": "Diagnosis: Type 2 diabetes mellitus with diabetic chronic kidney disease."}, {"role": "assistant", "content": "E11.22 — Type 2 diabetes mellitus with diabetic chronic kidney disease"}]}
+{"messages": [{"role": "system", "content": "You are a helpful medical coding assistant that maps clinical descriptions to ICD-10 codes."}, {"role": "user", "content": "The patient has essential hypertension, stage 2."}, {"role": "assistant", "content": "I10 — Essential (primary) hypertension"}]}</code></pre>
+
+            <h3>Data Quality Guidelines</h3>
+            <div class="callout callout-success">
+                <div class="callout-title">✅ Data Quality Checklist</div>
+                <ul>
+                    <li><strong>Minimum 50 examples</strong> — AI Foundry requires at least 10, but 50–100+ gives much better results</li>
+                    <li><strong>Consistent format</strong> — every example should follow the same structure</li>
+                    <li><strong>Representative diversity</strong> — cover edge cases, variations, and the full range of expected inputs</li>
+                    <li><strong>High-quality outputs</strong> — the assistant responses are what the model learns; they must be correct</li>
+                    <li><strong>Consistent system messages</strong> — use the same system message across all examples (or omit it)</li>
+                    <li><strong>Avoid duplicates</strong> — remove exact or near-duplicate entries</li>
+                </ul>
+            </div>
+
+            <h3>Recommended Dataset Sizes</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Use Case</th>
+                            <th>Minimum</th>
+                            <th>Recommended</th>
+                            <th>Optimal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Style/tone transfer</td>
+                            <td>50</td>
+                            <td>200–500</td>
+                            <td>1,000+</td>
+                        </tr>
+                        <tr>
+                            <td>Classification tasks</td>
+                            <td>100</td>
+                            <td>500–1,000</td>
+                            <td>5,000+</td>
+                        </tr>
+                        <tr>
+                            <td>Domain Q&amp;A</td>
+                            <td>100</td>
+                            <td>300–800</td>
+                            <td>2,000+</td>
+                        </tr>
+                        <tr>
+                            <td>Complex reasoning</td>
+                            <td>200</td>
+                            <td>1,000–3,000</td>
+                            <td>10,000+</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Preparing a Validation Set</h3>
+            <p>Always split your data into <strong>training</strong> and <strong>validation</strong> sets (typically 80/20 or 90/10). The validation set should be representative of your training data but contain examples the model won't see during training. AI Foundry uses the validation set to compute loss metrics that help you detect overfitting.</p>
+
+            <div class="callout callout-warning">
+                <div class="callout-title">⚠️ Common Pitfalls</div>
+                <ul>
+                    <li><strong>Don't fine-tune with fabricated data</strong> — use real examples from your domain</li>
+                    <li><strong>Don't include sensitive/PII data</strong> — the model may memorize and reproduce it</li>
+                    <li><strong>Don't use too few examples</strong> — the model will overfit to your small sample</li>
+                    <li><strong>Don't mix conflicting instructions</strong> — be consistent in what you teach the model</li>
+                </ul>
+            </div>
+
+            <!-- SECTION: Fine-Tuning Workflow -->
+            <h2 id="fine-tuning-workflow">Fine-Tuning Workflow in AI Foundry</h2>
+            <p>Azure AI Foundry provides a streamlined, managed fine-tuning experience that abstracts away the complexities of infrastructure, GPU management, and distributed training. Here's the step-by-step workflow:</p>
+
+            <div class="step-flow">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-body">
+                        <h4>Open AI Foundry &amp; Select Your Project</h4>
+                        <p>Navigate to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a> and open the project where you want to create your fine-tuned model. Ensure you have a connected Azure OpenAI resource in a region that supports fine-tuning.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-body">
+                        <h4>Navigate to Fine-Tuning</h4>
+                        <p>In the left sidebar, click <strong>Fine-tuning</strong> under the <em>Build &amp; customize</em> section. Click <strong>"+ Fine-tune a model"</strong> to start a new fine-tuning job.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-body">
+                        <h4>Select the Base Model</h4>
+                        <p>Choose from supported models (e.g., <code>gpt-4o-mini</code>, <code>gpt-4o</code>, <code>gpt-4.1-mini</code>). The model catalog shows which models support fine-tuning and in which regions.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-body">
+                        <h4>Upload Training &amp; Validation Data</h4>
+                        <p>Upload your JSONL files. AI Foundry validates the format automatically — you'll see a preview of your data and any errors that need fixing. Specify which file is training data and which is validation data.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <div class="step-body">
+                        <h4>Configure Hyperparameters</h4>
+                        <p>Set the number of epochs, learning rate multiplier, and batch size. AI Foundry provides sensible defaults, but you can adjust these based on your dataset size and requirements.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">6</div>
+                    <div class="step-body">
+                        <h4>Start Training</h4>
+                        <p>Click <strong>"Submit"</strong> to begin the fine-tuning job. Training runs on managed GPU infrastructure — you don't provision or manage any compute. Training time depends on dataset size and model.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">7</div>
+                    <div class="step-body">
+                        <h4>Monitor &amp; Deploy</h4>
+                        <p>Track training progress with real-time loss curves. Once complete, review metrics and deploy your custom model to an endpoint for inference.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: Supported Models -->
+            <h2 id="supported-models">Supported Models for Fine-Tuning</h2>
+            <p>AI Foundry supports fine-tuning across several model families. The availability may vary by region — always check the <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models" target="_blank" rel="noopener">models documentation</a> for the latest list.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Type</th>
+                            <th>Training Token Limit</th>
+                            <th>Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>gpt-4o-mini</code></td>
+                            <td>Chat</td>
+                            <td>65,536 per example</td>
+                            <td>Cost-effective fine-tuning, most use cases</td>
+                        </tr>
+                        <tr>
+                            <td><code>gpt-4o</code></td>
+                            <td>Chat</td>
+                            <td>65,536 per example</td>
+                            <td>Maximum quality, complex tasks</td>
+                        </tr>
+                        <tr>
+                            <td><code>gpt-4.1-mini</code></td>
+                            <td>Chat</td>
+                            <td>32,768 per example</td>
+                            <td>Next-gen efficient fine-tuning</td>
+                        </tr>
+                        <tr>
+                            <td><code>gpt-4.1-nano</code></td>
+                            <td>Chat</td>
+                            <td>32,768 per example</td>
+                            <td>Lightweight, edge-optimized tasks</td>
+                        </tr>
+                        <tr>
+                            <td><code>gpt-3.5-turbo</code></td>
+                            <td>Chat</td>
+                            <td>16,385 per example</td>
+                            <td>Legacy workloads, budget-constrained</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-info">
+                <div class="callout-title">ℹ️ Region Availability</div>
+                <p>Fine-tuning is available in select regions including <strong>East US2</strong>, <strong>North Central US</strong>, <strong>Sweden Central</strong>, and <strong>Switzerland West</strong>. Your AI Foundry project must be connected to an Azure OpenAI resource in a supported region. Check the Azure documentation for the latest region availability.</p>
+            </div>
+
+            <!-- SECTION: Hyperparameters -->
+            <h2 id="hyperparameters">Hyperparameter Configuration</h2>
+            <p>Fine-tuning performance depends heavily on hyperparameter selection. AI Foundry provides reasonable defaults, but understanding these parameters helps you optimize results.</p>
+
+            <div class="param-grid">
+                <div class="param-card">
+                    <div class="param-name">n_epochs</div>
+                    <div class="param-default">Default: auto (typically 3–5)</div>
+                    <div class="param-desc">Number of complete passes through the training dataset. More epochs = more learning, but risk of overfitting.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">learning_rate_multiplier</div>
+                    <div class="param-default">Default: auto (typically 1.0–2.0)</div>
+                    <div class="param-desc">Scales the base learning rate. Higher values learn faster but may be unstable. Lower values are safer for small datasets.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">batch_size</div>
+                    <div class="param-default">Default: auto (typically 1–4)</div>
+                    <div class="param-desc">Number of examples processed together. Larger batches provide more stable gradients but use more memory.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">seed</div>
+                    <div class="param-default">Default: random</div>
+                    <div class="param-desc">Controls reproducibility. Set a fixed seed to get consistent results across training runs for comparison purposes.</div>
+                </div>
+            </div>
+
+            <h3>Tuning Recommendations</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dataset Size</th>
+                            <th>Recommended Epochs</th>
+                            <th>Learning Rate</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>50–100 examples</td>
+                            <td>4–6</td>
+                            <td>0.5–1.0×</td>
+                            <td>Watch for overfitting; use validation set</td>
+                        </tr>
+                        <tr>
+                            <td>100–500 examples</td>
+                            <td>3–4</td>
+                            <td>1.0×</td>
+                            <td>Good balance for most tasks</td>
+                        </tr>
+                        <tr>
+                            <td>500–5,000 examples</td>
+                            <td>2–3</td>
+                            <td>1.0–2.0×</td>
+                            <td>Reduce epochs as dataset grows</td>
+                        </tr>
+                        <tr>
+                            <td>5,000+ examples</td>
+                            <td>1–2</td>
+                            <td>1.0–2.0×</td>
+                            <td>Large datasets need fewer passes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-tip">
+                <div class="callout-title">💡 Start with Defaults</div>
+                <p>AI Foundry's <code>auto</code> settings are well-calibrated for most workloads. Start with defaults, evaluate, then adjust one parameter at a time. This controlled approach makes it easier to understand what's improving (or degrading) performance.</p>
+            </div>
+
+            <!-- SECTION: Monitoring Training -->
+            <h2 id="monitoring">Monitoring Training Progress</h2>
+            <p>During training, AI Foundry provides real-time metrics that help you understand how well your model is learning.</p>
+
+            <h3>Key Metrics to Watch</h3>
+            <ul>
+                <li><strong>Training Loss</strong> — measures how well the model fits the training data. Should decrease steadily and plateau.</li>
+                <li><strong>Validation Loss</strong> — measures performance on held-out data. Should track with training loss.</li>
+                <li><strong>Token Accuracy</strong> — percentage of tokens correctly predicted. Higher is better, but 100% indicates overfitting.</li>
+            </ul>
+
+            <h3>Reading the Loss Curves</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Training Loss</th>
+                            <th>Validation Loss</th>
+                            <th>Diagnosis</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>✅ Healthy</td>
+                            <td>↓ Decreasing</td>
+                            <td>↓ Decreasing</td>
+                            <td>Model is learning well</td>
+                            <td>Continue training</td>
+                        </tr>
+                        <tr>
+                            <td>⚠️ Overfitting</td>
+                            <td>↓ Decreasing</td>
+                            <td>↑ Increasing</td>
+                            <td>Model memorizing training data</td>
+                            <td>Reduce epochs, add more data</td>
+                        </tr>
+                        <tr>
+                            <td>⚠️ Underfitting</td>
+                            <td>→ Flat / High</td>
+                            <td>→ Flat / High</td>
+                            <td>Model not learning enough</td>
+                            <td>Increase epochs, raise learning rate</td>
+                        </tr>
+                        <tr>
+                            <td>✅ Converged</td>
+                            <td>→ Plateaued</td>
+                            <td>→ Plateaued</td>
+                            <td>Model fully trained</td>
+                            <td>Training complete</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Monitoring in AI Foundry</h3>
+            <p>In the AI Foundry portal, navigate to your fine-tuning job to see:</p>
+            <ul>
+                <li><strong>Status panel</strong> — shows current training step, estimated completion time</li>
+                <li><strong>Metrics charts</strong> — interactive loss and accuracy curves updated in real time</li>
+                <li><strong>Training events</strong> — log of checkpoints, warnings, and completion events</li>
+                <li><strong>Result files</strong> — downloadable training results and model artifacts after completion</li>
+            </ul>
+
+            <!-- SECTION: Validating -->
+            <h2 id="validating">Validating Your Fine-Tuned Model</h2>
+            <p>After training completes, it's critical to validate your model before deploying it to production. AI Foundry provides several ways to evaluate performance.</p>
+
+            <h3>Step 1: Review Training Metrics</h3>
+            <p>Check the final training and validation loss. Low, converging values indicate the model learned effectively from your data. Compare the final validation loss to the initial loss — a significant decrease means the model improved.</p>
+
+            <h3>Step 2: Playground Testing</h3>
+            <p>Once your model is deployed (even to a test endpoint), use the <strong>AI Foundry Playground</strong> to run interactive tests:</p>
+            <ul>
+                <li>Test with examples from your training data — the model should handle these well</li>
+                <li>Test with <strong>new, unseen examples</strong> — this reveals true generalization ability</li>
+                <li>Test edge cases and adversarial inputs</li>
+                <li>Compare side-by-side with the base model to see improvements</li>
+            </ul>
+
+            <h3>Step 3: Quantitative Evaluation</h3>
+            <p>For rigorous evaluation, run your fine-tuned model against a held-out test set and compute relevant metrics:</p>
+
+            <div class="code-label">Python — Batch Evaluation</div>
+<pre><code>from openai import AzureOpenAI
+import json
+
+client = AzureOpenAI(
+    azure_endpoint="https://your-resource.openai.azure.com/",
+    api_key="your-api-key",
+    api_version="2024-12-01-preview"
+)
+
+# Load test set
+with open("test_data.jsonl", "r") as f:
+    test_examples = [json.loads(line) for line in f]
+
+correct = 0
+total = len(test_examples)
+
+for example in test_examples:
+    messages = example["messages"][:-1]  # All but the expected answer
+    expected = example["messages"][-1]["content"]
+
+    response = client.chat.completions.create(
+        model="your-fine-tuned-deployment-name",
+        messages=messages,
+        temperature=0
+    )
+
+    predicted = response.choices[0].message.content
+    if predicted.strip() == expected.strip():
+        correct += 1
+
+accuracy = correct / total * 100
+print(f"Accuracy: {accuracy:.1f}% ({correct}/{total})")</code></pre>
+
+            <div class="callout callout-success">
+                <div class="callout-title">✅ Validation Best Practice</div>
+                <p>Always compare your fine-tuned model against the base model using the same test set and the same evaluation criteria. This gives you a clear picture of what fine-tuning improved and whether the investment was worthwhile.</p>
+            </div>
+
+            <!-- SECTION: Deploying -->
+            <h2 id="deploying">Deploying Your Custom Model</h2>
+            <p>Once validated, deploy your fine-tuned model directly from AI Foundry to make it available via the API.</p>
+
+            <h3>Deployment Steps</h3>
+            <ol>
+                <li>In your AI Foundry project, go to <strong>Deployments</strong> (under <em>Manage</em>)</li>
+                <li>Click <strong>"+ Create deployment"</strong></li>
+                <li>Select your fine-tuned model from the <strong>Custom fine-tuned models</strong> tab</li>
+                <li>Choose a deployment name (this becomes the <code>model</code> parameter in API calls)</li>
+                <li>Set the <strong>Tokens Per Minute (TPM)</strong> rate limit</li>
+                <li>Click <strong>Create</strong> to deploy</li>
+            </ol>
+
+            <h3>Using Your Deployed Model</h3>
+            <div class="code-label">Python — Calling Your Fine-Tuned Model</div>
+<pre><code>from openai import AzureOpenAI
+
+client = AzureOpenAI(
+    azure_endpoint="https://your-resource.openai.azure.com/",
+    api_key="your-api-key",
+    api_version="2024-12-01-preview"
+)
+
+response = client.chat.completions.create(
+    model="my-custom-medical-coder",  # Your deployment name
+    messages=[
+        {"role": "user", "content": "Patient diagnosed with acute appendicitis."}
+    ],
+    temperature=0
+)
+
+print(response.choices[0].message.content)
+# Output: K35.80 — Unspecified acute appendicitis without abscess</code></pre>
+
+            <div class="callout callout-info">
+                <div class="callout-title">ℹ️ Shorter Prompts</div>
+                <p>Notice that with a fine-tuned model, you often don't need a detailed system message. The model has already learned the expected behavior from your training data. This reduces token usage and latency in production.</p>
+            </div>
+
+            <!-- SECTION: Cost & Performance -->
+            <h2 id="cost-performance">Cost &amp; Performance Considerations</h2>
+            <p>Fine-tuning involves both training costs and ongoing inference costs. Understanding the economics helps you decide when fine-tuning makes financial sense.</p>
+
+            <h3>Cost Components</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>When Charged</th>
+                            <th>Factors</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Training</strong></td>
+                            <td>One-time per training job</td>
+                            <td>Model size × tokens in training data × epochs</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hosting</strong></td>
+                            <td>Per hour while deployed</td>
+                            <td>Model size, deployment type</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Inference</strong></td>
+                            <td>Per request (tokens)</td>
+                            <td>Input + output tokens per call</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>When Fine-Tuning Saves Money</h3>
+            <ul>
+                <li><strong>High-volume workloads</strong> — if you're sending long system prompts with every request, fine-tuning can reduce per-request token costs significantly</li>
+                <li><strong>Model downsizing</strong> — fine-tuning a smaller model (e.g., <code>gpt-4o-mini</code>) to match the quality of a larger model on your specific task</li>
+                <li><strong>Latency reduction</strong> — shorter prompts = faster responses = better user experience and lower compute costs</li>
+            </ul>
+
+            <h3>Performance Benefits</h3>
+            <ul>
+                <li><strong>Reduced latency</strong> — up to 50% faster responses by eliminating few-shot examples from prompts</li>
+                <li><strong>Higher accuracy</strong> — on domain-specific tasks, fine-tuned models often outperform prompted base models by 10–30%</li>
+                <li><strong>Better consistency</strong> — fine-tuned models produce more uniform outputs across similar inputs</li>
+                <li><strong>Token efficiency</strong> — 60–80% reduction in prompt tokens when system instructions are "baked in"</li>
+            </ul>
+
+            <div class="callout callout-tip">
+                <div class="callout-title">💡 Cost Optimization Strategy</div>
+                <p>Start by fine-tuning <code>gpt-4o-mini</code> rather than <code>gpt-4o</code>. The smaller model is significantly cheaper to train and host, and for many specialized tasks, a fine-tuned mini model can match or exceed the performance of the larger base model. Only upgrade to <code>gpt-4o</code> if the mini model doesn't meet your quality bar.</p>
+            </div>
+
+            <!-- SECTION: Mini Hack -->
+            <h2 id="mini-hack">Mini Hack: Fine-Tune GPT-4o-mini on a Custom Q&amp;A Dataset</h2>
+            <div class="mini-hack">
+                <h3>🧪 Hands-On Challenge</h3>
+                <p>In this Mini Hack, you'll fine-tune <code>gpt-4o-mini</code> on a custom question-and-answer dataset to create a domain-specific assistant.</p>
+
+                <h4>Objective</h4>
+                <p>Create a fine-tuned model that answers product support questions for a fictional SaaS company "CloudFlow" with accurate, branded responses.</p>
+
+                <h4>Steps</h4>
+                <ol>
+                    <li><strong>Create Training Data</strong> — write 50+ Q&amp;A pairs in JSONL chat format covering CloudFlow product features, troubleshooting, pricing, and setup</li>
+                    <li><strong>Create Validation Data</strong> — set aside 10–15 examples that aren't in the training set</li>
+                    <li><strong>Upload to AI Foundry</strong> — navigate to Fine-tuning, select <code>gpt-4o-mini</code> as the base model, and upload both JSONL files</li>
+                    <li><strong>Configure &amp; Train</strong> — use default hyperparameters (auto epochs, auto learning rate), submit the job</li>
+                    <li><strong>Monitor Progress</strong> — watch the loss curves; training should take approximately 15–30 minutes</li>
+                    <li><strong>Deploy &amp; Test</strong> — deploy the fine-tuned model and test in the Playground with new questions</li>
+                    <li><strong>Evaluate</strong> — compare responses from your fine-tuned model vs. the base <code>gpt-4o-mini</code> with a simple prompt</li>
+                </ol>
+
+                <h4>Sample Training Data</h4>
+                <div class="code-label">cloudflow_training.jsonl</div>
+<pre><code>{"messages": [{"role": "system", "content": "You are CloudFlow's AI support assistant. Answer customer questions accurately and helpfully."}, {"role": "user", "content": "How do I reset my CloudFlow password?"}, {"role": "assistant", "content": "To reset your CloudFlow password:\n1. Go to app.cloudflow.io/login\n2. Click 'Forgot Password?' below the sign-in button\n3. Enter your registered email address\n4. Check your inbox for a reset link (valid for 24 hours)\n5. Click the link and set your new password\n\nIf you don't receive the email, check your spam folder or contact support@cloudflow.io."}]}
+{"messages": [{"role": "system", "content": "You are CloudFlow's AI support assistant. Answer customer questions accurately and helpfully."}, {"role": "user", "content": "What's included in the CloudFlow Pro plan?"}, {"role": "assistant", "content": "The CloudFlow Pro plan ($49/month per user) includes:\n• Unlimited workflows and automations\n• Up to 50 team members\n• Priority email and chat support\n• Advanced analytics dashboard\n• Custom integrations via REST API\n• 100 GB cloud storage\n• SSO with SAML 2.0\n• 99.9% uptime SLA\n\nYou can start a 14-day free trial at app.cloudflow.io/pricing."}]}</code></pre>
+
+                <h4>Success Criteria</h4>
+                <ul>
+                    <li>Training completes with decreasing validation loss</li>
+                    <li>Fine-tuned model provides CloudFlow-specific answers without needing a detailed system prompt</li>
+                    <li>Responses are more accurate and consistent than the base model with a simple prompt</li>
+                    <li>You can articulate what improved and why</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">ℹ️ Time &amp; Cost Estimate</div>
+                    <p>Training 50 examples on <code>gpt-4o-mini</code> typically takes 15–30 minutes and costs under $1 in training charges. Deployment hosting costs apply while the model is active.</p>
+                </div>
+            </div>
+
+            <!-- SECTION: Key Takeaways -->
+            <h2 id="key-takeaways">Key Takeaways</h2>
+            <div class="takeaways">
+                <h3>📝 What You've Learned</h3>
+                <ul>
+                    <li>Fine-tuning customizes a model's weights to internalize your domain knowledge, style, and output patterns</li>
+                    <li>Use the decision framework: start with prompts, add RAG for data, fine-tune for behavior and style</li>
+                    <li>Training data must be in JSONL chat format with high-quality, diverse, and consistent examples</li>
+                    <li>AI Foundry provides a fully managed fine-tuning experience — no GPU management needed</li>
+                    <li>Monitor training/validation loss curves to detect overfitting, underfitting, and convergence</li>
+                    <li>Always validate against a held-out test set and compare with the base model</li>
+                    <li>Fine-tuning reduces prompt tokens, latency, and can improve accuracy by 10–30% on specialized tasks</li>
+                    <li>Start with <code>gpt-4o-mini</code> — it's cost-effective and often sufficient when fine-tuned</li>
+                    <li>Combine fine-tuning + RAG for production systems that need both style consistency and data freshness</li>
+                    <li>Deploy directly from AI Foundry and call via the standard Azure OpenAI API</li>
+                </ul>
+            </div>
+
+            <!-- SECTION: Module 10 Preview -->
+            <h2 id="module-10-preview">Up Next: Module 10</h2>
+            <p>In <strong>Module 10</strong>, we'll explore <strong>content safety and responsible AI</strong> in Azure AI Foundry. You'll learn how to configure content filters, implement safety guardrails, and build AI systems that are trustworthy, fair, and compliant with organizational policies. Content safety is the essential complement to fine-tuning — ensuring your customized models remain safe and aligned.</p>
+
+            <!-- SECTION: Resources -->
+            <h2 id="resources">Resources</h2>
+            <ul>
+                <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/fine-tuning" target="_blank" rel="noopener">Fine-Tuning with Azure OpenAI — Official Documentation</a></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/fine-tune-models" target="_blank" rel="noopener">Fine-Tune Models in AI Foundry</a></li>
+                <li><a href="https://platform.openai.com/docs/guides/fine-tuning" target="_blank" rel="noopener">OpenAI Fine-Tuning Guide</a></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models" target="_blank" rel="noopener">Azure OpenAI Model Catalog &amp; Region Availability</a></li>
+                <li><a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry Portal</a></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/fine-tuning#prepare-your-training-data" target="_blank" rel="noopener">Preparing Training Data — Format &amp; Best Practices</a></li>
+                <li><a href="https://www.youtube.com/watch?v=NbResO8QcSM" target="_blank" rel="noopener">Video: Fine-Tuning Models in Microsoft Foundry</a></li>
+                <li><a href="https://www.youtube.com/watch?v=dXUy9evg1yo" target="_blank" rel="noopener">Video: AI Fine-Tuning for Unstoppable Agents (BRK188)</a></li>
+            </ul>
+
+            <!-- Module Navigation -->
+            <nav class="module-nav">
+                <a href="../module-08/blog.html">← Module 8</a>
+                <a href="../module-10/blog.html">Module 10 →</a>
+            </nav>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. All rights reserved.</p>
+        <p>
+            <a href="https://ai.azure.com">AI Foundry Portal</a> &middot;
+            <a href="https://learn.microsoft.com/en-us/azure/ai-studio/">Documentation</a> &middot;
+            <a href="https://github.com">GitHub</a>
+        </p>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+    <!-- JavaScript -->
+    <script>
+        // Scroll Progress Bar
+        const scrollProgress = document.getElementById('scrollProgress');
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            scrollProgress.style.width = progress + '%';
+        }
+        window.addEventListener('scroll', updateProgress, { passive: true });
+
+        // Back to Top Button
+        const backToTop = document.getElementById('backToTop');
+        function toggleBackToTop() {
+            if (window.scrollY > 400) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+        window.addEventListener('scroll', toggleBackToTop, { passive: true });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // TOC Active State with IntersectionObserver
+        const tocLinks = document.querySelectorAll('.toc-list a');
+        const sections = document.querySelectorAll('.main-content h2[id]');
+
+        const observerOptions = {
+            rootMargin: '-80px 0px -70% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    tocLinks.forEach(link => link.classList.remove('active'));
+                    const activeLink = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => observer.observe(section));
+
+        // Smooth scroll for TOC links
+        tocLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 9: Fine-Tuning Models with Your Data — Slides</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-green: #107c10;
+            --ms-yellow: #ffb900;
+            --ms-red: #d13438;
+            --bg-dark: #1a1a2e;
+            --bg-slide: #16213e;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b8;
+            --accent: #0078d4;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Slide Container */
+        .slide-deck { position: relative; width: 100vw; height: 100vh; }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 6rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            background: var(--bg-slide);
+        }
+
+        .slide.active { opacity: 1; visibility: visible; }
+
+        /* Title Slide */
+        .slide-title {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            text-align: center;
+            justify-content: center;
+        }
+
+        .slide-title .arc-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-title h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .slide-title .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.85;
+            font-weight: 300;
+        }
+
+        .slide-title .module-info {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Content Slides */
+        .slide h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #fff;
+            border-bottom: 3px solid var(--ms-blue);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .slide h3 {
+            font-size: 1.4rem;
+            color: var(--ms-blue);
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .slide p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .slide ul, .slide ol {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li { margin-bottom: 0.5rem; }
+
+        .slide code {
+            background: rgba(255,255,255,0.1);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--ms-yellow);
+        }
+
+        .slide pre {
+            background: #0d1117;
+            padding: 1.25rem 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #d4d4d4;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Grid layouts for slides */
+        .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .columns-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .card h3 { margin-top: 0; }
+
+        .card-blue { border-top: 3px solid var(--ms-blue); }
+        .card-green { border-top: 3px solid var(--ms-green); }
+        .card-purple { border-top: 3px solid var(--ms-purple); }
+        .card-yellow { border-top: 3px solid var(--ms-yellow); }
+        .card-red { border-top: 3px solid var(--ms-red); }
+
+        .highlight {
+            color: var(--ms-blue);
+            font-weight: 600;
+        }
+
+        .emoji-bullet { font-size: 1.3rem; margin-right: 0.5rem; }
+
+        /* Comparison table */
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .slide th {
+            background: rgba(0, 120, 212, 0.2);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--ms-blue);
+        }
+
+        .slide td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .slide tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+        /* Step flow */
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .step-text { font-size: 1.05rem; line-height: 1.5; }
+
+        /* Section divider slide */
+        .slide-section {
+            background: linear-gradient(135deg, var(--bg-slide), #1a1a3e);
+            text-align: center;
+        }
+
+        .slide-section h2 {
+            font-size: 2.8rem;
+            border: none;
+            display: block;
+        }
+
+        .slide-section .section-num {
+            font-size: 5rem;
+            opacity: 0.15;
+            font-weight: 800;
+            margin-bottom: -1rem;
+        }
+
+        /* End slide */
+        .slide-end {
+            background: linear-gradient(135deg, #5c2d91, #0078d4);
+            text-align: center;
+        }
+
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .slide-counter {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Progress bar */
+        .slide-progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            transition: width 0.4s ease;
+            z-index: 100;
+        }
+
+        /* Keyboard hints */
+        .key-hints {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .key-hints kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 0.1em 0.4em;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.15);
+            font-family: inherit;
+        }
+
+        @media print {
+            .slide { position: relative; page-break-after: always; height: auto; min-height: 100vh; opacity: 1; visibility: visible; }
+            .nav-controls, .slide-progress, .key-hints { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="slide-deck" id="deck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide slide-title active" data-slide="1">
+        <div class="arc-badge">ARC 2 · PROMPT ENGINEERING & MODELS</div>
+        <h1>Fine-Tuning Models<br>with Your Data</h1>
+        <p class="subtitle">Customize foundation models for domain-specific expertise</p>
+        <p class="module-info">Module 9 of 45 · Azure AI Foundry: Zero to Hero · April 2026</p>
+    </div>
+
+    <!-- Slide 2: Agenda -->
+    <div class="slide" data-slide="2">
+        <h2>Today's Agenda</h2>
+        <div class="columns">
+            <div>
+                <h3>Concepts</h3>
+                <ul>
+                    <li>When prompting isn't enough</li>
+                    <li>Decision framework: Prompts vs. RAG vs. Fine-Tuning</li>
+                    <li>Training data preparation (JSONL)</li>
+                    <li>Supported models & regions</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Hands-On</h3>
+                <ul>
+                    <li>Fine-tuning workflow in AI Foundry</li>
+                    <li>Hyperparameter configuration</li>
+                    <li>Monitoring & interpreting loss curves</li>
+                    <li>Validation, deployment & testing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Why Fine-Tune? -->
+    <div class="slide" data-slide="3">
+        <h2>Why Fine-Tune?</h2>
+        <p>Sometimes even the best prompt can't reliably produce what you need:</p>
+        <div class="columns">
+            <div class="card card-blue">
+                <h3>🎯 The Problem</h3>
+                <ul>
+                    <li>Long system prompts → high cost & latency</li>
+                    <li>Inconsistent output format</li>
+                    <li>Domain terminology not understood</li>
+                    <li>Few-shot examples consume context window</li>
+                </ul>
+            </div>
+            <div class="card card-purple">
+                <h3>🔧 The Solution: Fine-Tuning</h3>
+                <ul>
+                    <li>Model <em>internalizes</em> your requirements</li>
+                    <li>Consistent outputs without prompting</li>
+                    <li>50–80% reduction in prompt tokens</li>
+                    <li>10–30% accuracy improvement on domain tasks</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Decision Framework -->
+    <div class="slide" data-slide="4">
+        <h2>The Decision Framework</h2>
+        <div class="columns-3">
+            <div class="card card-blue">
+                <h3>🎯 Prompt Engineering</h3>
+                <ul>
+                    <li>Quick adjustments</li>
+                    <li>Format/style changes</li>
+                    <li>Zero cost</li>
+                    <li>Start here first</li>
+                </ul>
+            </div>
+            <div class="card card-green">
+                <h3>📚 RAG</h3>
+                <ul>
+                    <li>Dynamic data needed</li>
+                    <li>Source citations</li>
+                    <li>Large knowledge bases</li>
+                    <li>Data freshness</li>
+                </ul>
+            </div>
+            <div class="card card-purple">
+                <h3>🔧 Fine-Tuning</h3>
+                <ul>
+                    <li>Domain expertise</li>
+                    <li>Specific tone/style</li>
+                    <li>Reduce latency</li>
+                    <li>Scale consistency</li>
+                </ul>
+            </div>
+        </div>
+        <p style="margin-top: 1.5rem; text-align: center; opacity: 0.8;">💡 These are <strong>complementary</strong> — Fine-Tune for style + RAG for data = production-grade</p>
+    </div>
+
+    <!-- Slide 5: Decision Flowchart -->
+    <div class="slide" data-slide="5">
+        <h2>Decision Flowchart</h2>
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Can a better prompt solve it?</strong> → Start with prompt engineering (free & fast)</div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Does the model need access to specific/changing data?</strong> → Add RAG for grounded answers</div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Need specific output style or domain expertise?</strong> → Fine-tune the model</div>
+        </div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Need all of the above?</strong> → Fine-tune + RAG = best of both worlds</div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Training Data (JSONL) -->
+    <div class="slide" data-slide="6">
+        <h2>Preparing Training Data</h2>
+        <p>AI Foundry uses <strong>JSONL</strong> (JSON Lines) format — one training example per line:</p>
+<pre>{"messages": [
+  {"role": "system", "content": "You are a medical coding assistant..."},
+  {"role": "user", "content": "Patient has acute bronchitis."},
+  {"role": "assistant", "content": "J20.9 — Acute bronchitis, unspecified"}
+]}</pre>
+        <div class="columns" style="margin-top: 1rem;">
+            <div>
+                <h3>✅ Quality Checklist</h3>
+                <ul>
+                    <li>50+ examples minimum (100+ recommended)</li>
+                    <li>Consistent structure throughout</li>
+                    <li>Diverse, representative inputs</li>
+                    <li>Correct assistant responses</li>
+                </ul>
+            </div>
+            <div>
+                <h3>⚠️ Avoid</h3>
+                <ul>
+                    <li>Fabricated / synthetic data</li>
+                    <li>PII or sensitive information</li>
+                    <li>Duplicate examples</li>
+                    <li>Conflicting instructions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Data Sizing -->
+    <div class="slide" data-slide="7">
+        <h2>Recommended Dataset Sizes</h2>
+        <table>
+            <thead>
+                <tr><th>Use Case</th><th>Minimum</th><th>Recommended</th><th>Optimal</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Style / Tone Transfer</td><td>50</td><td>200–500</td><td>1,000+</td></tr>
+                <tr><td>Classification Tasks</td><td>100</td><td>500–1,000</td><td>5,000+</td></tr>
+                <tr><td>Domain Q&A</td><td>100</td><td>300–800</td><td>2,000+</td></tr>
+                <tr><td>Complex Reasoning</td><td>200</td><td>1,000–3,000</td><td>10,000+</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top: 1.5rem;">💡 Always split data into <strong>training (80–90%)</strong> and <strong>validation (10–20%)</strong> sets.</p>
+    </div>
+
+    <!-- Slide 8: Fine-Tuning Workflow -->
+    <div class="slide" data-slide="8">
+        <h2>Fine-Tuning Workflow in AI Foundry</h2>
+        <div class="columns">
+            <div>
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Open AI Foundry → Select project</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Navigate to <strong>Fine-tuning</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Select base model (e.g., <code>gpt-4o-mini</code>)</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-text">Upload training & validation JSONL</div>
+                </div>
+            </div>
+            <div>
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-text">Configure hyperparameters</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">6</div>
+                    <div class="step-text">Submit training job</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">7</div>
+                    <div class="step-text">Monitor loss curves in real time</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">8</div>
+                    <div class="step-text">Deploy & test fine-tuned model</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Supported Models -->
+    <div class="slide" data-slide="9">
+        <h2>Supported Models for Fine-Tuning</h2>
+        <table>
+            <thead>
+                <tr><th>Model</th><th>Token Limit</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>gpt-4o-mini</code></td><td>65,536</td><td>Cost-effective, most use cases</td></tr>
+                <tr><td><code>gpt-4o</code></td><td>65,536</td><td>Maximum quality, complex tasks</td></tr>
+                <tr><td><code>gpt-4.1-mini</code></td><td>32,768</td><td>Next-gen efficient fine-tuning</td></tr>
+                <tr><td><code>gpt-4.1-nano</code></td><td>32,768</td><td>Lightweight, edge-optimized</td></tr>
+                <tr><td><code>gpt-3.5-turbo</code></td><td>16,385</td><td>Legacy, budget-constrained</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top: 1rem;">Regions: <strong>East US2</strong>, <strong>North Central US</strong>, <strong>Sweden Central</strong>, <strong>Switzerland West</strong></p>
+    </div>
+
+    <!-- Slide 10: Hyperparameters -->
+    <div class="slide" data-slide="10">
+        <h2>Hyperparameter Configuration</h2>
+        <div class="columns">
+            <div class="card card-blue">
+                <h3><code>n_epochs</code></h3>
+                <p>Number of full passes through training data.</p>
+                <p>Default: <strong>auto</strong> (3–5 typically)</p>
+                <p>⚠️ Too many = overfitting</p>
+            </div>
+            <div class="card card-purple">
+                <h3><code>learning_rate_multiplier</code></h3>
+                <p>Scales the base learning rate.</p>
+                <p>Default: <strong>auto</strong> (1.0–2.0)</p>
+                <p>⚠️ Too high = instability</p>
+            </div>
+        </div>
+        <div class="columns" style="margin-top: 1rem;">
+            <div class="card card-green">
+                <h3><code>batch_size</code></h3>
+                <p>Examples processed together per step.</p>
+                <p>Default: <strong>auto</strong> (1–4)</p>
+                <p>Larger = more stable gradients</p>
+            </div>
+            <div class="card card-yellow">
+                <h3><code>seed</code></h3>
+                <p>Controls reproducibility.</p>
+                <p>Default: <strong>random</strong></p>
+                <p>Set fixed seed for consistent comparisons</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Monitoring & Loss Curves -->
+    <div class="slide" data-slide="11">
+        <h2>Reading the Loss Curves</h2>
+        <table>
+            <thead>
+                <tr><th>Pattern</th><th>Training Loss</th><th>Validation Loss</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>✅ Healthy</td><td>↓ Decreasing</td><td>↓ Decreasing</td><td>Continue training</td></tr>
+                <tr><td>⚠️ Overfitting</td><td>↓ Decreasing</td><td>↑ Increasing</td><td>Reduce epochs, add data</td></tr>
+                <tr><td>⚠️ Underfitting</td><td>→ Flat / High</td><td>→ Flat / High</td><td>Increase epochs/LR</td></tr>
+                <tr><td>✅ Converged</td><td>→ Plateaued</td><td>→ Plateaued</td><td>Training complete</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top: 1.5rem;">🔑 <strong>Key insight:</strong> Watch the gap between training and validation loss. A widening gap signals overfitting.</p>
+    </div>
+
+    <!-- Slide 12: Validation & Deployment -->
+    <div class="slide" data-slide="12">
+        <h2>Validate & Deploy</h2>
+        <div class="columns">
+            <div>
+                <h3>Validation Steps</h3>
+                <ol>
+                    <li>Review final training metrics</li>
+                    <li>Test in Playground with new inputs</li>
+                    <li>Run batch evaluation against test set</li>
+                    <li>Compare with base model side-by-side</li>
+                </ol>
+            </div>
+            <div>
+                <h3>Deployment</h3>
+                <ol>
+                    <li>Go to <strong>Deployments</strong> in AI Foundry</li>
+                    <li>Select your fine-tuned model</li>
+                    <li>Set deployment name & TPM limit</li>
+                    <li>Call via Azure OpenAI API</li>
+                </ol>
+<pre style="font-size: 0.75rem;">response = client.chat.completions.create(
+    model="my-custom-model",
+    messages=[{"role": "user",
+     "content": "Your query here"}]
+)</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Cost & Performance -->
+    <div class="slide" data-slide="13">
+        <h2>Cost & Performance</h2>
+        <div class="columns">
+            <div>
+                <h3>Cost Components</h3>
+                <ul>
+                    <li><strong>Training:</strong> One-time (model × tokens × epochs)</li>
+                    <li><strong>Hosting:</strong> Per hour while deployed</li>
+                    <li><strong>Inference:</strong> Per token per request</li>
+                </ul>
+                <h3 style="margin-top: 1.5rem;">💰 Cost Strategy</h3>
+                <p>Start with <code>gpt-4o-mini</code> — cheaper to train and often sufficient when fine-tuned.</p>
+            </div>
+            <div>
+                <h3>Performance Gains</h3>
+                <div class="card card-green" style="margin-bottom: 0.75rem;">
+                    <p><strong>⚡ Latency:</strong> Up to 50% faster (shorter prompts)</p>
+                </div>
+                <div class="card card-blue" style="margin-bottom: 0.75rem;">
+                    <p><strong>🎯 Accuracy:</strong> 10–30% improvement on domain tasks</p>
+                </div>
+                <div class="card card-purple">
+                    <p><strong>📉 Tokens:</strong> 60–80% reduction in prompt tokens</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Mini Hack -->
+    <div class="slide" data-slide="14">
+        <h2>🧪 Mini Hack: Fine-Tune GPT-4o-mini</h2>
+        <p>Create a custom Q&A assistant for "CloudFlow" (fictional SaaS):</p>
+        <div class="columns">
+            <div>
+                <div class="step"><div class="step-num">1</div><div class="step-text">Create 50+ Q&A pairs in JSONL format</div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-text">Split into training (85%) + validation (15%)</div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-text">Upload & configure in AI Foundry</div></div>
+            </div>
+            <div>
+                <div class="step"><div class="step-num">4</div><div class="step-text">Monitor training (~15–30 min)</div></div>
+                <div class="step"><div class="step-num">5</div><div class="step-text">Deploy & test in Playground</div></div>
+                <div class="step"><div class="step-num">6</div><div class="step-text">Compare fine-tuned vs. base model</div></div>
+            </div>
+        </div>
+        <p style="margin-top: 1rem; text-align: center; opacity: 0.8;">⏱️ Training cost: ~$1 · Training time: ~15–30 minutes</p>
+    </div>
+
+    <!-- Slide 15: Key Takeaways & Next -->
+    <div class="slide slide-end" data-slide="15">
+        <h2 style="border: none; display: block; font-size: 2.4rem;">Key Takeaways</h2>
+        <ul style="text-align: left; max-width: 700px; margin: 1.5rem auto; font-size: 1.05rem;">
+            <li>Start with prompts → add RAG → fine-tune for behavior & style</li>
+            <li>JSONL chat format with 50–100+ high-quality, diverse examples</li>
+            <li>AI Foundry manages all training infrastructure — no GPUs to provision</li>
+            <li>Watch loss curves: converging = good, diverging = overfitting</li>
+            <li>Validate against test set, compare with base model</li>
+            <li>Fine-tune + RAG = production-grade solution</li>
+        </ul>
+        <p style="margin-top: 2rem; font-size: 1.2rem;">
+            <strong>Next → Module 10:</strong> Content Safety & Responsible AI
+        </p>
+    </div>
+
+</div>
+
+<!-- Navigation Controls -->
+<div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">←</button>
+    <span class="slide-counter" id="slideCounter">1 / 15</span>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">→</button>
+</div>
+
+<!-- Progress Bar -->
+<div class="slide-progress" id="slideProgress"></div>
+
+<!-- Keyboard Hints -->
+<div class="key-hints">
+    <kbd>←</kbd> <kbd>→</kbd> or <kbd>Space</kbd> to navigate
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let current = 0;
+
+    function showSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        slides[current].classList.remove('active');
+        current = index;
+        slides[current].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${current + 1} / ${totalSlides}`;
+        document.getElementById('slideProgress').style.width = `${((current + 1) / totalSlides) * 100}%`;
+    }
+
+    function next() { showSlide(current + 1); }
+    function prev() { showSlide(current - 1); }
+
+    document.getElementById('nextBtn').addEventListener('click', next);
+    document.getElementById('prevBtn').addEventListener('click', prev);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+        if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+        if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+    }, { passive: true });
+
+    // Initialize
+    showSlide(0);
+</script>
+
+</body>
+</html>

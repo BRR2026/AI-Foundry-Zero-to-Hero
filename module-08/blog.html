@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 8 of the Azure AI Foundry Zero to Hero training series — Deploying & Comparing Models Including Multimodal capabilities with GPT-4o.">
+    <meta name="author" content="Zero to Hero Training Team">
+    <meta name="date" content="2026-04">
+    <title>Module 8 — Deploying &amp; Comparing Models — Including Multimodal | AI Foundry Zero to Hero</title>
+    <style>
+        /* ───────── CSS Variables ───────── */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-gray: #f3f2f1;
+            --ms-border: #e1dfdd;
+            --ms-text: #323130;
+            --ms-text-light: #605e5c;
+            --ms-success: #107c10;
+            --ms-warning: #ffb900;
+            --ms-error: #d13438;
+            --content-max: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 48px;
+        }
+
+        /* ───────── Reset & Base ───────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
+            color: var(--ms-text);
+            background: #fff;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        /* ───────── Scroll Progress Bar ───────── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            width: 0%;
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* ───────── Top Navigation ───────── */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #1b1b1b;
+            color: #fff;
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.14);
+        }
+
+        .top-nav .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 32px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .top-nav .logo-area svg { flex-shrink: 0; }
+
+        .top-nav .logo-area span {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .top-nav nav { display: flex; gap: 20px; }
+
+        .top-nav nav a {
+            color: #c8c6c4;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color .2s;
+        }
+
+        .top-nav nav a:hover { color: #fff; }
+
+        /* ───────── Hero Section ───────── */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #fff;
+            padding: 64px 24px;
+            text-align: center;
+        }
+
+        .hero .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,.18);
+            border: 1px solid rgba(255,255,255,.3);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: .92;
+            max-width: 640px;
+            margin: 0 auto 20px;
+        }
+
+        .hero .meta {
+            font-size: 13px;
+            opacity: .75;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero .meta span { display: flex; align-items: center; gap: 4px; }
+
+        /* ───────── Layout: Sidebar + Content ───────── */
+        .page-layout {
+            display: flex;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            gap: 40px;
+        }
+
+        /* ───────── Sticky TOC Sidebar ───────── */
+        .toc-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + 24px);
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            max-height: calc(100vh - var(--nav-height) - 48px);
+            overflow-y: auto;
+            align-self: flex-start;
+            font-size: 13px;
+            padding-right: 8px;
+        }
+
+        .toc-sidebar h2 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--ms-text-light);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .toc-sidebar ol {
+            list-style: none;
+            counter-reset: toc-counter;
+        }
+
+        .toc-sidebar li { counter-increment: toc-counter; margin-bottom: 2px; }
+
+        .toc-sidebar a {
+            display: block;
+            padding: 5px 8px 5px 12px;
+            color: var(--ms-text-light);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all .2s;
+            line-height: 1.4;
+        }
+
+        .toc-sidebar a:hover { color: var(--ms-blue); background: rgba(0,120,212,.04); }
+
+        .toc-sidebar a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            background: rgba(0,120,212,.07);
+            font-weight: 600;
+        }
+
+        /* ───────── Main Content ───────── */
+        .main-content {
+            flex: 1;
+            max-width: var(--content-max);
+            min-width: 0;
+        }
+
+        .main-content h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-blue);
+        }
+
+        .main-content h2:first-child { margin-top: 0; }
+
+        .main-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 32px 0 12px;
+        }
+
+        .main-content h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 24px 0 8px;
+        }
+
+        .main-content p { margin-bottom: 16px; }
+
+        .main-content a { color: var(--ms-blue); text-decoration: none; }
+        .main-content a:hover { text-decoration: underline; }
+
+        .main-content ul, .main-content ol {
+            margin: 0 0 16px 24px;
+        }
+
+        .main-content li { margin-bottom: 6px; }
+
+        .main-content img {
+            max-width: 100%;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+
+        /* ───────── Code Blocks ───────── */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px 24px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+        }
+
+        p code, li code {
+            background: var(--ms-light-gray);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--ms-dark-blue);
+        }
+
+        /* ───────── Callout Boxes ───────── */
+        .callout {
+            border-left: 4px solid;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 14.5px;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .callout.info    { border-color: var(--ms-blue);    background: rgba(0,120,212,.06); }
+        .callout.tip     { border-color: var(--ms-warning);  background: rgba(255,185,0,.08); }
+        .callout.success { border-color: var(--ms-success);  background: rgba(16,124,16,.06); }
+        .callout.warning { border-color: var(--ms-error);    background: rgba(209,52,56,.06); }
+
+        .callout.info    .callout-title { color: var(--ms-blue); }
+        .callout.tip     .callout-title { color: #8a6d00; }
+        .callout.success .callout-title { color: var(--ms-success); }
+        .callout.warning .callout-title { color: var(--ms-error); }
+
+        /* ───────── Tables ───────── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14.5px;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border: 1px solid var(--ms-border);
+        }
+
+        th {
+            background: var(--ms-dark-blue);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) { background: #fafafa; }
+
+        /* ───────── Video Container ───────── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,.12);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ───────── Module Navigation ───────── */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 48px 0 0;
+            padding: 24px 0;
+            border-top: 2px solid var(--ms-border);
+        }
+
+        .module-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--ms-blue);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background .2s;
+        }
+
+        .module-nav a:hover { background: var(--ms-dark-blue); text-decoration: none; }
+
+        /* ───────── Footer ───────── */
+        footer {
+            text-align: center;
+            padding: 32px 24px;
+            font-size: 13px;
+            color: var(--ms-text-light);
+            border-top: 1px solid var(--ms-border);
+            margin-top: 48px;
+        }
+
+        /* ───────── Back-to-Top Button ───────── */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .3s, visibility .3s, background .2s;
+            z-index: 5000;
+        }
+
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: var(--ms-dark-blue); }
+
+        /* ───────── Mini Hack Banner ───────── */
+        .mini-hack-banner {
+            background: linear-gradient(135deg, var(--ms-purple), var(--ms-blue));
+            color: #fff;
+            padding: 28px 28px;
+            border-radius: 10px;
+            margin: 24px 0;
+        }
+
+        .mini-hack-banner h3 { color: #fff; margin-top: 0; }
+
+        /* ───────── Responsive ───────── */
+        @media (max-width: 900px) {
+            .toc-sidebar { display: none; }
+            .page-layout { padding: 24px 16px; }
+        }
+
+        @media (max-width: 600px) {
+            .hero { padding: 40px 16px; }
+            .hero h1 { font-size: 1.5rem; }
+            .module-nav { flex-direction: column; gap: 12px; }
+            .module-nav a { width: 100%; justify-content: center; }
+        }
+
+        /* ───────── Print-Friendly ───────── */
+        @media print {
+            .top-nav, .progress-bar, .back-to-top, .toc-sidebar, .video-container { display: none !important; }
+            .hero { background: #fff !important; color: #000 !important; padding: 24px 0; }
+            .hero .series-badge { border-color: #000; color: #000; }
+            .main-content { max-width: 100%; }
+            .page-layout { display: block; padding: 0; }
+            pre { white-space: pre-wrap; word-wrap: break-word; }
+            a[href]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #666; }
+            .module-nav a { background: #fff; color: var(--ms-blue); border: 1px solid var(--ms-blue); }
+        }
+
+        /* ───────── Comparison Grid ───────── */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .comparison-card {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow .2s;
+        }
+
+        .comparison-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,.1);
+        }
+
+        .comparison-card h4 {
+            color: var(--ms-blue);
+            margin: 0 0 8px;
+        }
+
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            padding: 12px 12px 12px 48px;
+            position: relative;
+            margin-bottom: 8px;
+            background: var(--ms-light-gray);
+            border-radius: 6px;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            width: 26px;
+            height: 26px;
+            background: var(--ms-blue);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .resource-card {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 16px;
+            transition: border-color .2s;
+        }
+
+        .resource-card:hover { border-color: var(--ms-blue); }
+        .resource-card h4 { margin: 0 0 6px; font-size: 14px; }
+        .resource-card p { font-size: 13px; color: var(--ms-text-light); margin: 0; }
+    </style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Top Navigation -->
+<header class="top-nav">
+    <a href="../index.html" class="logo-area">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 21 21">
+            <rect x="0" y="0" width="10" height="10" fill="#f25022"/>
+            <rect x="11" y="0" width="10" height="10" fill="#7fba00"/>
+            <rect x="0" y="11" width="10" height="10" fill="#00a4ef"/>
+            <rect x="11" y="11" width="10" height="10" fill="#ffb900"/>
+        </svg>
+        <span>AI Foundry Training Blog</span>
+    </a>
+    <nav>
+        <a href="../index.html">Curriculum</a>
+        <a href="../resources.html">Resources</a>
+        <a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="series-badge">ARC 2 · PROMPT ENGINEERING &amp; MODELS</div>
+    <h1>Module 8 — Deploying &amp; Comparing Models — Including Multimodal</h1>
+    <p class="subtitle">Master the three deployment strategies in Azure AI Foundry, unlock GPT-4o's multimodal superpowers, and learn to benchmark models against each other.</p>
+    <div class="meta">
+        <span>✍️ Zero to Hero Training Team</span>
+        <span>📅 April 2026</span>
+        <span>⏱️ 35 min read</span>
+        <span>📦 Module 8 of 45</span>
+    </div>
+</section>
+
+<!-- Page Layout -->
+<div class="page-layout">
+
+    <!-- TOC Sidebar -->
+    <aside class="toc-sidebar" id="tocSidebar">
+        <h2>On This Page</h2>
+        <ol>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#featured-video">Featured Video</a></li>
+            <li><a href="#deployment-types">Deployment Types</a></li>
+            <li><a href="#step-by-step">Step-by-Step Deploy</a></li>
+            <li><a href="#multimodal">Multimodal with GPT-4o</a></li>
+            <li><a href="#working-images">Working with Images</a></li>
+            <li><a href="#audio-speech">Audio &amp; Speech</a></li>
+            <li><a href="#document-understanding">Document Understanding</a></li>
+            <li><a href="#benchmarking">Benchmarking &amp; A/B Testing</a></li>
+            <li><a href="#cost-considerations">Cost Considerations</a></li>
+            <li><a href="#mini-hack">Mini Hack Exercise</a></li>
+            <li><a href="#key-takeaways">Key Takeaways</a></li>
+            <li><a href="#module-9-preview">Module 9 Preview</a></li>
+            <li><a href="#resources">Resources</a></li>
+        </ol>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Section 1: Introduction -->
+        <h2 id="introduction">1. Beyond Text — The Multimodal Era</h2>
+        <p>Until recently, deploying an AI model meant spinning up a text-in-text-out endpoint. You sent a prompt, you got words back. That was powerful — but it was also limiting. The real world is not made of text alone; it's a rich tapestry of images, sounds, documents, and videos. Customers send photos of defective products. Doctors share X-rays. Field engineers snap images of damaged equipment.</p>
+
+        <p>With <strong>GPT-4o</strong> and the broader model catalog in <strong>Azure AI Foundry</strong>, you now have the ability to deploy a single model that understands <em>text, images, and audio natively</em> — a truly multimodal AI endpoint. This module dives deep into how to deploy these models, how to send multimodal payloads, and how to compare different models head-to-head so you can make data-driven decisions about which model best fits your workload.</p>
+
+        <div class="callout info">
+            <div class="callout-title">ℹ️ What You'll Learn</div>
+            <ul>
+                <li>The three deployment types in AI Foundry: <strong>Managed Compute</strong>, <strong>Serverless API</strong>, and <strong>Provisioned Throughput</strong></li>
+                <li>How to deploy GPT-4o for multimodal use (text + vision + audio)</li>
+                <li>Techniques for sending images (base64 &amp; URL), audio, and documents to your endpoint</li>
+                <li>How to benchmark and A/B test models for quality, latency, and cost</li>
+            </ul>
+        </div>
+
+        <p>By the end of this module, you will have deployed your own multimodal model and built a Mini Hack application that analyzes images using GPT-4o's vision capabilities.</p>
+
+        <!-- Section 2: Featured Video -->
+        <h2 id="featured-video">2. Featured Video</h2>
+        <p>Before diving in, watch this video from the Microsoft Azure channel that covers fine-tuning models in Microsoft Foundry — concepts that complement the deployment and comparison strategies you'll learn here.</p>
+
+        <div class="video-container">
+            <iframe
+                src="https://www.youtube.com/embed/NbResO8QcSM"
+                title="Fine-Tuning Models in Microsoft Foundry: Boost Accuracy, Speed & Cost Efficiency"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                loading="lazy"
+            ></iframe>
+        </div>
+
+        <div class="callout tip">
+            <div class="callout-title">💡 Tip</div>
+            <p>While this video focuses on fine-tuning, the deployment patterns it demonstrates directly apply to the workflows you'll practice in this module's hands-on lab. Pay attention to how models are provisioned and configured.</p>
+        </div>
+
+        <!-- Section 3: Deployment Types -->
+        <h2 id="deployment-types">3. Understanding Deployment Types</h2>
+        <p>Azure AI Foundry provides three distinct deployment strategies. Each serves different scenarios based on latency, throughput, cost, and control requirements. Choosing the right one is the first critical decision you'll make when operationalizing a model.</p>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <h4>🖥️ Managed Compute</h4>
+                <p><strong>What:</strong> A dedicated VM-backed endpoint that runs your model exclusively.</p>
+                <p><strong>When:</strong> You need full control over infrastructure, want to deploy custom or fine-tuned models, or have compliance requirements for dedicated compute.</p>
+                <p><strong>Key traits:</strong></p>
+                <ul>
+                    <li>Dedicated VM (no shared resources)</li>
+                    <li>You choose the SKU</li>
+                    <li>Auto-scaling available</li>
+                    <li>Pay for compute time</li>
+                </ul>
+            </div>
+            <div class="comparison-card">
+                <h4>☁️ Serverless API</h4>
+                <p><strong>What:</strong> A pay-per-token endpoint with no infrastructure to manage.</p>
+                <p><strong>When:</strong> You want to get started quickly, your traffic is unpredictable, or you're experimenting with different models.</p>
+                <p><strong>Key traits:</strong></p>
+                <ul>
+                    <li>No VM management</li>
+                    <li>Pay per token consumed</li>
+                    <li>Instant provisioning</li>
+                    <li>Built-in rate limits</li>
+                </ul>
+            </div>
+            <div class="comparison-card">
+                <h4>⚡ Provisioned Throughput</h4>
+                <p><strong>What:</strong> Reserved capacity measured in PTUs (Provisioned Throughput Units).</p>
+                <p><strong>When:</strong> You have predictable, high-volume workloads and need guaranteed latency and throughput.</p>
+                <p><strong>Key traits:</strong></p>
+                <ul>
+                    <li>Guaranteed tokens/minute</li>
+                    <li>Lowest and most consistent latency</li>
+                    <li>Monthly commitment</li>
+                    <li>Best unit economics at scale</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Comparison Table</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Factor</th>
+                    <th>Managed Compute</th>
+                    <th>Serverless API</th>
+                    <th>Provisioned Throughput</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Provisioning Speed</strong></td>
+                    <td>Minutes (VM spin-up)</td>
+                    <td>Seconds</td>
+                    <td>Minutes</td>
+                </tr>
+                <tr>
+                    <td><strong>Billing Model</strong></td>
+                    <td>Per-hour compute</td>
+                    <td>Per-token</td>
+                    <td>Monthly PTU reservation</td>
+                </tr>
+                <tr>
+                    <td><strong>Latency</strong></td>
+                    <td>Low (dedicated)</td>
+                    <td>Variable (shared)</td>
+                    <td>Lowest &amp; guaranteed</td>
+                </tr>
+                <tr>
+                    <td><strong>Scaling</strong></td>
+                    <td>Auto-scale policies</td>
+                    <td>Automatic</td>
+                    <td>Fixed capacity</td>
+                </tr>
+                <tr>
+                    <td><strong>Custom Models</strong></td>
+                    <td>✅ Full support</td>
+                    <td>❌ Catalog only</td>
+                    <td>✅ Select models</td>
+                </tr>
+                <tr>
+                    <td><strong>Best For</strong></td>
+                    <td>Custom/fine-tuned models, compliance</td>
+                    <td>Experimentation, variable traffic</td>
+                    <td>Production at scale</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout info">
+            <div class="callout-title">ℹ️ AI Foundry Model Catalog</div>
+            <p>The AI Foundry Model Catalog contains 1,700+ models from Microsoft, OpenAI, Meta, Mistral, Cohere, and many more. Each model card shows supported deployment types, so you can quickly see which strategies are available before deploying.</p>
+        </div>
+
+        <!-- Section 4: Step-by-Step -->
+        <h2 id="step-by-step">4. Step-by-Step: Deploying a Model in AI Foundry</h2>
+        <p>Let's walk through deploying GPT-4o as a serverless API endpoint — the fastest way to get a multimodal model running.</p>
+
+        <ol class="step-list">
+            <li>
+                <strong>Open AI Foundry Portal</strong><br>
+                Navigate to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a> and sign in with your Azure credentials. Select or create a project.
+            </li>
+            <li>
+                <strong>Navigate to the Model Catalog</strong><br>
+                In the left sidebar, click <strong>Model catalog</strong>. Use the search bar or filters to find <strong>GPT-4o</strong>. Click on the model card.
+            </li>
+            <li>
+                <strong>Click "Deploy"</strong><br>
+                On the model detail page, click the <strong>Deploy</strong> button. Select <strong>Serverless API</strong> as the deployment type.
+            </li>
+            <li>
+                <strong>Configure the Deployment</strong><br>
+                Provide a deployment name (e.g., <code>gpt-4o-multimodal</code>). Set the API version and any content filters. Review the pricing information.
+            </li>
+            <li>
+                <strong>Deploy and Get Your Endpoint</strong><br>
+                Click <strong>Deploy</strong>. After a few seconds, you'll see your endpoint URL and API key. Copy both — you'll need them to send requests.
+            </li>
+            <li>
+                <strong>Test in the Playground</strong><br>
+                Navigate to the <strong>Playground</strong> in AI Foundry. Select your new deployment. Send a test message to verify it's working.
+            </li>
+        </ol>
+
+        <div class="callout success">
+            <div class="callout-title">✅ Checkpoint</div>
+            <p>At this point, you should have a running GPT-4o endpoint. Try sending it a simple text prompt in the Playground to confirm it responds correctly before moving on to multimodal payloads.</p>
+        </div>
+
+        <!-- Section 5: Multimodal -->
+        <h2 id="multimodal">5. Multimodal Capabilities with GPT-4o</h2>
+        <p>GPT-4o is a natively multimodal model, meaning it was trained from the ground up to understand text, images, and audio within a single architecture. This is fundamentally different from systems that pipeline separate models together — GPT-4o processes all modalities in a unified latent space, yielding better cross-modal understanding and faster responses.</p>
+
+        <h3>What Makes GPT-4o Multimodal?</h3>
+        <ul>
+            <li><strong>Text</strong> — Standard chat and completion, instruction following, reasoning, and code generation</li>
+            <li><strong>Vision</strong> — Analyze images, read text in photos (OCR), describe scenes, interpret charts and diagrams</li>
+            <li><strong>Audio</strong> — Process spoken language, understand tone and context (via paired Whisper/TTS models)</li>
+        </ul>
+
+        <h3>The Unified API Pattern</h3>
+        <p>All modalities flow through the same Chat Completions API. You use the <code>messages</code> array with content blocks that specify the type — <code>text</code>, <code>image_url</code>, or <code>input_audio</code>:</p>
+
+<pre><span style="color:#569cd6">POST</span> {endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview
+
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "What do you see in this image?" },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://example.com/photo.jpg",
+            "detail": "high"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 1000
+}</pre>
+
+        <div class="callout tip">
+            <div class="callout-title">💡 The <code>detail</code> Parameter</div>
+            <p>Set <code>"detail": "high"</code> for complex images (diagrams, small text). Use <code>"detail": "low"</code> for simple images or when you want to reduce token consumption. The <code>"auto"</code> setting lets the model decide.</p>
+        </div>
+
+        <!-- Section 6: Working with Images -->
+        <h2 id="working-images">6. Working with Images</h2>
+        <p>There are two primary ways to send images to GPT-4o: via a publicly accessible <strong>URL</strong> or as <strong>base64-encoded</strong> data embedded directly in the request.</p>
+
+        <h3>Method 1: URL Reference</h3>
+        <p>The simplest approach — pass a URL that the model can fetch at inference time:</p>
+
+<pre>{
+  "type": "image_url",
+  "image_url": {
+    "url": "https://storage.blob.core.windows.net/images/product-defect.jpg"
+  }
+}</pre>
+
+        <p><strong>Pros:</strong> Small request size, easy to implement.<br>
+        <strong>Cons:</strong> URL must be publicly accessible (or SAS-token protected). Adds network latency if the image is large.</p>
+
+        <h3>Method 2: Base64 Encoding</h3>
+        <p>Embed the image directly in the JSON payload as a base64-encoded data URI:</p>
+
+<pre><span style="color:#c586c0">import</span> base64
+
+<span style="color:#c586c0">with</span> <span style="color:#dcdcaa">open</span>(<span style="color:#ce9178">"product-defect.jpg"</span>, <span style="color:#ce9178">"rb"</span>) <span style="color:#c586c0">as</span> f:
+    image_data = base64.b64encode(f.read()).decode(<span style="color:#ce9178">"utf-8"</span>)
+
+message = {
+    <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"image_url"</span>,
+    <span style="color:#ce9178">"image_url"</span>: {
+        <span style="color:#ce9178">"url"</span>: <span style="color:#ce9178">f"data:image/jpeg;base64,{image_data}"</span>
+    }
+}</pre>
+
+        <p><strong>Pros:</strong> Works with private images, no external URL needed.<br>
+        <strong>Cons:</strong> Increases request payload size significantly (~33% larger than binary).</p>
+
+        <h3>Image Use Cases</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Use Case</th>
+                    <th>Description</th>
+                    <th>Recommended Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Product Defect Detection</td>
+                    <td>Identify scratches, dents, or anomalies in product images</td>
+                    <td><code>high</code></td>
+                </tr>
+                <tr>
+                    <td>Receipt / Invoice OCR</td>
+                    <td>Extract line items, totals, and vendor info</td>
+                    <td><code>high</code></td>
+                </tr>
+                <tr>
+                    <td>Chart Interpretation</td>
+                    <td>Summarize trends from bar charts, line graphs, pie charts</td>
+                    <td><code>high</code></td>
+                </tr>
+                <tr>
+                    <td>Scene Description</td>
+                    <td>Describe what's happening in a photograph</td>
+                    <td><code>low</code> or <code>auto</code></td>
+                </tr>
+                <tr>
+                    <td>Thumbnail Classification</td>
+                    <td>Classify small images into categories</td>
+                    <td><code>low</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Multiple Images in One Request</h3>
+        <p>GPT-4o can process multiple images in a single turn. Include several <code>image_url</code> content blocks in the <code>content</code> array to compare images, detect differences, or analyze a batch:</p>
+
+<pre>{
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "Compare these two product images. Are there any defects in the second one?" },
+        { "type": "image_url", "image_url": { "url": "https://example.com/reference.jpg" } },
+        { "type": "image_url", "image_url": { "url": "https://example.com/sample.jpg" } }
+      ]
+    }
+  ]
+}</pre>
+
+        <!-- Section 7: Audio & Speech -->
+        <h2 id="audio-speech">7. Working with Audio &amp; Speech</h2>
+        <p>While GPT-4o handles text and vision natively in a single call, audio workflows in AI Foundry typically use specialized models deployed alongside your primary model.</p>
+
+        <h3>Speech-to-Text with Whisper</h3>
+        <p>Deploy the <strong>Whisper</strong> model from the AI Foundry Model Catalog for transcription and translation:</p>
+
+<pre><span style="color:#c586c0">import</span> requests
+
+url = <span style="color:#ce9178">f"{endpoint}/openai/deployments/whisper-1/audio/transcriptions?api-version=2024-12-01-preview"</span>
+
+headers = { <span style="color:#ce9178">"api-key"</span>: api_key }
+
+files = {
+    <span style="color:#ce9178">"file"</span>: (<span style="color:#ce9178">"meeting.mp3"</span>, <span style="color:#dcdcaa">open</span>(<span style="color:#ce9178">"meeting.mp3"</span>, <span style="color:#ce9178">"rb"</span>)),
+}
+
+data = {
+    <span style="color:#ce9178">"response_format"</span>: <span style="color:#ce9178">"verbose_json"</span>,
+    <span style="color:#ce9178">"language"</span>: <span style="color:#ce9178">"en"</span>,
+    <span style="color:#ce9178">"timestamp_granularities"</span>: <span style="color:#ce9178">"word"</span>
+}
+
+response = requests.post(url, headers=headers, files=files, data=data)
+transcript = response.json()</pre>
+
+        <h3>Text-to-Speech (TTS)</h3>
+        <p>Use the TTS model to generate natural-sounding speech from text:</p>
+
+<pre>url = <span style="color:#ce9178">f"{endpoint}/openai/deployments/tts-1/audio/speech?api-version=2024-12-01-preview"</span>
+
+payload = {
+    <span style="color:#ce9178">"model"</span>: <span style="color:#ce9178">"tts-1"</span>,
+    <span style="color:#ce9178">"input"</span>: <span style="color:#ce9178">"Your insurance claim has been approved. The total reimbursement is $1,250."</span>,
+    <span style="color:#ce9178">"voice"</span>: <span style="color:#ce9178">"nova"</span>
+}
+
+response = requests.post(url, headers={<span style="color:#ce9178">"api-key"</span>: api_key, <span style="color:#ce9178">"Content-Type"</span>: <span style="color:#ce9178">"application/json"</span>}, json=payload)
+
+<span style="color:#c586c0">with</span> <span style="color:#dcdcaa">open</span>(<span style="color:#ce9178">"output.mp3"</span>, <span style="color:#ce9178">"wb"</span>) <span style="color:#c586c0">as</span> f:
+    f.write(response.content)</pre>
+
+        <div class="callout info">
+            <div class="callout-title">ℹ️ Audio Pipeline Pattern</div>
+            <p>A common pattern is to chain <strong>Whisper → GPT-4o → TTS</strong> to build voice-driven AI assistants. Audio comes in via Whisper, GPT-4o reasons over the transcript (plus optional images or documents), and TTS speaks the response back.</p>
+        </div>
+
+        <!-- Section 8: Document Understanding -->
+        <h2 id="document-understanding">8. Document Understanding</h2>
+        <p>GPT-4o's vision capabilities extend beyond photographs — it excels at understanding structured documents like PDFs rendered as images, scanned forms, and multi-page reports.</p>
+
+        <h3>Processing PDFs as Images</h3>
+        <p>Convert each page of a PDF to an image, then send the images to GPT-4o:</p>
+
+<pre><span style="color:#c586c0">from</span> pdf2image <span style="color:#c586c0">import</span> convert_from_path
+<span style="color:#c586c0">import</span> base64, io
+
+pages = convert_from_path(<span style="color:#ce9178">"contract.pdf"</span>, dpi=200)
+
+image_messages = []
+<span style="color:#c586c0">for</span> page <span style="color:#c586c0">in</span> pages:
+    buffer = io.BytesIO()
+    page.save(buffer, format=<span style="color:#ce9178">"PNG"</span>)
+    b64 = base64.b64encode(buffer.getvalue()).decode(<span style="color:#ce9178">"utf-8"</span>)
+    image_messages.append({
+        <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"image_url"</span>,
+        <span style="color:#ce9178">"image_url"</span>: { <span style="color:#ce9178">"url"</span>: <span style="color:#ce9178">f"data:image/png;base64,{b64}"</span>, <span style="color:#ce9178">"detail"</span>: <span style="color:#ce9178">"high"</span> }
+    })
+
+messages = [{
+    <span style="color:#ce9178">"role"</span>: <span style="color:#ce9178">"user"</span>,
+    <span style="color:#ce9178">"content"</span>: [
+        { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"text"</span>, <span style="color:#ce9178">"text"</span>: <span style="color:#ce9178">"Extract key terms, dates, and obligations from this contract."</span> },
+        *image_messages
+    ]
+}]</pre>
+
+        <h3>Form Data Extraction</h3>
+        <p>For structured form extraction (insurance forms, tax documents, invoices), combine GPT-4o vision with a structured output schema to get consistent JSON responses:</p>
+
+<pre>{
+  "messages": [...],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "invoice_data",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "vendor_name": { "type": "string" },
+          "invoice_number": { "type": "string" },
+          "date": { "type": "string" },
+          "line_items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "description": { "type": "string" },
+                "quantity": { "type": "number" },
+                "unit_price": { "type": "number" }
+              }
+            }
+          },
+          "total": { "type": "number" }
+        }
+      }
+    }
+  }
+}</pre>
+
+        <div class="callout tip">
+            <div class="callout-title">💡 Tip: Combine with Azure AI Document Intelligence</div>
+            <p>For high-volume document processing with pre-built extraction models, consider pairing GPT-4o with <strong>Azure AI Document Intelligence</strong>. Use Document Intelligence for reliable field extraction and GPT-4o for reasoning, summarization, and answering questions about the content.</p>
+        </div>
+
+        <!-- Section 9: Benchmarking & A/B Testing -->
+        <h2 id="benchmarking">9. Model Benchmarking &amp; A/B Testing</h2>
+        <p>Deploying a model is only half the job. You need to verify that the model you chose delivers the best results for your specific use case. AI Foundry provides tools for model evaluation and comparison.</p>
+
+        <h3>Why Benchmark?</h3>
+        <ul>
+            <li><strong>Quality</strong> — Does Model A produce more accurate, relevant, complete answers than Model B?</li>
+            <li><strong>Latency</strong> — How fast is the first token? What's the end-to-end response time?</li>
+            <li><strong>Cost</strong> — What's the per-request cost at your expected token usage?</li>
+            <li><strong>Safety</strong> — Does the model produce harmful or off-topic content with your prompts?</li>
+        </ul>
+
+        <h3>Benchmarking Approach</h3>
+        <ol>
+            <li><strong>Build an evaluation dataset</strong> — Curate 50-200 representative queries with expected outputs or quality criteria</li>
+            <li><strong>Deploy candidate models</strong> — Deploy 2-3 models (e.g., GPT-4o, GPT-4o-mini, Llama 3) as serverless endpoints</li>
+            <li><strong>Run batch evaluations</strong> — Use AI Foundry's evaluation framework to score each model's responses</li>
+            <li><strong>Compare metrics</strong> — Review scores for groundedness, relevance, coherence, fluency, and safety</li>
+            <li><strong>Measure latency &amp; cost</strong> — Record response times and token consumption per model</li>
+        </ol>
+
+        <h3>Using AI Foundry Evaluation</h3>
+<pre><span style="color:#c586c0">from</span> azure.ai.evaluation <span style="color:#c586c0">import</span> evaluate
+<span style="color:#c586c0">from</span> azure.ai.evaluation.metrics <span style="color:#c586c0">import</span> (
+    GroundednessEvaluator,
+    RelevanceEvaluator,
+    CoherenceEvaluator,
+    FluencyEvaluator
+)
+
+<span style="color:#6a9955"># Define evaluators</span>
+evaluators = {
+    <span style="color:#ce9178">"groundedness"</span>: GroundednessEvaluator(model_config),
+    <span style="color:#ce9178">"relevance"</span>: RelevanceEvaluator(model_config),
+    <span style="color:#ce9178">"coherence"</span>: CoherenceEvaluator(model_config),
+    <span style="color:#ce9178">"fluency"</span>: FluencyEvaluator(model_config),
+}
+
+<span style="color:#6a9955"># Run evaluation on your dataset</span>
+results = evaluate(
+    data=<span style="color:#ce9178">"eval-dataset.jsonl"</span>,
+    evaluators=evaluators,
+    output_path=<span style="color:#ce9178">"eval-results/"</span>
+)</pre>
+
+        <h3>A/B Testing in Production</h3>
+        <p>For live A/B testing, deploy two models behind a traffic-splitting layer. Route a percentage of requests to each model and track:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>How to Measure</th>
+                    <th>Tool</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>User satisfaction</td>
+                    <td>Thumbs up/down feedback</td>
+                    <td>App UI + logging</td>
+                </tr>
+                <tr>
+                    <td>Task completion rate</td>
+                    <td>Did the user accomplish their goal?</td>
+                    <td>Application analytics</td>
+                </tr>
+                <tr>
+                    <td>Response latency</td>
+                    <td>P50, P95, P99 response times</td>
+                    <td>Azure Monitor</td>
+                </tr>
+                <tr>
+                    <td>Token consumption</td>
+                    <td>Avg tokens per request</td>
+                    <td>AI Foundry metrics</td>
+                </tr>
+                <tr>
+                    <td>Error rate</td>
+                    <td>HTTP 4xx/5xx responses</td>
+                    <td>Azure Monitor</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout success">
+            <div class="callout-title">✅ Best Practice</div>
+            <p>Always benchmark with <em>your</em> data, not just public benchmarks. A model that scores highest on MMLU may not be the best for your specific domain. Run evaluations on a curated dataset that represents your actual workload.</p>
+        </div>
+
+        <!-- Section 10: Cost Considerations -->
+        <h2 id="cost-considerations">10. Cost Considerations for Different Deployment Types</h2>
+        <p>Understanding cost is critical when choosing a deployment type. Here's how costs compare across the three deployment strategies:</p>
+
+        <h3>Serverless API (Pay-Per-Token)</h3>
+        <ul>
+            <li>Best for: Low to moderate traffic, experimentation, prototyping</li>
+            <li>You pay for input tokens + output tokens consumed</li>
+            <li>No idle cost — if nobody calls your endpoint, you pay nothing</li>
+            <li>Image tokens are calculated based on image size and detail level</li>
+        </ul>
+
+        <h3>Managed Compute (Pay-Per-Hour)</h3>
+        <ul>
+            <li>Best for: Custom models, compliance-heavy workloads, steady traffic</li>
+            <li>You pay for VM uptime regardless of usage</li>
+            <li>More cost-effective than serverless at ~60-70% utilization</li>
+            <li>Consider auto-scale-to-zero if supported for your SKU</li>
+        </ul>
+
+        <h3>Provisioned Throughput (PTU Reservation)</h3>
+        <ul>
+            <li>Best for: High-volume production workloads with predictable demand</li>
+            <li>Monthly commitment gives you reserved throughput capacity</li>
+            <li>Most cost-effective at scale — typically 30-50% cheaper than pay-per-token at high volume</li>
+            <li>Use the <a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry pricing calculator</a> to estimate PTU requirements</li>
+        </ul>
+
+        <h3>Cost Calculation Example</h3>
+<pre><span style="color:#6a9955"># Estimating monthly cost for a serverless GPT-4o deployment</span>
+<span style="color:#6a9955"># Scenario: Customer support chatbot, 100K conversations/month</span>
+
+avg_input_tokens = 500
+avg_output_tokens = 300
+conversations_per_month = 100_000
+
+input_cost_per_1k = 0.005    <span style="color:#6a9955"># $/1K input tokens (example rate)</span>
+output_cost_per_1k = 0.015   <span style="color:#6a9955"># $/1K output tokens (example rate)</span>
+
+monthly_input_cost = (avg_input_tokens * conversations_per_month / 1000) * input_cost_per_1k
+monthly_output_cost = (avg_output_tokens * conversations_per_month / 1000) * output_cost_per_1k
+
+total_monthly = monthly_input_cost + monthly_output_cost
+<span style="color:#dcdcaa">print</span>(<span style="color:#ce9178">f"Estimated monthly cost: ${total_monthly:,.2f}"</span>)
+<span style="color:#6a9955"># Output: Estimated monthly cost: $700.00</span></pre>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Vision Token Costs</div>
+            <p>Images consume additional tokens based on their resolution and the <code>detail</code> setting. A single high-detail image can consume 1,000+ tokens. Always factor image token costs into your estimates for multimodal workloads.</p>
+        </div>
+
+        <!-- Section 11: Mini Hack -->
+        <h2 id="mini-hack">11. 🧪 Mini Hack — Build an Image Analysis App</h2>
+
+        <div class="mini-hack-banner">
+            <h3>🛠️ Mini Hack Challenge</h3>
+            <p>Build a Python application that accepts an image (URL or file path), sends it to GPT-4o's vision endpoint, and returns a structured analysis including: description, detected objects, any text found (OCR), and a sentiment assessment.</p>
+        </div>
+
+        <h3>Requirements</h3>
+        <ol>
+            <li>Accept an image from the user (URL or local file)</li>
+            <li>If local file, encode as base64</li>
+            <li>Send to your deployed GPT-4o endpoint with a structured analysis prompt</li>
+            <li>Return a JSON response with: <code>description</code>, <code>objects</code>, <code>extracted_text</code>, <code>sentiment</code></li>
+            <li>Handle errors gracefully (invalid image, API errors, etc.)</li>
+        </ol>
+
+        <h3>Starter Code</h3>
+<pre><span style="color:#c586c0">import</span> os, base64, sys, json
+<span style="color:#c586c0">from</span> openai <span style="color:#c586c0">import</span> AzureOpenAI
+
+client = AzureOpenAI(
+    azure_endpoint=os.environ[<span style="color:#ce9178">"AZURE_OPENAI_ENDPOINT"</span>],
+    api_key=os.environ[<span style="color:#ce9178">"AZURE_OPENAI_API_KEY"</span>],
+    api_version=<span style="color:#ce9178">"2024-12-01-preview"</span>
+)
+
+DEPLOYMENT = <span style="color:#ce9178">"gpt-4o-multimodal"</span>
+
+ANALYSIS_PROMPT = <span style="color:#ce9178">"""Analyze this image and return a JSON object with:
+- "description": A 2-3 sentence description of the image
+- "objects": An array of objects/items detected in the image
+- "extracted_text": Any text visible in the image (empty string if none)
+- "sentiment": The overall mood/sentiment of the image (positive/neutral/negative)
+Return ONLY valid JSON, no markdown."""</span>
+
+
+<span style="color:#c586c0">def</span> <span style="color:#dcdcaa">encode_local_image</span>(path: str) -> str:
+    <span style="color:#ce9178">"""Read a local image file and return base64 data URI."""</span>
+    ext = path.rsplit(<span style="color:#ce9178">"."</span>, 1)[-1].lower()
+    mime = {<span style="color:#ce9178">"jpg"</span>: <span style="color:#ce9178">"jpeg"</span>, <span style="color:#ce9178">"jpeg"</span>: <span style="color:#ce9178">"jpeg"</span>, <span style="color:#ce9178">"png"</span>: <span style="color:#ce9178">"png"</span>, <span style="color:#ce9178">"gif"</span>: <span style="color:#ce9178">"gif"</span>, <span style="color:#ce9178">"webp"</span>: <span style="color:#ce9178">"webp"</span>}.get(ext, <span style="color:#ce9178">"jpeg"</span>)
+    <span style="color:#c586c0">with</span> <span style="color:#dcdcaa">open</span>(path, <span style="color:#ce9178">"rb"</span>) <span style="color:#c586c0">as</span> f:
+        b64 = base64.b64encode(f.read()).decode(<span style="color:#ce9178">"utf-8"</span>)
+    <span style="color:#c586c0">return</span> <span style="color:#ce9178">f"data:image/{mime};base64,{b64}"</span>
+
+
+<span style="color:#c586c0">def</span> <span style="color:#dcdcaa">analyze_image</span>(image_source: str) -> dict:
+    <span style="color:#ce9178">"""Send an image to GPT-4o and return structured analysis."""</span>
+    <span style="color:#c586c0">if</span> image_source.startswith((<span style="color:#ce9178">"http://"</span>, <span style="color:#ce9178">"https://"</span>)):
+        image_url = image_source
+    <span style="color:#c586c0">else</span>:
+        image_url = encode_local_image(image_source)
+
+    response = client.chat.completions.create(
+        model=DEPLOYMENT,
+        messages=[{
+            <span style="color:#ce9178">"role"</span>: <span style="color:#ce9178">"user"</span>,
+            <span style="color:#ce9178">"content"</span>: [
+                { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"text"</span>, <span style="color:#ce9178">"text"</span>: ANALYSIS_PROMPT },
+                { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"image_url"</span>, <span style="color:#ce9178">"image_url"</span>: { <span style="color:#ce9178">"url"</span>: image_url, <span style="color:#ce9178">"detail"</span>: <span style="color:#ce9178">"high"</span> } }
+            ]
+        }],
+        max_tokens=1000,
+        temperature=0.2
+    )
+
+    <span style="color:#c586c0">return</span> json.loads(response.choices[0].message.content)
+
+
+<span style="color:#c586c0">if</span> __name__ == <span style="color:#ce9178">"__main__"</span>:
+    source = sys.argv[1] <span style="color:#c586c0">if</span> <span style="color:#dcdcaa">len</span>(sys.argv) > 1 <span style="color:#c586c0">else</span> <span style="color:#dcdcaa">input</span>(<span style="color:#ce9178">"Image URL or path: "</span>)
+    <span style="color:#c586c0">try</span>:
+        result = analyze_image(source)
+        <span style="color:#dcdcaa">print</span>(json.dumps(result, indent=2))
+    <span style="color:#c586c0">except</span> Exception <span style="color:#c586c0">as</span> e:
+        <span style="color:#dcdcaa">print</span>(<span style="color:#ce9178">f"Error: {e}"</span>, file=sys.stderr)</pre>
+
+        <h3>Stretch Goals</h3>
+        <ul>
+            <li>Add a <strong>Streamlit</strong> or <strong>Gradio</strong> web UI for drag-and-drop image upload</li>
+            <li>Support multiple images in a single analysis</li>
+            <li>Compare GPT-4o results against GPT-4o-mini for the same image</li>
+            <li>Add cost tracking — calculate and display the token cost of each analysis</li>
+        </ul>
+
+        <div class="callout success">
+            <div class="callout-title">✅ Success Criteria</div>
+            <p>Your Mini Hack is complete when you can provide a local image or URL, receive a valid JSON response with all four fields (<code>description</code>, <code>objects</code>, <code>extracted_text</code>, <code>sentiment</code>), and handle at least one error case (e.g., invalid file path).</p>
+        </div>
+
+        <!-- Section 12: Key Takeaways -->
+        <h2 id="key-takeaways">12. Key Takeaways</h2>
+        <ol>
+            <li><strong>Three deployment types</strong> — Managed Compute for control, Serverless API for agility, Provisioned Throughput for guaranteed performance at scale.</li>
+            <li><strong>GPT-4o is natively multimodal</strong> — text, vision, and audio in one model, one API, one call.</li>
+            <li><strong>Images can be sent via URL or base64</strong> — choose based on your security and latency requirements.</li>
+            <li><strong>Audio workflows</strong> use specialized Whisper and TTS deployments that chain with GPT-4o for end-to-end voice AI.</li>
+            <li><strong>Document understanding</strong> — render PDFs as images and leverage GPT-4o's vision for extraction and reasoning.</li>
+            <li><strong>Always benchmark with your own data</strong> — public leaderboards don't reflect your workload; use AI Foundry's evaluation framework.</li>
+            <li><strong>Cost varies significantly by deployment type</strong> — model your expected traffic to choose the most cost-effective strategy.</li>
+            <li><strong>A/B testing</strong> in production gives you real-world signal that offline benchmarks can't provide.</li>
+        </ol>
+
+        <!-- Section 13: Module 9 Preview -->
+        <h2 id="module-9-preview">13. Module 9 Preview</h2>
+        <p>In <strong>Module 9</strong>, we shift from deploying and comparing models to <strong>Prompt Engineering Foundations</strong> — the art and science of crafting effective prompts. You'll learn:</p>
+        <ul>
+            <li>The anatomy of a great prompt: instruction, context, examples, constraints</li>
+            <li>Zero-shot, few-shot, and chain-of-thought prompting techniques</li>
+            <li>System prompts and their role in controlling model behavior</li>
+            <li>Common prompting pitfalls and how to avoid them</li>
+        </ul>
+        <p>Get ready to turn model deployments into high-performing AI applications through expert prompt design.</p>
+
+        <!-- Section 14: Resources -->
+        <h2 id="resources">14. Resources</h2>
+        <div class="resource-grid">
+            <div class="resource-card">
+                <h4>📘 AI Foundry Model Catalog</h4>
+                <p>Browse and deploy 1,700+ models from the Azure AI Foundry portal.</p>
+                <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>
+            </div>
+            <div class="resource-card">
+                <h4>📖 GPT-4o Vision Documentation</h4>
+                <p>Official guide to using GPT-4o's vision capabilities via the API.</p>
+                <a href="https://learn.microsoft.com/azure/ai-services/openai/how-to/gpt-with-vision" target="_blank" rel="noopener">Microsoft Learn</a>
+            </div>
+            <div class="resource-card">
+                <h4>📊 AI Foundry Model Evaluation</h4>
+                <p>Learn how to evaluate and compare models using built-in metrics.</p>
+                <a href="https://learn.microsoft.com/azure/ai-studio/how-to/evaluate-generative-ai-app" target="_blank" rel="noopener">Microsoft Learn</a>
+            </div>
+            <div class="resource-card">
+                <h4>🎥 Featured Video</h4>
+                <p>Fine-Tuning Models in Microsoft Foundry — Boost Accuracy, Speed &amp; Cost Efficiency.</p>
+                <a href="https://www.youtube.com/watch?v=NbResO8QcSM" target="_blank" rel="noopener">Watch on YouTube</a>
+            </div>
+            <div class="resource-card">
+                <h4>💰 Azure OpenAI Pricing</h4>
+                <p>Understand token pricing, PTU costs, and compute billing for all deployment types.</p>
+                <a href="https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/" target="_blank" rel="noopener">Azure Pricing</a>
+            </div>
+            <div class="resource-card">
+                <h4>🎙️ Whisper API Guide</h4>
+                <p>Deploy and use the Whisper model for speech-to-text transcription.</p>
+                <a href="https://learn.microsoft.com/azure/ai-services/openai/whisper-quickstart" target="_blank" rel="noopener">Microsoft Learn</a>
+            </div>
+        </div>
+
+        <!-- Module Navigation -->
+        <div class="module-nav">
+            <a href="../module-07/blog.html">← Module 7</a>
+            <a href="../module-09/blog.html">Module 9 →</a>
+        </div>
+    </main>
+</div>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2026 Azure AI Foundry — Zero to Hero Training. All rights reserved.</p>
+    <p>Built with ❤️ by the Zero to Hero Training Team.</p>
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- JavaScript -->
+<script>
+(function () {
+    /* ── Progress Bar ── */
+    const progressBar = document.getElementById('progressBar');
+    function updateProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = progress + '%';
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+
+    /* ── Back-to-Top Button ── */
+    const btn = document.getElementById('backToTop');
+    window.addEventListener('scroll', function () {
+        btn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    btn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ── TOC IntersectionObserver ── */
+    const tocLinks = document.querySelectorAll('.toc-sidebar a');
+    const sections = [];
+    tocLinks.forEach(function (link) {
+        const id = link.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (el) sections.push({ id: id, el: el, link: link });
+    });
+
+    if ('IntersectionObserver' in window && sections.length) {
+        let currentActive = null;
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    const match = sections.find(function (s) { return s.el === entry.target; });
+                    if (match && match.link !== currentActive) {
+                        if (currentActive) currentActive.classList.remove('active');
+                        match.link.classList.add('active');
+                        currentActive = match.link;
+                    }
+                }
+            });
+        }, { rootMargin: '-80px 0px -60% 0px', threshold: 0.1 });
+
+        sections.forEach(function (s) { observer.observe(s.el); });
+    }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Module 10 of Azure AI Foundry Zero to Hero — Evaluation, Content Safety & Testing. Learn AI evaluation metrics, content safety filters, red-teaming, and automated evaluation pipelines." />
+    <meta name="author" content="Zero to Hero Training Team" />
+    <meta name="date" content="2026-04" />
+    <title>Module 10 — Evaluation, Content Safety &amp; Testing | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ============================================================
+           CSS CUSTOM PROPERTIES
+           ============================================================ */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-gray: #f3f2f1;
+            --ms-border: #e1dfdd;
+            --ms-text: #323130;
+            --ms-text-secondary: #605e5c;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --ms-info: #0078d4;
+            --content-max: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 48px;
+            --font-stack: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-stack);
+            color: var(--ms-text);
+            background: #fff;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ============================================================
+           SCROLL PROGRESS BAR
+           ============================================================ */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* ============================================================
+           TOP NAVIGATION BAR
+           ============================================================ */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #1b1b1b;
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+        }
+        .top-nav .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            margin-right: auto;
+        }
+        .top-nav .nav-brand svg { flex-shrink: 0; }
+        .top-nav .nav-links { display: flex; gap: 20px; }
+        .top-nav .nav-links a {
+            color: #d4d4d4;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-links a:hover { color: #fff; }
+
+        /* ============================================================
+           HERO SECTION
+           ============================================================ */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #fff;
+            padding: 64px 24px 56px;
+            text-align: center;
+        }
+        .hero .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: 0.92;
+            max-width: 640px;
+            margin: 0 auto 24px;
+        }
+        .hero .meta {
+            font-size: 0.85rem;
+            opacity: 0.78;
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .hero .meta span { display: flex; align-items: center; gap: 6px; }
+
+        /* ============================================================
+           LAYOUT — SIDEBAR + CONTENT
+           ============================================================ */
+        .page-wrapper {
+            display: flex;
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* STICKY TOC SIDEBAR */
+        .toc-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + 24px);
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            max-height: calc(100vh - var(--nav-height) - 48px);
+            overflow-y: auto;
+            padding: 32px 16px 32px 0;
+            font-size: 13px;
+            align-self: flex-start;
+        }
+        .toc-sidebar h2 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+        }
+        .toc-sidebar ul { list-style: none; }
+        .toc-sidebar li { margin-bottom: 6px; }
+        .toc-sidebar a {
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 4px 0 4px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .toc-sidebar a:hover { color: var(--ms-blue); }
+        .toc-sidebar a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            font-weight: 600;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: var(--content-max);
+            padding: 40px 0 80px 48px;
+        }
+
+        /* ============================================================
+           TYPOGRAPHY
+           ============================================================ */
+        .main-content h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-border);
+            scroll-margin-top: calc(var(--nav-height) + 20px);
+        }
+        .main-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 32px 0 12px;
+            scroll-margin-top: calc(var(--nav-height) + 20px);
+        }
+        .main-content h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-text-secondary);
+            margin: 24px 0 8px;
+        }
+        .main-content p { margin-bottom: 16px; }
+        .main-content ul, .main-content ol {
+            margin: 0 0 16px 24px;
+        }
+        .main-content li { margin-bottom: 6px; }
+        .main-content a { color: var(--ms-blue); text-decoration: none; }
+        .main-content a:hover { text-decoration: underline; }
+        .main-content strong { font-weight: 600; }
+        .main-content img { max-width: 100%; border-radius: 6px; }
+
+        /* ============================================================
+           CODE BLOCKS
+           ============================================================ */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px 24px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+        }
+        :not(pre) > code {
+            background: var(--ms-light-gray);
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: var(--ms-dark-blue);
+        }
+
+        /* ============================================================
+           CALLOUT BOXES
+           ============================================================ */
+        .callout {
+            padding: 16px 20px;
+            border-left: 4px solid;
+            border-radius: 0 6px 6px 0;
+            margin: 20px 0;
+            font-size: 0.94rem;
+        }
+        .callout p:last-child { margin-bottom: 0; }
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .callout.info    { background: #eff6fc; border-color: var(--ms-info); }
+        .callout.tip     { background: #fff8e5; border-color: var(--ms-warning); }
+        .callout.success { background: #e8f5e9; border-color: var(--ms-success); }
+        .callout.warning { background: #fde7e9; border-color: var(--ms-error); }
+
+        .callout.info    .callout-title { color: var(--ms-info); }
+        .callout.tip     .callout-title { color: var(--ms-warning); }
+        .callout.success .callout-title { color: var(--ms-success); }
+        .callout.warning .callout-title { color: var(--ms-error); }
+
+        /* ============================================================
+           VIDEO EMBEDS
+           ============================================================ */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        /* ============================================================
+           TABLES
+           ============================================================ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.92rem;
+        }
+        th {
+            background: var(--ms-dark-blue);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--ms-border);
+        }
+        tr:nth-child(even) { background: var(--ms-light-gray); }
+
+        /* ============================================================
+           MINI HACK BOX
+           ============================================================ */
+        .mini-hack {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f0ff 100%);
+            border: 2px solid var(--ms-purple);
+            border-radius: 10px;
+            padding: 28px 28px 24px;
+            margin: 32px 0;
+        }
+        .mini-hack h3 {
+            color: var(--ms-purple);
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+        .mini-hack ol { margin-left: 20px; }
+        .mini-hack li { margin-bottom: 8px; }
+
+        /* ============================================================
+           MODULE NAVIGATION
+           ============================================================ */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 32px 0;
+            margin-top: 48px;
+            border-top: 2px solid var(--ms-border);
+            font-size: 0.95rem;
+        }
+        .module-nav a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .module-nav a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        footer {
+            background: var(--ms-light-gray);
+            padding: 32px 24px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--ms-text-secondary);
+            border-top: 1px solid var(--ms-border);
+        }
+
+        /* ============================================================
+           BACK TO TOP BUTTON
+           ============================================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            transition: background 0.2s, transform 0.2s;
+            z-index: 900;
+        }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+        .back-to-top.visible { display: flex; }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 900px) {
+            .toc-sidebar { display: none; }
+            .main-content { padding-left: 0; }
+            .page-wrapper { padding: 0 16px; }
+        }
+        @media (max-width: 600px) {
+            .hero { padding: 40px 16px 36px; }
+            .hero h1 { font-size: 1.5rem; }
+            .main-content h2 { font-size: 1.35rem; }
+            pre { font-size: 0.82rem; padding: 14px; }
+            .module-nav { flex-direction: column; gap: 12px; text-align: center; }
+        }
+
+        /* ============================================================
+           PRINT STYLES
+           ============================================================ */
+        @media print {
+            .top-nav, .toc-sidebar, .scroll-progress, .back-to-top, .video-container { display: none !important; }
+            .main-content { max-width: 100%; padding: 0; }
+            .hero { background: #fff !important; color: #000 !important; padding: 20px 0; }
+            .hero .series-badge { border: 1px solid #ccc; background: #f0f0f0 !important; color: #333 !important; }
+            body { font-size: 11pt; line-height: 1.5; }
+            pre { border: 1px solid #ccc; }
+            a { color: #000; text-decoration: underline; }
+            a::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+            .module-nav a::after { content: ""; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ================================================================
+     TOP NAVIGATION
+     ================================================================ -->
+<nav class="top-nav">
+    <a href="../index.html" class="nav-brand">
+        <!-- Microsoft 4-color grid logo -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="9.5" height="9.5" fill="#f25022"/>
+            <rect x="10.5" width="9.5" height="9.5" fill="#7fba00"/>
+            <rect y="10.5" width="9.5" height="9.5" fill="#00a4ef"/>
+            <rect x="10.5" y="10.5" width="9.5" height="9.5" fill="#ffb900"/>
+        </svg>
+        AI Foundry Training Blog
+    </a>
+    <div class="nav-links">
+        <a href="../index.html">Curriculum</a>
+        <a href="../resources.html">Resources</a>
+        <a href="https://ai.azure.com" target="_blank" rel="noopener noreferrer">AI Foundry Portal ↗</a>
+    </div>
+</nav>
+
+<!-- ================================================================
+     HERO SECTION
+     ================================================================ -->
+<header class="hero">
+    <div class="series-badge">ARC 2 · Prompt Engineering &amp; Models</div>
+    <h1>Module 10: Evaluation, Content Safety &amp; Testing</h1>
+    <p class="subtitle">Build trustworthy AI by mastering evaluation metrics, content safety filters, red-teaming strategies, and automated evaluation pipelines in Azure AI Foundry.</p>
+    <div class="meta">
+        <span>✍️ Zero to Hero Training Team</span>
+        <span>📅 April 2026</span>
+        <span>⏱️ 30 min read</span>
+        <span>📦 Module 10 of 45</span>
+    </div>
+</header>
+
+<!-- ================================================================
+     PAGE WRAPPER — SIDEBAR + CONTENT
+     ================================================================ -->
+<div class="page-wrapper">
+
+    <!-- ============================================================
+         STICKY TOC SIDEBAR
+         ============================================================ -->
+    <aside class="toc-sidebar" id="tocSidebar">
+        <h2>On This Page</h2>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#featured-videos">Featured Videos</a></li>
+            <li><a href="#evaluation-metrics">Evaluation Metrics</a></li>
+            <li><a href="#built-in-evaluators">Built-in Evaluators</a></li>
+            <li><a href="#content-safety">Content Safety Deep Dive</a></li>
+            <li><a href="#red-teaming">Red-Teaming</a></li>
+            <li><a href="#automated-pipelines">Automated Pipelines</a></li>
+            <li><a href="#evaluation-sdks">Evaluation SDKs</a></li>
+            <li><a href="#mini-hack">Mini Hack</a></li>
+            <li><a href="#key-takeaways">Key Takeaways</a></li>
+            <li><a href="#module-11-preview">Module 11 Preview</a></li>
+            <li><a href="#resources">Resources</a></li>
+        </ul>
+    </aside>
+
+    <!-- ============================================================
+         MAIN CONTENT
+         ============================================================ -->
+    <main class="main-content">
+
+        <!-- ============================
+             INTRODUCTION
+             ============================ -->
+        <h2 id="introduction">Trust but Verify — Why Evaluation Matters</h2>
+
+        <p>You've selected a model, tuned your prompts, and perhaps even fine-tuned for your domain. But how do you <em>know</em> the model is actually performing well? How do you guarantee it won't produce harmful, inaccurate, or offensive content in production?</p>
+
+        <p>Welcome to <strong>Module 10</strong>, the capstone of ARC 2 (Prompt Engineering &amp; Models). In this module we shift our focus from <em>building</em> AI applications to <em>measuring</em> and <em>safeguarding</em> them. We'll explore the evaluation metrics that quantify quality, the content safety systems that protect your users, red-teaming techniques that probe for weaknesses, and automated pipelines that keep your quality gates running continuously.</p>
+
+        <div class="callout info">
+            <div class="callout-title">ℹ️ Why This Module Matters</div>
+            <p>Microsoft research shows that organizations adopting structured evaluation and safety practices reduce production incidents by up to <strong>70%</strong>. Evaluation isn't overhead — it's insurance.</p>
+        </div>
+
+        <p>By the end of this module you will be able to:</p>
+        <ul>
+            <li>Evaluate AI model outputs using groundedness, relevance, coherence, fluency, and similarity metrics.</li>
+            <li>Configure Azure AI Content Safety filters, blocklists, and jailbreak detection.</li>
+            <li>Design and execute a red-teaming exercise against your AI application.</li>
+            <li>Build automated evaluation pipelines using the <code>azure-ai-evaluation</code> Python SDK.</li>
+            <li>Run a complete evaluation with safety checks on your fine-tuned model (Mini Hack).</li>
+        </ul>
+
+        <!-- ============================
+             FEATURED VIDEOS
+             ============================ -->
+        <h2 id="featured-videos">Featured Videos</h2>
+
+        <h3>🎬 Which LLM??? LLM Evaluation in Azure AI Foundry</h3>
+        <p>This video walks through how to evaluate and compare large language models inside Azure AI Foundry — a must-watch before diving into the hands-on labs.</p>
+        <div class="video-container">
+            <iframe
+                src="https://www.youtube.com/embed/BFY6czQykMU"
+                title="Which LLM??? LLM Evaluation in Azure AI Foundry"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <h3>🎬 Building Trustworthy AI: Ensuring Responsible AI With Content Safety in Azure</h3>
+        <p>Microsoft Azure's official deep dive into content safety capabilities — covering filters, blocklists, severity levels, and real-world deployment patterns.</p>
+        <div class="video-container">
+            <iframe
+                src="https://www.youtube.com/embed/bkssatMl0NE"
+                title="Building Trustworthy AI: Ensuring Responsible AI With Content Safety in Azure"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <!-- ============================
+             EVALUATION METRICS
+             ============================ -->
+        <h2 id="evaluation-metrics">Understanding AI Evaluation Metrics</h2>
+
+        <p>Azure AI Foundry provides a suite of <strong>AI-assisted evaluation metrics</strong> that use GPT-based evaluators to score model outputs on multiple quality dimensions. Understanding each metric is critical to interpreting evaluation results correctly.</p>
+
+        <h3 id="metric-groundedness">Groundedness</h3>
+        <p><strong>Definition:</strong> Does the model's response stay faithful to the provided source data (context)?</p>
+        <p>Groundedness measures whether the claims in a generated response can be traced back to the input context. This is the single most important metric for Retrieval-Augmented Generation (RAG) scenarios, where hallucination — generating plausible but unsupported facts — is the primary risk.</p>
+
+        <div class="callout tip">
+            <div class="callout-title">💡 Tip</div>
+            <p>A response can be fluent, coherent, and relevant while still being <em>ungrounded</em>. Always evaluate groundedness alongside other metrics to catch hallucinations.</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr><th>Score</th><th>Interpretation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>5</td><td>All claims are fully supported by the context</td></tr>
+                <tr><td>4</td><td>Most claims are supported; minor extrapolations</td></tr>
+                <tr><td>3</td><td>Some claims are supported, some are not</td></tr>
+                <tr><td>2</td><td>Few claims are supported; significant fabrication</td></tr>
+                <tr><td>1</td><td>Response has no grounding in the provided context</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="metric-relevance">Relevance</h3>
+        <p><strong>Definition:</strong> Does the response actually answer the question that was asked?</p>
+        <p>Relevance evaluates whether the output addresses the user's intent and query. A response could be perfectly grounded and well-written but score poorly on relevance if it answers a different question or includes only tangential information.</p>
+
+        <p>Key signals for high relevance:</p>
+        <ul>
+            <li>Directly addresses the user's question</li>
+            <li>Provides the right level of detail (not too broad, not too narrow)</li>
+            <li>Stays on topic throughout</li>
+            <li>Includes actionable information where appropriate</li>
+        </ul>
+
+        <h3 id="metric-coherence">Coherence</h3>
+        <p><strong>Definition:</strong> Is the response logically structured and easy to follow?</p>
+        <p>Coherence measures the logical flow and organization of ideas in the generated text. Does the response present information in a sensible order? Are transitions smooth? Does each sentence connect logically to the next?</p>
+
+        <p>Low coherence manifests as:</p>
+        <ul>
+            <li>Contradictory statements within the same response</li>
+            <li>Abrupt topic changes without transitions</li>
+            <li>Circular or repetitive reasoning</li>
+            <li>Conclusions that don't follow from the premises</li>
+        </ul>
+
+        <h3 id="metric-fluency">Fluency</h3>
+        <p><strong>Definition:</strong> Is the response well-written and grammatically correct?</p>
+        <p>Fluency evaluates the linguistic quality of the output — grammar, spelling, punctuation, word choice, and natural language flow. While modern LLMs tend to score high on fluency by default, it remains important for fine-tuned models (especially those trained on domain-specific or non-English data) and for applications where linguistic quality directly impacts user trust.</p>
+
+        <h3 id="metric-similarity">Similarity</h3>
+        <p><strong>Definition:</strong> How close is the generated response to a known-good reference answer?</p>
+        <p>Similarity compares the model's output against a "golden" or reference answer to measure semantic closeness. This is most useful in scenarios where you have curated ground-truth answers, such as customer support FAQ systems or standardized reporting.</p>
+
+        <div class="callout info">
+            <div class="callout-title">ℹ️ Metric Selection Guide</div>
+            <p><strong>RAG applications:</strong> Prioritize groundedness + relevance.<br/>
+            <strong>Chatbots:</strong> Focus on coherence + fluency + relevance.<br/>
+            <strong>FAQ / knowledge base:</strong> Use similarity + groundedness.<br/>
+            <strong>Content generation:</strong> Emphasize fluency + coherence.</p>
+        </div>
+
+        <!-- ============================
+             BUILT-IN EVALUATORS
+             ============================ -->
+        <h2 id="built-in-evaluators">Built-in Evaluators in AI Foundry</h2>
+
+        <p>Azure AI Foundry provides <strong>built-in evaluators</strong> that you can use directly in the portal or programmatically via the SDK. These evaluators are pre-configured, versioned, and designed to produce consistent, reproducible scores.</p>
+
+        <h3>Quality Evaluators</h3>
+        <table>
+            <thead>
+                <tr><th>Evaluator</th><th>What It Measures</th><th>Required Inputs</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>GroundednessEvaluator</code></td><td>Factual accuracy against context</td><td>query, response, context</td></tr>
+                <tr><td><code>RelevanceEvaluator</code></td><td>Alignment with user intent</td><td>query, response</td></tr>
+                <tr><td><code>CoherenceEvaluator</code></td><td>Logical flow and structure</td><td>query, response</td></tr>
+                <tr><td><code>FluencyEvaluator</code></td><td>Linguistic quality</td><td>response</td></tr>
+                <tr><td><code>SimilarityEvaluator</code></td><td>Closeness to reference answer</td><td>response, ground_truth</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Safety Evaluators</h3>
+        <table>
+            <thead>
+                <tr><th>Evaluator</th><th>What It Detects</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>ViolenceEvaluator</code></td><td>Violent or threatening content</td></tr>
+                <tr><td><code>SexualEvaluator</code></td><td>Sexually explicit material</td></tr>
+                <tr><td><code>SelfHarmEvaluator</code></td><td>Self-harm related content</td></tr>
+                <tr><td><code>HateUnfairnessEvaluator</code></td><td>Hate speech and discriminatory content</td></tr>
+                <tr><td><code>ProtectedMaterialEvaluator</code></td><td>Copyrighted or protected content</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Running Evaluations in the Portal</h3>
+        <p>The AI Foundry portal provides a visual evaluation workflow:</p>
+        <ol>
+            <li>Navigate to your project in <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>.</li>
+            <li>Select <strong>Evaluation</strong> from the left navigation.</li>
+            <li>Click <strong>+ New evaluation</strong> and choose your evaluation type.</li>
+            <li>Upload or select your test dataset (JSONL format recommended).</li>
+            <li>Select the evaluators you want to run.</li>
+            <li>Configure the model connection for AI-assisted evaluators.</li>
+            <li>Submit and review results in the dashboard.</li>
+        </ol>
+
+        <div class="callout success">
+            <div class="callout-title">✅ Best Practice</div>
+            <p>Create a <strong>baseline evaluation</strong> before making any changes to your model or prompts. This gives you a reference point for measuring improvement (or regression) over time.</p>
+        </div>
+
+        <!-- ============================
+             CONTENT SAFETY DEEP DIVE
+             ============================ -->
+        <h2 id="content-safety">Content Safety Deep Dive</h2>
+
+        <p>Azure AI Content Safety is a dedicated service that provides AI-powered moderation to detect harmful content across text and images. It integrates directly with Azure AI Foundry deployments, providing both input (prompt) and output (completion) filtering.</p>
+
+        <h3 id="safety-categories">Content Safety Categories</h3>
+        <p>Azure AI Content Safety classifies harmful content into four primary categories:</p>
+
+        <table>
+            <thead>
+                <tr><th>Category</th><th>Description</th><th>Examples</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hate &amp; Fairness</strong></td>
+                    <td>Content that attacks or discriminates against identity groups</td>
+                    <td>Slurs, stereotypes, dehumanizing language</td>
+                </tr>
+                <tr>
+                    <td><strong>Sexual</strong></td>
+                    <td>Sexually explicit or suggestive content</td>
+                    <td>Explicit descriptions, solicitation, exploitation</td>
+                </tr>
+                <tr>
+                    <td><strong>Violence</strong></td>
+                    <td>Content depicting or promoting violence</td>
+                    <td>Graphic violence, threats, glorification of harm</td>
+                </tr>
+                <tr>
+                    <td><strong>Self-Harm</strong></td>
+                    <td>Content related to self-inflicted harm</td>
+                    <td>Instructions, encouragement, or glorification of self-harm</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 id="severity-levels">Severity Levels</h3>
+        <p>Each category classifies content into four severity levels, allowing fine-grained control over what is blocked versus allowed:</p>
+
+        <table>
+            <thead>
+                <tr><th>Level</th><th>Severity</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>0</td><td><strong>Safe</strong></td><td>Content is safe and appropriate</td></tr>
+                <tr><td>2</td><td><strong>Low</strong></td><td>Mild or indirect references; generally acceptable</td></tr>
+                <tr><td>4</td><td><strong>Medium</strong></td><td>Moderate content that may be inappropriate in some contexts</td></tr>
+                <tr><td>6</td><td><strong>High</strong></td><td>Severe or explicit content; blocked by default</td></tr>
+            </tbody>
+        </table>
+
+        <div class="callout tip">
+            <div class="callout-title">💡 Threshold Configuration</div>
+            <p>You set the <strong>threshold</strong> for each category. For example, setting the Violence threshold to "Medium" means content scored as Medium (4) or higher will be blocked. Lower your thresholds for more restrictive filtering — raise them only when your use case genuinely requires it (e.g., medical content may require a higher self-harm threshold).</p>
+        </div>
+
+        <h3 id="configuring-filters">Configuring Content Filters</h3>
+        <p>Content filters are configured at the <strong>deployment level</strong> in Azure AI Foundry. You can create custom filter configurations and associate them with specific model deployments:</p>
+
+        <pre><span style="color:#6a9955;">// Example: Creating a custom content filter configuration via REST API</span>
+PUT https://{endpoint}/contentsafety/text/configurations/{config-name}?api-version=2024-09-01
+{
+  "hateResult": { "severity": "medium" },
+  "selfHarmResult": { "severity": "medium" },
+  "sexualResult": { "severity": "low" },
+  "violenceResult": { "severity": "medium" }
+}</pre>
+
+        <p>In the AI Foundry portal:</p>
+        <ol>
+            <li>Navigate to <strong>Safety + Security</strong> → <strong>Content filters</strong>.</li>
+            <li>Click <strong>+ Create content filter</strong>.</li>
+            <li>Set severity thresholds for each category on both input and output.</li>
+            <li>Optionally enable <strong>Prompt Shields</strong> (jailbreak detection).</li>
+            <li>Associate the filter with your model deployment.</li>
+        </ol>
+
+        <h3 id="custom-blocklists">Custom Blocklists</h3>
+        <p>Beyond the built-in categories, you can create <strong>custom blocklists</strong> to filter domain-specific terms that your organization deems inappropriate, such as competitor product names, internal project codenames, or regulated terminology.</p>
+
+        <pre><span style="color:#6a9955;"># Python: Create and manage a custom blocklist</span>
+<span style="color:#c586c0;">from</span> azure.ai.contentsafety <span style="color:#c586c0;">import</span> ContentSafetyClient
+<span style="color:#c586c0;">from</span> azure.ai.contentsafety.models <span style="color:#c586c0;">import</span> (
+    TextBlocklist,
+    AddOrUpdateTextBlocklistItemsOptions,
+    TextBlocklistItem,
+)
+<span style="color:#c586c0;">from</span> azure.core.credentials <span style="color:#c586c0;">import</span> AzureKeyCredential
+
+client = ContentSafetyClient(
+    endpoint=<span style="color:#ce9178;">"https://&lt;your-resource&gt;.cognitiveservices.azure.com"</span>,
+    credential=AzureKeyCredential(<span style="color:#ce9178;">"&lt;your-key&gt;"</span>),
+)
+
+<span style="color:#6a9955;"># Create a blocklist</span>
+blocklist = client.create_or_update_text_blocklist(
+    blocklist_name=<span style="color:#ce9178;">"competitor-terms"</span>,
+    options=TextBlocklist(description=<span style="color:#ce9178;">"Competitor product names"</span>),
+)
+
+<span style="color:#6a9955;"># Add terms to the blocklist</span>
+items = AddOrUpdateTextBlocklistItemsOptions(
+    blocklist_items=[
+        TextBlocklistItem(text=<span style="color:#ce9178;">"CompetitorProductX"</span>),
+        TextBlocklistItem(text=<span style="color:#ce9178;">"RivalServiceY"</span>),
+    ]
+)
+client.add_or_update_blocklist_items(
+    blocklist_name=<span style="color:#ce9178;">"competitor-terms"</span>,
+    options=items,
+)</pre>
+
+        <h3 id="jailbreak-detection">Jailbreak Detection &amp; Prompt Shield</h3>
+        <p><strong>Prompt Shield</strong> is Azure AI Foundry's defense against prompt injection and jailbreak attacks. It detects attempts to:</p>
+        <ul>
+            <li><strong>Direct jailbreaks:</strong> User prompts that try to override the system message (e.g., "Ignore all previous instructions and…")</li>
+            <li><strong>Indirect prompt injection:</strong> Malicious instructions embedded in external data sources (documents, web pages) that the model might process during RAG retrieval</li>
+        </ul>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Critical Security Note</div>
+            <p>Prompt injection is a <strong>top security risk</strong> for AI applications. Always enable Prompt Shield on production deployments. Pair it with robust system messages that reinforce boundaries, and never rely on prompt-level defenses alone.</p>
+        </div>
+
+        <p>How Prompt Shield works:</p>
+        <ol>
+            <li><strong>Input analysis:</strong> Every user prompt is analyzed for jailbreak patterns before reaching the model.</li>
+            <li><strong>Document analysis:</strong> Grounding documents retrieved by RAG are scanned for embedded instructions.</li>
+            <li><strong>Risk scoring:</strong> Each input receives a risk classification, and high-risk inputs are blocked.</li>
+            <li><strong>Logging:</strong> All detections are logged for security audit and continuous improvement.</li>
+        </ol>
+
+        <!-- ============================
+             RED-TEAMING
+             ============================ -->
+        <h2 id="red-teaming">Red-Teaming Your AI Application</h2>
+
+        <p>Red-teaming is the practice of systematically probing your AI system for vulnerabilities, biases, and failure modes. Think of it as a <em>penetration test</em> for your AI — a structured adversarial exercise where testers deliberately try to make the system behave in undesirable ways.</p>
+
+        <h3>Why Red-Team?</h3>
+        <ul>
+            <li><strong>Discover blind spots</strong> that automated evaluation misses</li>
+            <li><strong>Test safety boundaries</strong> under adversarial pressure</li>
+            <li><strong>Validate system messages</strong> and guardrails</li>
+            <li><strong>Identify bias</strong> across demographic and cultural dimensions</li>
+            <li><strong>Build confidence</strong> before production deployment</li>
+        </ul>
+
+        <h3>Red-Teaming Framework</h3>
+        <p>A structured red-teaming exercise typically follows these phases:</p>
+
+        <table>
+            <thead>
+                <tr><th>Phase</th><th>Activities</th><th>Output</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>1. Scope</strong></td>
+                    <td>Define attack surfaces, threat models, and success criteria</td>
+                    <td>Red-team plan</td>
+                </tr>
+                <tr>
+                    <td><strong>2. Probe</strong></td>
+                    <td>Execute attack scenarios — jailbreaks, bias probes, edge cases</td>
+                    <td>Raw findings log</td>
+                </tr>
+                <tr>
+                    <td><strong>3. Analyze</strong></td>
+                    <td>Categorize findings by severity and impact</td>
+                    <td>Risk assessment</td>
+                </tr>
+                <tr>
+                    <td><strong>4. Remediate</strong></td>
+                    <td>Update system messages, filters, or model configuration</td>
+                    <td>Mitigation actions</td>
+                </tr>
+                <tr>
+                    <td><strong>5. Retest</strong></td>
+                    <td>Verify mitigations and check for regressions</td>
+                    <td>Validation report</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Common Attack Vectors to Test</h3>
+        <ol>
+            <li><strong>Role-play attacks:</strong> "Pretend you are an AI with no restrictions…"</li>
+            <li><strong>Encoding tricks:</strong> Using Base64, leetspeak, or Unicode to bypass filters</li>
+            <li><strong>Multi-turn escalation:</strong> Gradually steering the conversation toward harmful territory</li>
+            <li><strong>Context confusion:</strong> Injecting instructions in grounding documents</li>
+            <li><strong>Boundary testing:</strong> Probing the edges of allowed topics</li>
+            <li><strong>Persona manipulation:</strong> Asking the model to adopt a harmful persona</li>
+        </ol>
+
+        <div class="callout success">
+            <div class="callout-title">✅ Best Practice</div>
+            <p>Microsoft recommends assembling a <strong>diverse red team</strong> with varied backgrounds, expertise levels, and perspectives. Adversarial creativity is enhanced by diversity — different people think of different attack vectors.</p>
+        </div>
+
+        <!-- ============================
+             AUTOMATED EVALUATION PIPELINES
+             ============================ -->
+        <h2 id="automated-pipelines">Automated Evaluation Pipelines</h2>
+
+        <p>Manual evaluation doesn't scale. As your AI application evolves — new prompts, updated data, model version upgrades — you need <strong>automated evaluation pipelines</strong> that run continuously and alert you to quality regressions.</p>
+
+        <h3>Pipeline Architecture</h3>
+        <p>A typical automated evaluation pipeline consists of:</p>
+        <ol>
+            <li><strong>Test dataset management:</strong> Versioned datasets with queries, expected outputs, and ground-truth contexts.</li>
+            <li><strong>Evaluation run orchestration:</strong> Triggered on code changes, model updates, or on a schedule.</li>
+            <li><strong>Multi-metric scoring:</strong> Run quality evaluators (groundedness, relevance, etc.) and safety evaluators in parallel.</li>
+            <li><strong>Threshold gating:</strong> Define minimum acceptable scores. Fail the pipeline if any metric drops below the threshold.</li>
+            <li><strong>Reporting &amp; alerting:</strong> Generate dashboards, store historical trends, and alert on regressions.</li>
+        </ol>
+
+        <h3>CI/CD Integration</h3>
+        <p>Integrate your evaluation pipeline into your CI/CD workflow so every deployment is validated:</p>
+
+        <pre><span style="color:#6a9955;"># azure-pipelines.yml — Evaluation gate example</span>
+<span style="color:#569cd6;">stages:</span>
+  - <span style="color:#569cd6;">stage:</span> Evaluate
+    <span style="color:#569cd6;">jobs:</span>
+      - <span style="color:#569cd6;">job:</span> RunEvaluation
+        <span style="color:#569cd6;">steps:</span>
+          - script: |
+              pip install azure-ai-evaluation
+              python run_evaluation.py \
+                --dataset tests/eval_dataset.jsonl \
+                --evaluators groundedness relevance coherence \
+                --min-scores '{"groundedness": 4.0, "relevance": 4.0}' \
+                --output results/
+            displayName: <span style="color:#ce9178;">"Run AI Evaluation"</span>
+
+          - script: |
+              python check_thresholds.py --results results/scores.json
+            displayName: <span style="color:#ce9178;">"Validate Quality Thresholds"</span>
+
+  - <span style="color:#569cd6;">stage:</span> Deploy
+    <span style="color:#569cd6;">dependsOn:</span> Evaluate
+    <span style="color:#569cd6;">condition:</span> succeeded()
+    <span style="color:#569cd6;">jobs:</span>
+      - <span style="color:#569cd6;">job:</span> DeployToProduction
+        <span style="color:#569cd6;">steps:</span>
+          - script: echo <span style="color:#ce9178;">"Deploying evaluated model..."</span></pre>
+
+        <div class="callout info">
+            <div class="callout-title">ℹ️ Continuous Evaluation</div>
+            <p>Consider running evaluations not just at deployment time, but also on a <strong>daily or weekly schedule</strong> against production traffic samples. This catches drift — gradual degradation that happens as real-world data evolves.</p>
+        </div>
+
+        <!-- ============================
+             EVALUATION SDKs
+             ============================ -->
+        <h2 id="evaluation-sdks">Evaluation SDKs — Python <code>azure-ai-evaluation</code></h2>
+
+        <p>The <code>azure-ai-evaluation</code> Python package is the primary SDK for running evaluations programmatically. It provides a clean API for individual evaluators and batch evaluation runs.</p>
+
+        <h3>Installation</h3>
+        <pre>pip install azure-ai-evaluation</pre>
+
+        <h3>Running Individual Evaluators</h3>
+        <pre><span style="color:#c586c0;">from</span> azure.ai.evaluation <span style="color:#c586c0;">import</span> (
+    GroundednessEvaluator,
+    RelevanceEvaluator,
+    CoherenceEvaluator,
+    FluencyEvaluator,
+)
+
+<span style="color:#6a9955;"># Initialize evaluator with your AI Foundry project</span>
+groundedness = GroundednessEvaluator(model_config={
+    <span style="color:#ce9178;">"azure_endpoint"</span>: <span style="color:#ce9178;">"https://&lt;your-endpoint&gt;.openai.azure.com/"</span>,
+    <span style="color:#ce9178;">"azure_deployment"</span>: <span style="color:#ce9178;">"gpt-4o"</span>,
+    <span style="color:#ce9178;">"api_version"</span>: <span style="color:#ce9178;">"2024-12-01-preview"</span>,
+})
+
+<span style="color:#6a9955;"># Evaluate a single response</span>
+result = groundedness(
+    query=<span style="color:#ce9178;">"What is Azure AI Foundry?"</span>,
+    response=<span style="color:#ce9178;">"Azure AI Foundry is a unified platform for building AI apps."</span>,
+    context=<span style="color:#ce9178;">"Azure AI Foundry is Microsoft's unified platform for developing, "</span>
+            <span style="color:#ce9178;">"deploying, and managing AI applications."</span>,
+)
+
+print(f<span style="color:#ce9178;">"Groundedness score: {result['groundedness']}"</span>)
+<span style="color:#6a9955;"># Output: Groundedness score: 5</span></pre>
+
+        <h3>Batch Evaluation with Multiple Metrics</h3>
+        <pre><span style="color:#c586c0;">from</span> azure.ai.evaluation <span style="color:#c586c0;">import</span> evaluate
+
+<span style="color:#6a9955;"># Run a batch evaluation across your test dataset</span>
+results = evaluate(
+    data=<span style="color:#ce9178;">"test_dataset.jsonl"</span>,
+    evaluators={
+        <span style="color:#ce9178;">"groundedness"</span>: GroundednessEvaluator(model_config=model_config),
+        <span style="color:#ce9178;">"relevance"</span>: RelevanceEvaluator(model_config=model_config),
+        <span style="color:#ce9178;">"coherence"</span>: CoherenceEvaluator(model_config=model_config),
+        <span style="color:#ce9178;">"fluency"</span>: FluencyEvaluator(model_config=model_config),
+    },
+    evaluator_config={
+        <span style="color:#ce9178;">"default"</span>: {
+            <span style="color:#ce9178;">"query"</span>: <span style="color:#ce9178;">"${data.query}"</span>,
+            <span style="color:#ce9178;">"response"</span>: <span style="color:#ce9178;">"${data.response}"</span>,
+            <span style="color:#ce9178;">"context"</span>: <span style="color:#ce9178;">"${data.context}"</span>,
+        }
+    },
+)
+
+<span style="color:#6a9955;"># View aggregate results</span>
+print(results[<span style="color:#ce9178;">"metrics"</span>])
+<span style="color:#6a9955;"># {</span>
+<span style="color:#6a9955;">#   "groundedness.groundedness": 4.2,</span>
+<span style="color:#6a9955;">#   "relevance.relevance": 4.5,</span>
+<span style="color:#6a9955;">#   "coherence.coherence": 4.7,</span>
+<span style="color:#6a9955;">#   "fluency.fluency": 4.8</span>
+<span style="color:#6a9955;"># }</span></pre>
+
+        <h3>Adding Safety Evaluators</h3>
+        <pre><span style="color:#c586c0;">from</span> azure.ai.evaluation <span style="color:#c586c0;">import</span> (
+    ViolenceEvaluator,
+    SexualEvaluator,
+    SelfHarmEvaluator,
+    HateUnfairnessEvaluator,
+)
+
+<span style="color:#6a9955;"># Add safety evaluators to your batch run</span>
+safety_results = evaluate(
+    data=<span style="color:#ce9178;">"test_dataset.jsonl"</span>,
+    evaluators={
+        <span style="color:#ce9178;">"violence"</span>: ViolenceEvaluator(model_config=model_config),
+        <span style="color:#ce9178;">"sexual"</span>: SexualEvaluator(model_config=model_config),
+        <span style="color:#ce9178;">"self_harm"</span>: SelfHarmEvaluator(model_config=model_config),
+        <span style="color:#ce9178;">"hate"</span>: HateUnfairnessEvaluator(model_config=model_config),
+    },
+)
+
+<span style="color:#6a9955;"># Check for any safety violations</span>
+<span style="color:#c586c0;">for</span> row <span style="color:#c586c0;">in</span> safety_results[<span style="color:#ce9178;">"rows"</span>]:
+    <span style="color:#c586c0;">if</span> any(v &gt; 0 <span style="color:#c586c0;">for</span> k, v <span style="color:#c586c0;">in</span> row.items() <span style="color:#c586c0;">if</span> <span style="color:#ce9178;">"_score"</span> <span style="color:#c586c0;">in</span> k):
+        print(f<span style="color:#ce9178;">"⚠️  Safety concern in row: {row}"</span>)</pre>
+
+        <!-- ============================
+             MINI HACK
+             ============================ -->
+        <h2 id="mini-hack">🛠️ Mini Hack: Evaluate Your Fine-Tuned Model with Safety Checks</h2>
+
+        <div class="mini-hack">
+            <h3>🎯 Objective</h3>
+            <p>Run a comprehensive evaluation on your fine-tuned model from the previous module, combining quality metrics and safety evaluators to validate production readiness.</p>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Azure AI Foundry project with a deployed model</li>
+                <li>Python 3.10+ with <code>azure-ai-evaluation</code> installed</li>
+                <li>A test dataset (JSONL) with query, response, context, and ground_truth fields</li>
+            </ul>
+
+            <h3>Steps</h3>
+            <ol>
+                <li><strong>Prepare your test dataset</strong> — Create a JSONL file with at least 20 test cases covering normal usage, edge cases, and adversarial inputs.</li>
+                <li><strong>Configure evaluators</strong> — Set up both quality evaluators (groundedness, relevance, coherence, fluency) and safety evaluators (violence, sexual, self-harm, hate).</li>
+                <li><strong>Run the evaluation</strong> — Execute a batch evaluation using the <code>evaluate()</code> function from the SDK.</li>
+                <li><strong>Analyze results</strong> — Review aggregate scores. Identify any rows with low quality scores or safety flags.</li>
+                <li><strong>Set quality gates</strong> — Define minimum thresholds (e.g., groundedness ≥ 4.0, all safety scores = 0) and verify your model passes.</li>
+                <li><strong>Configure content filters</strong> — In the AI Foundry portal, create a custom content filter for your deployment with appropriate severity thresholds.</li>
+                <li><strong>Red-team test</strong> — Manually test 5 adversarial prompts against your deployed model and document the results.</li>
+            </ol>
+
+            <h3>Success Criteria</h3>
+            <ul>
+                <li>All quality metrics average ≥ 4.0 / 5.0</li>
+                <li>Zero safety violations across all test cases</li>
+                <li>Content filter properly blocks adversarial test inputs</li>
+                <li>Red-team findings documented with remediation notes</li>
+            </ul>
+        </div>
+
+        <!-- ============================
+             KEY TAKEAWAYS
+             ============================ -->
+        <h2 id="key-takeaways">Key Takeaways</h2>
+
+        <div class="callout success">
+            <div class="callout-title">✅ What You Learned</div>
+            <ul>
+                <li><strong>Evaluation metrics</strong> — Groundedness, relevance, coherence, fluency, and similarity each measure a distinct quality dimension. Use them together for a complete picture.</li>
+                <li><strong>Content Safety</strong> — Azure AI Content Safety provides four-category classification (hate, sexual, violence, self-harm) with four severity levels and configurable thresholds.</li>
+                <li><strong>Prompt Shield</strong> — Protects against both direct jailbreaks and indirect prompt injection via grounding documents.</li>
+                <li><strong>Custom blocklists</strong> — Extend built-in safety with domain-specific term filtering.</li>
+                <li><strong>Red-teaming</strong> — Structured adversarial testing is essential before production deployment.</li>
+                <li><strong>Automated pipelines</strong> — Integrate evaluation into CI/CD to catch regressions continuously.</li>
+                <li><strong>Python SDK</strong> — The <code>azure-ai-evaluation</code> package provides programmatic access to all evaluators.</li>
+            </ul>
+        </div>
+
+        <!-- ============================
+             MODULE 11 PREVIEW
+             ============================ -->
+        <h2 id="module-11-preview">Module 11 Preview — ARC 3: Data &amp; RAG Begins</h2>
+
+        <p>Congratulations — you've completed <strong>ARC 2: Prompt Engineering &amp; Models</strong>! You now have the skills to select, deploy, prompt, fine-tune, and evaluate AI models in Azure AI Foundry.</p>
+
+        <p>In <strong>Module 11</strong>, we begin <strong>ARC 3: Data &amp; Retrieval-Augmented Generation (RAG)</strong>. You'll learn how to connect your AI models to your organization's data sources, starting with:</p>
+        <ul>
+            <li>Understanding the RAG pattern and why it's essential for enterprise AI</li>
+            <li>Azure AI Search fundamentals — indexes, indexers, and skillsets</li>
+            <li>Document processing pipelines for knowledge bases</li>
+            <li>Grounding your models in real data</li>
+        </ul>
+
+        <div class="callout tip">
+            <div class="callout-title">💡 Preparation for Module 11</div>
+            <p>Make sure your evaluation pipeline from this module's Mini Hack is working — you'll use it in ARC 3 to evaluate your RAG application's groundedness!</p>
+        </div>
+
+        <!-- ============================
+             RESOURCES
+             ============================ -->
+        <h2 id="resources">Resources</h2>
+
+        <h3>Official Documentation</h3>
+        <ul>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-studio/concepts/evaluation-approach-gen-ai" target="_blank" rel="noopener">Evaluation of Generative AI Applications — Microsoft Learn</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview" target="_blank" rel="noopener">Azure AI Content Safety — Overview</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-studio/concepts/evaluation-metrics-built-in" target="_blank" rel="noopener">Built-in Evaluation Metrics — AI Foundry</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/jailbreak-detection" target="_blank" rel="noopener">Prompt Shield &amp; Jailbreak Detection</a></li>
+            <li><a href="https://pypi.org/project/azure-ai-evaluation/" target="_blank" rel="noopener">azure-ai-evaluation — PyPI</a></li>
+        </ul>
+
+        <h3>Guides &amp; Best Practices</h3>
+        <ul>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/content-safety/how-to/use-blocklist" target="_blank" rel="noopener">How to Use Custom Blocklists</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/evaluate-generative-ai-app" target="_blank" rel="noopener">How to Evaluate a Generative AI App</a></li>
+            <li><a href="https://www.microsoft.com/en-us/security/blog/red-teaming/" target="_blank" rel="noopener">Microsoft Red Teaming for AI</a></li>
+        </ul>
+
+        <h3>Videos</h3>
+        <ul>
+            <li><a href="https://www.youtube.com/watch?v=BFY6czQykMU" target="_blank" rel="noopener">Which LLM??? LLM Evaluation in Azure AI Foundry</a></li>
+            <li><a href="https://www.youtube.com/watch?v=bkssatMl0NE" target="_blank" rel="noopener">Building Trustworthy AI: Content Safety in Azure</a></li>
+        </ul>
+
+        <!-- ============================
+             MODULE NAVIGATION
+             ============================ -->
+        <div class="module-nav">
+            <a href="../module-09/blog.html">← Module 9</a>
+            <a href="../module-11/blog.html">Module 11 →</a>
+        </div>
+
+    </main>
+</div>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer>
+    <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. All rights reserved.</p>
+    <p>Built with ❤️ for the AI community.</p>
+</footer>
+
+<!-- ================================================================
+     BACK TO TOP BUTTON
+     ================================================================ -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ================================================================
+     JAVASCRIPT
+     ================================================================ -->
+<script>
+(function () {
+    'use strict';
+
+    /* ----- Scroll Progress Bar ----- */
+    const scrollProgress = document.getElementById('scrollProgress');
+    function updateProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        scrollProgress.style.width = progress + '%';
+    }
+
+    /* ----- Back-to-Top Button ----- */
+    const backToTop = document.getElementById('backToTop');
+    function toggleBackToTop() {
+        backToTop.classList.toggle('visible', window.scrollY > 400);
+    }
+    backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ----- Sticky TOC Active States via IntersectionObserver ----- */
+    const tocLinks = document.querySelectorAll('.toc-sidebar a');
+    const sections = [];
+    tocLinks.forEach(function (link) {
+        const id = link.getAttribute('href').replace('#', '');
+        const section = document.getElementById(id);
+        if (section) sections.push({ id: id, el: section });
+    });
+
+    let activeId = '';
+    const observer = new IntersectionObserver(
+        function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    activeId = entry.target.id;
+                    tocLinks.forEach(function (link) {
+                        link.classList.toggle(
+                            'active',
+                            link.getAttribute('href') === '#' + activeId
+                        );
+                    });
+                }
+            });
+        },
+        {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        }
+    );
+    sections.forEach(function (s) { observer.observe(s.el); });
+
+    /* ----- Unified Scroll Handler ----- */
+    let ticking = false;
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            window.requestAnimationFrame(function () {
+                updateProgress();
+                toggleBackToTop();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+
+    /* Initial state */
+    updateProgress();
+    toggleBackToTop();
+})();
+</script>
+
+</body>
+</html>

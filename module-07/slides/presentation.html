@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 7: The Model Catalog Deep Dive — Slides</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-slide: #16213e;
+            --accent: #0078d4;
+            --accent2: #5c2d91;
+            --text: #e8e8e8;
+            --text-dim: #a0a0b8;
+            --green: #107c10;
+            --yellow: #ffb900;
+            --red: #d13438;
+            --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            font-family: var(--font);
+            color: var(--text);
+        }
+
+        .slide-container {
+            width: 100%; height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            background: var(--bg-slide);
+            text-align: center;
+        }
+
+        .slide.active { display: flex; }
+
+        .slide h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide h2 {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .slide h3 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+
+        .slide p {
+            font-size: 22px;
+            line-height: 1.6;
+            color: var(--text-dim);
+            max-width: 800px;
+        }
+
+        .slide ul, .slide ol {
+            text-align: left;
+            max-width: 750px;
+            margin: 16px auto;
+        }
+
+        .slide li {
+            font-size: 22px;
+            line-height: 1.7;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .slide li strong { color: var(--accent); }
+
+        .badge {
+            display: inline-block;
+            background: rgba(0,120,212,0.2);
+            border: 1px solid rgba(0,120,212,0.4);
+            color: var(--accent);
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .meta-line {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-top: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-top: 32px;
+            max-width: 800px;
+        }
+
+        .stat-box {
+            background: rgba(0,120,212,0.1);
+            border: 1px solid rgba(0,120,212,0.25);
+            border-radius: 12px;
+            padding: 24px 16px;
+        }
+
+        .stat-box .num {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .stat-box .label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 18px;
+            max-width: 850px;
+            width: 100%;
+        }
+
+        th {
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            color: var(--text);
+        }
+
+        tbody tr:hover { background: rgba(0,120,212,0.08); }
+
+        .card-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 28px;
+            max-width: 850px;
+        }
+
+        .s-card {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .s-card .icon { font-size: 36px; margin-bottom: 10px; }
+        .s-card .title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .s-card .desc { font-size: 14px; color: var(--text-dim); line-height: 1.4; }
+
+        .decision-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 24px;
+            max-width: 700px;
+        }
+
+        .d-step {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 14px 20px;
+            text-align: left;
+        }
+
+        .d-step .circle {
+            width: 36px; height: 36px; min-width: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 15px; color: #fff;
+        }
+
+        .d-step span { font-size: 18px; }
+
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 48px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 100;
+        }
+
+        .nav-bar button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: var(--font);
+            transition: background 0.2s;
+        }
+
+        .nav-bar button:hover { background: #005a9e; }
+        .nav-bar button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .slide-counter {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .progress-track {
+            position: fixed;
+            bottom: 48px; left: 0; right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width 0.3s ease;
+        }
+
+        .text-left { text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="slide-container" id="slideContainer">
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="badge">ARC 2 · Prompt Engineering & Models</div>
+            <h1>The Model Catalog Deep Dive</h1>
+            <p class="subtitle">Module 7 of 45 — Azure AI Foundry: Zero to Hero</p>
+            <div class="meta-line">April 2026 · Zero to Hero Training Team</div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <h2>Today's Agenda</h2>
+            <ul>
+                <li>What is the Model Catalog?</li>
+                <li>Major model families overview</li>
+                <li>Deployment types explained</li>
+                <li>Model Cards & benchmarks</li>
+                <li>Choosing the right model</li>
+                <li>Licensing & cost optimization</li>
+                <li>🔬 Mini Hack: Compare 3 models</li>
+            </ul>
+        </div>
+
+        <!-- Slide 3: Catalog Stats -->
+        <div class="slide">
+            <h2>The Model Catalog at a Glance</h2>
+            <p>Your one-stop directory for AI models in Azure AI Foundry</p>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="num">1,800+</div>
+                    <div class="label">Models</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num">25+</div>
+                    <div class="label">Providers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num">3</div>
+                    <div class="label">Deploy Types</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num">100+</div>
+                    <div class="label">Languages</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: What Is the Model Catalog -->
+        <div class="slide">
+            <h2>What Is the Model Catalog?</h2>
+            <div class="card-row">
+                <div class="s-card">
+                    <div class="icon">🔍</div>
+                    <div class="title">Discover</div>
+                    <div class="desc">Search & filter models by task, provider, license, and capability</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">📊</div>
+                    <div class="title">Evaluate</div>
+                    <div class="desc">Read model cards with benchmarks, safety info, and limitations</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">🧪</div>
+                    <div class="title">Test</div>
+                    <div class="desc">Try models in the interactive Playground before deploying</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">🚀</div>
+                    <div class="title">Deploy</div>
+                    <div class="desc">Deploy to an API endpoint with a few clicks</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: OpenAI Models -->
+        <div class="slide">
+            <h2>Model Family: OpenAI</h2>
+            <table>
+                <thead>
+                    <tr><th>Model</th><th>Best For</th><th>Context</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>GPT-4o</strong></td><td>General-purpose, multimodal</td><td>128K</td></tr>
+                    <tr><td><strong>GPT-4o mini</strong></td><td>Cost-efficient tasks</td><td>128K</td></tr>
+                    <tr><td><strong>o3</strong></td><td>Frontier reasoning</td><td>200K</td></tr>
+                    <tr><td><strong>o3-mini</strong></td><td>Balanced reasoning</td><td>200K</td></tr>
+                    <tr><td><strong>GPT-4.1</strong></td><td>Coding & agentic tasks</td><td>1M</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Slide 6: Meta Llama Models -->
+        <div class="slide">
+            <h2>Model Family: Meta Llama</h2>
+            <table>
+                <thead>
+                    <tr><th>Model</th><th>Parameters</th><th>Best For</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Llama 3.1 405B</strong></td><td>405B</td><td>Enterprise-grade tasks</td></tr>
+                    <tr><td><strong>Llama 3.1 70B</strong></td><td>70B</td><td>Balanced performance</td></tr>
+                    <tr><td><strong>Llama 3.1 8B</strong></td><td>8B</td><td>Edge & fine-tuning</td></tr>
+                    <tr><td><strong>Llama 3.2 11B Vision</strong></td><td>11B</td><td>Multimodal (text + image)</td></tr>
+                    <tr><td><strong>Llama 3.2 3B</strong></td><td>3B</td><td>Mobile & edge</td></tr>
+                </tbody>
+            </table>
+            <p style="margin-top:16px; font-size:16px;">Open-weight · Fine-tunable · Managed Compute deployment</p>
+        </div>
+
+        <!-- Slide 7: Mistral & Phi -->
+        <div class="slide">
+            <h2>Mistral & Microsoft Phi</h2>
+            <div class="card-row">
+                <div class="s-card">
+                    <div class="icon">🌪️</div>
+                    <div class="title">Mistral Large</div>
+                    <div class="desc">Top-tier multilingual reasoning. Strong code & math. European AI.</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">⚡</div>
+                    <div class="title">Mixtral 8x22B</div>
+                    <div class="desc">Mixture of Experts — activates only needed parameters for efficiency.</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">🧠</div>
+                    <div class="title">Phi-4 (14B)</div>
+                    <div class="desc">Small model, big results. MIT licensed. Ideal for on-prem & edge.</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">📱</div>
+                    <div class="title">Phi-4-mini (3.8B)</div>
+                    <div class="desc">Ultra-lightweight. 128K context. Perfect for mobile deployment.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Cohere & Others -->
+        <div class="slide">
+            <h2>Cohere & More Providers</h2>
+            <ul>
+                <li><strong>Command R+</strong> — Enterprise RAG specialist with grounded citations</li>
+                <li><strong>Embed v3</strong> — Leading multilingual embedding model (100+ languages)</li>
+                <li><strong>Rerank</strong> — Re-rank search results for better retrieval</li>
+            </ul>
+            <p style="margin-top: 24px;">Also in the catalog:</p>
+            <ul>
+                <li>NVIDIA NeMo & Nemotron</li>
+                <li>Stability AI (Stable Diffusion)</li>
+                <li>AI21 Labs (Jamba)</li>
+                <li>Databricks (DBRX)</li>
+            </ul>
+        </div>
+
+        <!-- Slide 9: Deployment Types -->
+        <div class="slide">
+            <h2>Deployment Types</h2>
+            <div class="card-row">
+                <div class="s-card">
+                    <div class="icon">☁️</div>
+                    <div class="title">Serverless API</div>
+                    <div class="desc">Pay-per-token. No infra. Fastest setup. Great for prototyping.</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">🖥️</div>
+                    <div class="title">Managed Compute</div>
+                    <div class="desc">Dedicated VMs. Full control. Required for open-weight models. Fine-tunable.</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">⚡</div>
+                    <div class="title">Provisioned Throughput</div>
+                    <div class="desc">Reserved PTUs. Guaranteed capacity. Best for high-volume production.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Model Cards -->
+        <div class="slide">
+            <h2>Model Cards: The "Nutrition Label"</h2>
+            <div class="card-row">
+                <div class="s-card">
+                    <div class="icon">📋</div>
+                    <div class="title">Overview</div>
+                    <div class="desc">Architecture, params, context window, version</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">📊</div>
+                    <div class="title">Benchmarks</div>
+                    <div class="desc">MMLU, HumanEval, GSM8K, MATH, MT-Bench</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">⚖️</div>
+                    <div class="title">Licensing</div>
+                    <div class="desc">MIT, Apache 2.0, Llama Community, Proprietary</div>
+                </div>
+                <div class="s-card">
+                    <div class="icon">🔒</div>
+                    <div class="title">Safety</div>
+                    <div class="desc">Limitations, bias, content filtering recommendations</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Decision Framework -->
+        <div class="slide">
+            <h2>Choosing the Right Model</h2>
+            <div class="decision-flow">
+                <div class="d-step">
+                    <div class="circle">1</div>
+                    <span><strong>Define Your Task</strong> — What does the model need to do?</span>
+                </div>
+                <div class="d-step">
+                    <div class="circle">2</div>
+                    <span><strong>Set Quality Bar</strong> — Frontier-class or "good enough"?</span>
+                </div>
+                <div class="d-step">
+                    <div class="circle">3</div>
+                    <span><strong>Evaluate Latency</strong> — User-facing (&lt;2s) or batch?</span>
+                </div>
+                <div class="d-step">
+                    <div class="circle">4</div>
+                    <span><strong>Check Budget</strong> — Per-token cost matters at scale</span>
+                </div>
+                <div class="d-step">
+                    <div class="circle">5</div>
+                    <span><strong>Compliance</strong> — Data residency, license, legal review</span>
+                </div>
+                <div class="d-step">
+                    <div class="circle">6</div>
+                    <span><strong>Test in Playground</strong> — Always validate with your data</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Cost Optimization -->
+        <div class="slide">
+            <h2>Licensing & Cost Optimization</h2>
+            <ul>
+                <li><strong>Right-size</strong> — Don't use GPT-4o when GPT-4o mini works</li>
+                <li><strong>Model Cascade</strong> — Route simple → cheap, complex → premium (saves 60–80%)</li>
+                <li><strong>Provisioned Throughput</strong> — Reserve PTUs for predictable workloads</li>
+                <li><strong>Cache responses</strong> — Avoid redundant API calls</li>
+                <li><strong>Optimize prompts</strong> — Shorter prompts = fewer input tokens</li>
+                <li><strong>Monitor usage</strong> — Track token consumption in AI Foundry</li>
+            </ul>
+        </div>
+
+        <!-- Slide 13: Playground -->
+        <div class="slide">
+            <h2>Playground: Test Before You Deploy</h2>
+            <ul>
+                <li>Chat mode & Completions mode</li>
+                <li>Adjust temperature, top-p, max tokens in real time</li>
+                <li>System prompt editor for persona & guardrails</li>
+                <li>Switch between deployed models for comparison</li>
+                <li>No code required — pure interactive testing</li>
+            </ul>
+            <p style="margin-top: 24px; font-size: 18px; color: var(--text-dim);">
+                💡 Deploy 2–3 candidates → Same prompts → Score responses → Pick winner
+            </p>
+        </div>
+
+        <!-- Slide 14: Mini Hack -->
+        <div class="slide">
+            <h2>🔬 Mini Hack: Compare 3 Models</h2>
+            <div class="text-left" style="max-width: 700px;">
+                <ol>
+                    <li>Deploy <strong>GPT-4o mini</strong>, <strong>Phi-4</strong>, and <strong>Mistral Small</strong></li>
+                    <li>Use identical system prompt for all three</li>
+                    <li>Test with 3 standardized prompts</li>
+                    <li>Score each response: Accuracy · Simplicity · Analogy · Conciseness</li>
+                    <li>Document results and declare a winner</li>
+                </ol>
+                <p style="margin-top: 20px; font-size: 18px;">⏱ Time: 30–45 minutes</p>
+            </div>
+        </div>
+
+        <!-- Slide 15: Wrap-Up -->
+        <div class="slide">
+            <h2>Key Takeaways</h2>
+            <ul>
+                <li><strong>1,800+ models</strong> from 25+ providers in one catalog</li>
+                <li><strong>5 major families:</strong> OpenAI, Llama, Mistral, Phi, Cohere</li>
+                <li><strong>3 deployment types:</strong> Serverless, Managed, Provisioned</li>
+                <li><strong>Model Cards</strong> = your decision-making guide</li>
+                <li><strong>Always test</strong> with real data before committing</li>
+                <li><strong>Model cascade</strong> strategy saves 60–80% on costs</li>
+            </ul>
+            <p style="margin-top: 32px; font-size: 20px;">
+                Next → <strong>Module 8: Your First Model Deployment</strong> 🚀
+            </p>
+        </div>
+
+    </div>
+
+    <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="nav-bar">
+        <button id="prevBtn" onclick="navigate(-1)">← Previous</button>
+        <span class="slide-counter" id="slideCounter">1 / 15</span>
+        <button id="nextBtn" onclick="navigate(1)">Next →</button>
+    </div>
+
+    <script>
+        (function() {
+            const slides = document.querySelectorAll('.slide');
+            let current = 0;
+
+            function showSlide(idx) {
+                slides.forEach(s => s.classList.remove('active'));
+                slides[idx].classList.add('active');
+                document.getElementById('slideCounter').textContent = (idx + 1) + ' / ' + slides.length;
+                document.getElementById('prevBtn').disabled = idx === 0;
+                document.getElementById('nextBtn').disabled = idx === slides.length - 1;
+                document.getElementById('progressFill').style.width = ((idx + 1) / slides.length * 100) + '%';
+            }
+
+            window.navigate = function(dir) {
+                const next = current + dir;
+                if (next >= 0 && next < slides.length) {
+                    current = next;
+                    showSlide(current);
+                }
+            };
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+                if (e.key === 'Home') { current = 0; showSlide(current); }
+                if (e.key === 'End') { current = slides.length - 1; showSlide(current); }
+            });
+
+            showSlide(0);
+        })();
+    </script>
+</body>
+</html>

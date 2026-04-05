@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 6 — Prompt Engineering Fundamentals | Slide Deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-purple: #bc8cff;
+    --accent-orange: #f0883e;
+    --accent-red: #f85149;
+    --accent-yellow: #d29922;
+    --code-bg: #1c2128;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100vw; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+  .slide { display: none; width: 100vw; height: 100vh; padding: 60px 80px; flex-direction: column; justify-content: center; }
+  .slide.active { display: flex; }
+  .slide-counter { position: fixed; bottom: 24px; right: 36px; font-size: 14px; color: var(--text-muted); font-family: var(--font-mono); z-index: 100; }
+  .nav-hint { position: fixed; bottom: 24px; left: 36px; font-size: 13px; color: var(--text-muted); z-index: 100; }
+  .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: var(--border); z-index: 200; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-purple)); transition: width 0.4s ease; }
+  h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  h2 { font-size: 2.0rem; font-weight: 700; line-height: 1.2; margin-bottom: 18px; color: var(--accent); }
+  h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; color: var(--accent-purple); }
+  p, li { font-size: 1.1rem; line-height: 1.7; }
+  ul { padding-left: 28px; }
+  li { margin-bottom: 8px; }
+  .badge { display: inline-block; background: linear-gradient(135deg, #0078d4, #5c2d91); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 18px; }
+  .subtitle { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 10px; }
+  code { font-family: var(--font-mono); background: var(--code-bg); padding: 2px 7px; border-radius: 5px; font-size: 0.92em; color: var(--accent-green); }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.6; margin: 14px 0; color: var(--text); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 26px; margin: 8px 0; }
+  .card.blue { border-left: 4px solid var(--accent); }
+  .card.green { border-left: 4px solid var(--accent-green); }
+  .card.purple { border-left: 4px solid var(--accent-purple); }
+  .card.orange { border-left: 4px solid var(--accent-orange); }
+  .card.red { border-left: 4px solid var(--accent-red); }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.95rem; }
+  th { text-align: left; padding: 10px 14px; background: var(--surface); color: var(--accent); border-bottom: 2px solid var(--border); font-weight: 600; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .highlight { color: var(--accent); font-weight: 600; }
+  .center-content { text-align: center; align-items: center; }
+  .title-slide h1 { font-size: 3.2rem; background: linear-gradient(135deg, var(--accent), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  @media (max-width: 900px) { .slide { padding: 28px 24px; } h1 { font-size: 2rem; } h2 { font-size: 1.4rem; } .two-col { grid-template-columns: 1fr; gap: 16px; } pre { font-size: 0.78rem; padding: 12px; } }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="slide-counter" id="slideCounter"></div>
+<div class="nav-hint">&#8592; &#8594; arrow keys to navigate</div>
+
+<!-- SLIDE 1 — Title -->
+<div class="slide active title-slide center-content">
+  <div class="badge">ARC 2 &middot; PROMPT ENGINEERING &amp; MODELS</div>
+  <h1>Prompt Engineering Fundamentals</h1>
+  <p class="subtitle">Module 6 of 45 &mdash; Azure AI Foundry: Zero to Hero</p>
+  <p style="color:var(--text-muted); margin-top:16px; font-size:0.95rem;">April 2026 &middot; Zero to Hero Training Team</p>
+</div>
+
+<!-- SLIDE 2 — Agenda -->
+<div class="slide">
+  <h2>Agenda</h2>
+  <ul>
+    <li>Why Prompt Engineering Matters</li>
+    <li>Message Roles: <code>system</code> &middot; <code>user</code> &middot; <code>assistant</code></li>
+    <li>Techniques: Zero-Shot, Few-Shot, Chain-of-Thought</li>
+    <li>Prompt Templates &amp; Best Practices</li>
+    <li>Parameters Deep Dive</li>
+    <li>AI Foundry Playground Demo</li>
+    <li>Mini Hack: Customer Feedback Classifier</li>
+  </ul>
+</div>
+
+<!-- SLIDE 3 — Why It Matters -->
+<div class="slide">
+  <h2>Why Prompt Engineering Matters</h2>
+  <div class="two-col">
+    <div>
+      <div class="card blue">
+        <h3>The Prompt IS the Program</h3>
+        <p>You don't write algorithms &mdash; you write <strong>instructions</strong>. Output quality tracks prompt quality.</p>
+      </div>
+      <div class="card green">
+        <h3>Cost &amp; Latency</h3>
+        <p>Precise prompts use fewer tokens, cut retries, and reduce API costs by up to <strong>40%</strong>.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card purple">
+        <h3>Consistency at Scale</h3>
+        <p>Production systems need <em>repeatable</em> results. Structure turns stochastic models into reliable tools.</p>
+      </div>
+      <div class="card orange">
+        <h3>No Fine-Tuning Needed</h3>
+        <p>~80% of use cases are solvable with the right prompt, no custom training required.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4 — Message Roles -->
+<div class="slide">
+  <h2>Message Roles</h2>
+  <table>
+    <tr><th>Role</th><th>Purpose</th><th>When</th></tr>
+    <tr><td><code>system</code></td><td>Persona, constraints, output format</td><td>Always &mdash; set once at the start</td></tr>
+    <tr><td><code>user</code></td><td>Human's request or input data</td><td>Every turn</td></tr>
+    <tr><td><code>assistant</code></td><td>Model's prior replies</td><td>Context continuity &amp; few-shot examples</td></tr>
+  </table>
+  <pre>{
+  "messages": [
+    { "role": "system",    "content": "You are a travel assistant. Reply in JSON." },
+    { "role": "user",      "content": "Plan a 3-day trip to Tokyo." },
+    { "role": "assistant", "content": "{\"days\": [...]}" },
+    { "role": "user",      "content": "Add a day trip to Nikko." }
+  ]
+}</pre>
+</div>
+
+<!-- SLIDE 5 — Zero-Shot -->
+<div class="slide">
+  <h2>Zero-Shot Prompting</h2>
+  <div class="two-col">
+    <div>
+      <p>No examples provided &mdash; the model infers the task from <strong>instructions alone</strong>.</p>
+      <div class="card blue" style="margin-top:16px;">
+        <h3>Best For</h3>
+        <ul>
+          <li>Simple classification</li>
+          <li>Straightforward Q&amp;A</li>
+          <li>Summarisation</li>
+          <li>Translation</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Example</h3>
+      <pre>System:
+Classify the sentiment as
+positive, negative, or neutral.
+Reply with one word only.
+
+User:
+"The battery life is incredible,
+I can go two days without charging!"
+
+→ Assistant: "positive"</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6 — Few-Shot -->
+<div class="slide">
+  <h2>Few-Shot Prompting</h2>
+  <div class="two-col">
+    <div>
+      <p>Provide <strong>2&ndash;5 examples</strong> of input &rarr; output pairs so the model learns the pattern.</p>
+      <div class="card green" style="margin-top:16px;">
+        <h3>Why It Works</h3>
+        <ul>
+          <li>Establishes output format by example</li>
+          <li>Reduces ambiguity dramatically</li>
+          <li>Guides tone, length, and structure</li>
+        </ul>
+      </div>
+      <p style="margin-top:12px;"><strong>Tip:</strong> Choose <em>diverse</em> examples that cover edge cases.</p>
+    </div>
+    <div>
+      <h3>Example</h3>
+      <pre>User: "Packaging was damaged."
+Assistant: {"sentiment": "negative"}
+
+User: "Arrived on time, works great."
+Assistant: {"sentiment": "positive"}
+
+User: "It's okay, nothing special."
+Assistant: {"sentiment": "neutral"}
+
+User: "Love the new design!"
+Assistant: ???</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7 — Chain-of-Thought -->
+<div class="slide">
+  <h2>Chain-of-Thought (CoT)</h2>
+  <div class="two-col">
+    <div>
+      <p>Instruct the model to <strong>show its reasoning</strong> step by step before giving a final answer.</p>
+      <div class="card purple" style="margin-top:16px;">
+        <h3>When to Use</h3>
+        <ul>
+          <li>Math &amp; logic problems</li>
+          <li>Multi-step reasoning</li>
+          <li>Ambiguous classification</li>
+          <li>Complex decision-making</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Without CoT</h3>
+      <pre>Q: If a shirt costs $25 and is
+   on 20% sale, what's the price?
+A: $20  ← correct but no reasoning</pre>
+      <h3>With CoT</h3>
+      <pre>Q: ... Let's think step by step.
+A: 1. Original price: $25
+   2. Discount: 25 × 0.20 = $5
+   3. Sale price: 25 − 5 = $20
+   Answer: $20 ← verifiable!</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8 — Prompt Templates -->
+<div class="slide">
+  <h2>Prompt Templates</h2>
+  <p>Separate <span class="highlight">logic</span> from <span class="highlight">data</span> using placeholders.</p>
+  <pre>SYSTEM PROMPT TEMPLATE:
+
+You are a {{role}} assistant.
+Summarise the following article in {{num_points}} bullet points.
+Use {{language}} language. Be concise.
+
+---
+ARTICLE:
+{{article_text}}
+---
+
+Respond in this JSON format:
+{
+  "summary": ["bullet 1", "bullet 2", ...],
+  "word_count": &lt;number&gt;
+}</pre>
+  <div class="card blue" style="margin-top:12px;">
+    <p><strong>In AI Foundry:</strong> Save templates in Prompt Flow for versioning, A/B testing, and team collaboration.</p>
+  </div>
+</div>
+
+<!-- SLIDE 9 — Parameters Deep Dive -->
+<div class="slide">
+  <h2>Parameters Deep Dive</h2>
+  <table>
+    <tr><th>Parameter</th><th>Range</th><th>Low</th><th>High</th></tr>
+    <tr><td><code>temperature</code></td><td>0 &ndash; 2</td><td>Deterministic, focused</td><td>Creative, varied</td></tr>
+    <tr><td><code>top_p</code></td><td>0 &ndash; 1</td><td>Narrow token pool</td><td>Broad token pool</td></tr>
+    <tr><td><code>max_tokens</code></td><td>1 &ndash; limit</td><td>Short reply</td><td>Long reply</td></tr>
+    <tr><td><code>frequency_penalty</code></td><td>-2 &ndash; 2</td><td>Allows repetition</td><td>Penalises repetition</td></tr>
+    <tr><td><code>presence_penalty</code></td><td>-2 &ndash; 2</td><td>Stays on topic</td><td>Encourages new topics</td></tr>
+  </table>
+  <div class="card orange" style="margin-top:12px;">
+    <p><strong>Rule of thumb:</strong> Tune <em>either</em> temperature <em>or</em> top_p &mdash; not both at the same time.</p>
+  </div>
+</div>
+
+<!-- SLIDE 10 — Parameter Presets -->
+<div class="slide">
+  <h2>Parameter Presets by Use Case</h2>
+  <div class="two-col">
+    <div>
+      <div class="card blue">
+        <h3>Classification / Extraction</h3>
+        <p><code>temperature: 0.0</code><br><code>top_p: 1.0</code><br><code>max_tokens: 200</code></p>
+        <p style="color:var(--text-muted);margin-top:8px;">Deterministic. Same input &rarr; same output.</p>
+      </div>
+      <div class="card green">
+        <h3>Summarisation / Q&amp;A</h3>
+        <p><code>temperature: 0.3</code><br><code>top_p: 0.95</code><br><code>max_tokens: 500</code></p>
+        <p style="color:var(--text-muted);margin-top:8px;">Slightly creative but mostly factual.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card purple">
+        <h3>Creative Writing</h3>
+        <p><code>temperature: 0.9</code><br><code>top_p: 0.95</code><br><code>max_tokens: 2000</code></p>
+        <p style="color:var(--text-muted);margin-top:8px;">High variety. Great for brainstorming.</p>
+      </div>
+      <div class="card orange">
+        <h3>Code Generation</h3>
+        <p><code>temperature: 0.2</code><br><code>top_p: 0.95</code><br><code>max_tokens: 4000</code></p>
+        <p style="color:var(--text-muted);margin-top:8px;">Low creativity. Precise, functional output.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11 — AI Foundry Playground -->
+<div class="slide">
+  <h2>AI Foundry Playground</h2>
+  <div class="two-col">
+    <div>
+      <h3>Where Everything Comes Together</h3>
+      <ul>
+        <li>Select your deployed model</li>
+        <li>Edit the <strong>System message</strong> panel</li>
+        <li>Send <strong>User</strong> messages in the chat</li>
+        <li>Adjust <strong>Parameters</strong> in the right panel</li>
+        <li>Save configurations for reuse</li>
+        <li>Export to Prompt Flow or code</li>
+      </ul>
+      <p style="margin-top:14px;"><a href="https://ai.azure.com" style="color:var(--accent);">ai.azure.com</a> &rarr; Project &rarr; Playgrounds &rarr; Chat</p>
+    </div>
+    <div>
+      <div class="card green">
+        <h3>Playground Tips</h3>
+        <ul>
+          <li>Clear chat between experiments</li>
+          <li>Use "Compare" to test two prompts side-by-side</li>
+          <li>Check token counts before sending</li>
+          <li>Save system prompts as named configs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12 — Anti-Patterns -->
+<div class="slide">
+  <h2>Common Anti-Patterns</h2>
+  <div class="two-col">
+    <div>
+      <div class="card red">
+        <h3>&#10060; Vague Instructions</h3>
+        <pre>"Do something with this data."</pre>
+        <p style="margin-top:8px;">Fix: Be specific about task, format, and constraints.</p>
+      </div>
+      <div class="card red">
+        <h3>&#10060; No Output Format</h3>
+        <pre>"Analyze this feedback."</pre>
+        <p style="margin-top:8px;">Fix: Specify JSON, markdown, bullet points, etc.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card red">
+        <h3>&#10060; Prompt Stuffing</h3>
+        <pre>"You are an expert in everything.
+Consider all possibilities..."</pre>
+        <p style="margin-top:8px;">Fix: Focus on one task per prompt. Be concise.</p>
+      </div>
+      <div class="card red">
+        <h3>&#10060; Ignoring Edge Cases</h3>
+        <pre>No handling for empty input,
+wrong language, or off-topic.</pre>
+        <p style="margin-top:8px;">Fix: Add explicit guardrails and fallback instructions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13 — Mini Hack -->
+<div class="slide">
+  <h2>Mini Hack: Feedback Classifier</h2>
+  <div class="two-col">
+    <div>
+      <h3>Your Mission</h3>
+      <ol style="padding-left:20px;">
+        <li>Open the AI Foundry Playground</li>
+        <li>Write a system prompt for classifying customer feedback into 5 categories</li>
+        <li>Add 3 few-shot examples</li>
+        <li>Include CoT for ambiguous cases</li>
+        <li>Set <code>temperature: 0.0</code></li>
+        <li>Test with 5+ messages</li>
+        <li>Handle edge cases (empty, off-topic)</li>
+      </ol>
+    </div>
+    <div>
+      <div class="card green">
+        <h3>Categories</h3>
+        <ul>
+          <li><code>product_quality</code></li>
+          <li><code>shipping</code></li>
+          <li><code>customer_service</code></li>
+          <li><code>pricing</code></li>
+          <li><code>website_app</code></li>
+        </ul>
+      </div>
+      <div class="card blue">
+        <h3>Output Format</h3>
+        <pre style="margin:0;">{ "category": "...",
+  "sentiment": "...",
+  "confidence": "..." }</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14 — Key Takeaways -->
+<div class="slide">
+  <h2>Key Takeaways</h2>
+  <ul>
+    <li><strong>System prompts</strong> are the foundation &mdash; invest time crafting them</li>
+    <li><strong>Zero-shot</strong> works for simple tasks; <strong>few-shot</strong> adds consistency</li>
+    <li><strong>Chain-of-thought</strong> dramatically improves reasoning accuracy</li>
+    <li><strong>Templates</strong> separate logic from data for reusable, testable prompts</li>
+    <li><strong>Temperature 0.0</strong> for deterministic tasks; <strong>0.7&ndash;0.9</strong> for creative tasks</li>
+    <li>Always specify <strong>output format</strong> and handle <strong>edge cases</strong> explicitly</li>
+    <li>The AI Foundry Playground is your laboratory &mdash; experiment freely</li>
+  </ul>
+</div>
+
+<!-- SLIDE 15 — Next Module -->
+<div class="slide center-content">
+  <div class="badge">COMING NEXT</div>
+  <h1 style="font-size:2.4rem; background:linear-gradient(135deg,var(--accent),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Module 7: Advanced Prompt Engineering Patterns</h1>
+  <p class="subtitle" style="margin-top:16px;">Meta-prompting &middot; Self-consistency &middot; Prompt chaining &middot; RAG prompt design</p>
+  <p style="color:var(--text-muted); margin-top:32px; font-size:0.95rem;">Azure AI Foundry &mdash; Zero to Hero &middot; April 2026</p>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('slideCounter');
+  const progress = document.getElementById('progressFill');
+  let current = 0;
+
+  function show(idx) {
+    if (idx < 0 || idx >= slides.length) return;
+    slides[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + slides.length;
+    progress.style.width = ((current + 1) / slides.length * 100) + '%';
+  }
+
+  show(0);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); show(current + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); show(current - 1); }
+    if (e.key === 'Home') { e.preventDefault(); show(0); }
+    if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.clientX > window.innerWidth / 2) show(current + 1);
+    else show(current - 1);
+  });
+})();
+</script>
+
+</body>
+</html>

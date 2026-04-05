@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 8 — Deploying & Comparing Models — Including Multimodal | Slides</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-slide: #16213e;
+            --accent: #0078d4;
+            --accent-purple: #5c2d91;
+            --text: #e0e0e0;
+            --text-bright: #ffffff;
+            --text-dim: #8892b0;
+            --code-bg: #0d1117;
+            --success: #107c10;
+            --warning: #ffb900;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Slide Container */
+        .deck {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            background: var(--bg-slide);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Typography */
+        .slide h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .slide h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 24px;
+            line-height: 1.3;
+        }
+
+        .slide h3 {
+            font-size: 1.4rem;
+            color: var(--text-bright);
+            margin: 20px 0 12px;
+        }
+
+        .slide p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .slide ul, .slide ol {
+            margin: 0 0 16px 28px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .slide li { margin-bottom: 6px; }
+
+        .slide code {
+            background: var(--code-bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.9em;
+            color: #79c0ff;
+        }
+
+        .slide pre {
+            background: var(--code-bg);
+            padding: 20px 24px;
+            border-radius: 8px;
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            color: #d4d4d4;
+            margin: 12px 0;
+        }
+
+        /* Title Slide */
+        .slide.title-slide {
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-slide), #1a1a3e);
+        }
+
+        .slide.title-slide .badge {
+            display: inline-block;
+            background: rgba(0,120,212,.2);
+            border: 1px solid var(--accent);
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        .slide.title-slide h1 { font-size: 3rem; }
+
+        .slide.title-slide .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Two-column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 12px;
+        }
+
+        .card h3 { margin-top: 0; }
+
+        /* Highlight */
+        .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin: 12px 0;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,.15);
+        }
+
+        th {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) { background: rgba(255,255,255,.03); }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 24px;
+            right: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .controls button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.2);
+            background: rgba(0,0,0,.4);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s;
+        }
+
+        .controls button:hover { background: var(--accent); }
+
+        .slide-counter {
+            font-size: 13px;
+            color: var(--text-dim);
+            min-width: 48px;
+            text-align: center;
+        }
+
+        /* Progress dots */
+        .progress-dots {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 1000;
+        }
+
+        .progress-dots .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.2);
+            transition: background .3s;
+        }
+
+        .progress-dots .dot.active { background: var(--accent); }
+
+        /* Section divider slide */
+        .slide.section-divider {
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+        }
+
+        .slide.section-divider h2 {
+            color: #fff;
+            font-size: 2.6rem;
+        }
+
+        .slide.section-divider p { color: rgba(255,255,255,.85); }
+    </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide title-slide active" data-index="0">
+        <div class="badge">ARC 2 · Module 8 of 45</div>
+        <h1>Deploying &amp; Comparing Models<br>Including Multimodal</h1>
+        <p class="subtitle">Azure AI Foundry — Zero to Hero</p>
+        <p style="color: var(--text-dim); margin-top: 24px; font-size: 0.9rem;">April 2026 · Zero to Hero Training Team</p>
+    </div>
+
+    <!-- Slide 2: Agenda -->
+    <div class="slide" data-index="1">
+        <h2>📋 Today's Agenda</h2>
+        <ol>
+            <li>Deployment Types: Managed, Serverless, Provisioned</li>
+            <li>Step-by-Step: Deploy GPT-4o</li>
+            <li>Multimodal Capabilities — Text + Vision + Audio</li>
+            <li>Working with Images: URL vs Base64</li>
+            <li>Audio &amp; Document Understanding</li>
+            <li>Model Benchmarking &amp; A/B Testing</li>
+            <li>Cost Considerations</li>
+            <li>🧪 Mini Hack: Image Analysis App</li>
+        </ol>
+    </div>
+
+    <!-- Slide 3: Section Divider -->
+    <div class="slide section-divider" data-index="2">
+        <h2>Deployment Types</h2>
+        <p>Three strategies. One platform. Choose wisely.</p>
+    </div>
+
+    <!-- Slide 4: Deployment Types -->
+    <div class="slide" data-index="3">
+        <h2>Three Deployment Types</h2>
+        <div class="two-col">
+            <div>
+                <div class="card">
+                    <h3>🖥️ Managed Compute</h3>
+                    <p>Dedicated VMs. Full control. Custom &amp; fine-tuned models. Pay per hour.</p>
+                </div>
+                <div class="card">
+                    <h3>☁️ Serverless API</h3>
+                    <p>Zero infra. Pay-per-token. Instant provisioning. Best for experimentation.</p>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <h3>⚡ Provisioned Throughput</h3>
+                    <p>Reserved PTUs. Guaranteed latency. Monthly commitment. Best at scale.</p>
+                </div>
+                <div class="card" style="border-color: var(--accent);">
+                    <h3>💡 How to Choose</h3>
+                    <ul>
+                        <li>Experimenting → <span class="highlight">Serverless</span></li>
+                        <li>Custom model → <span class="highlight">Managed</span></li>
+                        <li>Production at scale → <span class="highlight">Provisioned</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Comparison Table -->
+    <div class="slide" data-index="4">
+        <h2>Deployment Comparison</h2>
+        <table>
+            <thead>
+                <tr><th>Factor</th><th>Managed</th><th>Serverless</th><th>Provisioned</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Provisioning</td><td>Minutes</td><td>Seconds</td><td>Minutes</td></tr>
+                <tr><td>Billing</td><td>Per-hour</td><td>Per-token</td><td>Monthly PTU</td></tr>
+                <tr><td>Latency</td><td>Low</td><td>Variable</td><td>Lowest</td></tr>
+                <tr><td>Custom Models</td><td>✅</td><td>❌</td><td>✅ Select</td></tr>
+                <tr><td>Best For</td><td>Compliance</td><td>Agility</td><td>Scale</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Slide 6: Deploy Step-by-Step -->
+    <div class="slide" data-index="5">
+        <h2>Deploy GPT-4o in AI Foundry</h2>
+        <ol>
+            <li>Open <code>ai.azure.com</code> → select your project</li>
+            <li>Navigate to <strong>Model catalog</strong> → search <strong>GPT-4o</strong></li>
+            <li>Click <strong>Deploy</strong> → choose <strong>Serverless API</strong></li>
+            <li>Name it <code>gpt-4o-multimodal</code></li>
+            <li>Configure content filters &amp; API version</li>
+            <li>Click <strong>Deploy</strong> → copy endpoint + key</li>
+            <li>Test in the <strong>Playground</strong></li>
+        </ol>
+        <p style="margin-top: 16px;">⏱️ Total time: under 60 seconds for serverless</p>
+    </div>
+
+    <!-- Slide 7: Section Divider -->
+    <div class="slide section-divider" data-index="6">
+        <h2>Multimodal with GPT-4o</h2>
+        <p>One model. Text + Vision + Audio. One API call.</p>
+    </div>
+
+    <!-- Slide 8: Multimodal API -->
+    <div class="slide" data-index="7">
+        <h2>The Multimodal API Pattern</h2>
+        <p>All modalities use the same Chat Completions endpoint:</p>
+        <pre>{
+  "messages": [{
+    "role": "user",
+    "content": [
+      { "type": "text", "text": "Describe this image" },
+      {
+        "type": "image_url",
+        "image_url": {
+          "url": "https://example.com/photo.jpg",
+          "detail": "high"
+        }
+      }
+    ]
+  }]
+}</pre>
+        <p>💡 <code>detail</code>: <code>"high"</code> for complex images, <code>"low"</code> to save tokens</p>
+    </div>
+
+    <!-- Slide 9: Images -->
+    <div class="slide" data-index="8">
+        <h2>Working with Images</h2>
+        <div class="two-col">
+            <div>
+                <h3>🔗 URL Reference</h3>
+                <ul>
+                    <li>Pass a public URL</li>
+                    <li>Small request payload</li>
+                    <li>Requires accessible URL</li>
+                </ul>
+                <pre>"url": "https://...jpg"</pre>
+            </div>
+            <div>
+                <h3>📦 Base64 Encoding</h3>
+                <ul>
+                    <li>Embed image in request</li>
+                    <li>Works with private files</li>
+                    <li>~33% larger payload</li>
+                </ul>
+                <pre>"url": "data:image/jpeg;
+  base64,/9j/4AAQ..."</pre>
+            </div>
+        </div>
+        <p style="margin-top: 16px;">✅ Both methods support: JPEG, PNG, GIF, WebP</p>
+    </div>
+
+    <!-- Slide 10: Audio & Documents -->
+    <div class="slide" data-index="9">
+        <h2>Audio &amp; Document Understanding</h2>
+        <div class="two-col">
+            <div>
+                <h3>🎙️ Audio Pipeline</h3>
+                <ul>
+                    <li><strong>Whisper</strong> → Speech-to-text</li>
+                    <li><strong>GPT-4o</strong> → Reasoning</li>
+                    <li><strong>TTS</strong> → Text-to-speech</li>
+                </ul>
+                <p>Chain for voice assistants</p>
+            </div>
+            <div>
+                <h3>📄 Documents</h3>
+                <ul>
+                    <li>Render PDF pages as images</li>
+                    <li>Send to GPT-4o vision</li>
+                    <li>Use JSON schema for structured extraction</li>
+                    <li>Pair with Document Intelligence for volume</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Benchmarking -->
+    <div class="slide" data-index="10">
+        <h2>Model Benchmarking &amp; A/B Testing</h2>
+        <ol>
+            <li><strong>Build eval dataset</strong> — 50–200 representative queries</li>
+            <li><strong>Deploy candidates</strong> — GPT-4o, GPT-4o-mini, Llama 3, etc.</li>
+            <li><strong>Run batch evaluation</strong> — AI Foundry evaluation framework</li>
+            <li><strong>Compare metrics</strong> — Groundedness, relevance, coherence, fluency</li>
+            <li><strong>Measure cost &amp; latency</strong> — Tokens/request, P50/P95/P99</li>
+        </ol>
+        <div class="card" style="margin-top: 16px;">
+            <p>⚠️ <strong>Always benchmark with YOUR data.</strong> Public leaderboards don't reflect your workload.</p>
+        </div>
+    </div>
+
+    <!-- Slide 12: Cost -->
+    <div class="slide" data-index="11">
+        <h2>Cost Considerations</h2>
+        <table>
+            <thead>
+                <tr><th>Type</th><th>Billing</th><th>Break-Even</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Serverless</td><td>Per-token</td><td>Low–moderate traffic</td></tr>
+                <tr><td>Managed</td><td>Per-hour VM</td><td>~60–70% utilization</td></tr>
+                <tr><td>Provisioned</td><td>Monthly PTU</td><td>High-volume production</td></tr>
+            </tbody>
+        </table>
+        <div class="card" style="margin-top: 16px;">
+            <p>⚠️ <strong>Vision tokens add up!</strong> A single high-detail image ≈ 1,000+ tokens. Factor image costs into multimodal estimates.</p>
+        </div>
+    </div>
+
+    <!-- Slide 13: Mini Hack -->
+    <div class="slide" data-index="12">
+        <h2>🧪 Mini Hack: Image Analysis App</h2>
+        <p>Build a Python app that analyzes images with GPT-4o vision:</p>
+        <ol>
+            <li>Accept image (URL or local file)</li>
+            <li>Encode local files as base64</li>
+            <li>Send to GPT-4o with structured analysis prompt</li>
+            <li>Return JSON: <code>description</code>, <code>objects</code>, <code>extracted_text</code>, <code>sentiment</code></li>
+        </ol>
+        <div class="card" style="margin-top: 16px;">
+            <h3>🚀 Stretch Goals</h3>
+            <ul>
+                <li>Add Streamlit/Gradio web UI</li>
+                <li>Compare GPT-4o vs GPT-4o-mini results</li>
+                <li>Track token cost per analysis</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Slide 14: Key Takeaways -->
+    <div class="slide" data-index="13">
+        <h2>Key Takeaways</h2>
+        <ul>
+            <li><strong>3 deployment types</strong> — Managed, Serverless, Provisioned — each for different needs</li>
+            <li><strong>GPT-4o</strong> is natively multimodal: text + vision + audio in one call</li>
+            <li><strong>Images</strong> via URL or base64; use <code>detail</code> to balance quality vs cost</li>
+            <li><strong>Audio</strong> pipelines: Whisper → GPT-4o → TTS</li>
+            <li><strong>Benchmark with your data</strong> — not public leaderboards</li>
+            <li><strong>Cost</strong> varies dramatically — model your traffic</li>
+        </ul>
+    </div>
+
+    <!-- Slide 15: Next Up -->
+    <div class="slide title-slide" data-index="14">
+        <div class="badge">Up Next</div>
+        <h1>Module 9<br>Prompt Engineering Foundations</h1>
+        <p class="subtitle">The art and science of crafting effective prompts — zero-shot, few-shot, chain-of-thought, and more.</p>
+    </div>
+
+</div>
+
+<!-- Progress Dots -->
+<div class="progress-dots" id="progressDots"></div>
+
+<!-- Controls -->
+<div class="controls">
+    <button id="prevBtn" aria-label="Previous slide">◀</button>
+    <span class="slide-counter" id="counter">1 / 15</span>
+    <button id="nextBtn" aria-label="Next slide">▶</button>
+</div>
+
+<script>
+(function () {
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    let current = 0;
+
+    const counter = document.getElementById('counter');
+    const dotsContainer = document.getElementById('progressDots');
+
+    // Build dots
+    for (let i = 0; i < total; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.addEventListener('click', function () { goTo(i); });
+        dotsContainer.appendChild(dot);
+    }
+    const dots = dotsContainer.querySelectorAll('.dot');
+
+    function goTo(n) {
+        if (n < 0 || n >= total) return;
+        slides[current].classList.remove('active');
+        dots[current].classList.remove('active');
+        current = n;
+        slides[current].classList.add('active');
+        dots[current].classList.add('active');
+        counter.textContent = (current + 1) + ' / ' + total;
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', function () { goTo(current - 1); });
+    document.getElementById('nextBtn').addEventListener('click', function () { goTo(current + 1); });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            e.preventDefault();
+            goTo(current + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            goTo(current - 1);
+        } else if (e.key === 'Home') {
+            goTo(0);
+        } else if (e.key === 'End') {
+            goTo(total - 1);
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 7: The Model Catalog Deep Dive — Explore 1,800+ models in Azure AI Foundry, compare model families, deployment types, and choose the right model for your use case.">
+    <meta name="author" content="Zero to Hero Training Team">
+    <meta name="keywords" content="Azure AI Foundry, Model Catalog, OpenAI, Meta Llama, Mistral, Phi, Cohere, AI Models, Model Deployment">
+    <title>Module 7: The Model Catalog Deep Dive | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ============================================
+           CSS VARIABLES & RESET
+           ============================================ */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-light-purple: #e8daef;
+            --ms-green: #107c10;
+            --ms-yellow: #ffb900;
+            --ms-red: #d13438;
+            --ms-orange: #ff8c00;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-60: #a19f9d;
+            --ms-gray-90: #605e5c;
+            --ms-gray-130: #323130;
+            --ms-gray-150: #1b1a19;
+            --font-primary: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', 'Courier New', monospace;
+            --content-max: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 48px;
+            --hero-height: 380px;
+            --transition-speed: 0.3s;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            color: var(--ms-gray-130);
+            background: var(--ms-gray-10);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============================================
+           SCROLL PROGRESS BAR
+           ============================================ */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* ============================================
+           TOP NAVIGATION BAR
+           ============================================ */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: var(--ms-gray-150);
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .top-nav__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .top-nav__brand svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .top-nav__links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-left: auto;
+        }
+
+        .top-nav__links a {
+            color: #d0d0d0;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color var(--transition-speed);
+        }
+
+        .top-nav__links a:hover {
+            color: #fff;
+        }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #fff;
+            padding: 80px 24px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 50%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            animation: heroShimmer 20s ease-in-out infinite;
+        }
+
+        @keyframes heroShimmer {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(20px) translateY(-10px); }
+        }
+
+        .hero__content {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .hero__badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        .hero__module-num {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.85;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero__title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero__subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            line-height: 1.5;
+            max-width: 580px;
+            margin: 0 auto 24px;
+        }
+
+        .hero__meta {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            font-size: 13px;
+            opacity: 0.8;
+            flex-wrap: wrap;
+        }
+
+        .hero__meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ============================================
+           LAYOUT: SIDEBAR + CONTENT
+           ============================================ */
+        .page-layout {
+            display: flex;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            gap: 48px;
+        }
+
+        /* ============================================
+           STICKY TOC SIDEBAR
+           ============================================ */
+        .toc-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + 24px);
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            max-height: calc(100vh - var(--nav-height) - 48px);
+            overflow-y: auto;
+            align-self: flex-start;
+        }
+
+        .toc-sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .toc-sidebar::-webkit-scrollbar-thumb {
+            background: var(--ms-gray-40);
+            border-radius: 3px;
+        }
+
+        .toc-sidebar__title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--ms-gray-90);
+            margin-bottom: 12px;
+            padding-left: 16px;
+        }
+
+        .toc-sidebar__list {
+            list-style: none;
+        }
+
+        .toc-sidebar__link {
+            display: block;
+            padding: 6px 16px;
+            font-size: 13px;
+            color: var(--ms-gray-90);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all var(--transition-speed);
+            line-height: 1.4;
+        }
+
+        .toc-sidebar__link:hover {
+            color: var(--ms-blue);
+            background: var(--ms-light-blue);
+        }
+
+        .toc-sidebar__link.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            font-weight: 600;
+            background: rgba(0, 120, 212, 0.06);
+        }
+
+        /* ============================================
+           MAIN CONTENT
+           ============================================ */
+        .content {
+            flex: 1;
+            max-width: var(--content-max);
+            min-width: 0;
+        }
+
+        .content h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--ms-gray-150);
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-gray-30);
+            letter-spacing: -0.3px;
+        }
+
+        .content h2:first-child {
+            margin-top: 0;
+        }
+
+        .content h3 {
+            font-size: 21px;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            margin: 32px 0 12px;
+        }
+
+        .content h4 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 24px 0 8px;
+        }
+
+        .content p {
+            margin-bottom: 16px;
+            color: var(--ms-gray-130);
+        }
+
+        .content a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color var(--transition-speed);
+        }
+
+        .content a:hover {
+            border-bottom-color: var(--ms-blue);
+        }
+
+        .content ul, .content ol {
+            margin: 0 0 16px 24px;
+        }
+
+        .content li {
+            margin-bottom: 6px;
+        }
+
+        .content strong {
+            font-weight: 600;
+            color: var(--ms-gray-150);
+        }
+
+        .content img {
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            margin: 16px 0;
+        }
+
+        /* ============================================
+           CODE BLOCKS
+           ============================================ */
+        .content code {
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            background: var(--ms-gray-20);
+            padding: 2px 7px;
+            border-radius: var(--radius-sm);
+            color: var(--ms-dark-blue);
+        }
+
+        .content pre {
+            background: var(--ms-gray-150);
+            color: #e8e8e8;
+            padding: 20px 24px;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            line-height: 1.55;
+        }
+
+        .content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 13.5px;
+        }
+
+        .code-label {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--ms-blue);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: 0 var(--radius-md) 0 var(--radius-sm);
+            letter-spacing: 0.3px;
+        }
+
+        /* ============================================
+           CALLOUT BOXES
+           ============================================ */
+        .callout {
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: var(--radius-md);
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .callout__title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .callout__title .icon {
+            font-size: 18px;
+        }
+
+        .callout p {
+            margin-bottom: 8px;
+            font-size: 14.5px;
+        }
+
+        .callout p:last-child {
+            margin-bottom: 0;
+        }
+
+        .callout--info {
+            background: #e7f3ff;
+            border-color: var(--ms-blue);
+        }
+        .callout--info .callout__title {
+            color: var(--ms-dark-blue);
+        }
+
+        .callout--tip {
+            background: #fff8e1;
+            border-color: var(--ms-yellow);
+        }
+        .callout--tip .callout__title {
+            color: #7a6200;
+        }
+
+        .callout--success {
+            background: #e6f4e6;
+            border-color: var(--ms-green);
+        }
+        .callout--success .callout__title {
+            color: #0b5c0b;
+        }
+
+        .callout--warning {
+            background: #fde7e9;
+            border-color: var(--ms-red);
+        }
+        .callout--warning .callout__title {
+            color: #a4262c;
+        }
+
+        /* ============================================
+           VIDEO EMBED
+           ============================================ */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            margin: 24px 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-caption {
+            text-align: center;
+            font-size: 13px;
+            color: var(--ms-gray-90);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* ============================================
+           TABLES
+           ============================================ */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .content thead {
+            background: var(--ms-dark-blue);
+            color: #fff;
+        }
+
+        .content th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .content td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+
+        .content tbody tr:hover {
+            background: var(--ms-gray-10);
+        }
+
+        .content tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ============================================
+           CARDS / FEATURE GRID
+           ============================================ */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--ms-gray-30);
+            transition: all var(--transition-speed);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card__icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .card__title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ms-gray-150);
+            margin-bottom: 8px;
+        }
+
+        .card__desc {
+            font-size: 13.5px;
+            color: var(--ms-gray-90);
+            line-height: 1.5;
+        }
+
+        /* ============================================
+           DECISION FRAMEWORK
+           ============================================ */
+        .decision-tree {
+            background: #fff;
+            border: 2px solid var(--ms-gray-30);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 24px 0;
+        }
+
+        .decision-tree__title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .decision-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--ms-gray-30);
+        }
+
+        .decision-step:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .decision-step__num {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .decision-step__content h4 {
+            margin: 0 0 4px;
+            font-size: 15px;
+            color: var(--ms-gray-150);
+        }
+
+        .decision-step__content p {
+            font-size: 14px;
+            color: var(--ms-gray-90);
+            margin: 0;
+        }
+
+        /* ============================================
+           MINI HACK BOX
+           ============================================ */
+        .mini-hack {
+            background: linear-gradient(135deg, #f0e6ff, #e6f0ff);
+            border: 2px solid var(--ms-purple);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 32px 0;
+        }
+
+        .mini-hack__header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .mini-hack__badge {
+            background: var(--ms-purple);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .mini-hack__title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ms-purple);
+        }
+
+        .mini-hack ol {
+            margin-left: 20px;
+        }
+
+        .mini-hack li {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        /* ============================================
+           TAKEAWAY LIST
+           ============================================ */
+        .takeaway-list {
+            list-style: none;
+            margin: 16px 0;
+            padding: 0;
+        }
+
+        .takeaway-list li {
+            padding: 12px 16px 12px 48px;
+            position: relative;
+            background: #fff;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            border: 1px solid var(--ms-gray-30);
+            font-size: 15px;
+        }
+
+        .takeaway-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 16px;
+            top: 12px;
+            color: var(--ms-green);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ============================================
+           RESOURCE LINKS
+           ============================================ */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .resource-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #fff;
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--ms-gray-130);
+            transition: all var(--transition-speed);
+        }
+
+        .resource-link:hover {
+            border-color: var(--ms-blue);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .resource-link__icon {
+            font-size: 24px;
+        }
+
+        .resource-link__text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .resource-link__sub {
+            font-size: 12px;
+            color: var(--ms-gray-90);
+            font-weight: 400;
+        }
+
+        /* ============================================
+           MODULE NAVIGATION
+           ============================================ */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 48px 0 0;
+            padding: 24px 0;
+            border-top: 2px solid var(--ms-gray-30);
+        }
+
+        .module-nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all var(--transition-speed);
+            border: 1px solid var(--ms-gray-40);
+            color: var(--ms-gray-130);
+        }
+
+        .module-nav a:hover {
+            background: var(--ms-blue);
+            color: #fff;
+            border-color: var(--ms-blue);
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .site-footer {
+            background: var(--ms-gray-150);
+            color: #d0d0d0;
+            text-align: center;
+            padding: 32px 24px;
+            font-size: 13px;
+            margin-top: 0;
+        }
+
+        .site-footer a {
+            color: #82b1ff;
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           BACK TO TOP
+           ============================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-speed);
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: var(--ms-dark-blue);
+            transform: translateY(-2px);
+        }
+
+        /* ============================================
+           MODEL FAMILY BADGES
+           ============================================ */
+        .model-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .model-badge--openai { background: #10a37f20; color: #10a37f; border: 1px solid #10a37f40; }
+        .model-badge--meta { background: #0668E120; color: #0668E1; border: 1px solid #0668E140; }
+        .model-badge--mistral { background: #ff720020; color: #ff7200; border: 1px solid #ff720040; }
+        .model-badge--phi { background: #5c2d9120; color: #5c2d91; border: 1px solid #5c2d9140; }
+        .model-badge--cohere { background: #39594D20; color: #39594D; border: 1px solid #39594D40; }
+
+        /* ============================================
+           COMPARISON TABLE HIGHLIGHT
+           ============================================ */
+        .highlight-row {
+            background: linear-gradient(90deg, rgba(0,120,212,0.05), transparent) !important;
+        }
+
+        /* ============================================
+           DEPLOYMENT TYPES VISUAL
+           ============================================ */
+        .deploy-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .deploy-card {
+            background: #fff;
+            border-radius: var(--radius-md);
+            padding: 24px 20px;
+            text-align: center;
+            border: 2px solid var(--ms-gray-30);
+            transition: all var(--transition-speed);
+        }
+
+        .deploy-card:hover {
+            border-color: var(--ms-blue);
+        }
+
+        .deploy-card__icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .deploy-card__name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ms-gray-150);
+            margin-bottom: 8px;
+        }
+
+        .deploy-card__desc {
+            font-size: 13px;
+            color: var(--ms-gray-90);
+            line-height: 1.4;
+        }
+
+        .deploy-card__tag {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tag-paygo { background: #e6f4e6; color: var(--ms-green); }
+        .tag-reserved { background: #fff8e1; color: #7a6200; }
+        .tag-custom { background: #e7f3ff; color: var(--ms-blue); }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 900px) {
+            .toc-sidebar {
+                display: none;
+            }
+
+            .page-layout {
+                padding: 24px 16px;
+            }
+
+            .hero__title {
+                font-size: 30px;
+            }
+
+            .hero__subtitle {
+                font-size: 16px;
+            }
+
+            .deploy-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .module-nav {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .module-nav a {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 48px 16px 36px;
+            }
+
+            .hero__title {
+                font-size: 26px;
+            }
+
+            .content h2 {
+                font-size: 22px;
+            }
+
+            .top-nav__links {
+                display: none;
+            }
+        }
+
+        /* ============================================
+           PRINT STYLES
+           ============================================ */
+        @media print {
+            .top-nav,
+            .progress-bar,
+            .back-to-top,
+            .toc-sidebar,
+            .module-nav,
+            .video-container {
+                display: none !important;
+            }
+
+            .hero {
+                background: #fff !important;
+                color: #000 !important;
+                padding: 24px 0;
+                border-bottom: 2px solid #000;
+            }
+
+            .hero__badge {
+                background: #eee !important;
+                color: #000 !important;
+                border-color: #999 !important;
+            }
+
+            .page-layout {
+                display: block;
+                padding: 0;
+            }
+
+            .content {
+                max-width: 100%;
+            }
+
+            body {
+                font-size: 11pt;
+                line-height: 1.5;
+                background: #fff;
+            }
+
+            .content pre {
+                background: #f5f5f5 !important;
+                color: #000 !important;
+                border: 1px solid #ccc;
+            }
+
+            .callout {
+                break-inside: avoid;
+            }
+
+            .site-footer {
+                background: #fff !important;
+                color: #000 !important;
+                border-top: 1px solid #ccc;
+            }
+
+            a[href]::after {
+                content: ' (' attr(href) ')';
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+
+        /* ============================================
+           SMOOTH ANIMATIONS
+           ============================================ */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ============================================
+           STATS ROW
+           ============================================ */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 32px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item__number {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item__label {
+            font-size: 13px;
+            color: var(--ms-gray-90);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* ============================================
+           LICENSING TABLE COLORS
+           ============================================ */
+        .license-open {
+            color: var(--ms-green);
+            font-weight: 600;
+        }
+
+        .license-proprietary {
+            color: var(--ms-purple);
+            font-weight: 600;
+        }
+
+        .license-restricted {
+            color: var(--ms-orange);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="#" class="top-nav__brand">
+            <!-- Microsoft 4-color logo -->
+            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="9.5" height="9.5" fill="#f25022"/>
+                <rect x="10.5" y="0" width="9.5" height="9.5" fill="#7fba00"/>
+                <rect x="0" y="10.5" width="9.5" height="9.5" fill="#00a4ef"/>
+                <rect x="10.5" y="10.5" width="9.5" height="9.5" fill="#ffb900"/>
+            </svg>
+            AI Foundry Training Blog
+        </a>
+        <div class="top-nav__links">
+            <a href="../index.html">Curriculum</a>
+            <a href="../resources.html">Resources</a>
+            <a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero__content">
+            <div class="hero__badge">ARC 2 · PROMPT ENGINEERING &amp; MODELS</div>
+            <div class="hero__module-num">MODULE 7 OF 45</div>
+            <h1 class="hero__title">The Model Catalog Deep Dive</h1>
+            <p class="hero__subtitle">
+                Explore 1,800+ models from OpenAI, Meta, Mistral, Microsoft, Cohere, and more.
+                Learn to evaluate, compare, and deploy the perfect model for any task.
+            </p>
+            <div class="hero__meta">
+                <span>📝 Zero to Hero Training Team</span>
+                <span>📅 April 2026</span>
+                <span>⏱ 22 min read</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Layout: Sidebar + Content -->
+    <div class="page-layout">
+        <!-- Sticky TOC Sidebar -->
+        <aside class="toc-sidebar" id="tocSidebar">
+            <div class="toc-sidebar__title">On This Page</div>
+            <ul class="toc-sidebar__list">
+                <li><a href="#introduction" class="toc-sidebar__link">Introduction</a></li>
+                <li><a href="#what-is-catalog" class="toc-sidebar__link">What Is the Model Catalog?</a></li>
+                <li><a href="#featured-video" class="toc-sidebar__link">Featured Video</a></li>
+                <li><a href="#model-families" class="toc-sidebar__link">Model Families Overview</a></li>
+                <li><a href="#deployment-types" class="toc-sidebar__link">Deployment Types</a></li>
+                <li><a href="#model-cards" class="toc-sidebar__link">Model Cards &amp; Benchmarks</a></li>
+                <li><a href="#choosing-model" class="toc-sidebar__link">Choosing the Right Model</a></li>
+                <li><a href="#licensing" class="toc-sidebar__link">Licensing &amp; Costs</a></li>
+                <li><a href="#playground" class="toc-sidebar__link">Playground Testing</a></li>
+                <li><a href="#mini-hack" class="toc-sidebar__link">Mini Hack</a></li>
+                <li><a href="#takeaways" class="toc-sidebar__link">Key Takeaways</a></li>
+                <li><a href="#module-8-preview" class="toc-sidebar__link">Module 8 Preview</a></li>
+                <li><a href="#resources" class="toc-sidebar__link">Resources</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+
+            <!-- ============================================
+                 SECTION: Introduction
+                 ============================================ -->
+            <section id="introduction" class="fade-in">
+                <h2>Introduction: The Power of Choice</h2>
+                <p>
+                    One of the most transformative aspects of Azure AI Foundry is the sheer breadth of AI models available at your fingertips. Unlike platforms that lock you into a single provider's ecosystem, AI Foundry's <strong>Model Catalog</strong> gives you access to over <strong>1,800 models</strong> from the world's leading AI labs — all discoverable, testable, and deployable from a unified interface.
+                </p>
+                <p>
+                    Whether you need a frontier-class reasoning model for complex enterprise logic, a lightweight model for edge devices, a multilingual model for global customer support, or a specialized embedding model for semantic search — the catalog has you covered.
+                </p>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-item__number">1,800+</div>
+                        <div class="stat-item__label">Available Models</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item__number">25+</div>
+                        <div class="stat-item__label">Model Providers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item__number">3</div>
+                        <div class="stat-item__label">Deployment Options</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item__number">100+</div>
+                        <div class="stat-item__label">Languages Supported</div>
+                    </div>
+                </div>
+
+                <p>
+                    In this module, you'll learn how to navigate the catalog, understand model families, read model cards, compare benchmarks, and use the playground to test models side by side — all without writing a single line of code.
+                </p>
+
+                <div class="callout callout--info">
+                    <div class="callout__title"><span class="icon">ℹ️</span> Prerequisites</div>
+                    <p>Before starting this module, you should have completed <strong>Module 6: AI Foundry Portal Walkthrough</strong> and have access to an Azure AI Foundry project. If you don't have one yet, refer to Modules 4–5 for setup instructions.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: What Is the Model Catalog?
+                 ============================================ -->
+            <section id="what-is-catalog" class="fade-in">
+                <h2>What Is the Model Catalog?</h2>
+                <p>
+                    The <strong>Model Catalog</strong> in Azure AI Foundry is a curated, searchable directory of pre-trained AI models from Microsoft and third-party providers. Think of it as an "app store for AI models" — but instead of downloading apps, you're deploying powerful AI capabilities directly into your cloud infrastructure.
+                </p>
+
+                <h3>Core Capabilities</h3>
+                <ul>
+                    <li><strong>Discover</strong> — Browse and search 1,800+ models filtered by task, provider, license type, and more</li>
+                    <li><strong>Evaluate</strong> — Read detailed model cards with performance benchmarks, capabilities, and limitations</li>
+                    <li><strong>Test</strong> — Try any model interactively in the built-in Playground before deploying</li>
+                    <li><strong>Deploy</strong> — Deploy your chosen model as an API endpoint with a few clicks</li>
+                    <li><strong>Compare</strong> — Run the same prompts against multiple models to find the best fit</li>
+                </ul>
+
+                <h3>Accessing the Catalog</h3>
+                <p>You can access the Model Catalog through multiple paths:</p>
+                <ol>
+                    <li><strong>AI Foundry Portal</strong> — Navigate to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a> → Your Project → <strong>Model catalog</strong> in the left sidebar</li>
+                    <li><strong>Azure AI Foundry SDK</strong> — Programmatically query and deploy models via the Python or REST API</li>
+                    <li><strong>Azure CLI</strong> — Use <code>az ai</code> commands to list and manage model deployments</li>
+                </ol>
+
+                <div class="callout callout--tip">
+                    <div class="callout__title"><span class="icon">💡</span> Pro Tip</div>
+                    <p>You can filter models by <strong>task type</strong> (text generation, embeddings, image generation, etc.), <strong>provider</strong>, <strong>license type</strong> (open-weight, proprietary), and <strong>fine-tuning capability</strong> to quickly narrow down your options.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Featured Video
+                 ============================================ -->
+            <section id="featured-video" class="fade-in">
+                <h2>Featured Video</h2>
+                <p>
+                    Watch this walkthrough from the Azure Innovation Station to see how model deployment works in AI Foundry:
+                </p>
+                <div class="video-container">
+                    <iframe
+                        src="https://www.youtube.com/embed/LLO0lOufbwc"
+                        title="How to create AI model deployment | Microsoft Foundry"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+                <p class="video-caption">
+                    "How to create AI model deployment | Microsoft Foundry" — Azure Innovation Station
+                </p>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Model Families Overview
+                 ============================================ -->
+            <section id="model-families" class="fade-in">
+                <h2>Model Families Overview</h2>
+                <p>
+                    The catalog organizes models into families from different providers. Each family has distinct strengths, architectures, and use cases. Here are the major model families available in AI Foundry:
+                </p>
+
+                <h3><span class="model-badge model-badge--openai">OpenAI</span> OpenAI Models</h3>
+                <p>
+                    OpenAI's models are among the most widely adopted in enterprise AI. Available through AI Foundry as <strong>Models as a Service (MaaS)</strong>, they offer world-class performance across a wide range of tasks.
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Best For</th>
+                                <th>Context Window</th>
+                                <th>Highlights</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>GPT-4o</strong></td>
+                                <td>General-purpose, multimodal</td>
+                                <td>128K tokens</td>
+                                <td>Fastest GPT-4 class; text + image input</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GPT-4o mini</strong></td>
+                                <td>Cost-efficient tasks</td>
+                                <td>128K tokens</td>
+                                <td>80% cheaper than GPT-4o; great for classification</td>
+                            </tr>
+                            <tr>
+                                <td><strong>o1</strong></td>
+                                <td>Complex reasoning</td>
+                                <td>200K tokens</td>
+                                <td>Chain-of-thought reasoning; math &amp; science</td>
+                            </tr>
+                            <tr>
+                                <td><strong>o3</strong></td>
+                                <td>Frontier reasoning</td>
+                                <td>200K tokens</td>
+                                <td>Latest reasoning model; advanced problem-solving</td>
+                            </tr>
+                            <tr>
+                                <td><strong>o3-mini</strong></td>
+                                <td>Balanced reasoning</td>
+                                <td>200K tokens</td>
+                                <td>Cost-efficient reasoning with adjustable effort</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GPT-4.1</strong></td>
+                                <td>Coding &amp; instruction following</td>
+                                <td>1M tokens</td>
+                                <td>Optimized for agentic tasks; massive context</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3><span class="model-badge model-badge--meta">Meta</span> Meta Llama Models</h3>
+                <p>
+                    Meta's Llama family is the most popular open-weight model family in the world. These models can be deployed on <strong>Managed Compute</strong> in AI Foundry, giving you full control over the infrastructure.
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Parameters</th>
+                                <th>Best For</th>
+                                <th>Highlights</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Llama 3.1 405B</strong></td>
+                                <td>405 billion</td>
+                                <td>Enterprise-grade tasks</td>
+                                <td>Largest open-weight model; rivals proprietary quality</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Llama 3.1 70B</strong></td>
+                                <td>70 billion</td>
+                                <td>Balanced performance</td>
+                                <td>Strong reasoning; fine-tuning friendly</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Llama 3.1 8B</strong></td>
+                                <td>8 billion</td>
+                                <td>Edge / cost-sensitive</td>
+                                <td>Fast inference; great for fine-tuning</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Llama 3.2 11B Vision</strong></td>
+                                <td>11 billion</td>
+                                <td>Multimodal (text + image)</td>
+                                <td>Visual understanding; document analysis</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Llama 3.2 3B</strong></td>
+                                <td>3 billion</td>
+                                <td>Mobile &amp; edge</td>
+                                <td>Ultra-lightweight; on-device deployment</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3><span class="model-badge model-badge--mistral">Mistral</span> Mistral AI Models</h3>
+                <p>
+                    Mistral AI, based in Paris, has rapidly become a key player with models known for efficiency and strong multilingual capabilities — especially in European languages.
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Strength</th>
+                                <th>Highlights</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Mistral Large</strong></td>
+                                <td>Enterprise reasoning</td>
+                                <td>Top-tier multilingual; strong code &amp; math</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mistral Small</strong></td>
+                                <td>Cost-efficient</td>
+                                <td>Fast, affordable; great for high-volume APIs</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mixtral 8x22B</strong></td>
+                                <td>Mixture of Experts</td>
+                                <td>Efficient architecture; only activates subset of parameters</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Codestral</strong></td>
+                                <td>Code generation</td>
+                                <td>80+ programming languages; fill-in-the-middle</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3><span class="model-badge model-badge--phi">Microsoft</span> Phi Models (Small Language Models)</h3>
+                <p>
+                    Microsoft's Phi family proves that small models can punch well above their weight. Built with <strong>high-quality training data</strong> rather than raw scale, these models are ideal for resource-constrained environments.
+                </p>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card__icon">🧠</div>
+                        <div class="card__title">Phi-4</div>
+                        <div class="card__desc">14B parameters. State-of-the-art for its size class. Excels at math, coding, and structured reasoning. Perfect for on-premise deployments.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">📱</div>
+                        <div class="card__title">Phi-4-mini</div>
+                        <div class="card__desc">3.8B parameters. Optimized for mobile and edge. Supports 128K context window despite tiny size. Ideal for local inference.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">👁️</div>
+                        <div class="card__title">Phi-4-multimodal</div>
+                        <div class="card__desc">5.6B parameters. Processes text, images, and audio. Built for scenarios where multimodal understanding meets tight resource budgets.</div>
+                    </div>
+                </div>
+
+                <h3><span class="model-badge model-badge--cohere">Cohere</span> Cohere Models</h3>
+                <p>
+                    Cohere specializes in enterprise-focused models with strong support for Retrieval-Augmented Generation (RAG), embeddings, and multilingual processing.
+                </p>
+                <ul>
+                    <li><strong>Command R+</strong> — Optimized for RAG workflows; excellent at following complex instructions with grounded citations</li>
+                    <li><strong>Command R</strong> — Balanced model for general enterprise tasks; supports 128K context</li>
+                    <li><strong>Embed v3</strong> — Leading multilingual embedding model; supports 100+ languages for semantic search</li>
+                    <li><strong>Rerank</strong> — Specialized model to re-rank search results for improved retrieval quality</li>
+                </ul>
+
+                <div class="callout callout--info">
+                    <div class="callout__title"><span class="icon">ℹ️</span> More Providers Available</div>
+                    <p>The catalog also includes models from <strong>NVIDIA</strong> (NeMo, Nemotron), <strong>Stability AI</strong> (Stable Diffusion), <strong>AI21 Labs</strong> (Jamba), <strong>Databricks</strong> (DBRX), and many others. New models are added regularly as AI Foundry continues to expand partnerships.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Deployment Types
+                 ============================================ -->
+            <section id="deployment-types" class="fade-in">
+                <h2>Deployment Types</h2>
+                <p>
+                    AI Foundry offers three distinct deployment options, each suited for different use cases, cost models, and control requirements:
+                </p>
+
+                <div class="deploy-cards">
+                    <div class="deploy-card">
+                        <div class="deploy-card__icon">☁️</div>
+                        <div class="deploy-card__name">Serverless API<br>(Pay-as-you-go)</div>
+                        <div class="deploy-card__desc">
+                            No infrastructure to manage. Pay per token. Ideal for getting started quickly and variable workloads.
+                        </div>
+                        <div class="deploy-card__tag tag-paygo">Pay-per-token</div>
+                    </div>
+                    <div class="deploy-card">
+                        <div class="deploy-card__icon">🖥️</div>
+                        <div class="deploy-card__name">Managed Compute<br>(Dedicated)</div>
+                        <div class="deploy-card__desc">
+                            Deploy on dedicated VMs with full control. Required for open-weight models. Supports fine-tuning &amp; customization.
+                        </div>
+                        <div class="deploy-card__tag tag-custom">Dedicated VMs</div>
+                    </div>
+                    <div class="deploy-card">
+                        <div class="deploy-card__icon">⚡</div>
+                        <div class="deploy-card__name">Provisioned Throughput<br>(Reserved)</div>
+                        <div class="deploy-card__desc">
+                            Guaranteed capacity with reserved throughput units (PTUs). Best for predictable, high-volume production workloads.
+                        </div>
+                        <div class="deploy-card__tag tag-reserved">Reserved capacity</div>
+                    </div>
+                </div>
+
+                <h3>Deployment Type Comparison</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Serverless API</th>
+                                <th>Managed Compute</th>
+                                <th>Provisioned Throughput</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Setup time</strong></td>
+                                <td>Minutes</td>
+                                <td>10–30 minutes</td>
+                                <td>Minutes (with reservation)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pricing</strong></td>
+                                <td>Per token</td>
+                                <td>Per VM hour</td>
+                                <td>Per PTU/month</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Scaling</strong></td>
+                                <td>Automatic</td>
+                                <td>Manual / auto-scale</td>
+                                <td>Pre-provisioned</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Data residency</strong></td>
+                                <td>Microsoft-managed</td>
+                                <td>Your subscription</td>
+                                <td>Your subscription</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Model customization</strong></td>
+                                <td>Limited</td>
+                                <td>Full fine-tuning</td>
+                                <td>Limited</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Best for</strong></td>
+                                <td>Prototyping, variable load</td>
+                                <td>Custom models, data control</td>
+                                <td>High-volume production</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="callout callout--tip">
+                    <div class="callout__title"><span class="icon">💡</span> Pro Tip: Start Simple</div>
+                    <p>For most projects, <strong>start with a Serverless API deployment</strong>. It's the fastest path from zero to a working endpoint. You can always migrate to Managed Compute or Provisioned Throughput as your requirements become clearer.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Model Cards & Benchmarks
+                 ============================================ -->
+            <section id="model-cards" class="fade-in">
+                <h2>Model Cards &amp; Benchmarks</h2>
+                <p>
+                    Every model in the catalog has a detailed <strong>Model Card</strong> — a standardized document that serves as the model's "nutrition label." Model cards provide the information you need to make informed decisions about which model to use.
+                </p>
+
+                <h3>Anatomy of a Model Card</h3>
+                <p>Each model card in AI Foundry includes the following sections:</p>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card__icon">📋</div>
+                        <div class="card__title">Overview</div>
+                        <div class="card__desc">Model description, version history, provider information, architecture type, parameter count, and context window size.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">📊</div>
+                        <div class="card__title">Benchmarks</div>
+                        <div class="card__desc">Performance scores on standardized tests like MMLU, HumanEval, GSM8K, MATH, HellaSwag, and more.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">🎯</div>
+                        <div class="card__title">Capabilities</div>
+                        <div class="card__desc">Supported tasks (chat, completion, embeddings), input/output modalities, language support, and tool-calling abilities.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">⚖️</div>
+                        <div class="card__title">Licensing</div>
+                        <div class="card__desc">License type (MIT, Apache 2.0, Llama Community, proprietary), usage restrictions, and commercial use terms.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">🔒</div>
+                        <div class="card__title">Safety</div>
+                        <div class="card__desc">Known limitations, bias assessments, content filtering recommendations, and responsible AI considerations.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card__icon">🚀</div>
+                        <div class="card__title">Deployment</div>
+                        <div class="card__desc">Available deployment options, supported regions, API compatibility, and integration code samples.</div>
+                    </div>
+                </div>
+
+                <h3>Key Benchmarks Explained</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Benchmark</th>
+                                <th>What It Measures</th>
+                                <th>Why It Matters</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>MMLU</strong></td>
+                                <td>Multitask knowledge (57 subjects)</td>
+                                <td>Overall intelligence across academic domains</td>
+                            </tr>
+                            <tr>
+                                <td><strong>HumanEval</strong></td>
+                                <td>Code generation accuracy</td>
+                                <td>Can the model write correct Python code?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GSM8K</strong></td>
+                                <td>Grade-school math</td>
+                                <td>Step-by-step mathematical reasoning</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MATH</strong></td>
+                                <td>Advanced math problems</td>
+                                <td>Complex mathematical problem-solving</td>
+                            </tr>
+                            <tr>
+                                <td><strong>HellaSwag</strong></td>
+                                <td>Commonsense reasoning</td>
+                                <td>Understanding real-world situations</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MT-Bench</strong></td>
+                                <td>Multi-turn conversation quality</td>
+                                <td>Coherent dialogue over multiple exchanges</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MBPP</strong></td>
+                                <td>Mostly Basic Python Problems</td>
+                                <td>Practical coding ability for common tasks</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="callout callout--warning">
+                    <div class="callout__title"><span class="icon">⚠️</span> Benchmarks Aren't Everything</div>
+                    <p>Benchmarks provide useful reference points, but they don't tell the whole story. A model scoring 5% higher on MMLU might not perform better <em>for your specific task</em>. Always test models with <strong>your own data and prompts</strong> in the Playground or via the API before making deployment decisions.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Choosing the Right Model
+                 ============================================ -->
+            <section id="choosing-model" class="fade-in">
+                <h2>Choosing the Right Model</h2>
+                <p>
+                    With 1,800+ models to choose from, how do you pick the right one? Use this decision framework to systematically narrow down your options:
+                </p>
+
+                <div class="decision-tree">
+                    <div class="decision-tree__title">🎯 Model Selection Decision Framework</div>
+
+                    <div class="decision-step">
+                        <div class="decision-step__num">1</div>
+                        <div class="decision-step__content">
+                            <h4>Define Your Task</h4>
+                            <p>What exactly do you need the model to do? Text generation, code completion, embeddings, image analysis, translation, summarization, classification? Start with the task type filter in the catalog.</p>
+                        </div>
+                    </div>
+
+                    <div class="decision-step">
+                        <div class="decision-step__num">2</div>
+                        <div class="decision-step__content">
+                            <h4>Set Quality Requirements</h4>
+                            <p>Do you need frontier-class accuracy (GPT-4o, o3, Llama 405B) or is "good enough" acceptable? Higher quality generally means higher cost and latency. Define your minimum acceptable quality bar.</p>
+                        </div>
+                    </div>
+
+                    <div class="decision-step">
+                        <div class="decision-step__num">3</div>
+                        <div class="decision-step__content">
+                            <h4>Evaluate Latency Needs</h4>
+                            <p>Is this user-facing (needs &lt;2 second response) or batch processing (latency doesn't matter)? Smaller models like Phi-4-mini or GPT-4o mini excel in low-latency scenarios.</p>
+                        </div>
+                    </div>
+
+                    <div class="decision-step">
+                        <div class="decision-step__num">4</div>
+                        <div class="decision-step__content">
+                            <h4>Consider Budget Constraints</h4>
+                            <p>What's your per-token budget? Open-weight models on Managed Compute can be cheaper at scale. Serverless APIs are cheaper for low-volume. Use the pricing calculator to estimate costs.</p>
+                        </div>
+                    </div>
+
+                    <div class="decision-step">
+                        <div class="decision-step__num">5</div>
+                        <div class="decision-step__content">
+                            <h4>Check Data &amp; Compliance Requirements</h4>
+                            <p>Do you need data to stay in your subscription? Do you need to fine-tune? Is there a specific license your legal team requires? These constraints may eliminate some options.</p>
+                        </div>
+                    </div>
+
+                    <div class="decision-step">
+                        <div class="decision-step__num">6</div>
+                        <div class="decision-step__content">
+                            <h4>Test in the Playground</h4>
+                            <p>Shortlist 2–3 candidates and test them with your actual prompts and data in the AI Foundry Playground. Compare quality, speed, and cost side by side before committing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Quick Reference: Model Recommendations by Use Case</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Use Case</th>
+                                <th>Recommended Model(s)</th>
+                                <th>Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>General-purpose chatbot</td>
+                                <td>GPT-4o, Llama 3.1 70B</td>
+                                <td>Excellent instruction following and conversation quality</td>
+                            </tr>
+                            <tr>
+                                <td>Code generation</td>
+                                <td>GPT-4.1, Codestral, Phi-4</td>
+                                <td>Optimized for code understanding and generation</td>
+                            </tr>
+                            <tr>
+                                <td>Complex reasoning</td>
+                                <td>o3, o1</td>
+                                <td>Chain-of-thought reasoning for math, science, logic</td>
+                            </tr>
+                            <tr>
+                                <td>High-volume classification</td>
+                                <td>GPT-4o mini, Phi-4-mini</td>
+                                <td>Low cost per token, fast inference</td>
+                            </tr>
+                            <tr>
+                                <td>RAG / search-grounded chat</td>
+                                <td>Command R+, GPT-4o</td>
+                                <td>Strong at grounded generation with citations</td>
+                            </tr>
+                            <tr>
+                                <td>Semantic search embeddings</td>
+                                <td>Cohere Embed v3, text-embedding-3-large</td>
+                                <td>High-quality vector representations</td>
+                            </tr>
+                            <tr>
+                                <td>Multilingual support</td>
+                                <td>Mistral Large, Command R+</td>
+                                <td>Strong performance across European &amp; global languages</td>
+                            </tr>
+                            <tr>
+                                <td>Edge / mobile deployment</td>
+                                <td>Phi-4-mini, Llama 3.2 3B</td>
+                                <td>Ultra-small footprint; runs on-device</td>
+                            </tr>
+                            <tr>
+                                <td>Image understanding</td>
+                                <td>GPT-4o, Llama 3.2 11B Vision</td>
+                                <td>Multimodal input (text + image)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="callout callout--success">
+                    <div class="callout__title"><span class="icon">✅</span> The "Cascade" Strategy</div>
+                    <p>Many production systems use a <strong>model cascade</strong>: route simple queries to a cheap, fast model (GPT-4o mini) and only escalate complex queries to an expensive model (o3). This can reduce costs by 60–80% while maintaining quality where it matters most.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Licensing & Costs
+                 ============================================ -->
+            <section id="licensing" class="fade-in">
+                <h2>Licensing &amp; Cost Considerations</h2>
+                <p>
+                    Understanding licensing is crucial before deploying any model in production. The Model Catalog includes models with different license types, each with different implications for your business.
+                </p>
+
+                <h3>License Types in the Catalog</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>License Type</th>
+                                <th>Examples</th>
+                                <th>Commercial Use</th>
+                                <th>Modify / Fine-tune</th>
+                                <th>Key Restrictions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="license-open">MIT / Apache 2.0</td>
+                                <td>Phi-4, Mixtral</td>
+                                <td>✅ Yes</td>
+                                <td>✅ Yes</td>
+                                <td>Minimal; attribution may be required</td>
+                            </tr>
+                            <tr>
+                                <td class="license-restricted">Llama Community</td>
+                                <td>Llama 3.1, 3.2</td>
+                                <td>✅ Yes (under 700M MAU)</td>
+                                <td>✅ Yes</td>
+                                <td>Extra license needed if &gt;700M monthly users</td>
+                            </tr>
+                            <tr>
+                                <td class="license-proprietary">Proprietary</td>
+                                <td>GPT-4o, o3, Command R+</td>
+                                <td>✅ Via API terms</td>
+                                <td>⚠️ Limited</td>
+                                <td>No weight access; usage governed by API ToS</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Cost Optimization Strategies</h3>
+                <ol>
+                    <li><strong>Right-size your model</strong> — Don't use GPT-4o for tasks that GPT-4o mini handles just as well</li>
+                    <li><strong>Use Provisioned Throughput</strong> — For predictable workloads, PTUs can be 40–60% cheaper than pay-per-token</li>
+                    <li><strong>Implement caching</strong> — Cache common responses to reduce redundant API calls</li>
+                    <li><strong>Optimize prompts</strong> — Shorter, well-crafted prompts reduce input tokens without sacrificing quality</li>
+                    <li><strong>Consider open-weight models</strong> — Managed Compute deployments of Llama/Phi can be more cost-effective at high volumes</li>
+                    <li><strong>Monitor usage</strong> — Use AI Foundry's built-in monitoring to track token consumption and costs per deployment</li>
+                </ol>
+
+                <div class="callout callout--tip">
+                    <div class="callout__title"><span class="icon">💡</span> Cost Estimation</div>
+                    <p>Use the <a href="https://azure.microsoft.com/en-us/pricing/calculator/" target="_blank" rel="noopener">Azure Pricing Calculator</a> to estimate costs before deploying. Factor in both <strong>input tokens</strong> (your prompts) and <strong>output tokens</strong> (model responses) — output tokens are typically 2–4× more expensive than input tokens.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Playground
+                 ============================================ -->
+            <section id="playground" class="fade-in">
+                <h2>Playground: Testing Models Side by Side</h2>
+                <p>
+                    The <strong>AI Foundry Playground</strong> is your interactive testing ground. It allows you to send prompts to deployed models and see responses in real time — no code required.
+                </p>
+
+                <h3>Playground Features</h3>
+                <ul>
+                    <li><strong>Chat mode</strong> — Multi-turn conversation interface; test system prompts, user messages, and assistant behavior</li>
+                    <li><strong>Completions mode</strong> — Single-shot text generation; useful for classification, extraction, and summarization</li>
+                    <li><strong>Parameter tuning</strong> — Adjust temperature, top-p, max tokens, frequency penalty, and presence penalty in real time</li>
+                    <li><strong>System prompt editor</strong> — Define the model's persona, instructions, and guardrails</li>
+                    <li><strong>Multiple deployments</strong> — Switch between different model deployments to compare outputs</li>
+                </ul>
+
+                <h3>Side-by-Side Comparison Workflow</h3>
+                <p>To effectively compare models, follow this workflow:</p>
+                <ol>
+                    <li><strong>Deploy 2–3 candidate models</strong> from the Model Catalog (e.g., GPT-4o, Llama 3.1 70B, Mistral Large)</li>
+                    <li><strong>Prepare a test suite</strong> — Create 5–10 representative prompts that reflect your actual use case</li>
+                    <li><strong>Use identical prompts</strong> — Send the exact same system prompt and user message to each model</li>
+                    <li><strong>Evaluate dimensions</strong> — Score each response on accuracy, relevance, coherence, formatting, and latency</li>
+                    <li><strong>Record results</strong> — Document your findings in a comparison matrix for stakeholder review</li>
+                </ol>
+
+                <pre><code><span class="code-label">EXAMPLE</span>
+# Sample comparison prompt for customer support classification
+
+System: You are a customer support classifier. Classify the 
+following message into exactly one category: billing, 
+technical, account, feedback, or other. Respond with only 
+the category name.
+
+User: I've been charged twice for my subscription this month 
+and I need a refund for the duplicate payment.
+
+# Expected output: billing
+# Compare: Which model consistently gets this right?
+# Compare: Which model responds fastest?
+# Compare: Which model follows the "category only" instruction best?</code></pre>
+
+                <div class="callout callout--info">
+                    <div class="callout__title"><span class="icon">ℹ️</span> Playground Access</div>
+                    <p>To use the Playground, you need at least one model deployed in your AI Foundry project. Serverless API deployments are the fastest way to get started — most models can be deployed and tested within minutes.</p>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Mini Hack
+                 ============================================ -->
+            <section id="mini-hack" class="fade-in">
+                <h2>Mini Hack Exercise</h2>
+
+                <div class="mini-hack">
+                    <div class="mini-hack__header">
+                        <span class="mini-hack__badge">🔬 Mini Hack</span>
+                        <span class="mini-hack__title">Compare 3 Models on the Same Task</span>
+                    </div>
+                    <p><strong>Objective:</strong> Deploy three different models and compare their performance on a real-world task using the AI Foundry Playground.</p>
+
+                    <p><strong>Time:</strong> 30–45 minutes</p>
+
+                    <h4>Steps:</h4>
+                    <ol>
+                        <li>
+                            <strong>Open the Model Catalog</strong><br>
+                            Navigate to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a> → Your Project → Model catalog
+                        </li>
+                        <li>
+                            <strong>Deploy 3 Models</strong><br>
+                            Choose three models from different families. Suggested combination:
+                            <ul>
+                                <li>GPT-4o mini (OpenAI — Serverless API)</li>
+                                <li>Phi-4 (Microsoft — Serverless API or Managed Compute)</li>
+                                <li>Mistral Small (Mistral — Serverless API)</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Open the Playground</strong><br>
+                            Go to the Playground and select your first deployed model
+                        </li>
+                        <li>
+                            <strong>Set a System Prompt</strong><br>
+                            Use this system prompt for all three models:
+                            <pre><code>You are a helpful assistant that explains technical concepts 
+in simple terms. When explaining, use an analogy that a 
+10-year-old would understand. Keep responses under 150 words.</code></pre>
+                        </li>
+                        <li>
+                            <strong>Send Test Prompts</strong><br>
+                            Test each model with these prompts:
+                            <ul>
+                                <li>"What is an API?"</li>
+                                <li>"Explain how encryption works"</li>
+                                <li>"What is the difference between AI and machine learning?"</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Evaluate &amp; Compare</strong><br>
+                            For each response, score on a 1–5 scale:
+                            <ul>
+                                <li>Accuracy — Is the explanation correct?</li>
+                                <li>Simplicity — Would a 10-year-old understand it?</li>
+                                <li>Analogy quality — Is the analogy creative and fitting?</li>
+                                <li>Conciseness — Is it under 150 words?</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Document Results</strong><br>
+                            Record your comparison in a table and identify which model performed best overall
+                        </li>
+                    </ol>
+
+                    <div class="callout callout--success" style="margin-top: 16px;">
+                        <div class="callout__title"><span class="icon">✅</span> Success Criteria</div>
+                        <p>You've successfully completed the Mini Hack when you can explain <em>why</em> you would choose one model over the others for this specific task — and what trade-offs (cost, speed, quality) influenced your decision.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Key Takeaways
+                 ============================================ -->
+            <section id="takeaways" class="fade-in">
+                <h2>Key Takeaways</h2>
+                <ul class="takeaway-list">
+                    <li>Azure AI Foundry's Model Catalog provides access to <strong>1,800+ models</strong> from 25+ providers, all in one place</li>
+                    <li>Major model families include <strong>OpenAI GPT/o-series, Meta Llama, Mistral, Microsoft Phi, and Cohere</strong> — each with distinct strengths</li>
+                    <li>Three deployment types — <strong>Serverless API, Managed Compute, and Provisioned Throughput</strong> — serve different needs from prototyping to production</li>
+                    <li><strong>Model Cards</strong> provide standardized information about capabilities, benchmarks, licensing, and safety for every model</li>
+                    <li>Use the <strong>6-step decision framework</strong> to systematically choose the right model: task → quality → latency → budget → compliance → test</li>
+                    <li>Always <strong>test models with your actual prompts and data</strong> in the Playground — benchmarks alone don't predict real-world performance</li>
+                    <li>Understand <strong>licensing implications</strong> before deploying: MIT/Apache 2.0, Llama Community License, and proprietary API terms have different restrictions</li>
+                    <li>The <strong>model cascade strategy</strong> — routing simple queries to cheap models and complex queries to premium models — can reduce costs by 60–80%</li>
+                </ul>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Module 8 Preview
+                 ============================================ -->
+            <section id="module-8-preview" class="fade-in">
+                <h2>Module 8 Preview: Your First Model Deployment</h2>
+                <p>
+                    Now that you know <em>what</em> models are available and <em>how</em> to choose between them, it's time to get hands-on. In <strong>Module 8</strong>, you'll:
+                </p>
+                <ul>
+                    <li>Deploy your first model endpoint step by step</li>
+                    <li>Configure deployment parameters (region, SKU, scaling)</li>
+                    <li>Test the endpoint using the REST API and SDK</li>
+                    <li>Implement basic error handling and retry logic</li>
+                    <li>Set up monitoring and cost alerts for your deployment</li>
+                </ul>
+                <p>
+                    By the end of Module 8, you'll have a working AI model endpoint that you can call from any application. Let's build! 🚀
+                </p>
+            </section>
+
+            <!-- ============================================
+                 SECTION: Resources
+                 ============================================ -->
+            <section id="resources" class="fade-in">
+                <h2>Resources</h2>
+                <div class="resource-grid">
+                    <a href="https://ai.azure.com" target="_blank" rel="noopener" class="resource-link">
+                        <span class="resource-link__icon">🌐</span>
+                        <div>
+                            <div class="resource-link__text">Azure AI Foundry Portal</div>
+                            <div class="resource-link__sub">ai.azure.com — Access the Model Catalog</div>
+                        </div>
+                    </a>
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog-overview" target="_blank" rel="noopener" class="resource-link">
+                        <span class="resource-link__icon">📖</span>
+                        <div>
+                            <div class="resource-link__text">Model Catalog Documentation</div>
+                            <div class="resource-link__sub">Official Microsoft Learn guide</div>
+                        </div>
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=LLO0lOufbwc" target="_blank" rel="noopener" class="resource-link">
+                        <span class="resource-link__icon">🎥</span>
+                        <div>
+                            <div class="resource-link__text">Model Deployment Video</div>
+                            <div class="resource-link__sub">Azure Innovation Station — YouTube</div>
+                        </div>
+                    </a>
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/concepts/deployments-overview" target="_blank" rel="noopener" class="resource-link">
+                        <span class="resource-link__icon">🚀</span>
+                        <div>
+                            <div class="resource-link__text">Deployment Options Guide</div>
+                            <div class="resource-link__sub">Compare Serverless, Managed, Provisioned</div>
+                        </div>
+                    </a>
+                    <a href="https://azure.microsoft.com/en-us/pricing/calculator/" target="_blank" rel="noopener" class="resource-link">
+                        <span class="resource-link__icon">💰</span>
+                        <div>
+                            <div class="resource-link__text">Azure Pricing Calculator</div>
+                            <div class="resource-link__sub">Estimate model deployment costs</div>
+                        </div>
+                    </a>
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-benchmarks" target="_blank" rel="noopener" class="resource-link">
+                        <span class="resource-link__icon">📊</span>
+                        <div>
+                            <div class="resource-link__text">Model Benchmarks</div>
+                            <div class="resource-link__sub">Compare model performance metrics</div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Module Navigation -->
+            <nav class="module-nav">
+                <a href="../module-06/blog.html">← Module 6: Portal Walkthrough</a>
+                <a href="../module-08/blog.html">Module 8: First Deployment →</a>
+            </nav>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. All rights reserved.</p>
+        <p style="margin-top: 8px;">
+            Built with ❤️ by the Zero to Hero Training Team · 
+            <a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry</a> · 
+            <a href="https://learn.microsoft.com" target="_blank" rel="noopener">Microsoft Learn</a>
+        </p>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+    <!-- ============================================
+         JAVASCRIPT
+         ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---- Scroll Progress Bar ----
+            const progressBar = document.getElementById('progressBar');
+            function updateProgress() {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+                progressBar.style.width = progress + '%';
+            }
+
+            // ---- Back to Top Button ----
+            const backToTopBtn = document.getElementById('backToTop');
+            function toggleBackToTop() {
+                if (window.scrollY > 400) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            }
+
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ---- Combined Scroll Handler ----
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    requestAnimationFrame(function() {
+                        updateProgress();
+                        toggleBackToTop();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // ---- IntersectionObserver for TOC Active States ----
+            const tocLinks = document.querySelectorAll('.toc-sidebar__link');
+            const sections = document.querySelectorAll('section[id]');
+
+            if (sections.length > 0 && tocLinks.length > 0) {
+                const observerOptions = {
+                    rootMargin: '-80px 0px -70% 0px',
+                    threshold: 0
+                };
+
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            const id = entry.target.getAttribute('id');
+                            tocLinks.forEach(function(link) {
+                                link.classList.remove('active');
+                                if (link.getAttribute('href') === '#' + id) {
+                                    link.classList.add('active');
+                                }
+                            });
+                        }
+                    });
+                }, observerOptions);
+
+                sections.forEach(function(section) {
+                    observer.observe(section);
+                });
+            }
+
+            // ---- Fade-in Animation on Scroll ----
+            const fadeElements = document.querySelectorAll('.fade-in');
+            if (fadeElements.length > 0) {
+                const fadeObserver = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            fadeObserver.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    rootMargin: '0px 0px -60px 0px',
+                    threshold: 0.1
+                });
+
+                fadeElements.forEach(function(el) {
+                    fadeObserver.observe(el);
+                });
+            }
+
+            // ---- Smooth Scroll for TOC Links ----
+            tocLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').slice(1);
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // ---- Initialize on Load ----
+            updateProgress();
+            toggleBackToTop();
+        })();
+    </script>
+</body>
+</html>

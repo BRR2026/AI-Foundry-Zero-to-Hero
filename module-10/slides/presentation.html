@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Module 10 — Evaluation, Content Safety &amp; Testing | Slides</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --surface: #16213e;
+            --accent: #0078d4;
+            --purple: #5c2d91;
+            --text: #e0e0e0;
+            --text-muted: #a0a0b8;
+            --success: #107c10;
+            --warning: #ff8c00;
+            --error: #d13438;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* Slide container */
+        .slide-deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            text-align: center;
+        }
+        .slide.active { display: flex; }
+
+        /* Title slide */
+        .slide.title-slide {
+            background: linear-gradient(135deg, #0078d4 0%, #5c2d91 100%);
+        }
+        .slide.title-slide h1 { font-size: 2.8rem; margin-bottom: 16px; font-weight: 700; }
+        .slide.title-slide .subtitle { font-size: 1.3rem; opacity: 0.9; margin-bottom: 24px; }
+        .slide.title-slide .meta { font-size: 0.95rem; opacity: 0.7; }
+
+        /* Section divider */
+        .slide.section-slide {
+            background: linear-gradient(135deg, var(--surface) 0%, #0d1b3e 100%);
+        }
+        .slide.section-slide h2 { font-size: 2.4rem; color: var(--accent); }
+        .slide.section-slide p { font-size: 1.1rem; color: var(--text-muted); margin-top: 12px; }
+
+        /* Content slides */
+        .slide.content-slide {
+            background: var(--surface);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 48px 80px;
+        }
+        .slide.content-slide h2 {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 28px;
+            border-bottom: 2px solid rgba(0,120,212,0.3);
+            padding-bottom: 12px;
+            width: 100%;
+        }
+        .slide.content-slide ul, .slide.content-slide ol {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-left: 28px;
+        }
+        .slide.content-slide li { margin-bottom: 10px; }
+        .slide.content-slide p { font-size: 1.1rem; line-height: 1.7; margin-bottom: 14px; }
+        .slide.content-slide strong { color: #fff; }
+
+        .slide.content-slide code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.95em;
+        }
+
+        .slide.content-slide pre {
+            background: #0d1117;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        /* Tables */
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+            margin-top: 16px;
+        }
+        .slide th {
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 16px;
+            text-align: left;
+        }
+        .slide td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .slide tr:nth-child(even) { background: rgba(255,255,255,0.04); }
+
+        /* Highlight box */
+        .highlight-box {
+            background: rgba(0,120,212,0.12);
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        /* Grid layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            width: 100%;
+        }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 14px;
+            color: var(--text-muted);
+            z-index: 100;
+        }
+
+        /* Nav hint */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 30px;
+            font-size: 13px;
+            color: var(--text-muted);
+            z-index: 100;
+        }
+
+        /* Badge */
+        .arc-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        /* Emoji sizing */
+        .emoji-lg { font-size: 3rem; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="slide-deck" id="deck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide title-slide active" data-slide="1">
+        <div class="arc-badge">ARC 2 · Prompt Engineering &amp; Models</div>
+        <h1>Module 10: Evaluation, Content Safety &amp; Testing</h1>
+        <p class="subtitle">Trust but verify — measuring quality, enforcing safety, and hardening your AI application.</p>
+        <p class="meta">Azure AI Foundry: Zero to Hero &nbsp;|&nbsp; April 2026 &nbsp;|&nbsp; Module 10 of 45</p>
+    </div>
+
+    <!-- Slide 2: Agenda -->
+    <div class="slide content-slide" data-slide="2">
+        <h2>📋 Today's Agenda</h2>
+        <ol>
+            <li>Why evaluation matters</li>
+            <li>AI evaluation metrics deep dive</li>
+            <li>Built-in evaluators in AI Foundry</li>
+            <li>Content Safety — categories, severity, filters</li>
+            <li>Custom blocklists &amp; Prompt Shield</li>
+            <li>Red-teaming your AI application</li>
+            <li>Automated evaluation pipelines</li>
+            <li>Python SDK walkthrough</li>
+            <li>🛠️ Mini Hack exercise</li>
+        </ol>
+    </div>
+
+    <!-- Slide 3: Why Evaluation Matters -->
+    <div class="slide content-slide" data-slide="3">
+        <h2>Why Evaluation Matters</h2>
+        <p>Building an AI application is only half the battle. <strong>How do you know it's working well?</strong></p>
+        <ul>
+            <li>Models can <strong>hallucinate</strong> — generate plausible but false information</li>
+            <li>Prompt changes can cause <strong>regressions</strong> in unexpected areas</li>
+            <li>Users will try to <strong>misuse</strong> your system</li>
+            <li>Quality can <strong>drift</strong> over time as data and usage patterns change</li>
+        </ul>
+        <div class="highlight-box">
+            💡 Evaluation isn't overhead — it's insurance. Organizations with structured evaluation reduce production incidents by up to 70%.
+        </div>
+    </div>
+
+    <!-- Slide 4: Evaluation Metrics Overview -->
+    <div class="slide content-slide" data-slide="4">
+        <h2>AI Evaluation Metrics</h2>
+        <table>
+            <thead><tr><th>Metric</th><th>Question It Answers</th><th>Key For</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Groundedness</strong></td><td>Is the response backed by source data?</td><td>RAG apps</td></tr>
+                <tr><td><strong>Relevance</strong></td><td>Does it answer the question asked?</td><td>All apps</td></tr>
+                <tr><td><strong>Coherence</strong></td><td>Is it logically structured?</td><td>Chatbots</td></tr>
+                <tr><td><strong>Fluency</strong></td><td>Is it well-written?</td><td>Content gen</td></tr>
+                <tr><td><strong>Similarity</strong></td><td>How close to a reference answer?</td><td>FAQ / KB</td></tr>
+            </tbody>
+        </table>
+        <div class="highlight-box">
+            Each metric uses a 1–5 scale. Use multiple metrics together for a complete quality picture.
+        </div>
+    </div>
+
+    <!-- Slide 5: Groundedness Deep Dive -->
+    <div class="slide content-slide" data-slide="5">
+        <h2>Groundedness — The #1 RAG Metric</h2>
+        <p><strong>Definition:</strong> Can every claim in the response be traced back to the provided context?</p>
+        <div class="two-col">
+            <div>
+                <p><strong>High Groundedness (5):</strong></p>
+                <ul>
+                    <li>All facts supported by context</li>
+                    <li>No fabricated details</li>
+                    <li>Appropriate "I don't know" when context lacks info</li>
+                </ul>
+            </div>
+            <div>
+                <p><strong>Low Groundedness (1–2):</strong></p>
+                <ul>
+                    <li>Facts not found in context</li>
+                    <li>Invented statistics or dates</li>
+                    <li>Plausible-sounding hallucinations</li>
+                </ul>
+            </div>
+        </div>
+        <div class="highlight-box">
+            ⚠️ A response can be fluent, coherent, and relevant while still being <em>ungrounded</em>. Always check groundedness!
+        </div>
+    </div>
+
+    <!-- Slide 6: Built-in Evaluators -->
+    <div class="slide content-slide" data-slide="6">
+        <h2>Built-in Evaluators in AI Foundry</h2>
+        <div class="two-col">
+            <div>
+                <p><strong>Quality Evaluators:</strong></p>
+                <ul>
+                    <li><code>GroundednessEvaluator</code></li>
+                    <li><code>RelevanceEvaluator</code></li>
+                    <li><code>CoherenceEvaluator</code></li>
+                    <li><code>FluencyEvaluator</code></li>
+                    <li><code>SimilarityEvaluator</code></li>
+                </ul>
+            </div>
+            <div>
+                <p><strong>Safety Evaluators:</strong></p>
+                <ul>
+                    <li><code>ViolenceEvaluator</code></li>
+                    <li><code>SexualEvaluator</code></li>
+                    <li><code>SelfHarmEvaluator</code></li>
+                    <li><code>HateUnfairnessEvaluator</code></li>
+                    <li><code>ProtectedMaterialEvaluator</code></li>
+                </ul>
+            </div>
+        </div>
+        <div class="highlight-box">
+            Use via the AI Foundry portal (visual UI) or programmatically with <code>azure-ai-evaluation</code> SDK.
+        </div>
+    </div>
+
+    <!-- Slide 7: Content Safety Categories -->
+    <div class="slide content-slide" data-slide="7">
+        <h2>Content Safety — Four Categories</h2>
+        <table>
+            <thead><tr><th>Category</th><th>What It Detects</th></tr></thead>
+            <tbody>
+                <tr><td>🚫 <strong>Hate &amp; Fairness</strong></td><td>Slurs, stereotypes, discrimination against identity groups</td></tr>
+                <tr><td>🔞 <strong>Sexual</strong></td><td>Sexually explicit or suggestive content</td></tr>
+                <tr><td>⚔️ <strong>Violence</strong></td><td>Graphic violence, threats, glorification of harm</td></tr>
+                <tr><td>💔 <strong>Self-Harm</strong></td><td>Instructions, encouragement, or glorification of self-harm</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top:20px;">Each category has <strong>four severity levels:</strong> Safe (0) → Low (2) → Medium (4) → High (6)</p>
+        <div class="highlight-box">
+            You set the <strong>threshold</strong> per category per deployment. Content at or above the threshold is blocked.
+        </div>
+    </div>
+
+    <!-- Slide 8: Content Filters & Blocklists -->
+    <div class="slide content-slide" data-slide="8">
+        <h2>Content Filters &amp; Custom Blocklists</h2>
+        <p><strong>Content Filters</strong> are configured per deployment in AI Foundry:</p>
+        <ul>
+            <li>Apply to both <strong>input</strong> (user prompts) and <strong>output</strong> (model completions)</li>
+            <li>Set independent severity thresholds for each category</li>
+            <li>Multiple filter configurations can coexist for different deployments</li>
+        </ul>
+        <p style="margin-top:20px;"><strong>Custom Blocklists:</strong></p>
+        <ul>
+            <li>Block domain-specific terms (competitor names, internal codenames, regulated terms)</li>
+            <li>Managed via SDK or REST API</li>
+            <li>Support regex patterns for flexible matching</li>
+        </ul>
+    </div>
+
+    <!-- Slide 9: Prompt Shield -->
+    <div class="slide content-slide" data-slide="9">
+        <h2>🛡️ Prompt Shield — Jailbreak Detection</h2>
+        <p>Prompt Shield defends against two attack vectors:</p>
+        <div class="two-col">
+            <div>
+                <p><strong>Direct Jailbreaks:</strong></p>
+                <ul>
+                    <li>"Ignore all previous instructions…"</li>
+                    <li>Role-play attacks</li>
+                    <li>Encoding tricks (Base64, leetspeak)</li>
+                </ul>
+            </div>
+            <div>
+                <p><strong>Indirect Prompt Injection:</strong></p>
+                <ul>
+                    <li>Malicious instructions in documents</li>
+                    <li>Hidden commands in retrieved data</li>
+                    <li>Cross-domain injection via RAG</li>
+                </ul>
+            </div>
+        </div>
+        <div class="highlight-box">
+            ⚠️ Prompt injection is a <strong>top security risk</strong> for AI applications. Always enable Prompt Shield on production deployments.
+        </div>
+    </div>
+
+    <!-- Slide 10: Red-Teaming -->
+    <div class="slide content-slide" data-slide="10">
+        <h2>🔴 Red-Teaming Your AI Application</h2>
+        <p>Red-teaming = structured adversarial testing to find vulnerabilities before your users do.</p>
+        <table>
+            <thead><tr><th>Phase</th><th>Activities</th></tr></thead>
+            <tbody>
+                <tr><td><strong>1. Scope</strong></td><td>Define attack surfaces and threat models</td></tr>
+                <tr><td><strong>2. Probe</strong></td><td>Execute jailbreaks, bias probes, edge cases</td></tr>
+                <tr><td><strong>3. Analyze</strong></td><td>Categorize findings by severity</td></tr>
+                <tr><td><strong>4. Remediate</strong></td><td>Update prompts, filters, and guardrails</td></tr>
+                <tr><td><strong>5. Retest</strong></td><td>Verify mitigations, check for regressions</td></tr>
+            </tbody>
+        </table>
+        <div class="highlight-box">
+            🌍 Assemble a <strong>diverse</strong> red team — different backgrounds discover different vulnerabilities.
+        </div>
+    </div>
+
+    <!-- Slide 11: Automated Evaluation Pipelines -->
+    <div class="slide content-slide" data-slide="11">
+        <h2>Automated Evaluation Pipelines</h2>
+        <p>Manual evaluation doesn't scale. Build pipelines that run continuously:</p>
+        <ol>
+            <li><strong>Test dataset management</strong> — versioned JSONL with queries, responses, context</li>
+            <li><strong>Multi-metric scoring</strong> — quality + safety evaluators in parallel</li>
+            <li><strong>Threshold gating</strong> — minimum acceptable scores per metric</li>
+            <li><strong>CI/CD integration</strong> — fail the pipeline if thresholds aren't met</li>
+            <li><strong>Trend monitoring</strong> — track scores over time to catch drift</li>
+        </ol>
+        <div class="highlight-box">
+            Run evaluations on every model/prompt change AND on a regular schedule against production traffic samples.
+        </div>
+    </div>
+
+    <!-- Slide 12: SDK Example -->
+    <div class="slide content-slide" data-slide="12">
+        <h2>Python SDK — <code>azure-ai-evaluation</code></h2>
+        <pre>
+from azure.ai.evaluation import (
+    evaluate,
+    GroundednessEvaluator,
+    RelevanceEvaluator,
+    CoherenceEvaluator,
+    FluencyEvaluator,
+)
+
+results = evaluate(
+    data="test_dataset.jsonl",
+    evaluators={
+        "groundedness": GroundednessEvaluator(model_config=cfg),
+        "relevance":    RelevanceEvaluator(model_config=cfg),
+        "coherence":    CoherenceEvaluator(model_config=cfg),
+        "fluency":      FluencyEvaluator(model_config=cfg),
+    },
+)
+
+print(results["metrics"])
+# {"groundedness": 4.2, "relevance": 4.5, ...}
+        </pre>
+    </div>
+
+    <!-- Slide 13: Mini Hack -->
+    <div class="slide content-slide" data-slide="13">
+        <h2>🛠️ Mini Hack: Evaluate Your Fine-Tuned Model</h2>
+        <ol>
+            <li><strong>Prepare</strong> a test dataset (≥ 20 rows, JSONL) with normal + adversarial inputs</li>
+            <li><strong>Run quality evaluators</strong> — groundedness, relevance, coherence, fluency</li>
+            <li><strong>Run safety evaluators</strong> — violence, sexual, self-harm, hate</li>
+            <li><strong>Check thresholds</strong> — quality ≥ 4.0, safety scores = 0</li>
+            <li><strong>Configure content filter</strong> in AI Foundry portal</li>
+            <li><strong>Red-team test</strong> — 5 adversarial prompts, document results</li>
+        </ol>
+        <div class="highlight-box">
+            ✅ <strong>Success:</strong> Quality avg ≥ 4.0 · Zero safety violations · Filter blocks adversarial inputs · Red-team findings documented
+        </div>
+    </div>
+
+    <!-- Slide 14: Key Takeaways -->
+    <div class="slide content-slide" data-slide="14">
+        <h2>✅ Key Takeaways</h2>
+        <ul>
+            <li>Five quality metrics: <strong>groundedness, relevance, coherence, fluency, similarity</strong></li>
+            <li>Four safety categories with <strong>configurable severity thresholds</strong></li>
+            <li><strong>Prompt Shield</strong> defends against jailbreaks and prompt injection</li>
+            <li><strong>Custom blocklists</strong> extend built-in safety for your domain</li>
+            <li><strong>Red-teaming</strong> is essential — automate what you can, but human creativity is irreplaceable</li>
+            <li><strong>Automated pipelines</strong> with threshold gates keep quality high continuously</li>
+            <li>The <code>azure-ai-evaluation</code> SDK is your primary tool</li>
+        </ul>
+    </div>
+
+    <!-- Slide 15: What's Next -->
+    <div class="slide section-slide" data-slide="15">
+        <div class="emoji-lg">🚀</div>
+        <h2>Next Up: ARC 3 — Data &amp; RAG</h2>
+        <p>Module 11: Connect your models to real data with Retrieval-Augmented Generation.</p>
+        <p style="margin-top:24px; font-size:0.9rem; color:var(--text-muted);">Your evaluation skills from today will be critical for measuring RAG groundedness!</p>
+    </div>
+
+</div>
+
+<!-- Slide Counter -->
+<div class="slide-counter" id="counter">1 / 15</div>
+<div class="nav-hint">← → Arrow keys to navigate</div>
+
+<script>
+(function () {
+    'use strict';
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('counter');
+    const total = slides.length;
+    let current = 0;
+
+    function show(index) {
+        slides[current].classList.remove('active');
+        current = (index + total) % total;
+        slides[current].classList.add('active');
+        counter.textContent = (current + 1) + ' / ' + total;
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(current + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1); }
+        if (e.key === 'Home') { e.preventDefault(); show(0); }
+        if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', function (e) { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', function (e) {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { diff > 0 ? show(current + 1) : show(current - 1); }
+    });
+})();
+</script>
+</body>
+</html>
