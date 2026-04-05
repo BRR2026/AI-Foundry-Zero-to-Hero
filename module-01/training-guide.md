@@ -11,7 +11,7 @@
 | **Title**           | What is AI Foundry?                                     |
 | **Estimated Time**  | 2–3 hours                                               |
 | **Difficulty**      | ⭐ Beginner                                              |
-| **Last Updated**    | April 2025                                               |
+| **Last Updated**    | April 2026                                               |
 
 ---
 
@@ -540,4 +540,4 @@ next module, we'll explore the **end-to-end journey** of building an AI applicat
 
 ---
 
-*© 2025 Zero to Hero: Azure AI Foundry Training Program. All rights reserved.*
+*© 2026 Zero to Hero: Azure AI Foundry Training Program. All rights reserved.*

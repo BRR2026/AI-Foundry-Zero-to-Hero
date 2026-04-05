@@ -664,4 +664,4 @@ GET https://{endpoint}/openai/content-filters/{filter-name}?api-version=2024-10-
 
 ---
 
-*© 2025 Azure AI Foundry Training Course. Module 4 of 45. Arc 1: Foundations.*
+*© 2026 Azure AI Foundry Training Course. Module 4 of 45. Arc 1: Foundations.*

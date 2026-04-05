@@ -11,7 +11,7 @@
 | **Title**           | Setting Up Your Environment + First "Hello World" Model |
 | **Estimated Time**  | 3–4 hours                                               |
 | **Difficulty**      | ⭐⭐ Beginner–Intermediate                              |
-| **Last Updated**    | April 2025                                               |
+| **Last Updated**    | April 2026                                               |
 
 ---
 
@@ -1149,8 +1149,8 @@ Azure AI Foundry charges based on **token consumption**:
 ```bash
 # View your current spending
 az consumption usage list \
-  --start-date 2025-07-01 \
-  --end-date 2025-07-31 \
+  --start-date 2026-07-01 \
+  --end-date 2026-07-31 \
   --query "[?contains(instanceName, 'openai')]" \
   --output table
 ```
@@ -1355,5 +1355,5 @@ next module we'll master the art and science of writing effective prompts:
 
 ---
 
-*© 2025 Azure AI Foundry Training Course. Module 5 of 45 — Zero to Hero.*
+*© 2026 Azure AI Foundry Training Course. Module 5 of 45 — Zero to Hero.*
 *next module: Module 6 — Prompt Engineering Deep Dive →*

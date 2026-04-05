@@ -318,4 +318,4 @@ Private Endpoints ensure that all network traffic between the App VM, the AI Fou
 
 ---
 
-*© 2025 Zero to Hero Training Team. Azure AI Foundry Training Course.*
+*© 2026 Zero to Hero Training Team. Azure AI Foundry Training Course.*

@@ -534,7 +534,7 @@ CONNECTIONS IN PROJECT
 Name: blob-training-data
   Type: azure_blob
   Target: https://stcontosoai.blob.core.windows.net
-  Created: 2025-01-15
+  Created: 2026-01-15
 
 Name: my-openai-connection
   Type: azure_open_ai
@@ -638,4 +638,4 @@ rm sample-data.txt
 
 ---
 
-*© 2025 Zero to Hero Training Team. Azure AI Foundry Training Course.*
+*© 2026 Zero to Hero Training Team. Azure AI Foundry Training Course.*

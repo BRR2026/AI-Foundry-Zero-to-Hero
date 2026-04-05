@@ -12,7 +12,7 @@
 | **Estimated Time**  | 3–4 hours                                               |
 | **Difficulty**      | ⭐ Beginner                                              |
 | **Prerequisites**   | Module 1: What is AI Foundry?                             |
-| **Last Updated**    | April 2025                                               |
+| **Last Updated**    | April 2026                                               |
 
 ---
 
@@ -854,4 +854,4 @@ In Module 3, we'll move from theory to practice with **"Navigating the AI Foundr
 
 ---
 
-*© 2025 Zero to Hero: Azure AI Foundry Training. Module 2 of 45.*
+*© 2026 Zero to Hero: Azure AI Foundry Training. Module 2 of 45.*

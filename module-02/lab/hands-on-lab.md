@@ -501,4 +501,4 @@ In **Module 3**, we'll take a deeper dive into the AI Foundry portal, exploring 
 
 ---
 
-*© 2025 Zero to Hero: Azure AI Foundry Training. Module 2 of 45.*
+*© 2026 Zero to Hero: Azure AI Foundry Training. Module 2 of 45.*

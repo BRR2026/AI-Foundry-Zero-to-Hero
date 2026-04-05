@@ -395,4 +395,4 @@ Evaluation should be continuous because:
 
 ---
 
-*© 2025 Zero to Hero: Azure AI Foundry Training. Module 2 of 45.*
+*© 2026 Zero to Hero: Azure AI Foundry Training. Module 2 of 45.*

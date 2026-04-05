@@ -1040,4 +1040,4 @@ next module, we'll dive into **Prompt Engineering Fundamentals**, where you'll l
 
 ---
 
-*© 2025 Azure AI Foundry Training Course. Module 4 of 45. Arc 1: Foundations.*
+*© 2026 Azure AI Foundry Training Course. Module 4 of 45. Arc 1: Foundations.*
