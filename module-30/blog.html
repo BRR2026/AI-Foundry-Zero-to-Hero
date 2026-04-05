@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Module 30 of Azure AI Foundry Zero to Hero — MLOps Capstone: Build a production-ready CI/CD pipeline with automated evaluation gates, Infrastructure as Code, and the MLOps Maturity Model.">
+<meta name="description" content="Module 30 of Azure AI Foundry Zero to Hero — Master cost optimization, quota management, PTU vs pay-as-you-go pricing, token usage analysis, and budget governance for AI workloads.">
 <meta name="author" content="Zero to Hero Training Team">
 <meta name="date" content="2026-04">
-<title>Module 30: MLOps Capstone — Azure AI Foundry: Zero to Hero</title>
+<title>Module 30: Cost Optimization &amp; Quota Management — Azure AI Foundry: Zero to Hero</title>
 <style>
 /* ============================================================
    CSS VARIABLES & DESIGN TOKENS
@@ -21,37 +21,29 @@
   --ms-yellow: #ffb900;
   --ms-orange: #d83b01;
   --ms-red: #e74856;
-
   --bg-primary: #ffffff;
   --bg-secondary: #f6f8fa;
   --bg-tertiary: #eef1f5;
   --bg-dark: #1b1b1b;
   --bg-code: #1e1e1e;
-
   --text-primary: #1a1a1a;
   --text-secondary: #424242;
   --text-muted: #6e6e6e;
   --text-inverse: #ffffff;
   --text-link: #0078d4;
-
   --border-light: #e1e4e8;
   --border-medium: #d0d7de;
-
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
   --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
   --shadow-xl: 0 12px 48px rgba(0,0,0,0.15);
-
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
-
   --content-max: 780px;
   --toc-width: 220px;
-
   --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
 }
@@ -59,958 +51,243 @@
 /* ============================================================
    RESET & BASE
    ============================================================ */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 80px;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  line-height: 1.7;
-  overflow-x: hidden;
-}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; font-size: 16px; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-body); color: var(--text-primary); background: var(--bg-primary); line-height: 1.7; }
+a { color: var(--text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
 /* ============================================================
-   SCROLL PROGRESS BAR
+   PROGRESS BAR
    ============================================================ */
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 0%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
-  z-index: 10000;
-  transition: width 0.1s linear;
-}
+.progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple)); z-index: 9999; transition: width 0.2s; width: 0%; }
 
 /* ============================================================
    TOP NAVIGATION
    ============================================================ */
-.top-nav {
-  position: sticky;
-  top: 0;
-  z-index: 9000;
-  background: var(--bg-dark);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(12px);
-}
-
-.top-nav-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: var(--text-inverse);
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  list-style: none;
-}
-
-.nav-links a {
-  color: rgba(255,255,255,0.8);
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: color var(--transition-fast);
-}
-
-.nav-links a:hover {
-  color: #ffffff;
-}
+.top-nav { background: var(--bg-dark); color: var(--text-inverse); padding: 0 24px; height: 48px; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; }
+.top-nav-inner { max-width: 1200px; width: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.ms-logo { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+.ms-logo svg { width: 16px; height: 16px; }
+.blog-title { font-size: 14px; color: rgba(255,255,255,0.8); }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { color: rgba(255,255,255,0.8); font-size: 13px; text-decoration: none; }
+.nav-links a:hover { color: #fff; }
 
 /* ============================================================
    HERO SECTION
    ============================================================ */
-.hero {
-  background: linear-gradient(135deg, #0078d4, #5c2d91);
-  color: var(--text-inverse);
-  padding: 80px 24px 70px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(80,230,255,0.08) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.hero-inner {
-  max-width: 800px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.hero-badge {
-  display: inline-block;
-  padding: 5px 16px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.hero h1 {
-  font-size: 2.8rem;
-  font-weight: 700;
-  line-height: 1.15;
-  margin-bottom: 16px;
-}
-
-.hero .subtitle {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin-bottom: 28px;
-  line-height: 1.6;
-}
-
-.hero-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  font-size: 0.9rem;
-  opacity: 0.85;
-}
-
-.hero-meta span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.hero { background: linear-gradient(135deg, var(--ms-blue) 0%, var(--ms-purple) 100%); color: #fff; padding: 64px 24px 56px; text-align: center; }
+.hero-inner { max-width: 780px; margin: 0 auto; }
+.hero-badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; padding: 5px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 20px; backdrop-filter: blur(4px); }
+.hero h1 { font-size: 40px; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+.hero .subtitle { font-size: 18px; opacity: 0.92; line-height: 1.6; max-width: 640px; margin: 0 auto 24px; }
+.hero-meta { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; font-size: 14px; opacity: 0.88; }
 
 /* ============================================================
-   LAYOUT: SIDEBAR TOC + MAIN CONTENT
+   MAIN LAYOUT
    ============================================================ */
-.page-layout {
-  display: flex;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 40px 24px;
-  gap: 48px;
-}
-
-/* ---------- Sticky TOC Sidebar ---------- */
-.toc-sidebar {
-  position: sticky;
-  top: 70px;
-  width: var(--toc-width);
-  min-width: var(--toc-width);
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
-  align-self: flex-start;
-  padding-right: 8px;
-}
-
-.toc-sidebar::-webkit-scrollbar { width: 3px; }
-.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-.toc-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--ms-blue);
-}
-
-.toc-list {
-  list-style: none;
-}
-
-.toc-list li {
-  margin-bottom: 2px;
-}
-
-.toc-list a {
-  display: block;
-  padding: 5px 12px;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  text-decoration: none;
-  border-left: 2px solid transparent;
-  border-radius: 0 4px 4px 0;
-  transition: all var(--transition-fast);
-  line-height: 1.45;
-}
-
-.toc-list a:hover {
-  color: var(--ms-blue);
-  background: rgba(0,120,212,0.05);
-}
-
-.toc-list a.active {
-  color: var(--ms-blue);
-  border-left-color: var(--ms-blue);
-  background: rgba(0,120,212,0.08);
-  font-weight: 600;
-}
-
-/* ---------- Main Content ---------- */
-.main-content {
-  flex: 1;
-  max-width: var(--content-max);
-  min-width: 0;
-}
+.main-wrapper { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: var(--toc-width) 1fr; gap: 40px; padding: 40px 24px; }
 
 /* ============================================================
-   TYPOGRAPHY
+   TABLE OF CONTENTS
    ============================================================ */
-.main-content h2 {
-  font-size: 1.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-top: 56px;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--bg-tertiary);
-  scroll-margin-top: 80px;
-}
+.toc { position: sticky; top: 70px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; }
+.toc h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+.toc ul { list-style: none; }
+.toc li { margin-bottom: 6px; }
+.toc a { font-size: 13px; color: var(--text-secondary); display: block; padding: 4px 0 4px 12px; border-left: 2px solid transparent; transition: var(--transition-fast); }
+.toc a:hover, .toc a.active { color: var(--ms-blue); border-left-color: var(--ms-blue); text-decoration: none; background: rgba(0,120,212,0.04); }
 
-.main-content h3 {
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--ms-dark-blue);
-  margin-top: 36px;
-  margin-bottom: 14px;
-  scroll-margin-top: 80px;
-}
-
-.main-content h4 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-top: 28px;
-  margin-bottom: 10px;
-}
-
-.main-content p {
-  margin-bottom: 18px;
-  color: var(--text-secondary);
-  font-size: 1.02rem;
-  line-height: 1.8;
-}
-
-.main-content ul, .main-content ol {
-  margin-bottom: 20px;
-  padding-left: 24px;
-}
-
-.main-content li {
-  margin-bottom: 8px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-
-.main-content strong {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.main-content a {
-  color: var(--text-link);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color var(--transition-fast);
-}
-
-.main-content a:hover {
-  border-bottom-color: var(--ms-blue);
-}
-
-/* Inline code */
-.main-content code {
-  font-family: var(--font-mono);
-  font-size: 0.88em;
-  background: var(--bg-secondary);
-  padding: 2px 7px;
-  border-radius: 4px;
-  color: var(--ms-dark-blue);
-  border: 1px solid var(--border-light);
-}
-
-/* Code blocks */
-.code-block {
-  background: var(--bg-code);
-  border-radius: var(--radius-md);
-  padding: 24px 28px;
-  margin: 20px 0;
-  overflow-x: auto;
-  border: 1px solid #333;
-  position: relative;
-}
-
-.code-block code {
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
-  color: #d4d4d4;
-  background: none;
-  padding: 0;
-  border: none;
-  line-height: 1.65;
-}
-
-.code-label {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 0.7rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: var(--font-mono);
-}
-
-.code-block .kw { color: #569cd6; }
-.code-block .str { color: #ce9178; }
-.code-block .fn { color: #dcdcaa; }
-.code-block .cm { color: #6a9955; }
-.code-block .num { color: #b5cea8; }
-.code-block .type { color: #4ec9b0; }
+/* ============================================================
+   ARTICLE CONTENT
+   ============================================================ */
+.main-content { min-width: 0; }
+.main-content h2 { font-size: 28px; font-weight: 700; color: var(--ms-dark-blue); margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border-light); }
+.main-content h2:first-of-type { margin-top: 0; }
+.main-content h3 { font-size: 21px; font-weight: 600; color: var(--text-primary); margin: 32px 0 12px; }
+.main-content h4 { font-size: 17px; font-weight: 600; color: var(--ms-dark-blue); margin: 24px 0 8px; }
+.main-content p { margin-bottom: 16px; font-size: 16px; line-height: 1.75; }
+.main-content ul, .main-content ol { margin: 0 0 16px 24px; }
+.main-content li { margin-bottom: 8px; line-height: 1.65; }
+.main-content strong { font-weight: 600; }
+.main-content code { font-family: var(--font-mono); background: #f0f0f0; padding: 2px 7px; border-radius: 4px; font-size: 14px; }
 
 /* ============================================================
    CALLOUT BOXES
    ============================================================ */
-.callout {
-  border-radius: var(--radius-md);
-  padding: 20px 24px;
-  margin: 24px 0;
-  border-left: 4px solid;
-  position: relative;
-}
-
-.callout-title {
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.callout p { margin-bottom: 8px; font-size: 0.95rem; }
-.callout p:last-child { margin-bottom: 0; }
-
-.callout-blue {
-  background: rgba(0,120,212,0.06);
-  border-color: var(--ms-blue);
-}
-.callout-blue .callout-title { color: var(--ms-blue); }
-
-.callout-yellow {
-  background: rgba(255,185,0,0.08);
-  border-color: var(--ms-yellow);
-}
-.callout-yellow .callout-title { color: #986f0a; }
-
-.callout-green {
-  background: rgba(16,124,16,0.06);
-  border-color: var(--ms-green);
-}
-.callout-green .callout-title { color: var(--ms-green); }
-
-.callout-red {
-  background: rgba(231,72,86,0.06);
-  border-color: var(--ms-red);
-}
-.callout-red .callout-title { color: var(--ms-red); }
+.callout { padding: 16px 20px; border-radius: var(--radius-sm); margin: 20px 0; font-size: 15px; line-height: 1.65; }
+.callout-icon { margin-right: 6px; }
+.callout-blue { background: #f0f8ff; border-left: 4px solid var(--ms-blue); }
+.callout-yellow { background: #fffbeb; border-left: 4px solid var(--ms-yellow); }
+.callout-green { background: #f0fdf4; border-left: 4px solid var(--ms-green); }
+.callout-red { background: #fef2f2; border-left: 4px solid var(--ms-red); }
 
 /* ============================================================
-   VIDEO EMBED
+   HIGHLIGHT BOX
    ============================================================ */
-.video-container {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  margin: 24px 0;
-  box-shadow: var(--shadow-lg);
-}
+.highlight-box { background: linear-gradient(135deg, #f0f8ff 0%, #eef2ff 100%); border: 1px solid #deecf9; border-radius: var(--radius-md); padding: 24px 28px; margin: 24px 0; font-size: 17px; font-weight: 500; text-align: center; color: var(--ms-dark-blue); line-height: 1.6; }
 
-.video-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: var(--radius-md);
-}
+/* ============================================================
+   COMPARISON GRID
+   ============================================================ */
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.comparison-col { padding: 20px 24px; border-radius: var(--radius-md); }
+.comparison-col h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.comparison-col ul { margin-left: 16px; }
+.comparison-col li { margin-bottom: 8px; font-size: 14px; }
+.comparison-col.without { background: #fef2f2; border: 1px solid #fecaca; }
+.comparison-col.without h4 { color: var(--ms-red); }
+.comparison-col.with { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.comparison-col.with h4 { color: var(--ms-green); }
+
+/* ============================================================
+   CAPABILITY CARDS
+   ============================================================ */
+.capability { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 20px 24px; margin: 16px 0; border-left: 4px solid var(--ms-blue); box-shadow: var(--shadow-sm); }
+.capability h4 { font-size: 17px; margin-bottom: 8px; color: var(--ms-dark-blue); }
+.capability .cap-analogy { font-style: italic; color: var(--text-muted); font-size: 13px; padding-top: 8px; border-top: 1px solid #f0f0f0; margin-top: 12px; }
+.capability-green { border-left-color: var(--ms-green); }
+.capability-orange { border-left-color: var(--ms-orange); }
+.capability-purple { border-left-color: var(--ms-purple); }
 
 /* ============================================================
    TABLES
    ============================================================ */
-.main-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 0.92rem;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.main-content thead th {
-  background: var(--ms-dark-blue);
-  color: var(--text-inverse);
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.main-content tbody td {
-  padding: 11px 16px;
-  border-bottom: 1px solid var(--border-light);
-  color: var(--text-secondary);
-}
-
-.main-content tbody tr:nth-child(even) {
-  background: var(--bg-secondary);
-}
-
-.main-content tbody tr:hover {
-  background: rgba(0,120,212,0.04);
-}
+.main-content table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+.main-content table th { background: var(--ms-blue); color: #fff; padding: 11px 14px; text-align: left; font-weight: 600; font-size: 13px; }
+.main-content table td { padding: 11px 14px; border-bottom: 1px solid var(--border-light); }
+.main-content table tr:nth-child(even) td { background: #f9f9f9; }
+.main-content table tr:hover td { background: #f0f4fa; }
 
 /* ============================================================
-   FEATURE CARDS / GRID
+   CODE BLOCKS
    ============================================================ */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin: 24px 0;
-}
-
-.feature-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
-}
-
-.feature-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.feature-card .card-icon {
-  font-size: 2rem;
-  margin-bottom: 12px;
-}
-
-.feature-card h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-size: 1.05rem;
-  color: var(--text-primary);
-}
-
-.feature-card p {
-  font-size: 0.92rem;
-  color: var(--text-muted);
-  margin-bottom: 0;
-}
+.code-block { background: var(--bg-code); color: #d4d4d4; padding: 20px 24px; border-radius: var(--radius-sm); overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; margin: 20px 0; white-space: pre; }
+.code-header { background: #2d2d2d; color: #8b949e; padding: 8px 16px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+.code-header + .code-block { border-radius: 0 0 var(--radius-sm) var(--radius-sm); margin-top: 0; }
 
 /* ============================================================
-   DIAGRAM / ASCII ART
+   VIDEO SECTION
    ============================================================ */
-.diagram-box {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 32px;
-  margin: 24px 0;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  line-height: 1.55;
-  white-space: pre;
-  overflow-x: auto;
-  color: var(--text-secondary);
-}
+.video-section { margin: 32px 0; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; }
+.video-header { background: linear-gradient(135deg, var(--ms-dark-blue), var(--ms-purple)); color: #fff; padding: 14px 20px; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+.video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-caption { padding: 12px 20px; font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--border-light); }
 
 /* ============================================================
-   MATURITY LEVELS (CUSTOM)
+   KEY TAKEAWAYS
    ============================================================ */
-.maturity-track {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin: 28px 0;
-}
-
-.maturity-level {
-  display: flex;
-  gap: 20px;
-  padding: 20px 24px;
-  border-left: 4px solid var(--border-light);
-  position: relative;
-  transition: all var(--transition-normal);
-}
-
-.maturity-level:hover {
-  background: var(--bg-secondary);
-  border-left-color: var(--ms-blue);
-}
-
-.maturity-level .level-badge {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: #fff;
-}
-
-.maturity-level .level-content h4 {
-  margin-top: 0;
-  margin-bottom: 4px;
-}
-
-.maturity-level .level-content p {
-  margin-bottom: 0;
-  font-size: 0.92rem;
-}
-
-.level-0 .level-badge { background: var(--ms-red); }
-.level-1 .level-badge { background: var(--ms-orange); }
-.level-2 .level-badge { background: var(--ms-yellow); color: #333; }
-.level-3 .level-badge { background: var(--ms-blue); }
-.level-4 .level-badge { background: var(--ms-green); }
+.takeaways { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 24px 28px; margin: 24px 0; }
+.takeaways h3 { color: var(--ms-green); margin-top: 0; margin-bottom: 16px; font-size: 20px; }
+.takeaways ol { margin-left: 20px; }
+.takeaways li { margin-bottom: 10px; font-size: 15px; line-height: 1.65; }
 
 /* ============================================================
-   PIPELINE FLOW (CUSTOM)
+   MINI HACK
    ============================================================ */
-.pipeline-flow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin: 28px 0;
-  flex-wrap: wrap;
-}
-
-.pipeline-stage {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 20px 24px;
-  text-align: center;
-  min-width: 140px;
-  transition: all var(--transition-normal);
-}
-
-.pipeline-stage:hover {
-  border-color: var(--ms-blue);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.pipeline-stage .stage-icon { font-size: 2rem; margin-bottom: 8px; }
-.pipeline-stage .stage-name { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
-.pipeline-stage .stage-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
-
-.pipeline-arrow {
-  font-size: 1.6rem;
-  color: var(--ms-blue);
-  font-weight: 700;
-  padding: 0 10px;
-}
+.mini-hack { background: linear-gradient(135deg, #eff6ff, #f0f8ff); border: 2px solid var(--ms-blue); border-radius: var(--radius-md); padding: 28px; margin: 32px 0; }
+.mini-hack h3 { color: var(--ms-blue); margin-top: 0; }
+.mini-hack .hack-step { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; }
+.mini-hack .hack-step h4 { color: var(--ms-dark-blue); margin-top: 0; }
 
 /* ============================================================
-   CELEBRATION BANNER
+   MODULE NAVIGATION
    ============================================================ */
-.celebration-banner {
-  background: linear-gradient(135deg, #107c10, #00b7c3);
-  color: #fff;
-  border-radius: var(--radius-lg);
-  padding: 40px 36px;
-  margin: 40px 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.celebration-banner::before {
-  content: '';
-  position: absolute;
-  top: -40%;
-  right: -15%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.celebration-banner h3 {
-  color: #fff;
-  font-size: 1.6rem;
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
-.celebration-banner p {
-  color: rgba(255,255,255,0.92);
-  font-size: 1.05rem;
-  margin-bottom: 10px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.celebration-banner p:last-child { margin-bottom: 0; }
-
-.celebration-badge {
-  display: inline-block;
-  padding: 6px 20px;
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.35);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  margin-bottom: 16px;
-}
+.module-nav { display: flex; justify-content: space-between; align-items: stretch; margin-top: 48px; padding-top: 24px; border-top: 2px solid var(--border-light); gap: 16px; }
+.module-nav a { display: flex; flex-direction: column; padding: 16px 20px; border: 1px solid var(--border-light); border-radius: var(--radius-md); text-decoration: none; transition: var(--transition-fast); flex: 1; }
+.module-nav a:hover { border-color: var(--ms-blue); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.module-nav .nav-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+.module-nav .nav-title { font-size: 15px; color: var(--ms-blue); font-weight: 600; }
+.module-nav .next { text-align: right; }
 
 /* ============================================================
-   MINI HACK SECTION STYLING
+   PRICING CARDS
    ============================================================ */
-.mini-hack-banner {
-  background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
-  color: #fff;
-  border-radius: var(--radius-lg);
-  padding: 36px 32px;
-  margin: 32px 0;
-  text-align: center;
-}
-
-.mini-hack-banner h3 {
-  color: #fff;
-  font-size: 1.5rem;
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-
-.mini-hack-banner p {
-  color: rgba(255,255,255,0.9);
-  margin-bottom: 0;
-}
+.pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+.pricing-card { border: 2px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; background: #fff; box-shadow: var(--shadow-sm); transition: var(--transition-fast); }
+.pricing-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.pricing-card .pricing-header { padding: 20px 24px; color: #fff; }
+.pricing-card .pricing-header h3 { font-size: 20px; margin-bottom: 4px; }
+.pricing-card .pricing-header p { opacity: 0.9; font-size: 14px; }
+.pricing-card.ptu .pricing-header { background: linear-gradient(135deg, var(--ms-dark-blue), var(--ms-blue)); }
+.pricing-card.payg .pricing-header { background: linear-gradient(135deg, var(--ms-green), var(--ms-teal)); }
+.pricing-card .pricing-body { padding: 20px 24px; }
+.pricing-card .pricing-body ul { list-style: none; margin: 0; padding: 0; }
+.pricing-card .pricing-body li { margin-bottom: 10px; font-size: 14px; padding-left: 24px; position: relative; }
+.pricing-card .pricing-body li::before { content: '✓'; position: absolute; left: 0; color: var(--ms-green); font-weight: 700; }
 
 /* ============================================================
-   MODULE NAVIGATION (PREV / NEXT)
+   METRIC CARDS
    ============================================================ */
-.module-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 20px;
-  margin: 60px 0 40px;
-  padding-top: 30px;
-  border-top: 2px solid var(--bg-tertiary);
-}
-
-.module-nav a {
-  display: flex;
-  flex-direction: column;
-  padding: 18px 24px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all var(--transition-normal);
-  flex: 1;
-}
-
-.module-nav a:hover {
-  border-color: var(--ms-blue);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.module-nav a .nav-label {
-  font-size: 0.78rem;
-  color: var(--ms-blue);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-}
-
-.module-nav a .nav-title {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.module-nav a.next {
-  text-align: right;
-}
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+.metric-card { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 20px; text-align: center; box-shadow: var(--shadow-sm); }
+.metric-card .metric-value { font-size: 32px; font-weight: 700; color: var(--ms-blue); }
+.metric-card .metric-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
 /* ============================================================
    FOOTER
    ============================================================ */
-.site-footer {
-  background: var(--bg-dark);
-  color: rgba(255,255,255,0.7);
-  padding: 40px 24px;
-  margin-top: 60px;
-}
-
-.footer-inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.footer-inner p {
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.6);
-  margin: 0;
-}
-
-.footer-links {
-  display: flex;
-  gap: 20px;
-  list-style: none;
-}
-
-.footer-links a {
-  color: rgba(255,255,255,0.6);
-  text-decoration: none;
-  font-size: 0.85rem;
-  transition: color var(--transition-fast);
-}
-
-.footer-links a:hover {
-  color: #ffffff;
-}
+.site-footer { background: var(--bg-dark); color: rgba(255,255,255,0.7); padding: 40px 24px; margin-top: 60px; }
+.footer-inner { max-width: 1120px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.footer-inner a { color: rgba(255,255,255,0.7); text-decoration: none; }
+.footer-inner a:hover { color: #fff; }
 
 /* ============================================================
-   BACK TO TOP BUTTON
+   BACK TO TOP
    ============================================================ */
-.back-to-top {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 44px;
-  height: 44px;
-  background: var(--ms-blue);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-md);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
-  transition: all var(--transition-normal);
-  z-index: 5000;
-}
-
-.back-to-top.visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.back-to-top:hover {
-  background: var(--ms-dark-blue);
-  transform: translateY(-2px);
-}
+.back-to-top { position: fixed; bottom: 30px; right: 30px; width: 44px; height: 44px; background: var(--ms-blue); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: var(--transition-normal); z-index: 100; }
+.back-to-top.visible { opacity: 1; pointer-events: auto; }
+.back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
 
 /* ============================================================
-   CHECKLIST STYLING
+   RESPONSIVE
    ============================================================ */
-.checklist {
-  list-style: none;
-  padding-left: 0;
-  margin: 20px 0;
-}
-
-.checklist li {
-  padding: 8px 0 8px 32px;
-  position: relative;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.checklist li:last-child { border-bottom: none; }
-
-.checklist li::before {
-  content: '☐';
-  position: absolute;
-  left: 4px;
-  top: 8px;
-  font-size: 1.1rem;
-  color: var(--ms-blue);
-}
-
-/* ============================================================
-   RESPONSIVE DESIGN
-   ============================================================ */
-@media (max-width: 960px) {
-  .toc-sidebar {
-    display: none;
-  }
-
-  .page-layout {
-    padding: 24px 16px;
-  }
-
-  .hero {
-    padding: 50px 20px;
-  }
-
-  .hero h1 {
-    font-size: 2rem;
-  }
-
-  .module-nav {
-    flex-direction: column;
-  }
-
-  .module-nav a.next {
-    text-align: left;
-  }
-
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .pipeline-flow {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .pipeline-arrow {
-    transform: rotate(90deg);
-    padding: 4px 0;
-  }
-}
-
-@media (max-width: 600px) {
-  .hero h1 { font-size: 1.6rem; }
-  .hero .subtitle { font-size: 1rem; }
-  .hero-meta { flex-direction: column; gap: 8px; }
+@media (max-width: 900px) {
+  .main-wrapper { grid-template-columns: 1fr; }
+  .toc { position: static; max-height: none; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; margin-bottom: 16px; }
+  .hero h1 { font-size: 28px; }
+  .hero .subtitle { font-size: 16px; }
+  .comparison-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+  .module-nav { flex-direction: column; }
   .nav-links { display: none; }
-  .main-content h2 { font-size: 1.5rem; }
-  .main-content h3 { font-size: 1.15rem; }
-  .code-block { padding: 16px; }
-  .code-block code { font-size: 0.8rem; }
-  .celebration-banner { padding: 28px 20px; }
-  .celebration-banner h3 { font-size: 1.3rem; }
 }
-
-/* ============================================================
-   PRINT STYLES
-   ============================================================ */
 @media print {
-  .top-nav, .scroll-progress, .back-to-top, .toc-sidebar, .module-nav, .video-container { display: none !important; }
-  .hero { background: var(--ms-blue) !important; padding: 30px 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .page-layout { display: block; max-width: 100%; }
-  .main-content { max-width: 100%; }
-  .code-block { border: 1px solid #ccc; background: #f5f5f5 !important; color: #333 !important; }
-  .code-block code { color: #333 !important; }
-  .callout { break-inside: avoid; }
-  body { font-size: 11pt; }
+  .top-nav, .progress-bar, .toc, .back-to-top, .module-nav { display: none; }
+  .main-content { box-shadow: none; padding: 0; }
+  body { background: #fff; }
 }
 </style>
 </head>
 <body>
 
-<!-- Scroll Progress Bar -->
-<div class="scroll-progress" id="scrollProgress"></div>
+<!-- ============================================================
+     PROGRESS BAR
+     ============================================================ -->
+<div class="progress-bar" id="progressBar"></div>
 
 <!-- ============================================================
      TOP NAVIGATION
      ============================================================ -->
 <nav class="top-nav">
   <div class="top-nav-inner">
-    <a href="#" class="nav-brand">
-      <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="0" width="10" height="10" fill="#f25022"/>
-        <rect x="11" y="0" width="10" height="10" fill="#7fba00"/>
-        <rect x="0" y="11" width="10" height="10" fill="#00a4ef"/>
-        <rect x="11" y="11" width="10" height="10" fill="#ffb900"/>
+    <div class="ms-logo">
+      <svg viewBox="0 0 23 23" fill="none">
+        <rect width="11" height="11" fill="#f25022"/>
+        <rect x="12" width="11" height="11" fill="#7fba00"/>
+        <rect y="12" width="11" height="11" fill="#00a4ef"/>
+        <rect x="12" y="12" width="11" height="11" fill="#ffb900"/>
       </svg>
-      AI Foundry Training Blog
-    </a>
-    <ul class="nav-links">
-      <li><a href="#">Curriculum</a></li>
-      <li><a href="#">Resources</a></li>
-      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a></li>
-    </ul>
+      Microsoft
+    </div>
+    <span class="blog-title">AI Foundry Training Blog</span>
+    <div class="nav-links">
+      <a href="../index.html">Curriculum</a>
+      <a href="#">Resources</a>
+      <a href="https://ai.azure.com" target="_blank">AI Foundry Portal</a>
+    </div>
   </div>
 </nav>
 
@@ -1020,36 +297,44 @@ body {
 <header class="hero">
   <div class="hero-inner">
     <span class="hero-badge">ARC 6 · DEPLOYMENT &amp; MLOps</span>
-    <h1>MLOps Capstone</h1>
-    <p class="subtitle">Build a production-ready CI/CD pipeline end-to-end — from code commit to automated evaluation gates, Infrastructure as Code with Bicep, and the MLOps Maturity Model for Azure AI Foundry.</p>
+    <h1>Cost Optimization &amp; Quota Management</h1>
+    <p class="subtitle">Master AI Foundry pricing models, optimize token usage, manage quotas, and implement cost governance — controlling spend without compromising capability.</p>
     <div class="hero-meta">
       <span>📘 Module 30 of 45</span>
       <span>✍️ Zero to Hero Training Team</span>
       <span>📅 April 2026</span>
-      <span>⏱️ 35 min read</span>
+      <span>⏱️ 25 min read</span>
     </div>
   </div>
 </header>
 
 <!-- ============================================================
-     PAGE LAYOUT: TOC + CONTENT
+     MAIN LAYOUT
      ============================================================ -->
-<div class="page-layout">
+<div class="main-wrapper">
 
-  <!-- ---------- Sticky TOC Sidebar ---------- -->
-  <aside class="toc-sidebar">
-    <div class="toc-title">On This Page</div>
-    <ul class="toc-list">
+  <!-- ---------- Table of Contents ---------- -->
+  <aside class="toc">
+    <h4>On This Page</h4>
+    <ul>
       <li><a href="#introduction">Introduction</a></li>
-      <li><a href="#mlops-maturity-model">MLOps Maturity Model</a></li>
-      <li><a href="#cicd-pipeline-design">CI/CD Pipeline Design</a></li>
-      <li><a href="#infrastructure-as-code">Infrastructure as Code</a></li>
-      <li><a href="#automated-evaluation-gates">Automated Evaluation Gates</a></li>
-      <li><a href="#ab-testing-canary">A/B Testing &amp; Canary</a></li>
-      <li><a href="#video">Video: Portal Tour</a></li>
-      <li><a href="#mini-hack">Mini Hack Challenge</a></li>
-      <li><a href="#capstone-project">Capstone Project</a></li>
-      <li><a href="#intermediate-complete">Tier Complete 🎉</a></li>
+      <li><a href="#pricing-models">Pricing Models</a></li>
+      <li><a href="#ptu-deep-dive">PTU Deep Dive</a></li>
+      <li><a href="#payg-deep-dive">Pay-as-You-Go</a></li>
+      <li><a href="#token-optimization">Token Optimization</a></li>
+      <li><a href="#prompt-cost">Prompt Engineering for Cost</a></li>
+      <li><a href="#model-selection">Model Selection</a></li>
+      <li><a href="#caching-strategies">Caching Strategies</a></li>
+      <li><a href="#quota-management">Quota Management</a></li>
+      <li><a href="#capacity-planning">Capacity Planning</a></li>
+      <li><a href="#cost-dashboards">Cost Dashboards</a></li>
+      <li><a href="#budget-alerts">Budget Alerts</a></li>
+      <li><a href="#cost-governance">Cost Governance</a></li>
+      <li><a href="#featured-video">Featured Video</a></li>
+      <li><a href="#mini-hack">Mini Hack</a></li>
+      <li><a href="#key-takeaways">Key Takeaways</a></li>
+      <li><a href="#module-31-preview">Module 31 Preview</a></li>
+      <li><a href="#resources">Resources</a></li>
     </ul>
   </aside>
 
@@ -1059,957 +344,772 @@ body {
     <!-- ============================================================
          SECTION: INTRODUCTION
          ============================================================ -->
-    <h2 id="introduction" style="margin-top: 0;">Introduction</h2>
+    <h2 id="introduction">1. Introduction — Why Cost Optimization Matters</h2>
 
-    <p>Welcome to <strong>Module 30 — the Intermediate Tier Capstone</strong>. Over the previous modules you've learned to deploy agents, manage environments, and configure staging and production workflows. Now it's time to bring everything together into a <strong>complete, production-grade MLOps pipeline</strong> for Azure AI Foundry.</p>
+    <p>As organizations scale their AI initiatives on Azure AI Foundry, costs can escalate rapidly. A single GPT-4o deployment handling millions of requests per day can generate tens of thousands of dollars in monthly charges. Without deliberate cost management, what begins as an exciting proof-of-concept can quietly become a significant budget concern.</p>
 
-    <p>This capstone module covers five critical areas that separate hobby projects from enterprise-ready AI systems:</p>
+    <div class="highlight-box">
+      💰 <strong>Organizations that implement AI cost optimization strategies typically reduce their AI spending by 30–60%</strong> — without sacrificing application quality or user experience.
+    </div>
 
-    <ol>
-      <li><strong>The MLOps Maturity Model</strong> — understand where your organization sits and where it needs to go</li>
-      <li><strong>Full CI/CD Pipeline Design</strong> — GitHub Actions, automated testing, and evaluation gates</li>
-      <li><strong>Infrastructure as Code</strong> — Bicep modules that provision AI Foundry resources repeatably</li>
-      <li><strong>Automated Evaluation Gates</strong> — quality thresholds that prevent bad models from reaching production</li>
-      <li><strong>End-to-End Capstone Project</strong> — build a complete pipeline from scratch</li>
-    </ol>
+    <p>This module equips you with the knowledge and tools to control AI spending at every level: from choosing the right pricing model to optimizing individual prompts, from monitoring dashboards to enterprise-wide governance policies. This is the <strong>last Intermediate module</strong> in the Zero to Hero journey — after this, you're ready for the <strong>Advanced tier</strong>.</p>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-value">30–60%</div>
+        <div class="metric-label">Typical Cost Reduction</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">3–5×</div>
+        <div class="metric-label">Output vs Input Cost Ratio</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">24/7</div>
+        <div class="metric-label">Automated Monitoring</div>
+      </div>
+    </div>
 
     <div class="callout callout-blue">
-      <div class="callout-title">💡 Capstone Module</div>
-      <p>This is the culminating module for the <strong>Intermediate tier (🟡 ARC 6: Deployment &amp; MLOps)</strong>. You'll synthesize knowledge from Modules 25–29 into a single, comprehensive project. By the end, you'll have a production-ready pipeline that rivals what enterprise teams deploy.</p>
+      <span class="callout-icon">📝</span>
+      <strong>Note:</strong> This module focuses exclusively on Azure AI Foundry costs managed through <a href="https://ai.azure.com">ai.azure.com</a> and Azure Cost Management. All pricing figures are approximate and current as of April 2026 — always check the <a href="https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/" target="_blank">official pricing page</a> for the latest rates.
     </div>
 
     <!-- ============================================================
-         SECTION: MLOps MATURITY MODEL
+         SECTION: PRICING MODELS
          ============================================================ -->
-    <h2 id="mlops-maturity-model">MLOps Maturity Model</h2>
+    <h2 id="pricing-models">2. Azure AI Foundry Pricing Models</h2>
 
-    <p>The MLOps Maturity Model describes the progression from manual, ad-hoc AI development to fully automated, self-healing production systems. Understanding where your organization sits on this spectrum is the first step toward building better operational practices.</p>
+    <p>Azure AI Foundry offers two primary pricing models for model deployments. Choosing the right one is the single biggest cost decision you'll make. Each model is suited to different workload patterns, and many organizations use both simultaneously for different use cases.</p>
 
-    <h3>The Five Levels of MLOps Maturity</h3>
-
-    <div class="maturity-track">
-      <div class="maturity-level level-0">
-        <div class="level-badge">0</div>
-        <div class="level-content">
-          <h4>No MLOps — Manual Everything</h4>
-          <p>Models trained in notebooks, manually copied to production. No version control for data or models. Deployments are "works on my machine" affairs. No monitoring, no rollback capability.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card ptu">
+        <div class="pricing-header">
+          <h3>🔒 PTU</h3>
+          <p>Provisioned Throughput Units</p>
+        </div>
+        <div class="pricing-body">
+          <ul>
+            <li>Reserved capacity with guaranteed throughput</li>
+            <li>Predictable monthly cost (fixed hourly rate)</li>
+            <li>Best for steady-state, high-volume workloads</li>
+            <li>SLA-backed latency guarantees</li>
+            <li>1-month minimum commitment</li>
+            <li>No per-token charges — unlimited tokens within capacity</li>
+          </ul>
         </div>
       </div>
-      <div class="maturity-level level-1">
-        <div class="level-badge">1</div>
-        <div class="level-content">
-          <h4>DevOps but No MLOps</h4>
-          <p>Application code is in Git with CI/CD, but the AI/ML components are still manually managed. Model updates require manual intervention. Basic monitoring exists but doesn't track model-specific metrics like groundedness or relevance.</p>
+      <div class="pricing-card payg">
+        <div class="pricing-header">
+          <h3>📊 Pay-as-You-Go</h3>
+          <p>Token-Based Consumption</p>
         </div>
-      </div>
-      <div class="maturity-level level-2">
-        <div class="level-badge">2</div>
-        <div class="level-content">
-          <h4>Automated Training &amp; Deployment</h4>
-          <p>CI/CD pipelines handle model packaging and deployment. Infrastructure is defined as code. Evaluation runs automatically on each commit. However, retraining and prompt optimization are still manual processes.</p>
-        </div>
-      </div>
-      <div class="maturity-level level-3">
-        <div class="level-badge">3</div>
-        <div class="level-content">
-          <h4>Automated Retraining &amp; Monitoring</h4>
-          <p>Data drift detection triggers automated retraining pipelines. Evaluation gates prevent regressions from reaching production. A/B testing validates changes against live traffic. Comprehensive observability across all environments.</p>
-        </div>
-      </div>
-      <div class="maturity-level level-4">
-        <div class="level-badge">4</div>
-        <div class="level-content">
-          <h4>Full MLOps — Self-Healing Systems</h4>
-          <p>The system automatically detects quality degradation, triggers prompt re-optimization, evaluates candidates, and promotes the best version — all without human intervention. Humans review audit logs, not deployment decisions.</p>
+        <div class="pricing-body">
+          <ul>
+            <li>Pay per token consumed (input + output)</li>
+            <li>No upfront commitment or reservation</li>
+            <li>Best for variable, bursty, or dev workloads</li>
+            <li>Scales automatically with demand</li>
+            <li>Subject to regional TPM/RPM quotas</li>
+            <li>Simple to start — no capacity planning needed</li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <div class="callout callout-yellow">
-      <div class="callout-title">⚠️ Where Most Teams Sit</div>
-      <p>Most organizations are between <strong>Level 1 and Level 2</strong>. The goal of this capstone is to get you solidly to <strong>Level 2</strong> with the foundations for Level 3. Don't try to jump to Level 4 — it requires significant organizational maturity and is overkill for most projects.</p>
-    </div>
+    <h3 id="ptu-deep-dive">PTU (Provisioned Throughput Units) — Deep Dive</h3>
 
-    <h3>Maturity Assessment Checklist</h3>
+    <p>Provisioned Throughput Units represent dedicated model processing capacity reserved for your exclusive use. Each PTU provides a consistent, guaranteed number of tokens per minute, regardless of overall platform load. This eliminates the "noisy neighbor" problem and provides predictable performance for production workloads.</p>
 
     <table>
-      <thead>
-        <tr>
-          <th>Capability</th>
-          <th>Level 0</th>
-          <th>Level 2</th>
-          <th>Level 4</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Version Control</strong></td>
-          <td>None / local files</td>
-          <td>Git for code + prompts</td>
-          <td>Git + data versioning</td>
-        </tr>
-        <tr>
-          <td><strong>Deployment</strong></td>
-          <td>Manual copy</td>
-          <td>CI/CD automated</td>
-          <td>Self-healing auto-deploy</td>
-        </tr>
-        <tr>
-          <td><strong>Testing</strong></td>
-          <td>Manual spot checks</td>
-          <td>Automated eval gates</td>
-          <td>Continuous evaluation</td>
-        </tr>
-        <tr>
-          <td><strong>Infrastructure</strong></td>
-          <td>Portal click-ops</td>
-          <td>Bicep / Terraform</td>
-          <td>GitOps + drift detection</td>
-        </tr>
-        <tr>
-          <td><strong>Monitoring</strong></td>
-          <td>None</td>
-          <td>Metrics + alerts</td>
-          <td>Auto-remediation</td>
-        </tr>
-        <tr>
-          <td><strong>Rollback</strong></td>
-          <td>Redeploy previous</td>
-          <td>One-click rollback</td>
-          <td>Automatic rollback</td>
-        </tr>
-      </tbody>
+      <tr><th>Characteristic</th><th>Details</th></tr>
+      <tr><td><strong>Billing Model</strong></td><td>Hourly rate per PTU, billed per second of usage</td></tr>
+      <tr><td><strong>Minimum Commitment</strong></td><td>1 month (with monthly, quarterly, or annual options)</td></tr>
+      <tr><td><strong>Capacity Guarantee</strong></td><td>Dedicated compute — no throttling from other tenants</td></tr>
+      <tr><td><strong>Latency SLA</strong></td><td>P95 latency guarantees included</td></tr>
+      <tr><td><strong>Token Limits</strong></td><td>Unlimited tokens within your provisioned capacity</td></tr>
+      <tr><td><strong>Best For</strong></td><td>Production apps with steady, predictable traffic</td></tr>
+      <tr><td><strong>Scaling</strong></td><td>Scale PTU count up/down (subject to availability)</td></tr>
     </table>
 
-    <!-- ============================================================
-         SECTION: CI/CD PIPELINE DESIGN
-         ============================================================ -->
-    <h2 id="cicd-pipeline-design">Full CI/CD Pipeline Design</h2>
-
-    <p>A production CI/CD pipeline for AI Foundry agents is more than just "build and deploy." It includes code quality checks, security scanning, evaluation benchmarks, and progressive rollout strategies. Here's the complete pipeline architecture:</p>
-
-    <h3>Pipeline Architecture Overview</h3>
-
-    <div class="pipeline-flow">
-      <div class="pipeline-stage">
-        <div class="stage-icon">📝</div>
-        <div class="stage-name">Commit</div>
-        <div class="stage-desc">Push to main</div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-stage">
-        <div class="stage-icon">🔍</div>
-        <div class="stage-name">Lint &amp; Test</div>
-        <div class="stage-desc">Code quality</div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-stage">
-        <div class="stage-icon">🏗️</div>
-        <div class="stage-name">Build</div>
-        <div class="stage-desc">Docker + ACR</div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-stage">
-        <div class="stage-icon">🧪</div>
-        <div class="stage-name">Evaluate</div>
-        <div class="stage-desc">AI quality gates</div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-stage">
-        <div class="stage-icon">🚀</div>
-        <div class="stage-name">Deploy</div>
-        <div class="stage-desc">Canary rollout</div>
-      </div>
-    </div>
-
-    <h3>Complete GitHub Actions Workflow</h3>
-
-    <p>This workflow implements the full pipeline — from code commit through evaluation gates to production deployment with canary rollout:</p>
-
-    <div class="code-block">
-      <span class="code-label">YAML — .github/workflows/mlops-pipeline.yml</span>
-      <code><span class="kw">name:</span> MLOps Pipeline — AI Agent
-<span class="kw">on:</span>
-  <span class="kw">push:</span>
-    <span class="kw">branches:</span> [main]
-  <span class="kw">pull_request:</span>
-    <span class="kw">branches:</span> [main]
-
-<span class="kw">env:</span>
-  <span class="str">ACR_NAME</span>: acragentprod
-  <span class="str">IMAGE_NAME</span>: ai-agent
-  <span class="str">RESOURCE_GROUP</span>: rg-ai-foundry-prod
-
-<span class="kw">permissions:</span>
-  <span class="str">id-token</span>: write
-  <span class="str">contents</span>: read
-
-<span class="kw">jobs:</span>
-  <span class="cm"># ── Stage 1: Code Quality ──</span>
-  <span class="fn">lint-and-test</span>:
-    <span class="kw">runs-on:</span> ubuntu-latest
-    <span class="kw">steps:</span>
-      - <span class="kw">uses:</span> actions/checkout@v4
-      - <span class="kw">uses:</span> actions/setup-python@v5
-        <span class="kw">with:</span>
-          <span class="str">python-version</span>: <span class="str">'3.12'</span>
-      - <span class="kw">name:</span> Install dependencies
-        <span class="kw">run:</span> pip install -r requirements.txt -r requirements-dev.txt
-      - <span class="kw">name:</span> Lint with ruff
-        <span class="kw">run:</span> ruff check src/ tests/
-      - <span class="kw">name:</span> Type check with mypy
-        <span class="kw">run:</span> mypy src/ --strict
-      - <span class="kw">name:</span> Unit tests
-        <span class="kw">run:</span> pytest tests/unit/ -v --tb=short
-      - <span class="kw">name:</span> Security scan
-        <span class="kw">run:</span> bandit -r src/ -f json -o security-report.json
-
-  <span class="cm"># ── Stage 2: Build & Push ──</span>
-  <span class="fn">build</span>:
-    <span class="kw">needs:</span> lint-and-test
-    <span class="kw">runs-on:</span> ubuntu-latest
-    <span class="kw">outputs:</span>
-      <span class="str">image-tag</span>: ${{ github.sha }}
-    <span class="kw">steps:</span>
-      - <span class="kw">uses:</span> actions/checkout@v4
-      - <span class="kw">name:</span> Login to Azure
-        <span class="kw">uses:</span> azure/login@v2
-        <span class="kw">with:</span>
-          <span class="str">client-id</span>: ${{ secrets.AZURE_CLIENT_ID }}
-          <span class="str">tenant-id</span>: ${{ secrets.AZURE_TENANT_ID }}
-          <span class="str">subscription-id</span>: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - <span class="kw">name:</span> Build &amp; push to ACR
-        <span class="kw">run:</span> |
-          az acr build --registry $ACR_NAME \
-            --image $IMAGE_NAME:${{ github.sha }} \
-            --image $IMAGE_NAME:latest .
-
-  <span class="cm"># ── Stage 3: Deploy to Staging ──</span>
-  <span class="fn">deploy-staging</span>:
-    <span class="kw">needs:</span> build
-    <span class="kw">runs-on:</span> ubuntu-latest
-    <span class="kw">environment:</span> staging
-    <span class="kw">steps:</span>
-      - <span class="kw">uses:</span> actions/checkout@v4
-      - <span class="kw">name:</span> Login to Azure
-        <span class="kw">uses:</span> azure/login@v2
-        <span class="kw">with:</span>
-          <span class="str">client-id</span>: ${{ secrets.AZURE_CLIENT_ID }}
-          <span class="str">tenant-id</span>: ${{ secrets.AZURE_TENANT_ID }}
-          <span class="str">subscription-id</span>: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - <span class="kw">name:</span> Deploy to staging
-        <span class="kw">run:</span> |
-          az containerapp update \
-            --name agent-staging \
-            --resource-group rg-ai-staging \
-            --image $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}
-
-  <span class="cm"># ── Stage 4: Evaluation Gate ──</span>
-  <span class="fn">evaluate</span>:
-    <span class="kw">needs:</span> deploy-staging
-    <span class="kw">runs-on:</span> ubuntu-latest
-    <span class="kw">steps:</span>
-      - <span class="kw">uses:</span> actions/checkout@v4
-      - <span class="kw">uses:</span> actions/setup-python@v5
-        <span class="kw">with:</span>
-          <span class="str">python-version</span>: <span class="str">'3.12'</span>
-      - <span class="kw">name:</span> Run AI evaluation suite
-        <span class="kw">run:</span> |
-          python evaluations/run_eval.py \
-            --endpoint ${{ vars.STAGING_ENDPOINT }} \
-            --dataset evaluations/golden-set.jsonl \
-            --min-groundedness <span class="num">0.85</span> \
-            --min-relevance <span class="num">0.80</span> \
-            --min-coherence <span class="num">0.80</span> \
-            --max-latency-p95 <span class="num">5000</span>
-      - <span class="kw">name:</span> Upload eval results
-        <span class="kw">uses:</span> actions/upload-artifact@v4
-        <span class="kw">with:</span>
-          <span class="str">name</span>: evaluation-results
-          <span class="str">path</span>: evaluations/results/
-
-  <span class="cm"># ── Stage 5: Production Canary ──</span>
-  <span class="fn">deploy-prod</span>:
-    <span class="kw">needs:</span> evaluate
-    <span class="kw">runs-on:</span> ubuntu-latest
-    <span class="kw">environment:</span> production  <span class="cm"># Requires approval</span>
-    <span class="kw">steps:</span>
-      - <span class="kw">uses:</span> actions/checkout@v4
-      - <span class="kw">name:</span> Login to Azure
-        <span class="kw">uses:</span> azure/login@v2
-        <span class="kw">with:</span>
-          <span class="str">client-id</span>: ${{ secrets.AZURE_CLIENT_ID }}
-          <span class="str">tenant-id</span>: ${{ secrets.AZURE_TENANT_ID }}
-          <span class="str">subscription-id</span>: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - <span class="kw">name:</span> Canary deploy (10% traffic)
-        <span class="kw">run:</span> |
-          az containerapp revision copy \
-            --name agent-prod \
-            --resource-group $RESOURCE_GROUP \
-            --image $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}
-          az containerapp ingress traffic set \
-            --name agent-prod \
-            --resource-group $RESOURCE_GROUP \
-            --revision-weight latest=10
-      - <span class="kw">name:</span> Validate canary (5 min)
-        <span class="kw">run:</span> |
-          python tests/canary_validation.py \
-            --endpoint ${{ vars.PROD_ENDPOINT }} \
-            --duration 300 \
-            --error-threshold 0.02
-      - <span class="kw">name:</span> Promote to 100%
-        <span class="kw">run:</span> |
-          az containerapp ingress traffic set \
-            --name agent-prod \
-            --resource-group $RESOURCE_GROUP \
-            --revision-weight latest=100</code>
-    </div>
-
-    <div class="callout callout-red">
-      <div class="callout-title">🚨 Critical: Federated Identity</div>
-      <p>This pipeline uses <strong>workload identity federation</strong> (<code>id-token: write</code>) instead of storing Azure credentials as secrets. This is the recommended approach — no passwords or client secrets to rotate. Configure an Entra ID app registration with a federated credential tied to your GitHub repository.</p>
-    </div>
-
-    <h3>Branch Protection Rules</h3>
-
-    <p>Your pipeline is only as strong as your branch protections. Configure these rules on the <code>main</code> branch:</p>
-
-    <ul>
-      <li><strong>Require pull request reviews</strong> — at least 1 approval before merge</li>
-      <li><strong>Require status checks</strong> — <code>lint-and-test</code> and <code>evaluate</code> must pass</li>
-      <li><strong>Require conversation resolution</strong> — all review comments must be resolved</li>
-      <li><strong>Restrict direct pushes</strong> — no one bypasses the pipeline, not even admins</li>
-      <li><strong>Require signed commits</strong> — verify commit authorship</li>
-    </ul>
-
-    <!-- ============================================================
-         SECTION: INFRASTRUCTURE AS CODE
-         ============================================================ -->
-    <h2 id="infrastructure-as-code">Infrastructure as Code with Bicep</h2>
-
-    <p>Infrastructure as Code (IaC) ensures that every environment — dev, staging, and production — is provisioned identically and repeatably. Bicep is the native IaC language for Azure, offering concise syntax, type safety, and first-class support for all Azure AI Foundry resources.</p>
-
-    <h3>Project Structure</h3>
-
-    <div class="code-block">
-      <span class="code-label">File Structure</span>
-      <code>infra/
-├── main.bicep              <span class="cm"># Orchestrator — calls modules</span>
-├── main.bicepparam         <span class="cm"># Parameter values per environment</span>
-├── modules/
-│   ├── ai-foundry.bicep    <span class="cm"># AI Foundry project + hub</span>
-│   ├── container-app.bicep <span class="cm"># Container Apps environment</span>
-│   ├── acr.bicep            <span class="cm"># Azure Container Registry</span>
-│   ├── monitoring.bicep     <span class="cm"># App Insights + Log Analytics</span>
-│   ├── keyvault.bicep       <span class="cm"># Key Vault for secrets</span>
-│   └── networking.bicep     <span class="cm"># VNet + private endpoints</span>
-└── environments/
-    ├── dev.bicepparam
-    ├── staging.bicepparam
-    └── prod.bicepparam</code>
-    </div>
-
-    <h3>Main Orchestrator (main.bicep)</h3>
-
-    <div class="code-block">
-      <span class="code-label">Bicep — main.bicep</span>
-      <code><span class="kw">targetScope</span> = <span class="str">'resourceGroup'</span>
-
-<span class="cm">// ── Parameters ──</span>
-<span class="kw">@description</span>(<span class="str">'Environment name (dev, staging, prod)'</span>)
-<span class="kw">param</span> environmentName <span class="type">string</span>
-
-<span class="kw">@description</span>(<span class="str">'Azure region for all resources'</span>)
-<span class="kw">param</span> location <span class="type">string</span> = resourceGroup().location
-
-<span class="kw">@description</span>(<span class="str">'Container image tag to deploy'</span>)
-<span class="kw">param</span> imageTag <span class="type">string</span>
-
-<span class="cm">// ── Naming convention ──</span>
-<span class="kw">var</span> prefix = <span class="str">'ai-agent-${environmentName}'</span>
-
-<span class="cm">// ── Module: Monitoring ──</span>
-<span class="kw">module</span> monitoring <span class="str">'modules/monitoring.bicep'</span> = {
-  name: <span class="str">'monitoring-${environmentName}'</span>
-  params: {
-    name: <span class="str">'${prefix}-insights'</span>
-    location: location
-  }
-}
-
-<span class="cm">// ── Module: Key Vault ──</span>
-<span class="kw">module</span> keyVault <span class="str">'modules/keyvault.bicep'</span> = {
-  name: <span class="str">'keyvault-${environmentName}'</span>
-  params: {
-    name: <span class="str">'kv-${prefix}'</span>
-    location: location
-  }
-}
-
-<span class="cm">// ── Module: AI Foundry Hub + Project ──</span>
-<span class="kw">module</span> aiFoundry <span class="str">'modules/ai-foundry.bicep'</span> = {
-  name: <span class="str">'ai-foundry-${environmentName}'</span>
-  params: {
-    hubName: <span class="str">'hub-${prefix}'</span>
-    projectName: <span class="str">'proj-${prefix}'</span>
-    location: location
-    appInsightsId: monitoring.outputs.appInsightsId
-    keyVaultId: keyVault.outputs.keyVaultId
-  }
-}
-
-<span class="cm">// ── Module: Container Registry ──</span>
-<span class="kw">module</span> acr <span class="str">'modules/acr.bicep'</span> = {
-  name: <span class="str">'acr-${environmentName}'</span>
-  params: {
-    name: <span class="str">'acr${replace(prefix, '-', '')}'</span>
-    location: location
-    sku: environmentName == <span class="str">'prod'</span> ? <span class="str">'Premium'</span> : <span class="str">'Basic'</span>
-  }
-}
-
-<span class="cm">// ── Module: Container App ──</span>
-<span class="kw">module</span> containerApp <span class="str">'modules/container-app.bicep'</span> = {
-  name: <span class="str">'container-app-${environmentName}'</span>
-  params: {
-    name: <span class="str">'agent-${environmentName}'</span>
-    location: location
-    imageTag: imageTag
-    acrLoginServer: acr.outputs.loginServer
-    appInsightsConnectionString: monitoring.outputs.connectionString
-    projectConnectionString: aiFoundry.outputs.projectConnectionString
-  }
-}
-
-<span class="cm">// ── Outputs ──</span>
-<span class="kw">output</span> agentEndpoint <span class="type">string</span> = containerApp.outputs.fqdn
-<span class="kw">output</span> projectId <span class="type">string</span> = aiFoundry.outputs.projectId</code>
-    </div>
-
-    <h3>AI Foundry Module</h3>
-
-    <div class="code-block">
-      <span class="code-label">Bicep — modules/ai-foundry.bicep</span>
-      <code><span class="kw">@description</span>(<span class="str">'Name of the AI Foundry hub'</span>)
-<span class="kw">param</span> hubName <span class="type">string</span>
-
-<span class="kw">@description</span>(<span class="str">'Name of the AI Foundry project'</span>)
-<span class="kw">param</span> projectName <span class="type">string</span>
-
-<span class="kw">param</span> location <span class="type">string</span>
-<span class="kw">param</span> appInsightsId <span class="type">string</span>
-<span class="kw">param</span> keyVaultId <span class="type">string</span>
-
-<span class="cm">// AI Foundry Hub (workspace hub)</span>
-<span class="kw">resource</span> hub <span class="str">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
-  name: hubName
-  location: location
-  kind: <span class="str">'Hub'</span>
-  identity: {
-    type: <span class="str">'SystemAssigned'</span>
-  }
-  properties: {
-    friendlyName: hubName
-    keyVault: keyVaultId
-    applicationInsights: appInsightsId
-    publicNetworkAccess: <span class="str">'Enabled'</span>
-  }
-}
-
-<span class="cm">// AI Foundry Project</span>
-<span class="kw">resource</span> project <span class="str">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
-  name: projectName
-  location: location
-  kind: <span class="str">'Project'</span>
-  identity: {
-    type: <span class="str">'SystemAssigned'</span>
-  }
-  properties: {
-    friendlyName: projectName
-    hubResourceId: hub.id
-  }
-}
-
-<span class="kw">output</span> projectId <span class="type">string</span> = project.id
-<span class="kw">output</span> projectConnectionString <span class="type">string</span> = project.properties.discoveryUrl</code>
-    </div>
-
-    <h3>Deploying Infrastructure per Environment</h3>
-
-    <div class="code-block">
-      <span class="code-label">Azure CLI</span>
-      <code><span class="cm"># Deploy dev environment</span>
-az deployment group create \
-  --resource-group rg-ai-dev \
-  --template-file infra/main.bicep \
-  --parameters infra/environments/dev.bicepparam \
-  --parameters imageTag=<span class="str">"abc123"</span>
-
-<span class="cm"># Deploy production environment</span>
-az deployment group create \
-  --resource-group rg-ai-prod \
-  --template-file infra/main.bicep \
-  --parameters infra/environments/prod.bicepparam \
-  --parameters imageTag=<span class="str">"abc123"</span>
-
-<span class="cm"># Preview changes before deploying (what-if)</span>
-az deployment group what-if \
-  --resource-group rg-ai-prod \
-  --template-file infra/main.bicep \
-  --parameters infra/environments/prod.bicepparam</code>
-    </div>
-
     <div class="callout callout-green">
-      <div class="callout-title">✅ Best Practice: What-If Before Deploy</div>
-      <p>Always run <code>az deployment group what-if</code> before applying infrastructure changes to production. This shows exactly what resources will be created, modified, or deleted — preventing accidental destruction of production resources.</p>
+      <span class="callout-icon">✅</span>
+      <strong>When to Choose PTU:</strong> If your AI application processes more than ~1 million tokens per hour consistently, PTU pricing often beats pay-as-you-go by 40–70%. Run the break-even analysis in the Mini Hack section to confirm for your specific workload.
     </div>
 
-    <!-- ============================================================
-         SECTION: AUTOMATED EVALUATION GATES
-         ============================================================ -->
-    <h2 id="automated-evaluation-gates">Automated Evaluation Gates</h2>
+    <h4>PTU Break-Even Calculator</h4>
 
-    <p>Evaluation gates are the AI equivalent of unit tests — they prevent bad code (or in this case, bad model behavior) from reaching production. Unlike traditional software where tests are binary (pass/fail), AI evaluation uses <strong>quality thresholds</strong> on continuous metrics.</p>
+    <div class="code-header">Python</div>
+    <div class="code-block">import math
 
-    <h3>Core Evaluation Metrics</h3>
-
-    <div class="card-grid">
-      <div class="feature-card">
-        <div class="card-icon">🎯</div>
-        <h4>Groundedness</h4>
-        <p>Does the response stick to the provided context? Measures hallucination rate. Threshold: ≥ 0.85 for production.</p>
-      </div>
-      <div class="feature-card">
-        <div class="card-icon">🔗</div>
-        <h4>Relevance</h4>
-        <p>Does the response actually answer the question asked? Measures topical accuracy. Threshold: ≥ 0.80 for production.</p>
-      </div>
-      <div class="feature-card">
-        <div class="card-icon">📐</div>
-        <h4>Coherence</h4>
-        <p>Is the response logically structured and easy to follow? Measures linguistic quality. Threshold: ≥ 0.80 for production.</p>
-      </div>
-      <div class="feature-card">
-        <div class="card-icon">⏱️</div>
-        <h4>Latency (P95)</h4>
-        <p>95th percentile response time. Ensures the agent is fast enough for real users. Threshold: &lt; 5 seconds.</p>
-      </div>
-    </div>
-
-    <h3>Evaluation Script</h3>
-
-    <p>This script runs against a golden dataset and enforces quality thresholds as a CI/CD gate:</p>
-
-    <div class="code-block">
-      <span class="code-label">Python — evaluations/run_eval.py</span>
-      <code><span class="kw">import</span> json, sys, argparse, time
-<span class="kw">from</span> pathlib <span class="kw">import</span> Path
-<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> evaluate
-<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> (
-    GroundednessEvaluator,
-    RelevanceEvaluator,
-    CoherenceEvaluator,
-)
-<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
-<span class="kw">import</span> requests
-
-<span class="kw">def</span> <span class="fn">run_evaluation</span>(args):
-    <span class="str">"""Run evaluation suite against the staging endpoint."""</span>
-
-    <span class="cm"># Load golden dataset</span>
-    dataset = []
-    <span class="kw">with</span> <span class="fn">open</span>(args.dataset) <span class="kw">as</span> f:
-        <span class="kw">for</span> line <span class="kw">in</span> f:
-            dataset.<span class="fn">append</span>(json.<span class="fn">loads</span>(line))
-
-    <span class="cm"># Collect responses from the agent</span>
-    results = []
-    latencies = []
-    <span class="kw">for</span> item <span class="kw">in</span> dataset:
-        start = time.<span class="fn">time</span>()
-        resp = requests.<span class="fn">post</span>(
-            f<span class="str">"{args.endpoint}/api/chat"</span>,
-            json={<span class="str">"query"</span>: item[<span class="str">"query"</span>],
-                  <span class="str">"context"</span>: item.<span class="fn">get</span>(<span class="str">"context"</span>, <span class="str">""</span>)}
-        )
-        elapsed = (time.<span class="fn">time</span>() - start) * <span class="num">1000</span>
-        latencies.<span class="fn">append</span>(elapsed)
-        results.<span class="fn">append</span>({
-            <span class="str">"query"</span>: item[<span class="str">"query"</span>],
-            <span class="str">"context"</span>: item.<span class="fn">get</span>(<span class="str">"context"</span>, <span class="str">""</span>),
-            <span class="str">"response"</span>: resp.<span class="fn">json</span>()[<span class="str">"answer"</span>],
-            <span class="str">"ground_truth"</span>: item[<span class="str">"expected"</span>],
-        })
-
-    <span class="cm"># Run AI-powered evaluators</span>
-    credential = <span class="fn">DefaultAzureCredential</span>()
-    eval_result = <span class="fn">evaluate</span>(
-        data=results,
-        evaluators={
-            <span class="str">"groundedness"</span>: <span class="fn">GroundednessEvaluator</span>(credential),
-            <span class="str">"relevance"</span>: <span class="fn">RelevanceEvaluator</span>(credential),
-            <span class="str">"coherence"</span>: <span class="fn">CoherenceEvaluator</span>(credential),
-        },
+def calculate_ptu_breakeven(
+    avg_input_tokens: int,
+    avg_output_tokens: int,
+    requests_per_hour: int,
+    payg_input_price: float,   # per 1K tokens
+    payg_output_price: float,  # per 1K tokens
+    ptu_hourly_rate: float     # per PTU per hour
+) -> dict:
+    """Calculate when PTU becomes cheaper than pay-as-you-go."""
+    # Pay-as-you-go hourly cost
+    payg_hourly = (
+        (avg_input_tokens * requests_per_hour / 1000) * payg_input_price +
+        (avg_output_tokens * requests_per_hour / 1000) * payg_output_price
     )
-
-    <span class="cm"># Check thresholds</span>
-    metrics = eval_result.metrics
-    p95_latency = <span class="fn">sorted</span>(latencies)[<span class="fn">int</span>(<span class="fn">len</span>(latencies) * <span class="num">0.95</span>)]
-
-    gates = {
-        <span class="str">"groundedness"</span>: (metrics[<span class="str">"groundedness"</span>], args.min_groundedness),
-        <span class="str">"relevance"</span>: (metrics[<span class="str">"relevance"</span>], args.min_relevance),
-        <span class="str">"coherence"</span>: (metrics[<span class="str">"coherence"</span>], args.min_coherence),
-        <span class="str">"latency_p95_ms"</span>: (args.max_latency_p95 - p95_latency, <span class="num">0</span>),
+    # Break-even PTU count
+    breakeven_ptus = math.ceil(payg_hourly / ptu_hourly_rate)
+    
+    return {
+        "payg_hourly_cost": round(payg_hourly, 2),
+        "payg_monthly_cost": round(payg_hourly * 730, 2),
+        "breakeven_ptus": breakeven_ptus,
+        "ptu_monthly_cost": round(breakeven_ptus * ptu_hourly_rate * 730, 2),
+        "monthly_savings": round(
+            (payg_hourly * 730) - (breakeven_ptus * ptu_hourly_rate * 730), 2
+        )
     }
 
-    all_passed = <span class="kw">True</span>
-    <span class="kw">for</span> name, (actual, threshold) <span class="kw">in</span> gates.<span class="fn">items</span>():
-        passed = actual >= threshold
-        status = <span class="str">"✅ PASS"</span> <span class="kw">if</span> passed <span class="kw">else</span> <span class="str">"❌ FAIL"</span>
-        <span class="fn">print</span>(f<span class="str">"{status}  {name}: {actual:.3f} (min: {threshold})"</span>)
-        <span class="kw">if not</span> passed:
-            all_passed = <span class="kw">False</span>
+# Example: GPT-4o production workload
+result = calculate_ptu_breakeven(
+    avg_input_tokens=800, avg_output_tokens=400,
+    requests_per_hour=5000,
+    payg_input_price=0.0025, payg_output_price=0.01,
+    ptu_hourly_rate=2.0
+)
+print(result)</div>
 
-    <span class="kw">if not</span> all_passed:
-        <span class="fn">print</span>(<span class="str">"\n🚫 Evaluation gate FAILED — blocking deployment."</span>)
-        sys.<span class="fn">exit</span>(<span class="num">1</span>)
+    <h3 id="payg-deep-dive">Pay-as-You-Go — Deep Dive</h3>
 
-    <span class="fn">print</span>(<span class="str">"\n🎉 All evaluation gates passed!"</span>)
+    <p>The pay-as-you-go model charges per token processed — separately for input (prompt) and output (completion) tokens. This is the default pricing model and the simplest to get started with. There's no commitment, no reservation, and no capacity planning required.</p>
 
-<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
-    parser = argparse.<span class="fn">ArgumentParser</span>()
-    parser.<span class="fn">add_argument</span>(<span class="str">"--endpoint"</span>, required=<span class="kw">True</span>)
-    parser.<span class="fn">add_argument</span>(<span class="str">"--dataset"</span>, required=<span class="kw">True</span>)
-    parser.<span class="fn">add_argument</span>(<span class="str">"--min-groundedness"</span>, type=<span class="type">float</span>, default=<span class="num">0.85</span>)
-    parser.<span class="fn">add_argument</span>(<span class="str">"--min-relevance"</span>, type=<span class="type">float</span>, default=<span class="num">0.80</span>)
-    parser.<span class="fn">add_argument</span>(<span class="str">"--min-coherence"</span>, type=<span class="type">float</span>, default=<span class="num">0.80</span>)
-    parser.<span class="fn">add_argument</span>(<span class="str">"--max-latency-p95"</span>, type=<span class="type">float</span>, default=<span class="num">5000</span>)
-    args = parser.<span class="fn">parse_args</span>()
-    <span class="fn">run_evaluation</span>(args)</code>
-    </div>
+    <h4>Token Pricing by Model</h4>
 
-    <h3>Golden Dataset Format</h3>
-
-    <p>The golden dataset is a JSONL file containing representative queries, expected context, and ground truth answers:</p>
-
-    <div class="code-block">
-      <span class="code-label">JSONL — evaluations/golden-set.jsonl</span>
-      <code>{<span class="str">"query"</span>: <span class="str">"How do I create a new AI Foundry project?"</span>, <span class="str">"context"</span>: <span class="str">"AI Foundry projects are created within hubs..."</span>, <span class="str">"expected"</span>: <span class="str">"Navigate to ai.azure.com, select your hub, and click Create Project..."</span>}
-{<span class="str">"query"</span>: <span class="str">"What models are available for agents?"</span>, <span class="str">"context"</span>: <span class="str">"Azure AI Foundry supports GPT-4o, GPT-4o-mini..."</span>, <span class="str">"expected"</span>: <span class="str">"AI Foundry agents support GPT-4o, GPT-4o-mini, and other OpenAI models..."</span>}
-{<span class="str">"query"</span>: <span class="str">"How do I add file search to my agent?"</span>, <span class="str">"context"</span>: <span class="str">"File search is a built-in tool in AI Foundry agents..."</span>, <span class="str">"expected"</span>: <span class="str">"Use the file_search tool type when creating your agent, and attach a vector store..."</span>}</code>
-    </div>
+    <table>
+      <tr><th>Model</th><th>Input (per 1M tokens)</th><th>Output (per 1M tokens)</th><th>Context Window</th></tr>
+      <tr><td><strong>GPT-4o</strong></td><td>$2.50</td><td>$10.00</td><td>128K</td></tr>
+      <tr><td><strong>GPT-4o-mini</strong></td><td>$0.15</td><td>$0.60</td><td>128K</td></tr>
+      <tr><td><strong>GPT-4.1</strong></td><td>$2.00</td><td>$8.00</td><td>1M</td></tr>
+      <tr><td><strong>GPT-4.1-mini</strong></td><td>$0.40</td><td>$1.60</td><td>1M</td></tr>
+      <tr><td><strong>GPT-4.1-nano</strong></td><td>$0.10</td><td>$0.40</td><td>1M</td></tr>
+      <tr><td><strong>o3-mini</strong></td><td>$1.10</td><td>$4.40</td><td>200K</td></tr>
+    </table>
 
     <div class="callout callout-yellow">
-      <div class="callout-title">⚠️ Golden Dataset Maintenance</div>
-      <p>Your golden dataset should be version-controlled alongside your code. Review and update it quarterly — stale test cases lead to false confidence. Aim for <strong>50–100 representative examples</strong> that cover edge cases, failure modes, and critical business scenarios.</p>
+      <span class="callout-icon">⚠️</span>
+      <strong>Important:</strong> Output tokens are typically <strong>3–5× more expensive</strong> than input tokens. Controlling response length is one of the most impactful cost optimization strategies available.
     </div>
+
+    <h4>Input vs. Output Cost Asymmetry</h4>
+
+    <p>The significant price difference between input and output tokens has critical implications for your optimization strategy:</p>
+
+    <div class="code-block">Token Cost Breakdown (GPT-4o)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Input:  1,000 tokens × $2.50/1M  = $0.0025
+Output:   500 tokens × $10.00/1M = $0.0050
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total:  1,500 tokens               $0.0075
+
+→ Output is only 33% of tokens but 67% of cost!
+→ Reducing output by 50% saves $0.0025 per call
+→ At 100K calls/day: $250/day → $7,500/month saved</div>
 
     <!-- ============================================================
-         SECTION: A/B TESTING & CANARY
+         SECTION: TOKEN OPTIMIZATION
          ============================================================ -->
-    <h2 id="ab-testing-canary">A/B Testing &amp; Canary Deployments</h2>
+    <h2 id="token-optimization">3. Token Usage Optimization Strategies</h2>
 
-    <p>Even with evaluation gates, production traffic can behave differently from test datasets. A/B testing and canary deployments let you validate changes against real user traffic before full rollout.</p>
+    <p>Token optimization is the art of achieving the same (or better) results with fewer tokens. This involves techniques at every stage: prompt design, response management, model selection, and intelligent caching.</p>
 
-    <h3>Canary Deployment Strategy</h3>
+    <h3>Understanding Token Consumption</h3>
 
-    <div class="diagram-box">┌─────────────────────────────────────────────────┐
-│              Production Traffic                  │
-│                     │                            │
-│            ┌────────┴────────┐                   │
-│            │  Load Balancer  │                   │
-│            └────┬───────┬───┘                   │
-│                 │       │                        │
-│          ┌─────┴──┐ ┌──┴─────┐                  │
-│          │  v2.1  │ │  v2.2  │                  │
-│          │  90%   │ │  10%   │                  │
-│          │(stable)│ │(canary)│                  │
-│          └────────┘ └────────┘                  │
-│                                                  │
-│  Monitor error rate, latency, user feedback      │
-│  If canary healthy → promote to 100%             │
-│  If canary failing → rollback to 0%              │
-└─────────────────────────────────────────────────┘</div>
+    <p>Before optimizing, you need to measure. The <code>tiktoken</code> library is the standard tool for counting tokens in Azure OpenAI models.</p>
 
-    <h3>Traffic Shifting with Container Apps</h3>
+    <div class="code-header">Python — Token Counting with tiktoken</div>
+    <div class="code-block">import tiktoken
 
-    <div class="code-block">
-      <span class="code-label">Azure CLI</span>
-      <code><span class="cm"># Phase 1: Deploy canary with 10% traffic</span>
-az containerapp ingress traffic set \
-  --name agent-prod \
-  --resource-group rg-ai-prod \
-  --revision-weight latest=10
+def count_tokens(text: str, model: str = "gpt-4o") -> int:
+    """Count tokens for a given text and model."""
+    encoding = tiktoken.encoding_for_model(model)
+    return len(encoding.encode(text))
 
-<span class="cm"># Phase 2: Monitor for 10 minutes, then increase to 50%</span>
-az containerapp ingress traffic set \
-  --name agent-prod \
-  --resource-group rg-ai-prod \
-  --revision-weight latest=50
+def estimate_cost(input_text: str, output_tokens: int,
+                  model: str = "gpt-4o") -> dict:
+    """Estimate API call cost based on token counts."""
+    pricing = {
+        "gpt-4o":       {"input": 2.50,  "output": 10.00},
+        "gpt-4o-mini":  {"input": 0.15,  "output": 0.60},
+        "gpt-4.1":      {"input": 2.00,  "output": 8.00},
+        "gpt-4.1-mini": {"input": 0.40,  "output": 1.60},
+        "gpt-4.1-nano": {"input": 0.10,  "output": 0.40},
+    }
+    input_tokens = count_tokens(input_text, model)
+    rates = pricing[model]
+    input_cost = (input_tokens / 1_000_000) * rates["input"]
+    output_cost = (output_tokens / 1_000_000) * rates["output"]
+    
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "input_cost": round(input_cost, 6),
+        "output_cost": round(output_cost, 6),
+        "total_cost": round(input_cost + output_cost, 6),
+        "model": model
+    }
 
-<span class="cm"># Phase 3: Full rollout</span>
-az containerapp ingress traffic set \
-  --name agent-prod \
-  --resource-group rg-ai-prod \
-  --revision-weight latest=100
+prompt = "Explain the benefits of cloud computing in three sentences."
+result = estimate_cost(prompt, output_tokens=100, model="gpt-4o")
+print(f"Input: {result['input_tokens']} tokens (${result['input_cost']})")
+print(f"Output: {result['output_tokens']} tokens (${result['output_cost']})")
+print(f"Total: ${result['total_cost']}")</div>
 
-<span class="cm"># Emergency rollback — shift all traffic to previous revision</span>
-az containerapp ingress traffic set \
-  --name agent-prod \
-  --resource-group rg-ai-prod \
-  --revision-weight &lt;previous-revision-name&gt;=100</code>
+    <h3 id="prompt-cost">Prompt Engineering for Cost Efficiency</h3>
+
+    <p>The same task can be accomplished with dramatically different token counts depending on how you structure your prompt. Here are three proven techniques:</p>
+
+    <div class="capability">
+      <h4>🔧 Technique 1: System Prompt Compression</h4>
+      <p>Replace verbose system prompts with concise, structured instructions. Use role markers and bullet points instead of paragraphs. A well-compressed system prompt can reduce token usage by 40–60% while maintaining output quality.</p>
+      <p class="cap-analogy">💡 <strong>Before:</strong> 500-token verbose system prompt → <strong>After:</strong> 200-token structured prompt with identical behavior</p>
     </div>
 
-    <h3>A/B Testing for Prompt Variations</h3>
-
-    <p>A/B testing is particularly valuable when optimizing agent prompts. Deploy two versions of your agent with different system prompts and measure which performs better on real user traffic:</p>
-
-    <div class="code-block">
-      <span class="code-label">Python — A/B test routing</span>
-      <code><span class="kw">import</span> hashlib
-<span class="kw">from</span> enum <span class="kw">import</span> Enum
-
-<span class="kw">class</span> <span class="type">Variant</span>(Enum):
-    CONTROL = <span class="str">"v1-baseline"</span>
-    TREATMENT = <span class="str">"v2-optimized"</span>
-
-<span class="kw">def</span> <span class="fn">assign_variant</span>(user_id: <span class="type">str</span>, experiment: <span class="type">str</span>,
-                    traffic_pct: <span class="type">float</span> = <span class="num">0.1</span>) -> <span class="type">Variant</span>:
-    <span class="str">"""Deterministic A/B assignment based on user ID."""</span>
-    hash_input = f<span class="str">"{user_id}:{experiment}"</span>
-    hash_val = <span class="fn">int</span>(hashlib.<span class="fn">sha256</span>(
-        hash_input.<span class="fn">encode</span>()
-    ).<span class="fn">hexdigest</span>(), <span class="num">16</span>)
-    bucket = (hash_val % <span class="num">100</span>) / <span class="num">100.0</span>
-
-    <span class="kw">if</span> bucket &lt; traffic_pct:
-        <span class="kw">return</span> Variant.TREATMENT
-    <span class="kw">return</span> Variant.CONTROL
-
-<span class="cm"># Log which variant was served for analysis</span>
-<span class="kw">def</span> <span class="fn">handle_request</span>(user_id, query):
-    variant = <span class="fn">assign_variant</span>(user_id, <span class="str">"prompt-opt-2026-04"</span>)
-    <span class="kw">if</span> variant == Variant.TREATMENT:
-        response = <span class="fn">call_agent_v2</span>(query)
-    <span class="kw">else</span>:
-        response = <span class="fn">call_agent_v1</span>(query)
-
-    <span class="fn">log_experiment</span>(user_id, variant.value, query, response)
-    <span class="kw">return</span> response</code>
+    <div class="capability capability-green">
+      <h4>🎯 Technique 2: Response Constraints</h4>
+      <p>Explicitly control output length with <code>max_tokens</code>, format instructions ("respond in JSON", "limit to 3 sentences"), and structured output schemas. Every unnecessary token in the response costs 3–5× the input rate.</p>
+      <p class="cap-analogy">💡 <strong>Example:</strong> Adding "Respond in under 50 words" can reduce output from 200 to 40 tokens — an 80% cost reduction on the expensive output side</p>
     </div>
 
-    <div class="callout callout-blue">
-      <div class="callout-title">💡 Statistical Significance</div>
-      <p>Don't declare a winner too early. Use a minimum of <strong>1,000 requests per variant</strong> and check for statistical significance (p &lt; 0.05) before promoting the treatment. Tools like <a href="https://www.evanmiller.org/ab-testing/sample-size.html">Evan Miller's calculator</a> help determine the required sample size for your expected effect size.</p>
+    <div class="capability capability-orange">
+      <h4>📦 Technique 3: Few-Shot Optimization</h4>
+      <p>Use minimal, high-quality examples instead of many. Often 1–2 carefully chosen few-shot examples outperform 5–6 mediocre ones — at a fraction of the token cost. Consider moving examples to a fine-tuned model for zero-shot performance.</p>
+      <p class="cap-analogy">💡 <strong>Savings:</strong> Reducing from 5 examples (1,500 tokens) to 2 examples (600 tokens) saves 900 tokens per call</p>
+    </div>
+
+    <h4>Practical Before/After Comparison</h4>
+
+    <div class="comparison-grid">
+      <div class="comparison-col without">
+        <h4>❌ Before Optimization (847 tokens)</h4>
+        <ul>
+          <li>Verbose system prompt with backstory</li>
+          <li>5 few-shot examples</li>
+          <li>No output constraints</li>
+          <li>Paragraph-style instructions</li>
+          <li>Average output: 350 tokens</li>
+          <li><strong>Cost per call: $0.0056</strong></li>
+        </ul>
+      </div>
+      <div class="comparison-col with">
+        <h4>✅ After Optimization (312 tokens)</h4>
+        <ul>
+          <li>Compressed system prompt</li>
+          <li>2 high-quality examples</li>
+          <li>max_tokens=100, JSON output</li>
+          <li>Bullet-point instructions</li>
+          <li>Average output: 80 tokens</li>
+          <li><strong>Cost per call: $0.0016</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <p>That's a <strong>71% cost reduction</strong> with equivalent output quality. At 100,000 calls per day, that's <strong>$12,000/month in savings</strong>.</p>
+
+    <!-- ============================================================
+         SECTION: MODEL SELECTION
+         ============================================================ -->
+    <h3 id="model-selection">Model Selection &amp; Right-Sizing</h3>
+
+    <p>Not every task requires your most powerful model. Implementing a model routing strategy — where simpler tasks use cheaper models — can dramatically reduce costs.</p>
+
+    <table>
+      <tr><th>Task Complexity</th><th>Recommended Model</th><th>Relative Cost</th><th>Use Cases</th></tr>
+      <tr><td><strong>Simple</strong></td><td>GPT-4.1-nano / GPT-4o-mini</td><td>1× (baseline)</td><td>Classification, extraction, formatting</td></tr>
+      <tr><td><strong>Medium</strong></td><td>GPT-4.1-mini</td><td>3–4×</td><td>Summarization, translation, Q&amp;A</td></tr>
+      <tr><td><strong>Complex</strong></td><td>GPT-4o / GPT-4.1</td><td>15–25×</td><td>Reasoning, analysis, code generation</td></tr>
+      <tr><td><strong>Advanced</strong></td><td>o3-mini / o4-mini</td><td>8–10×</td><td>Math, logic, multi-step reasoning</td></tr>
+    </table>
+
+    <div class="code-header">Python — Smart Model Router</div>
+    <div class="code-block">from openai import AzureOpenAI
+
+class CostAwareModelRouter:
+    """Route requests to the cheapest capable model."""
+    ROUTING_RULES = {
+        "classify":  "gpt-4.1-nano",
+        "extract":   "gpt-4.1-nano",
+        "summarize": "gpt-4.1-mini",
+        "translate": "gpt-4.1-mini",
+        "analyze":   "gpt-4o",
+        "reason":    "o3-mini",
+        "code":      "gpt-4.1",
+        "default":   "gpt-4o-mini",
+    }
+    
+    def __init__(self, client: AzureOpenAI):
+        self.client = client
+    
+    def route(self, task_type: str, messages: list) -> dict:
+        model = self.ROUTING_RULES.get(
+            task_type, self.ROUTING_RULES["default"]
+        )
+        response = self.client.chat.completions.create(
+            model=model, messages=messages, max_tokens=500
+        )
+        return {
+            "model_used": model,
+            "response": response.choices[0].message.content,
+            "tokens_used": response.usage.total_tokens,
+        }
+
+# Usage
+router = CostAwareModelRouter(client)
+result = router.route("classify", [
+    {"role": "user", "content": "Is this email spam? 'You won $1M!'"}
+])
+# Uses gpt-4.1-nano instead of gpt-4o → 95% cheaper!</div>
+
+    <!-- ============================================================
+         SECTION: CACHING
+         ============================================================ -->
+    <h3 id="caching-strategies">Caching Strategies</h3>
+
+    <p>Caching identical or semantically similar requests can eliminate redundant API calls entirely. Azure AI Foundry supports multiple caching approaches:</p>
+
+    <div class="capability">
+      <h4>🗄️ Exact-Match Caching</h4>
+      <p>Cache responses keyed by the exact prompt hash. Simple to implement and provides 100% cache hit accuracy. Best for applications with predictable, repeated queries (e.g., FAQ bots, template-based generation).</p>
+    </div>
+
+    <div class="capability capability-purple">
+      <h4>🧠 Semantic Caching with Azure Cache for Redis</h4>
+      <p>Use vector similarity search to find semantically similar past queries. Even if the exact wording differs, a cached answer for a sufficiently similar question can be returned. Requires embeddings and <strong>Azure Cache for Redis</strong> with vector search capabilities.</p>
+    </div>
+
+    <div class="capability capability-green">
+      <h4>⚡ Azure OpenAI Prompt Caching (Built-In)</h4>
+      <p>Azure OpenAI's built-in prompt caching automatically discounts repeated prompt prefixes. If the first N tokens of your prompt match a recent request, those tokens are billed at <strong>50% of the normal input rate</strong>. This works automatically — no code changes needed.</p>
+    </div>
+
+    <div class="code-header">Python — Semantic Cache with Redis</div>
+    <div class="code-block">import hashlib, json, redis
+from openai import AzureOpenAI
+
+class SemanticCache:
+    """Cache LLM responses with semantic similarity matching."""
+    def __init__(self, client: AzureOpenAI, redis_client: redis.Redis,
+                 similarity_threshold: float = 0.95):
+        self.client = client
+        self.redis = redis_client
+        self.threshold = similarity_threshold
+    
+    def get_or_create(self, prompt: str, **kwargs) -> dict:
+        # Check exact cache first (cheapest check)
+        exact_key = hashlib.sha256(prompt.encode()).hexdigest()
+        cached = self.redis.get(f"exact:{exact_key}")
+        if cached:
+            return {"response": json.loads(cached), "cache": "exact_hit"}
+        
+        # Check semantic cache via embedding similarity
+        query_embedding = self.client.embeddings.create(
+            model="text-embedding-3-small", input=prompt
+        ).data[0].embedding
+        # → Search Redis vector index for similar embeddings (FT.SEARCH)
+        
+        # Cache miss — call the API
+        response = self.client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}], **kwargs
+        )
+        result = response.choices[0].message.content
+        
+        # Store in cache with 1-hour TTL
+        self.redis.setex(f"exact:{exact_key}", 3600, json.dumps(result))
+        return {"response": result, "cache": "miss"}</div>
+
+    <!-- ============================================================
+         SECTION: QUOTA MANAGEMENT
+         ============================================================ -->
+    <h2 id="quota-management">4. Quota Management &amp; Capacity Planning</h2>
+
+    <p>Azure AI Foundry enforces quotas to ensure fair resource distribution and platform stability. Understanding and managing these quotas is critical for production applications that must avoid throttling.</p>
+
+    <h3>Quota Types</h3>
+
+    <table>
+      <tr><th>Quota Type</th><th>Abbreviation</th><th>What It Controls</th><th>Default Limit</th></tr>
+      <tr><td><strong>Tokens Per Minute</strong></td><td>TPM</td><td>Max tokens (input + output) processed per minute</td><td>Varies by model/region</td></tr>
+      <tr><td><strong>Requests Per Minute</strong></td><td>RPM</td><td>Max API calls per minute</td><td>Typically TPM ÷ 6</td></tr>
+      <tr><td><strong>Provisioned Managed</strong></td><td>PTU</td><td>Max reserved PTU capacity</td><td>Per-subscription, per-region</td></tr>
+    </table>
+
+    <h4>Default TPM Quotas by Model</h4>
+
+    <table>
+      <tr><th>Model</th><th>Default TPM</th><th>Max TPM (Requestable)</th><th>RPM</th></tr>
+      <tr><td>GPT-4o</td><td>150K</td><td>10M</td><td>25K</td></tr>
+      <tr><td>GPT-4o-mini</td><td>200K</td><td>20M</td><td>33K</td></tr>
+      <tr><td>GPT-4.1</td><td>150K</td><td>10M</td><td>25K</td></tr>
+      <tr><td>GPT-4.1-mini</td><td>200K</td><td>20M</td><td>33K</td></tr>
+      <tr><td>GPT-4.1-nano</td><td>300K</td><td>30M</td><td>50K</td></tr>
+      <tr><td>text-embedding-3-small</td><td>350K</td><td>30M</td><td>58K</td></tr>
+    </table>
+
+    <div class="callout callout-red">
+      <span class="callout-icon">❌</span>
+      <strong>What Happens When You Exceed Quota:</strong> API calls receive HTTP <code>429 Too Many Requests</code> with a <code>Retry-After</code> header. Implement exponential backoff in your application. Repeated 429 errors indicate you need a quota increase or PTU deployment.
+    </div>
+
+    <h3>Managing Quotas via Azure CLI</h3>
+
+    <div class="code-header">Azure CLI</div>
+    <div class="code-block"># List current quota usage for Azure OpenAI in a region
+az cognitiveservices usage list \
+  --location eastus2
+
+# View quota for a specific resource
+az cognitiveservices account list-usage \
+  --name my-ai-foundry-resource \
+  --resource-group my-rg
+
+# Check deployment details including TPM allocation
+az cognitiveservices account deployment list \
+  --name my-ai-foundry-resource \
+  --resource-group my-rg \
+  --output table</div>
+
+    <h3 id="capacity-planning">Capacity Planning Framework</h3>
+
+    <div class="code-block">┌──────────────────────────────────────────────────────────────┐
+│                CAPACITY PLANNING FRAMEWORK                   │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Step 1: MEASURE                                             │
+│  ├── Current avg requests/minute                             │
+│  ├── Current avg tokens/request (input + output)             │
+│  ├── Peak vs off-peak ratios                                 │
+│  └── Growth rate (monthly)                                   │
+│                                                              │
+│  Step 2: CALCULATE                                           │
+│  ├── Required TPM = avg_tokens × requests_per_min            │
+│  ├── Peak TPM = Required TPM × peak_ratio                    │
+│  ├── Buffer = Peak TPM × 1.2 (20% headroom)                 │
+│  └── 6-month forecast = Buffer × (1 + growth_rate)^6         │
+│                                                              │
+│  Step 3: DECIDE                                              │
+│  ├── If steady &amp; high-volume → PTU                           │
+│  ├── If variable &amp; growing → Pay-as-you-go + autoscale       │
+│  └── If mixed → Hybrid (PTU base + Pay-as-you-go burst)      │
+│                                                              │
+│  Step 4: MONITOR &amp; ADJUST                                     │
+│  ├── Weekly utilization reviews                               │
+│  ├── Monthly capacity right-sizing                           │
+│  └── Quarterly pricing model evaluation                      │
+└──────────────────────────────────────────────────────────────┘</div>
+
+    <div class="code-header">Python — Capacity Planning Calculator</div>
+    <div class="code-block">def plan_capacity(
+    avg_requests_per_min: int,
+    avg_input_tokens: int,
+    avg_output_tokens: int,
+    peak_multiplier: float = 2.5,
+    growth_rate_monthly: float = 0.15,
+    forecast_months: int = 6
+) -> dict:
+    """Generate a capacity plan for AI Foundry deployment."""
+    avg_tokens = avg_input_tokens + avg_output_tokens
+    base_tpm = avg_requests_per_min * avg_tokens
+    peak_tpm = base_tpm * peak_multiplier
+    buffered_tpm = int(peak_tpm * 1.2)
+    forecasted_tpm = int(
+        buffered_tpm * (1 + growth_rate_monthly) ** forecast_months
+    )
+    
+    return {
+        "current_base_tpm": f"{base_tpm:,}",
+        "current_peak_tpm": f"{int(peak_tpm):,}",
+        "recommended_quota_tpm": f"{buffered_tpm:,}",
+        f"{forecast_months}mo_forecast_tpm": f"{forecasted_tpm:,}",
+        "recommendation": (
+            "PTU" if base_tpm > 500_000
+            else "Pay-as-you-go" if base_tpm < 100_000
+            else "Hybrid (PTU base + Pay-as-you-go burst)"
+        )
+    }
+
+plan = plan_capacity(
+    avg_requests_per_min=200,
+    avg_input_tokens=600,
+    avg_output_tokens=300,
+    peak_multiplier=3.0
+)
+for k, v in plan.items():
+    print(f"  {k}: {v}")</div>
+
+    <!-- ============================================================
+         SECTION: COST DASHBOARDS
+         ============================================================ -->
+    <h2 id="cost-dashboards">5. Cost Dashboards &amp; Budget Alerts</h2>
+
+    <p>Visibility is the foundation of cost control. Azure provides multiple tools for monitoring and analyzing AI Foundry spend across your organization.</p>
+
+    <h3>Azure Cost Management Integration</h3>
+
+    <div class="capability">
+      <h4>📊 Cost Analysis Views</h4>
+      <p>Navigate to <strong>Azure Portal</strong> → <strong>Cost Management</strong> → <strong>Cost Analysis</strong>. Create custom views filtered by service (<code>Microsoft.CognitiveServices</code>), resource group, or tags. Group costs by resource, meter, or custom dimensions to identify cost drivers.</p>
+    </div>
+
+    <div class="capability capability-green">
+      <h4>📈 AI Foundry Usage Analytics</h4>
+      <p>In the <strong>AI Foundry Portal</strong> → <strong>Management</strong> → <strong>Usage &amp; Quotas</strong>, monitor real-time token consumption, request counts, and error rates per deployment. Track daily patterns to identify optimization opportunities.</p>
+    </div>
+
+    <div class="capability capability-purple">
+      <h4>🔔 Azure Advisor Recommendations</h4>
+      <p><strong>Azure Advisor</strong> automatically analyzes your AI Foundry usage patterns and suggests optimizations: underutilized deployments, right-sizing opportunities, and pricing model recommendations.</p>
+    </div>
+
+    <h3 id="budget-alerts">Setting Up Budget Alerts</h3>
+
+    <p>Budget alerts notify you before costs spiral. Set up multiple thresholds with escalating responses:</p>
+
+    <table>
+      <tr><th>Alert Level</th><th>Threshold</th><th>Action</th><th>Notification</th></tr>
+      <tr><td>🟢 Informational</td><td>50% of budget</td><td>Awareness</td><td>Email to team lead</td></tr>
+      <tr><td>🟡 Warning</td><td>75% of budget</td><td>Review usage</td><td>Email + Teams channel</td></tr>
+      <tr><td>🟠 Critical</td><td>90% of budget</td><td>Reduce spend</td><td>Email + SMS + PagerDuty</td></tr>
+      <tr><td>🔴 Emergency</td><td>100% of budget</td><td>Auto-remediation</td><td>All channels + auto-scale down</td></tr>
+    </table>
+
+    <div class="code-header">Azure CLI — Create Budget with Alerts</div>
+    <div class="code-block"># Create a monthly budget for AI Foundry resources
+az consumption budget create \
+  --budget-name "ai-foundry-monthly" \
+  --amount 5000 \
+  --category cost \
+  --time-grain monthly \
+  --start-date 2026-04-01 \
+  --end-date 2027-03-31 \
+  --resource-group "ai-foundry-prod-rg"
+
+# Configure alert at 75% threshold with action group
+az monitor action-group create \
+  --name "ai-cost-alerts" \
+  --resource-group "ai-foundry-prod-rg" \
+  --short-name "AICost" \
+  --email-receiver name=ai-team email=ai-team@company.com</div>
+
+    <!-- ============================================================
+         SECTION: COST GOVERNANCE
+         ============================================================ -->
+    <h2 id="cost-governance">6. Cost Governance Best Practices</h2>
+
+    <p>Cost governance extends beyond monitoring — it's about creating organizational structures and policies that ensure responsible AI spending at scale.</p>
+
+    <h3>Resource Tagging Strategy</h3>
+
+    <p>Tags are the foundation of cost allocation. Apply consistent tags to every AI Foundry resource:</p>
+
+    <table>
+      <tr><th>Tag Key</th><th>Example Value</th><th>Purpose</th></tr>
+      <tr><td><code>cost-center</code></td><td>CC-4520</td><td>Financial chargeback allocation</td></tr>
+      <tr><td><code>environment</code></td><td>production</td><td>Filter dev/staging/prod costs</td></tr>
+      <tr><td><code>project</code></td><td>customer-support-bot</td><td>Project-level cost tracking</td></tr>
+      <tr><td><code>team</code></td><td>ai-platform</td><td>Team-level cost visibility</td></tr>
+      <tr><td><code>ai-model</code></td><td>gpt-4o</td><td>Model-level cost analysis</td></tr>
+    </table>
+
+    <div class="code-header">Azure CLI — Tag Enforcement with Azure Policy</div>
+    <div class="code-block"># Tag an AI Foundry (Cognitive Services) resource
+az resource tag \
+  --ids "/subscriptions/{sub-id}/resourceGroups/{rg}/providers/\
+Microsoft.CognitiveServices/accounts/{name}" \
+  --tags cost-center=CC-4520 environment=production \
+         project=customer-support-bot team=ai-platform
+
+# Enforce required tags with Azure Policy
+az policy assignment create \
+  --name "require-cost-center-tag" \
+  --policy "/providers/Microsoft.Authorization/\
+policyDefinitions/871b6d14-..." \
+  --params '{"tagName": {"value": "cost-center"}}' \
+  --scope "/subscriptions/{subscription-id}"</div>
+
+    <h3>FinOps for AI — Key Principles</h3>
+
+    <div class="comparison-grid">
+      <div class="comparison-col with" style="border-color: #deecf9; background: #f0f8ff;">
+        <h4 style="color: var(--ms-dark-blue);">📋 FinOps Practices</h4>
+        <ul>
+          <li><strong>Allocate:</strong> Tag every resource, chargeback to business units</li>
+          <li><strong>Optimize:</strong> Right-size models, compress prompts, cache results</li>
+          <li><strong>Operate:</strong> Weekly reviews, automated anomaly detection</li>
+        </ul>
+      </div>
+      <div class="comparison-col with" style="border-color: #deecf9; background: #f0f8ff;">
+        <h4 style="color: var(--ms-dark-blue);">📊 KPIs to Track</h4>
+        <ul>
+          <li><strong>Cost per request:</strong> Total cost ÷ total API calls</li>
+          <li><strong>Cost per user:</strong> Monthly AI spend ÷ active users</li>
+          <li><strong>Token efficiency:</strong> Useful output ÷ total tokens consumed</li>
+        </ul>
+      </div>
     </div>
 
     <!-- ============================================================
          SECTION: VIDEO
          ============================================================ -->
-    <h2 id="video">Video: Azure AI Foundry Portal Tour</h2>
-
-    <p>Watch this MS Mechanics walkthrough of the Azure AI Foundry portal to see how the concepts in this module come together in the management interface:</p>
-
-    <div class="video-container">
-      <iframe src="https://www.youtube.com/embed/C6rxEGJay70" title="Azure AI Foundry Portal Tour — MS Mechanics" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+    <div class="video-section" id="featured-video">
+      <div class="video-header">🎬 Microsoft Foundry: AI App &amp; Agent Factory</div>
+      <div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/C6rxEGJay70" title="Microsoft Foundry - AI app and agent factory" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <div class="video-caption">📺 <strong>Microsoft Foundry – AI App &amp; Agent Factory</strong> — MS Mechanics deep dive into the Microsoft Foundry platform, covering model deployment, agent orchestration, and the infrastructure capabilities that underpin the cost management strategies discussed in this module.</div>
     </div>
 
     <!-- ============================================================
          SECTION: MINI HACK
          ============================================================ -->
-    <h2 id="mini-hack">🧪 Mini Hack Challenge</h2>
+    <h2 id="mini-hack">7. Mini Hack — Analyze Token Usage &amp; Implement Cost Savings</h2>
 
-    <div class="mini-hack-banner">
-      <h3>🚀 MLOps Pipeline Challenge</h3>
-      <p>Design and implement a complete MLOps pipeline that takes an AI agent from code commit to production with automated evaluation gates.</p>
+    <div class="mini-hack">
+      <h3>🏆 Challenge: Optimize an AI Application's Costs by 40%+</h3>
+      <p>In this hands-on exercise, you'll analyze a sample AI application's token usage, identify optimization opportunities, and implement strategies to reduce costs.</p>
+
+      <div class="hack-step">
+        <h4>Step 1: Set Up Token Usage Tracking</h4>
+        <p>Create a middleware that logs every API call's token usage and estimated cost.</p>
+      </div>
+
+      <div class="code-header">Python — Usage Tracker Middleware</div>
+      <div class="code-block">import json, time
+from datetime import datetime
+from openai import AzureOpenAI
+
+class UsageTracker:
+    """Track and log all API usage for cost analysis."""
+    PRICING = {
+        "gpt-4o":       {"input": 2.50,  "output": 10.00},
+        "gpt-4o-mini":  {"input": 0.15,  "output": 0.60},
+        "gpt-4.1-mini": {"input": 0.40,  "output": 1.60},
+        "gpt-4.1-nano": {"input": 0.10,  "output": 0.40},
+    }
+    
+    def __init__(self, client: AzureOpenAI):
+        self.client = client
+        self.log = []
+        self.total_cost = 0.0
+    
+    def chat(self, model: str, messages: list, **kwargs):
+        start = time.time()
+        response = self.client.chat.completions.create(
+            model=model, messages=messages, **kwargs
+        )
+        latency = time.time() - start
+        usage = response.usage
+        rates = self.PRICING.get(model, {"input": 0, "output": 0})
+        cost = (
+            (usage.prompt_tokens / 1e6) * rates["input"] +
+            (usage.completion_tokens / 1e6) * rates["output"]
+        )
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "model": model,
+            "input_tokens": usage.prompt_tokens,
+            "output_tokens": usage.completion_tokens,
+            "cost_usd": round(cost, 6),
+            "latency_ms": round(latency * 1000, 1)
+        }
+        self.log.append(entry)
+        self.total_cost += cost
+        return response
+    
+    def summary(self):
+        print(f"Total calls: {len(self.log):,}")
+        print(f"Total cost:  ${self.total_cost:.4f}")</div>
+
+      <div class="hack-step">
+        <h4>Step 2: Analyze Usage Patterns</h4>
+        <p>Parse your usage log and identify the top cost drivers — which models consume the most? Which have excessive output tokens?</p>
+      </div>
+
+      <div class="hack-step">
+        <h4>Step 3: Implement Optimizations</h4>
+        <p>Apply at least two strategies: (1) compress system prompts, (2) add <code>max_tokens</code> constraints, (3) implement model routing, or (4) add exact-match caching.</p>
+      </div>
+
+      <div class="hack-step">
+        <h4>Step 4: Measure Results</h4>
+        <p>Re-run your workload with optimizations enabled and compare costs. Document your before/after token counts and total cost.</p>
+      </div>
     </div>
-
-    <h3>Challenge Requirements</h3>
-
-    <ol>
-      <li><strong>GitHub Actions workflow</strong> — multi-stage pipeline with lint, build, evaluate, and deploy jobs</li>
-      <li><strong>Bicep infrastructure</strong> — at least 3 modules (AI Foundry, Container App, monitoring)</li>
-      <li><strong>Evaluation gate</strong> — script that enforces quality thresholds and blocks deployment on failure</li>
-      <li><strong>Golden dataset</strong> — minimum 20 test cases covering happy paths and edge cases</li>
-      <li><strong>Canary deployment</strong> — traffic splitting strategy with automatic rollback on failure</li>
-      <li><strong>Documentation</strong> — README explaining the pipeline, how to run it, and how to add new evaluations</li>
-    </ol>
-
-    <h3>Bonus Objectives</h3>
-
-    <ul>
-      <li>Add a <strong>what-if preview</strong> step before infrastructure changes</li>
-      <li>Implement <strong>workload identity federation</strong> (no stored secrets)</li>
-      <li>Add <strong>cost estimation</strong> to the PR comment using <code>az deployment group what-if</code></li>
-      <li>Create a <strong>dashboard</strong> that shows evaluation trends across deployments</li>
-    </ul>
 
     <div class="callout callout-green">
-      <div class="callout-title">✅ Success Criteria</div>
-      <p>Your pipeline should take a code change from PR to production in under <strong>30 minutes</strong> (excluding approval wait time), with zero manual steps after the initial PR approval. A failed evaluation should automatically block the deployment and post results as a PR comment.</p>
+      <span class="callout-icon">✅</span>
+      <strong>Success Criteria:</strong> Demonstrate a measurable cost reduction (&gt;40%) in your usage log by applying prompt compression, model routing, or caching strategies. Share your before/after analysis.
     </div>
 
     <!-- ============================================================
-         SECTION: CAPSTONE PROJECT
+         SECTION: KEY TAKEAWAYS
          ============================================================ -->
-    <h2 id="capstone-project">Intermediate Tier Capstone Project</h2>
+    <h2 id="key-takeaways">8. Key Takeaways</h2>
 
-    <p>This capstone brings together everything you've learned in ARC 6 (Modules 25–30). You'll build a <strong>complete production MLOps system</strong> from scratch.</p>
-
-    <h3>Project: Production AI Agent Pipeline</h3>
-
-    <p>Build an end-to-end system that includes:</p>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Component</th>
-          <th>Module Source</th>
-          <th>Requirements</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Agent Application</strong></td>
-          <td>Module 25–26</td>
-          <td>Containerized agent with at least 2 tools (file search + code interpreter)</td>
-        </tr>
-        <tr>
-          <td><strong>Infrastructure</strong></td>
-          <td>Module 27–28</td>
-          <td>Bicep modules for AI Foundry, Container Apps, monitoring, Key Vault</td>
-        </tr>
-        <tr>
-          <td><strong>Environments</strong></td>
-          <td>Module 29</td>
-          <td>Dev and Production environments with different configurations</td>
-        </tr>
-        <tr>
-          <td><strong>CI/CD Pipeline</strong></td>
-          <td>Module 30</td>
-          <td>GitHub Actions with lint, build, evaluate, and canary deploy stages</td>
-        </tr>
-        <tr>
-          <td><strong>Evaluation</strong></td>
-          <td>Module 30</td>
-          <td>Automated quality gates with groundedness ≥ 0.85 and relevance ≥ 0.80</td>
-        </tr>
-        <tr>
-          <td><strong>Monitoring</strong></td>
-          <td>Module 29–30</td>
-          <td>Application Insights integration with custom metrics dashboard</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>Deliverables Checklist</h3>
-
-    <ul class="checklist">
-      <li>GitHub repository with agent source code and Dockerfile</li>
-      <li>Bicep modules in <code>infra/</code> directory with per-environment parameter files</li>
-      <li>GitHub Actions workflow (<code>.github/workflows/mlops-pipeline.yml</code>)</li>
-      <li>Golden evaluation dataset (<code>evaluations/golden-set.jsonl</code>) with ≥ 20 examples</li>
-      <li>Evaluation script with configurable quality thresholds</li>
-      <li>Canary deployment configuration with rollback logic</li>
-      <li>Architecture diagram showing the full pipeline flow</li>
-      <li>README with setup instructions and runbook for common operations</li>
-    </ul>
-
-    <h3>Grading Rubric</h3>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Weight</th>
-          <th>Criteria</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Pipeline Completeness</strong></td>
-          <td>30%</td>
-          <td>All 5 stages implemented and functional</td>
-        </tr>
-        <tr>
-          <td><strong>Infrastructure as Code</strong></td>
-          <td>25%</td>
-          <td>Modular Bicep with parameterized environments</td>
-        </tr>
-        <tr>
-          <td><strong>Evaluation Quality</strong></td>
-          <td>20%</td>
-          <td>Meaningful golden dataset; thresholds enforce real quality</td>
-        </tr>
-        <tr>
-          <td><strong>Security &amp; Best Practices</strong></td>
-          <td>15%</td>
-          <td>Workload identity, no hardcoded secrets, branch protection</td>
-        </tr>
-        <tr>
-          <td><strong>Documentation</strong></td>
-          <td>10%</td>
-          <td>Clear README, architecture diagram, operational runbook</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="takeaways">
+      <h3>Key Takeaways</h3>
+      <ol>
+        <li><strong>Choose the right pricing model:</strong> PTU for steady high-volume workloads (40–70% savings), pay-as-you-go for variable or development workloads. Many organizations use both.</li>
+        <li><strong>Output tokens are the cost driver:</strong> At 3–5× the input price, controlling response length via <code>max_tokens</code> and structured output formats yields the highest cost-saving ROI.</li>
+        <li><strong>Route tasks to the cheapest capable model:</strong> A smart model router using GPT-4.1-nano for simple tasks can reduce per-call costs by 95% compared to GPT-4o.</li>
+        <li><strong>Implement caching strategically:</strong> Exact-match caching for deterministic queries, semantic caching for FAQ patterns, and leverage built-in prompt caching for automatic 50% input discounts.</li>
+        <li><strong>Monitor proactively with budget alerts:</strong> Set multiple alert thresholds (50%, 75%, 90%, 100%) with escalating notification channels and automated remediation.</li>
+        <li><strong>Enforce governance with tags and policies:</strong> Consistent tagging enables chargeback, cost allocation, and FinOps practices. Use Azure Policy to enforce requirements organization-wide.</li>
+        <li><strong>Plan capacity ahead of demand:</strong> Use the capacity planning framework to forecast growth, select quota levels, and avoid costly HTTP 429 throttling in production.</li>
+      </ol>
+    </div>
 
     <!-- ============================================================
-         SECTION: INTERMEDIATE TIER COMPLETE
+         SECTION: MODULE 31 PREVIEW
          ============================================================ -->
-    <h2 id="intermediate-complete">🎉 Intermediate Tier Complete!</h2>
-
-    <div class="celebration-banner">
-      <span class="celebration-badge">🟡 INTERMEDIATE TIER COMPLETE</span>
-      <h3>🏆 Congratulations, You've Mastered the Intermediate Tier!</h3>
-      <p>You've completed all six modules of <strong>ARC 6: Deployment &amp; MLOps</strong> — from containerizing agents to building production CI/CD pipelines with automated evaluation gates. You now have the skills to take any AI agent from a notebook prototype to a production-grade, enterprise-ready deployment.</p>
-      <p>🔴 <strong>Up Next: ARC 7 — Security &amp; Governance (Advanced Tier)</strong><br>Dive into identity, authentication, RBAC, content safety, network isolation, and enterprise compliance. The Advanced tier starts with <strong>Module 31: Identity, Auth &amp; RBAC</strong>.</p>
-    </div>
-
-    <h3>What You've Accomplished in the Intermediate Tier</h3>
-
-    <div class="card-grid">
-      <div class="feature-card">
-        <div class="card-icon">📦</div>
-        <h4>Modules 25–26</h4>
-        <p>Containerized AI agents with Docker, pushed to Azure Container Registry, and deployed to Container Apps.</p>
-      </div>
-      <div class="feature-card">
-        <div class="card-icon">🏗️</div>
-        <h4>Modules 27–28</h4>
-        <p>Built modular Infrastructure as Code with Bicep, provisioned AI Foundry resources repeatably across environments.</p>
-      </div>
-      <div class="feature-card">
-        <div class="card-icon">🌍</div>
-        <h4>Module 29</h4>
-        <p>Managed multi-environment deployments with dev, staging, and production promotion patterns and rollback strategies.</p>
-      </div>
-      <div class="feature-card">
-        <div class="card-icon">🚀</div>
-        <h4>Module 30</h4>
-        <p>Built end-to-end MLOps pipelines with CI/CD, automated evaluation gates, canary deployments, and the MLOps Maturity Model.</p>
-      </div>
-    </div>
+    <h2 id="module-31-preview">9. Looking Ahead — Module 31 Preview</h2>
 
     <div class="callout callout-blue">
-      <div class="callout-title">💡 Preparing for the Advanced Tier</div>
-      <p>Before starting Module 31, make sure your capstone project is complete and your pipeline is running successfully. The Advanced tier assumes you have a working production deployment — you'll build security, governance, and compliance on top of it.</p>
+      <span class="callout-icon">🔴</span>
+      <strong>Congratulations!</strong> You've completed the last Intermediate module in the Zero to Hero journey. Starting with <strong>Module 31: Advanced Prompt Engineering</strong>, you enter the <strong>Advanced tier</strong> — where we tackle sophisticated techniques that separate production AI systems from prototypes.
     </div>
+
+    <p>In Module 31, you'll master <strong>advanced prompt engineering</strong> — chain-of-thought reasoning, structured output schemas, dynamic prompt composition, and evaluation-driven prompt refinement. These techniques build directly on the cost awareness you've developed here, because the best prompts are both effective <em>and</em> efficient.</p>
+
+    <div class="highlight-box">
+      🎓 <strong>30 of 45 modules complete!</strong> You've finished the Intermediate tier. Time to go Advanced.
+    </div>
+
+    <!-- ============================================================
+         SECTION: RESOURCES
+         ============================================================ -->
+    <h2 id="resources">📚 Additional Resources</h2>
+
+    <ul>
+      <li><a href="https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/" target="_blank">Azure OpenAI Service Pricing</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/openai/quotas-limits" target="_blank">Azure OpenAI Quotas &amp; Limits</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/openai/concepts/provisioned-throughput" target="_blank">Provisioned Throughput (PTU) Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/azure/cost-management-billing/" target="_blank">Azure Cost Management Documentation</a></li>
+      <li><a href="https://github.com/openai/tiktoken" target="_blank">tiktoken — OpenAI Token Counter</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/openai/how-to/manage-costs" target="_blank">Plan &amp; Manage Costs for Azure OpenAI</a></li>
+      <li><a href="https://learn.microsoft.com/azure/advisor/advisor-overview" target="_blank">Azure Advisor Overview</a></li>
+      <li><a href="https://www.finops.org" target="_blank">FinOps Foundation — Cloud Financial Management</a></li>
+    </ul>
 
     <!-- ============================================================
          MODULE NAVIGATION
          ============================================================ -->
-    <div class="module-nav">
+    <nav class="module-nav">
       <a href="../module-29/blog.html" class="prev">
-        <span class="nav-label">← Previous Module</span>
-        <span class="nav-title">Module 29: Staging &amp; Production Environments</span>
+        <span class="nav-label">← Previous</span>
+        <span class="nav-title">Module 29: CI/CD for AI Applications</span>
       </a>
       <a href="../module-31/blog.html" class="next">
-        <span class="nav-label">Next Module →</span>
-        <span class="nav-title">Module 31: Identity, Auth &amp; RBAC</span>
+        <span class="nav-label">Next →</span>
+        <span class="nav-title">Module 31: Advanced Prompt Engineering</span>
       </a>
-    </div>
+    </nav>
 
   </article>
 </div>
@@ -2019,17 +1119,18 @@ az containerapp ingress traffic set \
      ============================================================ -->
 <footer class="site-footer">
   <div class="footer-inner">
-    <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. Module 30 of 45.</p>
-    <ul class="footer-links">
-      <li><a href="#">Curriculum</a></li>
-      <li><a href="#">Resources</a></li>
-      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
-      <li><a href="#">Privacy</a></li>
-    </ul>
+    <span>© 2026 Zero to Hero: Azure AI Foundry Training Program</span>
+    <div>
+      <a href="../index.html">Curriculum</a> ·
+      <a href="https://ai.azure.com" target="_blank">AI Foundry Portal</a> ·
+      <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank">Documentation</a>
+    </div>
   </div>
 </footer>
 
-<!-- Back to Top Button -->
+<!-- ============================================================
+     BACK TO TOP
+     ============================================================ -->
 <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
 
 <!-- ============================================================
@@ -2039,100 +1140,68 @@ az containerapp ingress traffic set \
 (function() {
   'use strict';
 
-  // ---- Scroll Progress Bar ----
-  const progressBar = document.getElementById('scrollProgress');
+  // ---- Progress Bar ----
+  var progressBar = document.getElementById('progressBar');
   function updateProgress() {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-    progressBar.style.width = progress + '%';
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    progressBar.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
   }
 
-  // ---- Back to Top Button ----
-  const backToTop = document.getElementById('backToTop');
+  // ---- Back to Top ----
+  var backToTop = document.getElementById('backToTop');
   function updateBackToTop() {
-    if (window.scrollY > 400) {
-      backToTop.classList.add('visible');
-    } else {
-      backToTop.classList.remove('visible');
-    }
+    backToTop.classList.toggle('visible', window.scrollY > 400);
   }
-
   backToTop.addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // ---- Sticky TOC Active State with IntersectionObserver ----
-  const tocLinks = document.querySelectorAll('.toc-list a');
-  const sections = [];
-
+  // ---- TOC Active Link ----
+  var tocLinks = document.querySelectorAll('.toc a');
+  var sections = [];
   tocLinks.forEach(function(link) {
-    const id = link.getAttribute('href').substring(1);
-    const section = document.getElementById(id);
-    if (section) sections.push({ id: id, element: section, link: link });
+    var id = link.getAttribute('href').replace('#', '');
+    var el = document.getElementById(id);
+    if (el) sections.push({ id: id, el: el });
   });
 
-  function setActiveLink(id) {
+  function setActiveLink(activeId) {
     tocLinks.forEach(function(link) {
-      link.classList.remove('active');
-    });
-    const activeLink = document.querySelector('.toc-list a[href="#' + id + '"]');
-    if (activeLink) {
-      activeLink.classList.add('active');
-    }
-  }
-
-  if ('IntersectionObserver' in window) {
-    const observerOptions = {
-      root: null,
-      rootMargin: '-80px 0px -60% 0px',
-      threshold: 0
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          setActiveLink(entry.target.id);
-        }
-      });
-    }, observerOptions);
-
-    sections.forEach(function(section) {
-      observer.observe(section.element);
+      var href = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', href === activeId);
     });
   }
 
-  // ---- Smooth scroll for TOC links ----
-  tocLinks.forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const targetId = this.getAttribute('href').substring(1);
-      const target = document.getElementById(targetId);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  function updateTocHighlight() {
+    var current = '';
+    for (var i = sections.length - 1; i >= 0; i--) {
+      if (sections[i].el.getBoundingClientRect().top <= 120) {
+        current = sections[i].id;
+        break;
       }
-    });
-  });
+    }
+    if (current) setActiveLink(current);
+  }
 
-  // ---- Combined scroll listener ----
+  // ---- Combined Scroll Listener ----
   var ticking = false;
   window.addEventListener('scroll', function() {
     if (!ticking) {
       requestAnimationFrame(function() {
         updateProgress();
         updateBackToTop();
+        updateTocHighlight();
         ticking = false;
       });
       ticking = true;
     }
   });
 
-  // ---- Initial state ----
+  // ---- Initial State ----
   updateProgress();
   updateBackToTop();
-  if (sections.length > 0) {
-    setActiveLink(sections[0].id);
-  }
+  if (sections.length > 0) setActiveLink(sections[0].id);
 })();
 </script>
 </body>
