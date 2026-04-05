@@ -4,286 +4,367 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zero to Hero: Azure AI Foundry Training</title>
+    <meta name="description" content="The most comprehensive Azure AI Foundry training course — 45 modules, 9 arcs, from beginner to expert. Free, open-source, with hands-on labs and video walkthroughs.">
+    <meta property="og:title" content="Zero to Hero: Azure AI Foundry Training">
+    <meta property="og:description" content="45-module comprehensive training from foundations to enterprise AI. Free & open-source.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; margin: 0; color: #1a1a1a; }
-        .header { background: linear-gradient(135deg, #0078d4, #5c2d91); color: #fff; padding: 48px 24px; text-align: center; }
-        .header h1 { font-size: 32px; margin-bottom: 8px; }
-        .header p { font-size: 18px; opacity: 0.9; }
-        .content { max-width: 700px; margin: 32px auto; padding: 0 24px; }
-        .week-card { background: #fff; border: 1px solid #e1e1e1; border-radius: 8px; padding: 20px 24px; margin-bottom: 12px; text-decoration: none; display: block; color: #1a1a1a; transition: box-shadow 0.2s, transform 0.2s; }
-        .week-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .week-card .badge { display: inline-block; background: #0078d4; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-        .week-card h3 { margin: 8px 0 4px; font-size: 18px; color: #004578; }
-        .week-card p { font-size: 14px; color: #505050; margin: 0; }
-        .footer { text-align: center; padding: 24px; color: #999; font-size: 13px; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f0f2f5; margin: 0; color: #1a1a1a; }
+
+        /* Top Nav */
+        .top-nav { background: #1a1a1a; padding: 10px 24px; display: flex; align-items: center; gap: 12px; }
+        .top-nav svg { width: 20px; height: 20px; }
+        .top-nav span { color: #fff; font-size: 14px; font-weight: 600; }
+        .top-nav a { color: #a0a0a0; font-size: 13px; text-decoration: none; margin-left: auto; }
+        .top-nav a:hover { color: #fff; }
+
+        /* Hero */
+        .header { background: linear-gradient(135deg, #0078d4 0%, #5c2d91 50%, #b4009e 100%); color: #fff; padding: 64px 24px 48px; text-align: center; position: relative; overflow: hidden; }
+        .header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.05) 0%, transparent 60%); }
+        .header h1 { font-size: 40px; margin: 0 0 12px; font-weight: 700; position: relative; }
+        .header .subtitle { font-size: 20px; opacity: 0.92; margin-bottom: 24px; position: relative; }
+        .header .stats { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; position: relative; }
+        .header .stat { text-align: center; }
+        .header .stat-num { font-size: 28px; font-weight: 700; display: block; }
+        .header .stat-label { font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Tier Badges */
+        .tier-bar { display: flex; justify-content: center; gap: 16px; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e1e1e1; flex-wrap: wrap; }
+        .tier-pill { padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .tier-pill.beginner { background: #e6f7e6; color: #1a7a1a; }
+        .tier-pill.intermediate { background: #fff8e6; color: #8a6d00; }
+        .tier-pill.advanced { background: #ffe6e6; color: #a01a1a; }
+        .tier-pill:hover { transform: scale(1.05); }
+
+        /* Content */
+        .content { max-width: 760px; margin: 0 auto; padding: 0 24px 32px; }
+        .arc-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e1e1e1; }
+        .arc-header h2 { margin: 0; font-size: 22px; color: #1a1a1a; }
+        .arc-header .arc-count { background: #f0f0f0; color: #505050; font-size: 12px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+
+        /* Module Cards */
+        .module-card { background: #fff; border: 1px solid #e1e1e1; border-radius: 10px; padding: 20px 24px; margin-bottom: 10px; text-decoration: none; display: flex; align-items: flex-start; gap: 16px; color: #1a1a1a; transition: all 0.2s; }
+        .module-card:hover { box-shadow: 0 4px 16px rgba(0,120,212,0.12); transform: translateY(-2px); border-color: #0078d4; }
+        .module-num { min-width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .module-num.beginner { background: linear-gradient(135deg, #2ea043, #1a7a1a); }
+        .module-num.intermediate { background: linear-gradient(135deg, #d4a017, #8a6d00); }
+        .module-num.advanced { background: linear-gradient(135deg, #cf222e, #a01a1a); }
+        .module-info h3 { margin: 0 0 4px; font-size: 17px; color: #004578; }
+        .module-info p { font-size: 13.5px; color: #606060; margin: 0; line-height: 1.4; }
+        .module-arrow { margin-left: auto; color: #c0c0c0; font-size: 18px; align-self: center; transition: color 0.2s; flex-shrink: 0; }
+        .module-card:hover .module-arrow { color: #0078d4; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 32px 24px; color: #808080; font-size: 13px; background: #1a1a1a; }
+        .footer a { color: #4da6ff; text-decoration: none; }
+        .footer .footer-links { margin-bottom: 12px; }
+        .footer .footer-links a { margin: 0 12px; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 28px; }
+            .header .stats { gap: 20px; }
+            .module-card { padding: 16px; gap: 12px; }
+            .module-num { min-width: 36px; height: 36px; font-size: 13px; }
+        }
     </style>
 </head>
 <body>
+    <!-- Top Nav -->
+    <div class="top-nav">
+        <svg viewBox="0 0 23 23"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
+        <span>AI Foundry Training</span>
+        <a href="https://github.com/BRR2026/AI-Foundry-Zero-to-Hero" target="_blank">⭐ Star on GitHub</a>
+    </div>
+
+    <!-- Hero -->
     <div class="header">
         <h1>🚀 Zero to Hero: Azure AI Foundry</h1>
-        <p>A 45-module comprehensive training program</p>
+        <p class="subtitle">The most comprehensive free training course for Azure AI Foundry</p>
+        <div class="stats">
+            <div class="stat"><span class="stat-num">45</span><span class="stat-label">Modules</span></div>
+            <div class="stat"><span class="stat-num">9</span><span class="stat-label">Arcs</span></div>
+            <div class="stat"><span class="stat-num">225</span><span class="stat-label">Resources</span></div>
+            <div class="stat"><span class="stat-num">3</span><span class="stat-label">Skill Tiers</span></div>
+        </div>
+    </div>
+
+    <!-- Tier Bar -->
+    <div class="tier-bar">
+        <span class="tier-pill beginner">🟢 Beginner · Modules 1-15</span>
+        <span class="tier-pill intermediate">🟡 Intermediate · Modules 16-30</span>
+        <span class="tier-pill advanced">🔴 Advanced · Modules 31-45</span>
     </div>
     <div class="content">
-        <h2 style="margin-bottom:16px;">🟢 ARC 1: Foundations</h2>
-        <a class="week-card" href="module-01/blog.html">
-            <span class="badge">Module 1</span>
-            <h3>What is Azure AI Foundry?</h3>
-            <p>Introduction to the unified AI platform, key capabilities, and ecosystem overview.</p>
+        <div class="arc-header"><h2>🟢 ARC 1: Foundations</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-01/blog.html">
+            <div class="module-num beginner">1</div>
+            <div class="module-info"><h3>What is Azure AI Foundry?</h3><p>Introduction to the unified AI platform, key capabilities, and ecosystem overview.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-02/blog.html">
-            <span class="badge">Module 2</span>
-            <h3>Understanding the AI Lifecycle</h3>
-            <p>Data → Model → Deployment → Monitoring — the end-to-end AI journey.</p>
+                <a class="module-card" href="module-02/blog.html">
+            <div class="module-num beginner">2</div>
+            <div class="module-info"><h3>Understanding the AI Lifecycle</h3><p>Data → Model → Deployment → Monitoring — the end-to-end AI journey.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-03/blog.html">
-            <span class="badge">Module 3</span>
-            <h3>AI Foundry Architecture & Components</h3>
-            <p>Resource hierarchy, networking, identity, deployment types, and cost structure.</p>
+                <a class="module-card" href="module-03/blog.html">
+            <div class="module-num beginner">3</div>
+            <div class="module-info"><h3>AI Foundry Architecture & Components</h3><p>Resource hierarchy, networking, identity, deployment types, and cost structure.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-04/blog.html">
-            <span class="badge">Module 4</span>
-            <h3>Responsible AI Principles in Foundry</h3>
-            <p>Microsoft's 6 AI principles, content filters, safety tools, and ethical guidelines.</p>
+                <a class="module-card" href="module-04/blog.html">
+            <div class="module-num beginner">4</div>
+            <div class="module-info"><h3>Responsible AI Principles in Foundry</h3><p>Microsoft's 6 AI principles, content filters, safety tools, and ethical guidelines.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-05/blog.html">
-            <span class="badge">Module 5</span>
-            <h3>Setting Up Your Environment + First "Hello World" Model</h3>
-            <p>Hands-on: Python SDK, Azure CLI, first deployment, and building a chatbot.</p>
+                <a class="module-card" href="module-05/blog.html">
+            <div class="module-num beginner">5</div>
+            <div class="module-info"><h3>Setting Up Your Environment + First "Hello World" Model</h3><p>Hands-on: Python SDK, Azure CLI, first deployment, and building a chatbot.</p></div>
+            <span class="module-arrow">→</span>
         </a>
     </div>
 
     <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🟢 ARC 2: Prompt Engineering & Models</h2>
-        <a class="week-card" href="module-06/blog.html">
-            <span class="badge">Module 6</span>
-            <h3>Prompt Engineering Fundamentals</h3>
-            <p>System prompts, few-shot, chain-of-thought, temperature, and parameter tuning.</p>
+        <div class="arc-header"><h2>🟢 ARC 2: Prompt Engineering & Models</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-06/blog.html">
+            <div class="module-num beginner">6</div>
+            <div class="module-info"><h3>Prompt Engineering Fundamentals</h3><p>System prompts, few-shot, chain-of-thought, temperature, and parameter tuning.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-07/blog.html">
-            <span class="badge">Module 7</span>
-            <h3>The Model Catalog Deep Dive</h3>
-            <p>1,800+ models — OpenAI, Llama, Mistral, Phi, Cohere. Choosing the right model.</p>
+                <a class="module-card" href="module-07/blog.html">
+            <div class="module-num beginner">7</div>
+            <div class="module-info"><h3>The Model Catalog Deep Dive</h3><p>1,800+ models — OpenAI, Llama, Mistral, Phi, Cohere. Choosing the right model.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-08/blog.html">
-            <span class="badge">Module 8</span>
-            <h3>Deploying & Comparing Models — Including Multimodal</h3>
-            <p>Deployment types, GPT-4o vision, images, audio, documents, and A/B testing.</p>
+                <a class="module-card" href="module-08/blog.html">
+            <div class="module-num beginner">8</div>
+            <div class="module-info"><h3>Deploying & Comparing Models — Including Multimodal</h3><p>Deployment types, GPT-4o vision, images, audio, documents, and A/B testing.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-09/blog.html">
-            <span class="badge">Module 9</span>
-            <h3>Fine-Tuning Models with Your Data</h3>
-            <p>When to fine-tune vs. RAG, JSONL data prep, training workflow, and validation.</p>
+                <a class="module-card" href="module-09/blog.html">
+            <div class="module-num beginner">9</div>
+            <div class="module-info"><h3>Fine-Tuning Models with Your Data</h3><p>When to fine-tune vs. RAG, JSONL data prep, training workflow, and validation.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-10/blog.html">
-            <span class="badge">Module 10</span>
-            <h3>Evaluation, Content Safety & Testing</h3>
-            <p>Groundedness, relevance, content filters, red-teaming, and automated evaluation.</p>
-        </a>
-    </div>
-
-    <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🟢 ARC 3: Data & RAG</h2>
-        <a class="week-card" href="module-11/blog.html">
-            <span class="badge">Module 11</span>
-            <h3>Data Sources & Connectors</h3>
-            <p>Azure AI Search, Blob Storage, SQL, Cosmos DB — connecting your enterprise data.</p>
-        </a>
-        <a class="week-card" href="module-12/blog.html">
-            <span class="badge">Module 12</span>
-            <h3>Building Vector Indexes</h3>
-            <p>Embeddings, vector stores, chunking strategies, and hybrid search.</p>
-        </a>
-        <a class="week-card" href="module-13/blog.html">
-            <span class="badge">Module 13</span>
-            <h3>RAG Pipeline — End to End</h3>
-            <p>Retrieval-Augmented Generation: ingestion, retrieval, grounding, and response.</p>
-        </a>
-        <a class="week-card" href="module-14/blog.html">
-            <span class="badge">Module 14</span>
-            <h3>Advanced RAG Patterns</h3>
-            <p>Reranking, multi-index, hybrid search, agentic RAG, and tables/structured data.</p>
-        </a>
-        <a class="week-card" href="module-15/blog.html">
-            <span class="badge">Module 15</span>
-            <h3>Evaluation & Testing Capstone</h3>
-            <p>End-of-Beginner tier capstone: build, evaluate, and iterate on a complete RAG app.</p>
+                <a class="module-card" href="module-10/blog.html">
+            <div class="module-num beginner">10</div>
+            <div class="module-info"><h3>Evaluation, Content Safety & Testing</h3><p>Groundedness, relevance, content filters, red-teaming, and automated evaluation.</p></div>
+            <span class="module-arrow">→</span>
         </a>
     </div>
 
     <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🟡 ARC 4: AI Agents</h2>
-        <a class="week-card" href="module-16/blog.html">
-            <span class="badge">Module 16</span>
-            <h3>Introduction to AI Agents</h3>
-            <p>Agent architecture, prompt vs hosted agents, capabilities, and the Agent Service.</p>
+        <div class="arc-header"><h2>🟢 ARC 3: Data & RAG</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-11/blog.html">
+            <div class="module-num beginner">11</div>
+            <div class="module-info"><h3>Data Sources & Connectors</h3><p>Azure AI Search, Blob Storage, SQL, Cosmos DB — connecting your enterprise data.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-17/blog.html">
-            <span class="badge">Module 17</span>
-            <h3>Building Your First Agent</h3>
-            <p>Agent primitives, instructions, tools, playground, and Python SDK basics.</p>
+                <a class="module-card" href="module-12/blog.html">
+            <div class="module-num beginner">12</div>
+            <div class="module-info"><h3>Building Vector Indexes</h3><p>Embeddings, vector stores, chunking strategies, and hybrid search.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-18/blog.html">
-            <span class="badge">Module 18</span>
-            <h3>Agent Tools Deep Dive</h3>
-            <p>Code Interpreter, File Search, Azure Functions, OpenAPI — extending agent capabilities.</p>
+                <a class="module-card" href="module-13/blog.html">
+            <div class="module-num beginner">13</div>
+            <div class="module-info"><h3>RAG Pipeline — End to End</h3><p>Retrieval-Augmented Generation: ingestion, retrieval, grounding, and response.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-19/blog.html">
-            <span class="badge">Module 19</span>
-            <h3>Multi-Tool Agents & Parallel Execution</h3>
-            <p>Tool chaining, parallel function calling, error handling, and complex workflows.</p>
+                <a class="module-card" href="module-14/blog.html">
+            <div class="module-num beginner">14</div>
+            <div class="module-info"><h3>Advanced RAG Patterns</h3><p>Reranking, multi-index, hybrid search, agentic RAG, and tables/structured data.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-20/blog.html">
-            <span class="badge">Module 20</span>
-            <h3>Agent Evaluation, Tracing & Debugging</h3>
-            <p>App Insights, OpenTelemetry, KQL queries, evaluation SDK, and failure analysis.</p>
-        </a>
-    </div>
-
-    <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🟡 ARC 5: Orchestration & Integration</h2>
-        <a class="week-card" href="module-21/blog.html">
-            <span class="badge">Module 21</span>
-            <h3>Prompt Flow Fundamentals</h3>
-            <p>Visual flow authoring, nodes, variants, and the Prompt Flow runtime.</p>
-        </a>
-        <a class="week-card" href="module-22/blog.html">
-            <span class="badge">Module 22</span>
-            <h3>Multi-Model Orchestration & Routing</h3>
-            <p>Smart routing, model cascading, cost optimization, and fallback strategies.</p>
-        </a>
-        <a class="week-card" href="module-23/blog.html">
-            <span class="badge">Module 23</span>
-            <h3>Multi-Agent with Copilot Studio</h3>
-            <p>Publishing agents as plugins, conversational orchestration, and Teams integration.</p>
-        </a>
-        <a class="week-card" href="module-24/blog.html">
-            <span class="badge">Module 24</span>
-            <h3>Integrating with Microsoft 365 Copilot</h3>
-            <p>Declarative agents, API plugins, Graph connectors, and enterprise extensions.</p>
-        </a>
-        <a class="week-card" href="module-25/blog.html">
-            <span class="badge">Module 25</span>
-            <h3>Real-World Integration Patterns</h3>
-            <p>Teams bots, Power Platform, REST APIs, webhooks, APIM, and multi-channel delivery.</p>
+                <a class="module-card" href="module-15/blog.html">
+            <div class="module-num beginner">15</div>
+            <div class="module-info"><h3>Evaluation & Testing Capstone</h3><p>End-of-Beginner tier capstone: build, evaluate, and iterate on a complete RAG app.</p></div>
+            <span class="module-arrow">→</span>
         </a>
     </div>
 
     <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🟡 ARC 6: Deployment & MLOps</h2>
-        <a class="week-card" href="module-26/blog.html">
-            <span class="badge">Module 26</span>
-            <h3>Deploying Model Endpoints</h3>
-            <p>Managed compute, serverless, PTU, blue/green, autoscaling, and API auth.</p>
+        <div class="arc-header"><h2>🟡 ARC 4: AI Agents</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-16/blog.html">
+            <div class="module-num intermediate">16</div>
+            <div class="module-info"><h3>Introduction to AI Agents</h3><p>Agent architecture, prompt vs hosted agents, capabilities, and the Agent Service.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-27/blog.html">
-            <span class="badge">Module 27</span>
-            <h3>CI/CD for AI Applications</h3>
-            <p>GitHub Actions, Bicep/Terraform, OIDC auth, evaluation gates, and pipeline design.</p>
+                <a class="module-card" href="module-17/blog.html">
+            <div class="module-num intermediate">17</div>
+            <div class="module-info"><h3>Building Your First Agent</h3><p>Agent primitives, instructions, tools, playground, and Python SDK basics.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-28/blog.html">
-            <span class="badge">Module 28</span>
-            <h3>Monitoring & Observability</h3>
-            <p>Azure Monitor, KQL, drift detection, alerting, dashboards, and SLA tracking.</p>
+                <a class="module-card" href="module-18/blog.html">
+            <div class="module-num intermediate">18</div>
+            <div class="module-info"><h3>Agent Tools Deep Dive</h3><p>Code Interpreter, File Search, Azure Functions, OpenAPI — extending agent capabilities.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-29/blog.html">
-            <span class="badge">Module 29</span>
-            <h3>Staging & Production Environments</h3>
-            <p>Environment strategy, App Configuration, health endpoints, and rollback playbooks.</p>
+                <a class="module-card" href="module-19/blog.html">
+            <div class="module-num intermediate">19</div>
+            <div class="module-info"><h3>Multi-Tool Agents & Parallel Execution</h3><p>Tool chaining, parallel function calling, error handling, and complex workflows.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-30/blog.html">
-            <span class="badge">Module 30</span>
-            <h3>MLOps Capstone</h3>
-            <p>End-of-Intermediate capstone: full CI/CD pipeline from code to production.</p>
-        </a>
-    </div>
-
-    <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🔴 ARC 7: Security & Governance</h2>
-        <a class="week-card" href="module-31/blog.html">
-            <span class="badge">Module 31</span>
-            <h3>Identity, Auth & RBAC</h3>
-            <p>Managed Identity, service principals, custom roles, Entra ID, and least-privilege.</p>
-        </a>
-        <a class="week-card" href="module-32/blog.html">
-            <span class="badge">Module 32</span>
-            <h3>Data Governance & Compliance</h3>
-            <p>Microsoft Purview, data classification, sensitivity labels, GDPR/HIPAA/SOC 2.</p>
-        </a>
-        <a class="week-card" href="module-33/blog.html">
-            <span class="badge">Module 33</span>
-            <h3>Model Lifecycle & Audit Trails</h3>
-            <p>Model versioning, registry, approval workflows, model cards, and audit logging.</p>
-        </a>
-        <a class="week-card" href="module-34/blog.html">
-            <span class="badge">Module 34</span>
-            <h3>Responsible AI Dashboards & Content Safety</h3>
-            <p>RAI dashboards, custom blocklists, bias monitoring, and incident response.</p>
-        </a>
-        <a class="week-card" href="module-35/blog.html">
-            <span class="badge">Module 35</span>
-            <h3>Network Security & Private Endpoints</h3>
-            <p>VNet integration, Private Link, NSGs, firewall rules, and Key Vault.</p>
+                <a class="module-card" href="module-20/blog.html">
+            <div class="module-num intermediate">20</div>
+            <div class="module-info"><h3>Agent Evaluation, Tracing & Debugging</h3><p>App Insights, OpenTelemetry, KQL queries, evaluation SDK, and failure analysis.</p></div>
+            <span class="module-arrow">→</span>
         </a>
     </div>
 
     <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🔴 ARC 8: Advanced Patterns</h2>
-        <a class="week-card" href="module-36/blog.html">
-            <span class="badge">Module 36</span>
-            <h3>Advanced Multi-Agent Orchestration</h3>
-            <p>Supervisor, Router, Swarm patterns, error handling, and resilience.</p>
+        <div class="arc-header"><h2>🟡 ARC 5: Orchestration & Integration</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-21/blog.html">
+            <div class="module-num intermediate">21</div>
+            <div class="module-info"><h3>Prompt Flow Fundamentals</h3><p>Visual flow authoring, nodes, variants, and the Prompt Flow runtime.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-37/blog.html">
-            <span class="badge">Module 37</span>
-            <h3>Foundry Local: Edge & On-Device AI</h3>
-            <p>Local inference, offline scenarios, model catalog, CLI, and Python API.</p>
+                <a class="module-card" href="module-22/blog.html">
+            <div class="module-num intermediate">22</div>
+            <div class="module-info"><h3>Multi-Model Orchestration & Routing</h3><p>Smart routing, model cascading, cost optimization, and fallback strategies.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-38/blog.html">
-            <span class="badge">Module 38</span>
-            <h3>AI Solution Packaging</h3>
-            <p>White-label patterns, multi-tenant, solution accelerators, and pricing strategies.</p>
+                <a class="module-card" href="module-23/blog.html">
+            <div class="module-num intermediate">23</div>
+            <div class="module-info"><h3>Multi-Agent with Copilot Studio</h3><p>Publishing agents as plugins, conversational orchestration, and Teams integration.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-39/blog.html">
-            <span class="badge">Module 39</span>
-            <h3>Multi-Tenant & CSP Patterns</h3>
-            <p>CSP integration, Azure Lighthouse, cross-tenant governance, and SLA management.</p>
+                <a class="module-card" href="module-24/blog.html">
+            <div class="module-num intermediate">24</div>
+            <div class="module-info"><h3>Integrating with Microsoft 365 Copilot</h3><p>Declarative agents, API plugins, Graph connectors, and enterprise extensions.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-40/blog.html">
-            <span class="badge">Module 40</span>
-            <h3>AI in Production: Case Studies</h3>
-            <p>Real-world patterns, pitfalls, production metrics, and lessons learned.</p>
+                <a class="module-card" href="module-25/blog.html">
+            <div class="module-num intermediate">25</div>
+            <div class="module-info"><h3>Real-World Integration Patterns</h3><p>Teams bots, Power Platform, REST APIs, webhooks, APIM, and multi-channel delivery.</p></div>
+            <span class="module-arrow">→</span>
         </a>
     </div>
 
     <div class="content">
-        <h2 style="margin-bottom:16px; margin-top:32px;">🔴 ARC 9: Capstone & Mastery</h2>
-        <a class="week-card" href="module-41/blog.html">
-            <span class="badge">Module 41</span>
-            <h3>Choose Your Capstone Project</h3>
-            <p>Project selection, requirements, architecture design, and success criteria.</p>
+        <div class="arc-header"><h2>🟡 ARC 6: Deployment & MLOps</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-26/blog.html">
+            <div class="module-num intermediate">26</div>
+            <div class="module-info"><h3>Deploying Model Endpoints</h3><p>Managed compute, serverless, PTU, blue/green, autoscaling, and API auth.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-42/blog.html">
-            <span class="badge">Module 42</span>
-            <h3>Capstone: RAG Application</h3>
-            <p>End-to-end RAG pipeline: data sources, vector indexes, agents, and evaluation.</p>
+                <a class="module-card" href="module-27/blog.html">
+            <div class="module-num intermediate">27</div>
+            <div class="module-info"><h3>CI/CD for AI Applications</h3><p>GitHub Actions, Bicep/Terraform, OIDC auth, evaluation gates, and pipeline design.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-43/blog.html">
-            <span class="badge">Module 43</span>
-            <h3>Capstone: Multi-Channel Agent</h3>
-            <p>Build, deploy, and test an agent across Teams, API, Copilot Studio, and web.</p>
+                <a class="module-card" href="module-28/blog.html">
+            <div class="module-num intermediate">28</div>
+            <div class="module-info"><h3>Monitoring & Observability</h3><p>Azure Monitor, KQL, drift detection, alerting, dashboards, and SLA tracking.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-44/blog.html">
-            <span class="badge">Module 44</span>
-            <h3>End-to-End Security & Compliance</h3>
-            <p>RBAC, monitoring, content safety, compliance, and security hardening capstone.</p>
+                <a class="module-card" href="module-29/blog.html">
+            <div class="module-num intermediate">29</div>
+            <div class="module-info"><h3>Staging & Production Environments</h3><p>Environment strategy, App Configuration, health endpoints, and rollback playbooks.</p></div>
+            <span class="module-arrow">→</span>
         </a>
-        <a class="week-card" href="module-45/blog.html">
-            <span class="badge">Module 45</span>
-            <h3>🏆 Grand Finale & Graduation</h3>
-            <p>Capstone presentations, peer review, portfolio building, and certification.</p>
+                <a class="module-card" href="module-30/blog.html">
+            <div class="module-num intermediate">30</div>
+            <div class="module-info"><h3>MLOps Capstone</h3><p>End-of-Intermediate capstone: full CI/CD pipeline from code to production.</p></div>
+            <span class="module-arrow">→</span>
         </a>
     </div>
 
-    <div class="footer">© 2026 Zero to Hero: Azure AI Foundry Training Program</div>
+    <div class="content">
+        <div class="arc-header"><h2>🔴 ARC 7: Security & Governance</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-31/blog.html">
+            <div class="module-num advanced">31</div>
+            <div class="module-info"><h3>Identity, Auth & RBAC</h3><p>Managed Identity, service principals, custom roles, Entra ID, and least-privilege.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-32/blog.html">
+            <div class="module-num advanced">32</div>
+            <div class="module-info"><h3>Data Governance & Compliance</h3><p>Microsoft Purview, data classification, sensitivity labels, GDPR/HIPAA/SOC 2.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-33/blog.html">
+            <div class="module-num advanced">33</div>
+            <div class="module-info"><h3>Model Lifecycle & Audit Trails</h3><p>Model versioning, registry, approval workflows, model cards, and audit logging.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-34/blog.html">
+            <div class="module-num advanced">34</div>
+            <div class="module-info"><h3>Responsible AI Dashboards & Content Safety</h3><p>RAI dashboards, custom blocklists, bias monitoring, and incident response.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-35/blog.html">
+            <div class="module-num advanced">35</div>
+            <div class="module-info"><h3>Network Security & Private Endpoints</h3><p>VNet integration, Private Link, NSGs, firewall rules, and Key Vault.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+    </div>
+
+    <div class="content">
+        <div class="arc-header"><h2>🔴 ARC 8: Advanced Patterns</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-36/blog.html">
+            <div class="module-num advanced">36</div>
+            <div class="module-info"><h3>Advanced Multi-Agent Orchestration</h3><p>Supervisor, Router, Swarm patterns, error handling, and resilience.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-37/blog.html">
+            <div class="module-num advanced">37</div>
+            <div class="module-info"><h3>Foundry Local: Edge & On-Device AI</h3><p>Local inference, offline scenarios, model catalog, CLI, and Python API.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-38/blog.html">
+            <div class="module-num advanced">38</div>
+            <div class="module-info"><h3>AI Solution Packaging</h3><p>White-label patterns, multi-tenant, solution accelerators, and pricing strategies.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-39/blog.html">
+            <div class="module-num advanced">39</div>
+            <div class="module-info"><h3>Multi-Tenant & CSP Patterns</h3><p>CSP integration, Azure Lighthouse, cross-tenant governance, and SLA management.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-40/blog.html">
+            <div class="module-num advanced">40</div>
+            <div class="module-info"><h3>AI in Production: Case Studies</h3><p>Real-world patterns, pitfalls, production metrics, and lessons learned.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+    </div>
+
+    <div class="content">
+        <div class="arc-header"><h2>🔴 ARC 9: Capstone & Mastery</h2><span class="arc-count">5 modules</span></div>
+                <a class="module-card" href="module-41/blog.html">
+            <div class="module-num advanced">41</div>
+            <div class="module-info"><h3>Choose Your Capstone Project</h3><p>Project selection, requirements, architecture design, and success criteria.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-42/blog.html">
+            <div class="module-num advanced">42</div>
+            <div class="module-info"><h3>Capstone: RAG Application</h3><p>End-to-end RAG pipeline: data sources, vector indexes, agents, and evaluation.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-43/blog.html">
+            <div class="module-num advanced">43</div>
+            <div class="module-info"><h3>Capstone: Multi-Channel Agent</h3><p>Build, deploy, and test an agent across Teams, API, Copilot Studio, and web.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-44/blog.html">
+            <div class="module-num advanced">44</div>
+            <div class="module-info"><h3>End-to-End Security & Compliance</h3><p>RBAC, monitoring, content safety, compliance, and security hardening capstone.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+                <a class="module-card" href="module-45/blog.html">
+            <div class="module-num advanced">45</div>
+            <div class="module-info"><h3>🏆 Grand Finale & Graduation</h3><p>Capstone presentations, peer review, portfolio building, and certification.</p></div>
+            <span class="module-arrow">→</span>
+        </a>
+    </div>
+
+        <div class="footer">
+        <div class="footer-links">
+            <a href="https://github.com/BRR2026/AI-Foundry-Zero-to-Hero">GitHub</a>
+            <a href="https://learn.microsoft.com/azure/ai-foundry/">Microsoft Docs</a>
+            <a href="https://github.com/BRR2026/AI-Foundry-Zero-to-Hero/issues">Report Issue</a>
+        </div>
+        © 2026 Zero to Hero: Azure AI Foundry Training · 45 Modules · Open Source
+    </div>
 </body>
 </html>
