@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 17: Building Your First Agent — Presentation</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --surface: #1a1a2e;
+            --surface-2: #222240;
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #50e6ff;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --text: #e8e8f0;
+            --text-muted: #9898b0;
+            --accent: #50e6ff;
+            --code-bg: #12121f;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Slide Container */
+        .deck { position: relative; width: 100%; height: 100vh; }
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+        .slide.exit {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        /* Slide Layouts */
+        .slide-inner {
+            width: 100%;
+            max-width: 1000px;
+            text-align: left;
+        }
+        .slide h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--ms-light-blue), var(--ms-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .slide h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--ms-light-blue);
+        }
+        .slide h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 20px 0 12px;
+            color: var(--accent);
+        }
+        .slide p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+        .slide .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+        .slide ul, .slide ol {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-left: 28px;
+            margin-bottom: 16px;
+        }
+        .slide li { margin-bottom: 10px; }
+        .slide li strong { color: var(--accent); }
+        .slide code {
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            background: var(--code-bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--ms-light-blue);
+        }
+        .slide pre {
+            background: var(--code-bg);
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 20px 24px;
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+            color: #c8c8e0;
+        }
+        .slide pre .kw { color: #569cd6; }
+        .slide pre .str { color: #ce9178; }
+        .slide pre .cm { color: #6a9955; }
+        .slide pre .fn { color: #dcdcaa; }
+        .slide pre .type { color: #4ec9b0; }
+        .slide pre .param { color: #9cdcfe; }
+
+        /* Title Slide */
+        .slide-title {
+            text-align: center;
+            background: linear-gradient(135deg, var(--ms-dark-blue), #1a0a3e);
+        }
+        .slide-title h1 { font-size: 3.2rem; }
+        .slide-title .badge {
+            display: inline-block;
+            background: rgba(80,230,255,0.15);
+            border: 1px solid rgba(80,230,255,0.3);
+            border-radius: 20px;
+            padding: 6px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 16px 0;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin: 16px 0;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .card h4 {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .card p { font-size: 0.95rem; color: var(--text-muted); margin: 0; }
+        .card .emoji { font-size: 2rem; margin-bottom: 12px; display: block; }
+
+        /* Diagram */
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        .flow-node {
+            background: var(--surface);
+            border: 2px solid var(--ms-blue);
+            border-radius: 10px;
+            padding: 14px 22px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+        .flow-node.purple { border-color: var(--ms-purple); color: #b388ff; }
+        .flow-node.green { border-color: var(--ms-green); color: #69f0ae; }
+        .flow-arrow { font-size: 1.5rem; color: var(--text-muted); }
+
+        /* Table */
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+        .slide th {
+            background: var(--ms-dark-blue);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .slide td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #2a2a4a;
+        }
+        .slide tr:nth-child(even) { background: var(--surface); }
+
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--surface);
+            border-top: 1px solid #2a2a4a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 100;
+        }
+        .nav-bar button {
+            background: var(--ms-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .nav-bar button:hover { background: var(--ms-dark-blue); }
+        .nav-bar button:disabled { opacity: 0.3; cursor: default; }
+        .nav-bar .slide-counter {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .progress-track {
+            position: fixed;
+            bottom: 56px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2a2a4a;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            transition: width 0.3s ease;
+        }
+
+        /* Callout */
+        .callout {
+            background: rgba(80,230,255,0.08);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+        .callout strong { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="deck" id="deck">
+
+        <!-- Slide 1: Title -->
+        <div class="slide slide-title active" data-slide="0">
+            <div class="slide-inner" style="text-align:center;">
+                <div class="badge">Arc 4 · AI Agents · Module 17 of 45</div>
+                <h1>Building Your First Agent</h1>
+                <p class="subtitle">Azure AI Foundry: Zero to Hero</p>
+                <p style="color:var(--text-muted);font-size:1rem;">April 2026 · 90 minutes</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Objectives -->
+        <div class="slide" data-slide="1">
+            <div class="slide-inner">
+                <h2>Learning Objectives</h2>
+                <ul>
+                    <li><strong>Understand</strong> agent primitives — Agent, Thread, Message, Run</li>
+                    <li><strong>Configure</strong> effective instructions and persona definitions</li>
+                    <li><strong>Use</strong> built-in tools: Code Interpreter, File Search, Bing Search</li>
+                    <li><strong>Test</strong> agents interactively in the AI Foundry Playground</li>
+                    <li><strong>Build</strong> agents with the Python and .NET SDKs</li>
+                    <li><strong>Complete</strong> Mini Hack: Data Analyst Agent</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: What Is an Agent? -->
+        <div class="slide" data-slide="2">
+            <div class="slide-inner">
+                <h2>What Is an AI Agent?</h2>
+                <p>An intelligent entity that can <strong>reason, plan, and act</strong> using tools — going beyond simple chat completions.</p>
+                <div class="flow">
+                    <div class="flow-node">Instructions</div>
+                    <div class="flow-arrow">+</div>
+                    <div class="flow-node purple">Model (GPT-4o)</div>
+                    <div class="flow-arrow">+</div>
+                    <div class="flow-node green">Tools</div>
+                    <div class="flow-arrow">=</div>
+                    <div class="flow-node" style="border-color:var(--ms-orange);">Agent 🤖</div>
+                </div>
+                <div class="callout">
+                    <strong>Key Difference:</strong> Unlike chat completions, agents maintain state through threads, can invoke tools autonomously, and handle multi-step workflows.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Core Primitives -->
+        <div class="slide" data-slide="3">
+            <div class="slide-inner">
+                <h2>Agent Primitives</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <span class="emoji">🤖</span>
+                        <h4>Agent</h4>
+                        <p>Entity configured with instructions, a model, and tools to perform tasks.</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">🧵</span>
+                        <h4>Thread</h4>
+                        <p>Conversation session that stores message history between user and agent.</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">💬</span>
+                        <h4>Message</h4>
+                        <p>A unit of communication — text, image, or file — within a thread.</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">▶️</span>
+                        <h4>Run</h4>
+                        <p>An execution of the agent on a thread, invoking the model and tools.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Execution Flow -->
+        <div class="slide" data-slide="4">
+            <div class="slide-inner">
+                <h2>How Agents Process Requests</h2>
+                <div class="flow" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                    <div class="flow-node" style="text-align:left;">1️⃣ User sends a <strong>message</strong> to a <strong>thread</strong></div>
+                    <div class="flow-node purple" style="text-align:left;">2️⃣ A <strong>run</strong> is created → agent reads the thread</div>
+                    <div class="flow-node green" style="text-align:left;">3️⃣ Agent decides which <strong>tools</strong> to invoke</div>
+                    <div class="flow-node purple" style="text-align:left;">4️⃣ Tool outputs appended → model generates response</div>
+                    <div class="flow-node" style="text-align:left;">5️⃣ Response added as <strong>assistant message</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Configuring Instructions -->
+        <div class="slide" data-slide="5">
+            <div class="slide-inner">
+                <h2>Crafting Agent Instructions</h2>
+                <p>Instructions are the <strong>system prompt</strong> — the most important factor in agent quality.</p>
+                <pre><span class="cm"># Agent: Financial Data Analyst</span>
+
+<span class="cm">## Role</span>
+<span class="str">You are a senior data analyst specializing in market trends.</span>
+
+<span class="cm">## Capabilities</span>
+<span class="str">- Analyze CSV/Excel files using Code Interpreter
+- Generate visualizations (charts, graphs)
+- Provide data-driven insights</span>
+
+<span class="cm">## Constraints</span>
+<span class="str">- Never provide buy/sell recommendations
+- Always cite data sources</span></pre>
+            </div>
+        </div>
+
+        <!-- Slide 7: Instruction Best Practices -->
+        <div class="slide" data-slide="6">
+            <div class="slide-inner">
+                <h2>Instruction Best Practices</h2>
+                <table>
+                    <tr><th>Principle</th><th>✅ Good</th><th>❌ Avoid</th></tr>
+                    <tr><td><strong>Be Specific</strong></td><td>"Produce a bar chart comparing Q1 vs Q2 revenue"</td><td>"Look at the data"</td></tr>
+                    <tr><td><strong>Set Boundaries</strong></td><td>"Only answer questions about Azure services"</td><td>No constraints</td></tr>
+                    <tr><td><strong>Define Tone</strong></td><td>"Respond professionally and concisely"</td><td>Ambiguous persona</td></tr>
+                    <tr><td><strong>Handle Errors</strong></td><td>"If data is missing, ask for clarification"</td><td>No error guidance</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 8: Built-in Tools Overview -->
+        <div class="slide" data-slide="7">
+            <div class="slide-inner">
+                <h2>Built-in Tools</h2>
+                <div class="grid-3">
+                    <div class="card">
+                        <span class="emoji">🖥️</span>
+                        <h4>Code Interpreter</h4>
+                        <p>Execute Python in a sandbox. Analyze data, create charts, transform files.</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">🔍</span>
+                        <h4>File Search</h4>
+                        <p>Built-in RAG over uploaded documents. Vector store backed.</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">🌐</span>
+                        <h4>Bing Search</h4>
+                        <p>Real-time web search for grounding responses with current data.</p>
+                    </div>
+                </div>
+                <div class="callout">
+                    <strong>Pro Tip:</strong> You can combine multiple tools on a single agent. The model automatically decides which tool to invoke for each query.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Code Interpreter Deep Dive -->
+        <div class="slide" data-slide="8">
+            <div class="slide-inner">
+                <h2>Code Interpreter</h2>
+                <p>Sandboxed Python execution with pre-installed data science libraries.</p>
+                <pre><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">CodeInterpreterTool</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+<span class="param">client</span> = <span class="type">AIProjectClient</span>(
+    <span class="param">endpoint</span>=<span class="str">"https://&lt;project&gt;.services.ai.azure.com"</span>,
+    <span class="param">credential</span>=<span class="fn">DefaultAzureCredential</span>()
+)
+
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"data-analyst"</span>,
+    <span class="param">instructions</span>=<span class="str">"Analyze data and create visualizations."</span>,
+    <span class="param">tools</span>=[<span class="fn">CodeInterpreterTool</span>()]
+)</pre>
+            </div>
+        </div>
+
+        <!-- Slide 10: File Search & Bing -->
+        <div class="slide" data-slide="9">
+            <div class="slide-inner">
+                <h2>File Search &amp; Bing Search</h2>
+                <div class="grid-2">
+                    <div>
+                        <h3>File Search (RAG)</h3>
+                        <ul>
+                            <li>Upload PDFs, DOCX, TXT</li>
+                            <li>Automatic chunking &amp; embedding</li>
+                            <li>Persistent vector stores</li>
+                            <li>Great for knowledge bases</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Bing Grounding</h3>
+                        <ul>
+                            <li>Real-time web information</li>
+                            <li>Requires Bing resource + connection</li>
+                            <li>Responses include citations</li>
+                            <li>Ideal for current events</li>
+                        </ul>
+                    </div>
+                </div>
+                <table style="margin-top:16px;">
+                    <tr><th>Aspect</th><th>File Search</th><th>Bing Search</th></tr>
+                    <tr><td>Data Source</td><td>Your uploaded docs</td><td>Public web</td></tr>
+                    <tr><td>Freshness</td><td>Upload time</td><td>Real-time</td></tr>
+                    <tr><td>Cost</td><td>Per GB + queries</td><td>Per API call</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 11: Agent Playground -->
+        <div class="slide" data-slide="10">
+            <div class="slide-inner">
+                <h2>Testing in the Playground</h2>
+                <ol>
+                    <li>Open AI Foundry portal → <strong>Agents</strong> → <strong>+ New Agent</strong></li>
+                    <li>Set name, model (<code>gpt-4o</code>), and paste instructions</li>
+                    <li>Toggle on desired tools (Code Interpreter, etc.)</li>
+                    <li>Send test messages in the chat panel</li>
+                    <li>Enable <strong>"Show tool calls"</strong> for transparency</li>
+                    <li>Iterate instructions based on results</li>
+                </ol>
+                <div class="callout">
+                    <strong>Debugging Tip:</strong> If the agent isn't calling the right tool, make your instructions more explicit about when to use each tool.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Python SDK Lifecycle -->
+        <div class="slide" data-slide="11">
+            <div class="slide-inner">
+                <h2>Python SDK — Agent Lifecycle</h2>
+                <div class="flow">
+                    <div class="flow-node">Create Agent</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">Create Thread</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node purple">Add Message</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node green">Run / Stream</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">Read Response</div>
+                </div>
+                <pre><span class="cm"># Install</span>
+pip install azure-ai-projects azure-identity
+
+<span class="cm"># Key classes</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    <span class="type">CodeInterpreterTool</span>,
+    <span class="type">FileSearchTool</span>,
+    <span class="type">BingGroundingTool</span>
+)</pre>
+            </div>
+        </div>
+
+        <!-- Slide 13: .NET SDK -->
+        <div class="slide" data-slide="12">
+            <div class="slide-inner">
+                <h2>.NET SDK — Agent Lifecycle</h2>
+                <pre><span class="cm">// Install</span>
+dotnet add package Azure.AI.Projects --prerelease
+dotnet add package Azure.Identity
+
+<span class="cm">// Create agent</span>
+<span class="kw">var</span> <span class="param">client</span> = <span class="kw">new</span> <span class="type">AgentsClient</span>(connStr, <span class="kw">new</span> <span class="type">DefaultAzureCredential</span>());
+
+<span class="kw">var</span> <span class="param">agent</span> = <span class="kw">await</span> client.<span class="fn">CreateAgentAsync</span>(
+    <span class="param">model</span>: <span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>: <span class="str">"analyst"</span>,
+    <span class="param">instructions</span>: <span class="str">"Analyze data..."</span>,
+    <span class="param">tools</span>: [<span class="kw">new</span> <span class="type">CodeInterpreterToolDefinition</span>()]
+);
+
+<span class="cm">// Thread → Message → Run → Poll → Read</span>
+<span class="kw">var</span> <span class="param">thread</span> = <span class="kw">await</span> client.<span class="fn">CreateThreadAsync</span>();
+<span class="kw">await</span> client.<span class="fn">CreateMessageAsync</span>(thread.Value.Id, ...);
+<span class="kw">var</span> <span class="param">run</span> = <span class="kw">await</span> client.<span class="fn">CreateRunAsync</span>(...);</pre>
+            </div>
+        </div>
+
+        <!-- Slide 14: Mini Hack -->
+        <div class="slide" data-slide="13">
+            <div class="slide-inner">
+                <h2>🧪 Mini Hack: Data Analyst Agent</h2>
+                <p>Build a complete data analyst agent in 30 minutes.</p>
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>Requirements</h4>
+                        <ul style="font-size:0.9rem;">
+                            <li>Load CSV sales data</li>
+                            <li>Compute summary statistics</li>
+                            <li>Create bar chart of top products</li>
+                            <li>Identify top 3 insights</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Success Criteria</h4>
+                        <ul style="font-size:0.9rem;">
+                            <li>✅ Agent with Code Interpreter</li>
+                            <li>✅ File uploaded &amp; attached</li>
+                            <li>✅ Chart generated &amp; saved</li>
+                            <li>✅ Clean up after completion</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Summary & Next Steps -->
+        <div class="slide slide-title" data-slide="14">
+            <div class="slide-inner" style="text-align:center;">
+                <h2 style="color:var(--accent);">Key Takeaways</h2>
+                <ul style="text-align:left;max-width:700px;margin:24px auto;">
+                    <li>📝 <strong>Instructions are everything</strong> — invest time in structured prompts</li>
+                    <li>🛠️ <strong>Right tool for the job</strong> — Code Interpreter, File Search, or Bing</li>
+                    <li>🧪 <strong>Playground first</strong> — prototype before writing SDK code</li>
+                    <li>🧹 <strong>Clean up resources</strong> — delete agents when done</li>
+                    <li>🔐 <strong>Security by default</strong> — use Managed Identity in production</li>
+                </ul>
+                <p style="margin-top:32px;color:var(--text-muted);">
+                    <strong>Next: Module 18</strong> — Custom Function Tools
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Track -->
+    <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <button id="prevBtn" onclick="navigate(-1)" disabled>← Previous</button>
+        <span class="slide-counter" id="counter">1 / 15</span>
+        <button id="nextBtn" onclick="navigate(1)">Next →</button>
+    </nav>
+
+    <script>
+    (function() {
+        let current = 0;
+        const slides = document.querySelectorAll('.slide');
+        const total = slides.length;
+        const counter = document.getElementById('counter');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressFill = document.getElementById('progressFill');
+
+        function showSlide(index) {
+            slides.forEach((s, i) => {
+                s.classList.remove('active', 'exit');
+                if (i === index) s.classList.add('active');
+            });
+            counter.textContent = `${index + 1} / ${total}`;
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === total - 1;
+            progressFill.style.width = ((index + 1) / total * 100) + '%';
+        }
+
+        window.navigate = function(dir) {
+            const next = current + dir;
+            if (next >= 0 && next < total) {
+                if (dir > 0) slides[current].classList.add('exit');
+                current = next;
+                showSlide(current);
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+            if (e.key === 'Home') { e.preventDefault(); current = 0; showSlide(0); }
+            if (e.key === 'End') { e.preventDefault(); current = total - 1; showSlide(current); }
+        });
+
+        showSlide(0);
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 18 — Multi-Turn Conversations &amp; Memory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-cyan: #39d2c0;
+            --border-color: #30363d;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-primary);
+            font-family: var(--font-main);
+            color: var(--text-primary);
+        }
+
+        /* ── Progress Bar ── */
+        .progress-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--bg-tertiary); z-index: 100;
+        }
+        .progress-bar {
+            height: 100%; width: 7.14%;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            transition: width 0.5s ease;
+        }
+
+        /* ── Navigation Hint & Counter ── */
+        .nav-hint {
+            position: fixed; bottom: 24px; left: 32px;
+            font-size: 13px; color: var(--text-muted); z-index: 100;
+            font-family: var(--font-mono);
+        }
+        .slide-counter {
+            position: fixed; bottom: 24px; right: 32px;
+            font-size: 13px; color: var(--text-muted); z-index: 100;
+            font-family: var(--font-mono); font-weight: 500;
+        }
+
+        /* ── Slide Deck ── */
+        .slide-deck { position: relative; width: 100%; height: 100%; }
+
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 60px 80px;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+        }
+        .slide.active { opacity: 1; visibility: visible; transform: translateX(0); }
+        .slide.prev { transform: translateX(-40px); }
+
+        /* ── Typography ── */
+        .slide-title {
+            font-size: 42px; font-weight: 800; margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; text-align: center; line-height: 1.2;
+        }
+        .slide-subtitle {
+            font-size: 20px; color: var(--text-secondary);
+            margin-bottom: 32px; text-align: center; font-weight: 400;
+        }
+        .section-title {
+            font-size: 36px; font-weight: 700; margin-bottom: 8px; text-align: center;
+        }
+        .section-icon {
+            font-size: 48px; margin-bottom: 16px; text-align: center;
+        }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-block; padding: 6px 16px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .badge-arc {
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+        }
+        .badge-green { background: rgba(63,185,80,0.15); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.3); }
+        .badge-yellow { background: rgba(210,153,34,0.15); color: var(--accent-yellow); border: 1px solid rgba(210,153,34,0.3); }
+        .badge-cyan { background: rgba(57,210,192,0.15); color: var(--accent-cyan); border: 1px solid rgba(57,210,192,0.3); }
+        .badge-red { background: rgba(248,81,73,0.15); color: var(--accent-red); border: 1px solid rgba(248,81,73,0.3); }
+
+        /* ── Content Containers ── */
+        .content-box {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 32px 36px; width: 100%; max-width: 900px;
+        }
+        .content-box-gradient {
+            background: var(--bg-secondary); border-radius: 12px;
+            padding: 32px 36px; width: 100%; max-width: 900px;
+            border: 1px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+        .content-box-gradient::before {
+            content: ''; position: absolute; inset: -1px; border-radius: 13px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            z-index: -1;
+        }
+
+        /* ── Bullet Points ── */
+        .bullet-list { list-style: none; width: 100%; max-width: 800px; }
+        .bullet-list li {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 12px 0; font-size: 18px; line-height: 1.5;
+            color: var(--text-primary);
+        }
+        .bullet-list li::before {
+            content: '▸'; color: var(--ms-blue); font-weight: 700;
+            font-size: 20px; flex-shrink: 0; margin-top: 1px;
+        }
+        .bullet-list li span.highlight {
+            color: var(--accent-cyan); font-weight: 600;
+        }
+
+        /* ── Code Blocks ── */
+        .code-block {
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 20px 24px; width: 100%; max-width: 860px;
+            font-family: var(--font-mono); font-size: 14px; line-height: 1.7;
+            overflow-x: auto; margin: 16px 0; color: var(--text-primary);
+        }
+        .code-block .kw { color: #ff7b72; }
+        .code-block .fn { color: #d2a8ff; }
+        .code-block .str { color: #a5d6ff; }
+        .code-block .cm { color: var(--text-muted); font-style: italic; }
+        .code-block .param { color: var(--accent-cyan); }
+        .code-block .num { color: #79c0ff; }
+        .code-label {
+            font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        /* ── Diagram / Flow ── */
+        .flow-row {
+            display: flex; align-items: center; gap: 12px;
+            justify-content: center; flex-wrap: wrap; margin: 20px 0;
+        }
+        .flow-box {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 14px 22px; text-align: center;
+            font-size: 15px; font-weight: 600; min-width: 120px;
+        }
+        .flow-box.blue { border-color: var(--ms-blue); color: var(--ms-blue); }
+        .flow-box.purple { border-color: var(--ms-purple); color: var(--ms-purple); }
+        .flow-box.green { border-color: var(--accent-green); color: var(--accent-green); }
+        .flow-box.cyan { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .flow-box.yellow { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .flow-arrow { color: var(--text-muted); font-size: 22px; font-weight: 700; }
+
+        /* ── Tables ── */
+        .styled-table {
+            width: 100%; max-width: 860px; border-collapse: collapse; margin: 16px 0;
+        }
+        .styled-table th {
+            text-align: left; padding: 12px 16px; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+            color: var(--text-muted); border-bottom: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+        .styled-table td {
+            padding: 12px 16px; font-size: 15px; border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .styled-table tr:last-child td { border-bottom: none; }
+        .styled-table td.mono { font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan); }
+
+        /* ── Two-Column ── */
+        .two-col {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+            width: 100%; max-width: 900px;
+        }
+        .col {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 24px 28px;
+        }
+        .col-title {
+            font-size: 16px; font-weight: 700; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* ── Misc ── */
+        .date-tag {
+            font-size: 14px; color: var(--text-muted); margin-top: 16px;
+            font-family: var(--font-mono);
+        }
+        .small-text { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
+        .emphasis { color: var(--accent-cyan); font-weight: 600; }
+        .warn { color: var(--accent-yellow); }
+        .good { color: var(--accent-green); }
+        .inline-code {
+            font-family: var(--font-mono); font-size: 14px; background: var(--bg-tertiary);
+            padding: 2px 8px; border-radius: 4px; color: var(--accent-cyan);
+        }
+
+        /* ── Architecture Diagram ── */
+        .arch-diagram {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 8px; margin: 16px 0; width: 100%; max-width: 800px;
+        }
+        .arch-row {
+            display: flex; align-items: center; gap: 12px; justify-content: center;
+            flex-wrap: wrap;
+        }
+        .arch-box {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 16px 24px; text-align: center;
+            min-width: 140px;
+        }
+        .arch-box-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+        .arch-box-value { font-size: 16px; font-weight: 700; }
+        .arch-arrow-down { font-size: 20px; color: var(--text-muted); }
+
+        /* ── Steps ── */
+        .step-list { list-style: none; width: 100%; max-width: 800px; }
+        .step-list li {
+            display: flex; align-items: flex-start; gap: 16px;
+            padding: 10px 0; font-size: 17px; line-height: 1.5;
+        }
+        .step-num {
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff; font-size: 14px; font-weight: 700; flex-shrink: 0;
+        }
+
+        /* ── Token Visual ── */
+        .token-bar-container { width: 100%; max-width: 700px; margin: 16px 0; }
+        .token-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .token-bar-bg {
+            height: 32px; background: var(--bg-tertiary); border-radius: 8px;
+            overflow: hidden; display: flex; border: 1px solid var(--border-color);
+        }
+        .token-seg {
+            height: 100%; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-container"><div class="progress-bar"></div></div>
+
+    <!-- Navigation Hint & Slide Counter -->
+    <div class="nav-hint">← → Arrow keys to navigate</div>
+    <div class="slide-counter">1 / 14</div>
+
+    <div class="slide-deck">
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 1 — TITLE
+        ══════════════════════════════════════════════ -->
+        <div class="slide active">
+            <span class="badge badge-arc">ARC 4 · AI AGENTS</span>
+            <h1 class="slide-title">Multi-Turn Conversations<br>&amp; Memory</h1>
+            <p class="slide-subtitle" style="margin-top:8px;">Module 18 · Azure AI Foundry: Zero to Hero</p>
+            <p style="font-size:16px; color:var(--text-secondary); margin-top:20px; max-width:600px; text-align:center;">
+                Threads, memory patterns, and persistent state for intelligent agents
+            </p>
+            <span class="date-tag">April 2026</span>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 2 — WHAT YOU'LL LEARN
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🎯</div>
+            <h2 class="section-title">What You'll Learn</h2>
+            <p class="slide-subtitle">Core competencies for this module</p>
+            <ul class="bullet-list">
+                <li>Understand <span class="highlight">thread-based conversation management</span> in Azure AI Agent Service</li>
+                <li>Implement <span class="highlight">short-term memory</span> using in-context message history</li>
+                <li>Design <span class="highlight">truncation strategies</span> to manage token limits effectively</li>
+                <li>Build <span class="highlight">long-term memory</span> patterns with external storage systems</li>
+                <li>Combine memory layers into a <span class="highlight">production-ready architecture</span></li>
+            </ul>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 3 — THE MEMORY CHALLENGE
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🧠</div>
+            <h2 class="section-title">The Memory Challenge</h2>
+            <p class="slide-subtitle">Why agents need more than a single turn</p>
+
+            <div class="two-col" style="margin-top:8px;">
+                <div class="col">
+                    <div class="col-title"><span style="color:var(--accent-red);">✗</span> Stateless LLM</div>
+                    <ul class="bullet-list" style="font-size:15px;">
+                        <li style="font-size:15px;">Each call is independent</li>
+                        <li style="font-size:15px;">No memory of prior turns</li>
+                        <li style="font-size:15px;">User must repeat context</li>
+                        <li style="font-size:15px;">Cannot track preferences</li>
+                    </ul>
+                </div>
+                <div class="col" style="border-color:var(--accent-green);">
+                    <div class="col-title"><span style="color:var(--accent-green);">✓</span> Stateful Agent</div>
+                    <ul class="bullet-list" style="font-size:15px;">
+                        <li style="font-size:15px;">Threads persist conversation</li>
+                        <li style="font-size:15px;">Remembers full history</li>
+                        <li style="font-size:15px;">Builds on prior context</li>
+                        <li style="font-size:15px;">Learns user preferences</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flow-row" style="margin-top:24px;">
+                <div class="flow-box blue">👤 User</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box purple">🤖 Agent</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box cyan">🧵 Thread</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box green">💾 Memory</div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 4 — THREADS IN AZURE AI AGENT SERVICE
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🧵</div>
+            <h2 class="section-title">Threads in Azure AI Agent Service</h2>
+            <p class="slide-subtitle">The foundation of multi-turn conversations</p>
+
+            <div class="content-box" style="margin-bottom:20px;">
+                <p style="font-size:16px; color:var(--text-secondary); margin-bottom:16px;">
+                    A <span class="emphasis">Thread</span> is an ordered collection of messages representing a conversation.
+                    It stores the full history and provides the context window for each agent run.
+                </p>
+                <div class="flow-row">
+                    <div class="flow-box blue">Create</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box purple">Add Messages</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box cyan">Run</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box green">Get Response</div>
+                </div>
+            </div>
+
+            <div class="code-label">Python — Thread creation</div>
+            <div class="code-block">
+<span class="cm"># Create a new conversation thread</span>
+thread = client.agents.<span class="fn">create_thread</span>()
+
+<span class="kw">print</span>(<span class="str">f"Thread ID: <span class="param">{thread.id}</span>"</span>)
+<span class="kw">print</span>(<span class="str">f"Created:   <span class="param">{thread.created_at}</span>"</span>)
+<span class="kw">print</span>(<span class="str">f"Metadata:  <span class="param">{thread.metadata}</span>"</span>)
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 5 — MESSAGE MANAGEMENT
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">💬</div>
+            <h2 class="section-title">Message Management</h2>
+            <p class="slide-subtitle">Building conversation history turn by turn</p>
+
+            <div class="two-col" style="margin-bottom:20px;">
+                <div class="col">
+                    <div class="col-title">📝 Message Roles</div>
+                    <p style="font-size:14px; color:var(--text-secondary); margin-bottom:8px;">
+                        <span class="inline-code">user</span> — Messages from the human<br>
+                        <span class="inline-code">assistant</span> — Responses from the agent
+                    </p>
+                </div>
+                <div class="col">
+                    <div class="col-title">📎 Content Types</div>
+                    <p style="font-size:14px; color:var(--text-secondary); margin-bottom:8px;">
+                        <span class="emphasis">Text</span> — Plain text messages<br>
+                        <span class="emphasis">Images</span> — Inline image attachments<br>
+                        <span class="emphasis">Files</span> — Document references
+                    </p>
+                </div>
+            </div>
+
+            <div class="code-label">Python — Adding messages to a thread</div>
+            <div class="code-block">
+<span class="cm"># Add a user message</span>
+message = client.agents.<span class="fn">create_message</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">role</span>=<span class="str">"user"</span>,
+    <span class="param">content</span>=<span class="str">"Summarize last quarter's sales report."</span>
+)
+
+<span class="cm"># Run the agent to get an assistant response</span>
+run = client.agents.<span class="fn">create_and_process_run</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">agent_id</span>=agent.id
+)
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 6 — SHORT-TERM MEMORY
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">⚡</div>
+            <h2 class="section-title">Short-Term Memory</h2>
+            <p class="slide-subtitle">In-context memory within the current thread</p>
+
+            <div class="content-box-gradient" style="margin-bottom:24px;">
+                <p style="font-size:16px; line-height:1.6;">
+                    The model sees <span class="emphasis">all messages in the thread</span> (up to the token limit)
+                    as its context. This is the simplest form of agent memory — no extra infrastructure needed.
+                </p>
+            </div>
+
+            <div class="two-col">
+                <div class="col" style="border-color:var(--accent-green);">
+                    <div class="col-title"><span class="good">✓</span> Advantages</div>
+                    <ul class="bullet-list">
+                        <li style="font-size:15px;"><span class="good">Simple</span> — built into the Agent Service</li>
+                        <li style="font-size:15px;"><span class="good">Automatic</span> — no extra code required</li>
+                        <li style="font-size:15px;"><span class="good">Contextual</span> — full conversation fidelity</li>
+                    </ul>
+                </div>
+                <div class="col" style="border-color:var(--accent-yellow);">
+                    <div class="col-title"><span class="warn">⚠</span> Limitations</div>
+                    <ul class="bullet-list">
+                        <li style="font-size:15px;"><span class="warn">Bounded</span> by context window size</li>
+                        <li style="font-size:15px;"><span class="warn">Ephemeral</span> — lost when thread ends</li>
+                        <li style="font-size:15px;"><span class="warn">Cost</span> grows with conversation length</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 7 — CONTEXT WINDOW LIMITS
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">📏</div>
+            <h2 class="section-title">Context Window Limits</h2>
+            <p class="slide-subtitle">Know your model's capacity</p>
+
+            <table class="styled-table" style="margin-bottom:24px;">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Context Window</th>
+                        <th>Max Output</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono">GPT-4o</td>
+                        <td>128K tokens</td>
+                        <td>16K tokens</td>
+                        <td style="color:var(--text-secondary);">Balanced performance</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">GPT-4o-mini</td>
+                        <td>128K tokens</td>
+                        <td>16K tokens</td>
+                        <td style="color:var(--text-secondary);">Cost-efficient</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">GPT-4.1</td>
+                        <td style="color:var(--accent-green); font-weight:600;">1M tokens</td>
+                        <td>32K tokens</td>
+                        <td style="color:var(--text-secondary);">Largest context</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="font-size:14px; color:var(--text-muted); margin-bottom:12px; text-align:center;">Token Budget Allocation</p>
+            <div class="token-bar-container">
+                <div class="token-bar-bg">
+                    <div class="token-seg" style="width:15%; background:var(--ms-purple);">System</div>
+                    <div class="token-seg" style="width:45%; background:var(--ms-blue);">Conversation</div>
+                    <div class="token-seg" style="width:15%; background:var(--accent-cyan); color:var(--bg-primary);">Tools</div>
+                    <div class="token-seg" style="width:25%; background:var(--accent-green); color:var(--bg-primary);">Response</div>
+                </div>
+                <div class="token-bar-label">
+                    <span>System Prompt</span>
+                    <span>History</span>
+                    <span>Tool Defs</span>
+                    <span>Completion</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 8 — TRUNCATION STRATEGIES
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">✂️</div>
+            <h2 class="section-title">Truncation Strategies</h2>
+            <p class="slide-subtitle">Gracefully managing context overflow</p>
+
+            <div class="two-col" style="margin-bottom:20px;">
+                <div class="col">
+                    <div class="col-title" style="color:var(--ms-blue);">🔄 type: "auto"</div>
+                    <p style="font-size:14px; color:var(--text-secondary);">
+                        System automatically manages truncation. Oldest messages are dropped as needed to fit the context window.
+                    </p>
+                </div>
+                <div class="col">
+                    <div class="col-title" style="color:var(--ms-purple);">📋 type: "last_messages"</div>
+                    <p style="font-size:14px; color:var(--text-secondary);">
+                        Keep only the last <span class="emphasis">N</span> messages. Gives precise control over how much history the model sees.
+                    </p>
+                </div>
+            </div>
+
+            <div class="code-label">Python — Truncation &amp; token limits</div>
+            <div class="code-block">
+<span class="cm"># Run with truncation strategy</span>
+run = client.agents.<span class="fn">create_and_process_run</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">agent_id</span>=agent.id,
+    <span class="param">truncation_strategy</span>={
+        <span class="str">"type"</span>: <span class="str">"last_messages"</span>,
+        <span class="str">"last_messages"</span>: <span class="num">20</span>           <span class="cm"># Keep last 20 messages</span>
+    },
+    <span class="param">max_prompt_tokens</span>=<span class="num">80000</span>,       <span class="cm"># Limit input tokens</span>
+    <span class="param">max_completion_tokens</span>=<span class="num">4096</span>     <span class="cm"># Limit output tokens</span>
+)
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 9 — LONG-TERM MEMORY PATTERNS
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🏗️</div>
+            <h2 class="section-title">Long-Term Memory Patterns</h2>
+            <p class="slide-subtitle">Persistent memory beyond the context window</p>
+
+            <div style="display:flex; gap:20px; max-width:900px; width:100%; margin-bottom:20px; flex-wrap:wrap;">
+                <div class="col" style="flex:1; min-width:240px; border-color:var(--ms-blue);">
+                    <div class="col-title" style="color:var(--ms-blue);">🔑 Key-Value</div>
+                    <p style="font-size:14px; color:var(--text-secondary);">User preferences, settings, profile data</p>
+                    <span class="badge badge-green" style="margin-top:8px;">Simple &amp; Fast</span>
+                </div>
+                <div class="col" style="flex:1; min-width:240px; border-color:var(--ms-purple);">
+                    <div class="col-title" style="color:var(--ms-purple);">🔍 Vector</div>
+                    <p style="font-size:14px; color:var(--text-secondary);">Semantic search over past conversations &amp; facts</p>
+                    <span class="badge badge-cyan" style="margin-top:8px;">Semantic</span>
+                </div>
+                <div class="col" style="flex:1; min-width:240px; border-color:var(--accent-yellow);">
+                    <div class="col-title" style="color:var(--accent-yellow);">📄 Document</div>
+                    <p style="font-size:14px; color:var(--text-secondary);">Full conversation logs, audit trails</p>
+                    <span class="badge badge-yellow" style="margin-top:8px;">Archival</span>
+                </div>
+            </div>
+
+            <div class="flow-row">
+                <div class="flow-box purple">🤖 Agent</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box cyan">Memory Layer</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box green">Cosmos DB / AI Search</div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 10 — SEMANTIC MEMORY WITH EMBEDDINGS
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🔮</div>
+            <h2 class="section-title">Semantic Memory with Embeddings</h2>
+            <p class="slide-subtitle">Recall the right memories at the right time</p>
+
+            <div class="content-box" style="margin-bottom:20px;">
+                <p style="font-size:15px; color:var(--text-secondary); margin-bottom:16px;">
+                    Store important facts as <span class="emphasis">vector embeddings</span> and retrieve
+                    relevant memories via <span class="emphasis">similarity search</span> — powered by Azure AI Search.
+                </p>
+                <div class="flow-row">
+                    <div class="flow-box blue">Extract</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box purple">Embed</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box cyan">Store</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box yellow">Retrieve</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-box green">Inject</div>
+                </div>
+            </div>
+
+            <div class="code-label">Python — Store &amp; retrieve semantic memories</div>
+            <div class="code-block">
+<span class="cm"># Generate embedding for a memory</span>
+embedding = client.embeddings.<span class="fn">create</span>(
+    <span class="param">model</span>=<span class="str">"text-embedding-3-large"</span>,
+    <span class="param">input</span>=<span class="str">"User prefers concise answers in bullet points"</span>
+).data[<span class="num">0</span>].embedding
+
+<span class="cm"># Search for relevant memories</span>
+results = search_client.<span class="fn">search</span>(
+    <span class="param">search_text</span>=query,
+    <span class="param">vector_queries</span>=[VectorizedQuery(
+        <span class="param">vector</span>=query_embedding,
+        <span class="param">k_nearest_neighbors</span>=<span class="num">5</span>,
+        <span class="param">fields</span>=<span class="str">"embedding"</span>
+    )]
+)
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 11 — PERSISTENT STORAGE OPTIONS
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">☁️</div>
+            <h2 class="section-title">Persistent Storage Options</h2>
+            <p class="slide-subtitle">Choose the right Azure service for your memory needs</p>
+
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Use Case</th>
+                        <th>Data Model</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono" style="color:var(--ms-blue);">Cosmos DB</td>
+                        <td>User profiles &amp; preferences</td>
+                        <td>JSON documents</td>
+                        <td><span class="badge badge-green" style="margin:0; font-size:10px;">Rich Queries</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="color:var(--accent-cyan);">Table Storage</td>
+                        <td>Session state &amp; flags</td>
+                        <td>Key-value pairs</td>
+                        <td><span class="badge badge-cyan" style="margin:0; font-size:10px;">Low Cost</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="color:var(--accent-yellow);">Blob Storage</td>
+                        <td>Conversation archives</td>
+                        <td>Bulk files</td>
+                        <td><span class="badge badge-yellow" style="margin:0; font-size:10px;">Scale</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="color:var(--ms-purple);">AI Search</td>
+                        <td>Semantic memory retrieval</td>
+                        <td>Vectors + metadata</td>
+                        <td><span class="badge badge-red" style="margin:0; font-size:10px; background:rgba(93,45,145,0.2); color:var(--ms-purple); border-color:rgba(93,45,145,0.4);">Semantic</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="small-text" style="margin-top:16px; text-align:center;">
+                💡 <span class="emphasis">Tip:</span> Combine Cosmos DB (structured) + AI Search (semantic) for a complete memory layer
+            </p>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 12 — MINI HACK OVERVIEW
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🛠️</div>
+            <h2 class="section-title">Mini Hack</h2>
+            <p class="slide-subtitle">Build an agent that remembers user preferences</p>
+
+            <div class="arch-diagram" style="margin-bottom:20px;">
+                <div class="arch-row">
+                    <div class="arch-box" style="border-color:var(--ms-blue);">
+                        <div class="arch-box-label">Frontend</div>
+                        <div class="arch-box-value" style="color:var(--ms-blue);">👤 Chat UI</div>
+                    </div>
+                    <span class="flow-arrow">⇄</span>
+                    <div class="arch-box" style="border-color:var(--ms-purple);">
+                        <div class="arch-box-label">Agent Service</div>
+                        <div class="arch-box-value" style="color:var(--ms-purple);">🤖 Agent + Thread</div>
+                    </div>
+                    <span class="flow-arrow">⇄</span>
+                    <div class="arch-box" style="border-color:var(--accent-green);">
+                        <div class="arch-box-label">Storage</div>
+                        <div class="arch-box-value" style="color:var(--accent-green);">💾 Cosmos DB</div>
+                    </div>
+                </div>
+            </div>
+
+            <ol class="step-list">
+                <li>
+                    <span class="step-num">1</span>
+                    <span><span class="emphasis">Create Cosmos DB</span> — Set up a database and container for user preferences</span>
+                </li>
+                <li>
+                    <span class="step-num">2</span>
+                    <span><span class="emphasis">Build memory layer</span> — Functions to read/write preferences from Cosmos DB</span>
+                </li>
+                <li>
+                    <span class="step-num">3</span>
+                    <span><span class="emphasis">Create agent</span> — Configure an agent with memory-aware tools</span>
+                </li>
+                <li>
+                    <span class="step-num">4</span>
+                    <span><span class="emphasis">Wire it up</span> — Thread → Agent → Memory layer → Cosmos DB</span>
+                </li>
+            </ol>
+
+            <p class="small-text" style="margin-top:16px; text-align:center;">
+                🎯 <span class="emphasis">Expected outcome:</span> An agent that remembers your name, language, and response-style preferences across sessions
+            </p>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 13 — KEY TAKEAWAYS
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🔑</div>
+            <h2 class="section-title">Key Takeaways</h2>
+            <p class="slide-subtitle">What to remember from this module</p>
+
+            <div class="content-box-gradient">
+                <ul class="bullet-list">
+                    <li><span class="highlight">Threads are the foundation</span> of multi-turn conversations — every message is persisted and ordered</li>
+                    <li><span class="highlight">Truncation strategies</span> prevent context overflow — use <span class="inline-code">auto</span> or <span class="inline-code">last_messages</span> to stay within limits</li>
+                    <li><span class="highlight">Long-term memory</span> requires external storage — Cosmos DB for structure, AI Search for semantics</li>
+                    <li><span class="highlight">Combine short-term + long-term</span> for best results — threads for conversation, stores for persistence</li>
+                    <li><span class="highlight">Always design for memory boundaries</span> — plan for token limits, stale data, and memory eviction</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             SLIDE 14 — NEXT STEPS
+        ══════════════════════════════════════════════ -->
+        <div class="slide">
+            <div class="section-icon">🚀</div>
+            <h2 class="section-title">Next Steps</h2>
+            <p class="slide-subtitle">Continue your Azure AI Foundry journey</p>
+
+            <div class="content-box" style="margin-bottom:24px; text-align:center;">
+                <p style="font-size:14px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Coming up next</p>
+                <p style="font-size:24px; font-weight:700; background:linear-gradient(135deg,var(--ms-blue),var(--ms-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+                    Module 19: Custom Tools &amp; Function Calling
+                </p>
+            </div>
+
+            <div style="max-width:700px; width:100%;">
+                <p style="font-size:15px; font-weight:600; margin-bottom:12px; color:var(--text-secondary);">📚 Resources</p>
+                <ul class="bullet-list" style="margin-bottom:24px;">
+                    <li style="font-size:15px;">Azure AI Agent Service — <span class="emphasis">Threads &amp; Messages documentation</span></li>
+                    <li style="font-size:15px;">Azure Cosmos DB — <span class="emphasis">NoSQL API quickstart</span></li>
+                    <li style="font-size:15px;">Azure AI Search — <span class="emphasis">Vector search overview</span></li>
+                </ul>
+            </div>
+
+            <div style="text-align:center; margin-top:12px;">
+                <p style="font-size:28px; font-weight:700; margin-bottom:8px;">Thank you! 🎉</p>
+                <p style="font-size:15px; color:var(--text-muted);">Azure AI Foundry: Zero to Hero · Module 18</p>
+            </div>
+        </div>
+
+    </div><!-- /slide-deck -->
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let current = 0;
+
+        function goTo(n) {
+            if (n < 0 || n >= slides.length) return;
+            slides[current].classList.remove('active');
+            slides[current].classList.add('prev');
+            current = n;
+            slides.forEach(function(s, i) {
+                if (i !== current) {
+                    s.classList.remove('active', 'prev');
+                }
+            });
+            slides[current].classList.add('active');
+            document.querySelector('.progress-bar').style.width = ((current + 1) / slides.length * 100) + '%';
+            document.querySelector('.slide-counter').textContent = (current + 1) + ' / ' + slides.length;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+        });
+    </script>
+</body>
+</html>

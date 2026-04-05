@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 33: Model Governance & Audit Trails — Azure AI Foundry: Zero to Hero</title>
+    <meta name="description" content="Master model governance, audit trails, versioning, approval workflows, and model cards in Azure AI Foundry. Part of Arc 7: Security, Governance & Compliance.">
+    <meta name="author" content="Azure AI Foundry Training">
+    <meta name="date" content="2026-04-01">
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --primary-light: #deecf9;
+            --accent: #e74856;
+            --accent-secondary: #f7630c;
+            --governance-gold: #c19c00;
+            --governance-dark: #2d2200;
+            --security-teal: #00b7c3;
+            --surface: #ffffff;
+            --surface-alt: #f6f8fa;
+            --surface-elevated: #ffffff;
+            --border: #e1e4e8;
+            --text-primary: #1b1b1b;
+            --text-secondary: #505050;
+            --text-muted: #6e6e6e;
+            --code-bg: #f4f4f4;
+            --code-text: #1b1b1b;
+            --success: #107c10;
+            --warning: #ff8c00;
+            --danger: #e74856;
+            --info: #0078d4;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --radius: 8px;
+            --radius-lg: 12px;
+            --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            --max-width: 880px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--surface-alt);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Top Navigation Bar ── */
+        .top-nav {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .top-nav a {
+            color: #93c5fd;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .top-nav a:hover { color: #fff; }
+        .top-nav .breadcrumb { opacity: 0.9; }
+        .top-nav .breadcrumb span { color: #64748b; margin: 0 6px; }
+
+        /* ── Hero Section ── */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 40%, #16213e 100%);
+            color: #fff;
+            padding: 80px 24px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(193,156,0,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0,183,195,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(193,156,0,0.25), rgba(193,156,0,0.1));
+            border: 1px solid rgba(193,156,0,0.4);
+            color: #fbbf24;
+            padding: 6px 16px;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 24px;
+        }
+        .hero-badge .shield-icon { font-size: 16px; }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        .hero h1 .accent-text {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            max-width: 650px;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hero-meta-item .icon { font-size: 16px; }
+
+        /* ── Progress Indicator ── */
+        .progress-bar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+        }
+        .progress-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+        }
+        .progress-track {
+            flex: 1;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 73.3%;
+            background: linear-gradient(90deg, var(--primary), var(--security-teal));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .progress-text { color: var(--text-muted); font-weight: 600; }
+
+        /* ── Main Content Area ── */
+        .content-wrapper {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        /* ── Article Sections ── */
+        .article-section {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            padding: 40px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+        .article-section h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .article-section h2 .section-icon {
+            font-size: 28px;
+        }
+        .article-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 28px 0 12px;
+        }
+        .article-section h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 20px 0 8px;
+        }
+        .article-section p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        .article-section ul, .article-section ol {
+            color: var(--text-secondary);
+            margin: 0 0 16px 24px;
+        }
+        .article-section li { margin-bottom: 8px; }
+
+        /* ── Table of Contents ── */
+        .toc-card {
+            background: linear-gradient(135deg, #f0f7ff, #e8f4fd);
+            border: 1px solid #b8d8f8;
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            margin-bottom: 32px;
+        }
+        .toc-card h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            border: none;
+            padding: 0;
+        }
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .toc-list li {
+            margin-bottom: 8px;
+        }
+        .toc-list a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            transition: color 0.2s;
+        }
+        .toc-list a:hover { color: var(--primary-dark); }
+        .toc-list .toc-number {
+            background: var(--primary);
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+            line-height: 1.6;
+            margin: 16px 0 20px;
+            position: relative;
+            border: 1px solid #333;
+        }
+        pre .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(255,255,255,0.1);
+            color: #9ca3af;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+        p code, li code {
+            background: var(--code-bg);
+            color: var(--accent);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .op { color: #d4d4d4; }
+        .param { color: #9cdcfe; }
+        .type { color: #4ec9b0; }
+        .decorator { color: #c586c0; }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 20px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .callout-content { flex: 1; }
+        .callout-content strong { display: block; margin-bottom: 4px; }
+        .callout-content p { margin: 0; font-size: 14px; }
+
+        .callout-info {
+            background: #e8f4fd;
+            border-left: 4px solid var(--info);
+        }
+        .callout-warning {
+            background: #fff8e1;
+            border-left: 4px solid var(--warning);
+        }
+        .callout-tip {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+        }
+        .callout-danger {
+            background: #ffeef0;
+            border-left: 4px solid var(--danger);
+        }
+        .callout-governance {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border-left: 4px solid var(--governance-gold);
+        }
+
+        /* ── Feature Cards ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .feature-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .feature-card .card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .feature-card h4 {
+            font-size: 1rem;
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+        .feature-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* ── Workflow Diagram ── */
+        .workflow-diagram {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .workflow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .workflow-step {
+            background: var(--surface);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .workflow-step .step-icon { font-size: 24px; display: block; margin-bottom: 6px; }
+        .workflow-step .step-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+        .workflow-step.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary-dark);
+        }
+        .workflow-step.active .step-label { color: #fff; }
+        .workflow-arrow {
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ── Governance Table ── */
+        .governance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .governance-table th {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .governance-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .governance-table tr:nth-child(even) td {
+            background: var(--surface-alt);
+        }
+        .governance-table tr:hover td {
+            background: var(--primary-light);
+        }
+
+        /* ── Video Section ── */
+        .video-section {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 32px 0;
+            text-align: center;
+        }
+        .video-section h3 {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+        .video-section p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+            padding-bottom: 56.25%;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ── Mini Hack Section ── */
+        .mini-hack {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 2px solid var(--governance-gold);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin: 32px 0;
+            color: #e2e8f0;
+        }
+        .mini-hack-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(193,156,0,0.2);
+            border: 1px solid rgba(193,156,0,0.4);
+            color: #fbbf24;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .mini-hack h3 {
+            color: #fff;
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+        .mini-hack p { color: #94a3b8; }
+        .mini-hack pre {
+            background: #0a0a0a;
+            border-color: #374151;
+        }
+        .mini-hack .step-group {
+            margin: 24px 0;
+        }
+        .mini-hack .step-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .mini-hack .step-number {
+            background: var(--governance-gold);
+            color: #1a1a2e;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .mini-hack .step-title {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        /* ── Key Takeaways ── */
+        .takeaways {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #86efac;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 32px 0;
+        }
+        .takeaways h3 {
+            color: #166534;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .takeaways ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .takeaways li {
+            padding: 8px 0;
+            color: #15803d;
+            font-size: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .takeaways li::before { content: none; }
+        .takeaway-check {
+            color: #16a34a;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ── Bottom Navigation ── */
+        .bottom-nav {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px 32px;
+            margin: 40px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 15px;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--primary);
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .nav-btn .nav-arrow { font-size: 18px; }
+        .nav-btn .nav-label { font-size: 12px; color: var(--text-muted); display: block; }
+        .nav-btn:hover .nav-label { color: rgba(255,255,255,0.8); }
+        .nav-center {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ── Footer ── */
+        .site-footer {
+            background: #1a1a2e;
+            color: #94a3b8;
+            padding: 40px 24px;
+            text-align: center;
+            margin-top: 48px;
+        }
+        .site-footer p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        .site-footer a { color: #60a5fa; text-decoration: none; }
+        .site-footer a:hover { color: #93c5fd; }
+        .footer-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hero { padding: 50px 16px 40px; }
+            .article-section { padding: 24px 20px; }
+            .bottom-nav { flex-direction: column; gap: 16px; }
+            .workflow-steps { flex-direction: column; }
+            .workflow-arrow { transform: rotate(90deg); }
+            .mini-hack { padding: 24px 20px; }
+        }
+
+        /* ── Animated Accents ── */
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .shimmer-text {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+        }
+
+        /* ── Audit Log Visual ── */
+        .audit-log-visual {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 16px 0;
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+        .log-entry {
+            display: flex;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid #21262d;
+            color: #c9d1d9;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-time { color: #8b949e; min-width: 180px; }
+        .log-level {
+            font-weight: 700;
+            min-width: 60px;
+        }
+        .log-level.info { color: #58a6ff; }
+        .log-level.warn { color: #d29922; }
+        .log-level.success { color: #3fb950; }
+        .log-msg { color: #c9d1d9; }
+
+        /* ── Governance Pillar Cards ── */
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .pillar-card {
+            text-align: center;
+            padding: 24px 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            transition: all 0.2s;
+        }
+        .pillar-card:hover {
+            border-color: var(--governance-gold);
+            box-shadow: 0 0 0 1px var(--governance-gold);
+        }
+        .pillar-card .pillar-icon { font-size: 36px; margin-bottom: 12px; }
+        .pillar-card h4 { font-size: 14px; margin: 0 0 4px; color: var(--text-primary); }
+        .pillar-card p { font-size: 12px; color: var(--text-muted); margin: 0; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ TOP NAV ═══════════════════ -->
+<nav class="top-nav">
+    <div class="top-nav-inner">
+        <div class="breadcrumb">
+            <a href="#">Azure AI Foundry: Zero to Hero</a>
+            <span>/</span>
+            <a href="#">Arc 7: Security & Governance</a>
+            <span>/</span>
+            Module 33
+        </div>
+        <div>April 2026</div>
+    </div>
+</nav>
+
+<!-- ═══════════════════ HERO SECTION ═══════════════════ -->
+<header class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <span class="shield-icon">🛡️</span>
+            ARC 7 · SECURITY &amp; GOVERNANCE
+        </div>
+        <h1>Model Governance &amp;<br><span class="accent-text">Audit Trails</span></h1>
+        <p class="hero-subtitle">
+            Establish enterprise-grade model governance in Azure AI Foundry with comprehensive versioning, 
+            audit logging, approval workflows, and model documentation that ensures compliance and traceability 
+            across your entire AI lifecycle.
+        </p>
+        <div class="hero-meta">
+            <div class="hero-meta-item"><span class="icon">📘</span> Module 33 of 45</div>
+            <div class="hero-meta-item"><span class="icon">⏱️</span> 90 minutes</div>
+            <div class="hero-meta-item"><span class="icon">🎯</span> Advanced</div>
+            <div class="hero-meta-item"><span class="icon">🏗️</span> Azure AI Foundry</div>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════════════ PROGRESS BAR ═══════════════════ -->
+<div class="progress-bar">
+    <div class="progress-inner">
+        <span class="progress-text">Module 33 / 45</span>
+        <div class="progress-track">
+            <div class="progress-fill"></div>
+        </div>
+        <span class="progress-text">73%</span>
+    </div>
+</div>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<main class="content-wrapper">
+
+    <!-- Table of Contents -->
+    <div class="toc-card">
+        <h2>📑 In This Module</h2>
+        <ol class="toc-list">
+            <li><a href="#governance-overview"><span class="toc-number">1</span> Why Model Governance Matters</a></li>
+            <li><a href="#model-versioning"><span class="toc-number">2</span> Model Versioning &amp; Registry</a></li>
+            <li><a href="#audit-logs"><span class="toc-number">3</span> Audit Logs for Deployments &amp; Access</a></li>
+            <li><a href="#change-management"><span class="toc-number">4</span> Change Management &amp; Approval Workflows</a></li>
+            <li><a href="#model-cards"><span class="toc-number">5</span> Model Documentation &amp; Model Cards</a></li>
+            <li><a href="#mini-hack"><span class="toc-number">6</span> Mini Hack: Model Versioning with Approval Gates</a></li>
+            <li><a href="#video"><span class="toc-number">7</span> Video: Building Trustworthy AI</a></li>
+            <li><a href="#takeaways"><span class="toc-number">8</span> Key Takeaways &amp; Next Steps</a></li>
+        </ol>
+    </div>
+
+    <!-- ═══════════════════ SECTION 1: GOVERNANCE OVERVIEW ═══════════════════ -->
+    <article class="article-section" id="governance-overview">
+        <h2><span class="section-icon">🏛️</span> Why Model Governance Matters</h2>
+        <p>
+            As organizations scale their AI initiatives on Azure AI Foundry, model governance becomes the 
+            critical framework that ensures every model in production is traceable, compliant, and trustworthy. 
+            Without robust governance, organizations face regulatory risk, reproducibility challenges, and 
+            accountability gaps that undermine stakeholder confidence.
+        </p>
+
+        <div class="pillar-grid">
+            <div class="pillar-card">
+                <div class="pillar-icon">📋</div>
+                <h4>Traceability</h4>
+                <p>Track every model from training data to production deployment</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">⚖️</div>
+                <h4>Compliance</h4>
+                <p>Meet regulatory requirements like EU AI Act, NIST AI RMF</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🔄</div>
+                <h4>Reproducibility</h4>
+                <p>Recreate any model version with identical results</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">👥</div>
+                <h4>Accountability</h4>
+                <p>Clear ownership and approval chains for every deployment</p>
+            </div>
+        </div>
+
+        <h3>The Governance Challenge in Enterprise AI</h3>
+        <p>
+            Azure AI Foundry provides an integrated platform for managing the complete model lifecycle. Unlike 
+            fragmented toolchains, Foundry's governance capabilities are built directly into the platform, 
+            providing a unified control plane for model registration, versioning, access control, and audit 
+            logging across all your AI projects.
+        </p>
+
+        <div class="callout callout-governance">
+            <div class="callout-icon">🛡️</div>
+            <div class="callout-content">
+                <strong>Governance in Azure AI Foundry</strong>
+                <p>
+                    Azure AI Foundry's governance features are natively integrated into the platform — model 
+                    registry, role-based access control, deployment tracking, and activity logs work together 
+                    to provide a complete governance framework without requiring external tools.
+                </p>
+            </div>
+        </div>
+
+        <h3>Regulatory Landscape Driving Governance</h3>
+        <table class="governance-table">
+            <thead>
+                <tr>
+                    <th>Regulation</th>
+                    <th>Region</th>
+                    <th>Key Governance Requirement</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>EU AI Act</strong></td>
+                    <td>European Union</td>
+                    <td>Risk classification, documentation, human oversight for high-risk AI</td>
+                </tr>
+                <tr>
+                    <td><strong>NIST AI RMF</strong></td>
+                    <td>United States</td>
+                    <td>AI risk management framework with governance functions</td>
+                </tr>
+                <tr>
+                    <td><strong>ISO/IEC 42001</strong></td>
+                    <td>International</td>
+                    <td>AI management system standard — policies, audits, reviews</td>
+                </tr>
+                <tr>
+                    <td><strong>GDPR (AI provisions)</strong></td>
+                    <td>European Union</td>
+                    <td>Automated decision-making transparency and data protection impact</td>
+                </tr>
+                <tr>
+                    <td><strong>SOC 2 Type II</strong></td>
+                    <td>United States</td>
+                    <td>Change management, access controls, monitoring for AI services</td>
+                </tr>
+            </tbody>
+        </table>
+    </article>
+
+    <!-- ═══════════════════ SECTION 2: MODEL VERSIONING ═══════════════════ -->
+    <article class="article-section" id="model-versioning">
+        <h2><span class="section-icon">🔢</span> Model Versioning &amp; Registry</h2>
+        <p>
+            Azure AI Foundry's Model Registry serves as the single source of truth for all models in your 
+            organization. Every model — whether fine-tuned, custom-built, or sourced from the model catalog — is 
+            registered with immutable version metadata, enabling complete lifecycle tracking.
+        </p>
+
+        <h3>Understanding the Model Registry</h3>
+        <p>
+            The Model Registry in Azure AI Foundry provides a centralized catalog where teams register, version, 
+            and manage models across multiple projects. Each model version captures the model artifacts, metadata, 
+            tags, and lineage information necessary for governance.
+        </p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="card-icon">📦</div>
+                <h4>Immutable Versions</h4>
+                <p>Each registered version is immutable — once created, the artifacts and metadata cannot be altered, ensuring audit integrity.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🏷️</div>
+                <h4>Semantic Tagging</h4>
+                <p>Apply tags like "production", "staging", "candidate" to track model lifecycle stages within the registry.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🔗</div>
+                <h4>Lineage Tracking</h4>
+                <p>Automatically capture training data references, hyperparameters, and evaluation metrics for each version.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🌐</div>
+                <h4>Cross-Project Sharing</h4>
+                <p>Share registered models across Foundry projects while maintaining centralized governance policies.</p>
+            </div>
+        </div>
+
+        <h3>Registering Models with the Azure AI Foundry SDK</h3>
+        <pre><span class="code-label">Python</span>
+<span class="kw">from</span> azure.ai.ml <span class="kw">import</span> MLClient
+<span class="kw">from</span> azure.ai.ml.entities <span class="kw">import</span> Model
+<span class="kw">from</span> azure.ai.ml.constants <span class="kw">import</span> AssetTypes
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="cm"># Connect to your Azure AI Foundry project</span>
+<span class="param">client</span> = MLClient(
+    credential=DefaultAzureCredential(),
+    subscription_id=<span class="str">"your-subscription-id"</span>,
+    resource_group_name=<span class="str">"rg-ai-governance"</span>,
+    workspace_name=<span class="str">"foundry-project-prod"</span>
+)
+
+<span class="cm"># Register a new model version with governance metadata</span>
+<span class="param">model</span> = Model(
+    name=<span class="str">"customer-sentiment-classifier"</span>,
+    version=<span class="str">"3"</span>,
+    path=<span class="str">"./model-artifacts/sentiment-v3"</span>,
+    type=AssetTypes.CUSTOM_MODEL,
+    description=<span class="str">"Sentiment classifier v3 — retrained with Q1 2026 data"</span>,
+    tags={
+        <span class="str">"team"</span>: <span class="str">"nlp-engineering"</span>,
+        <span class="str">"stage"</span>: <span class="str">"candidate"</span>,
+        <span class="str">"framework"</span>: <span class="str">"transformers"</span>,
+        <span class="str">"training_dataset"</span>: <span class="str">"reviews-q1-2026"</span>,
+        <span class="str">"accuracy"</span>: <span class="str">"0.947"</span>,
+        <span class="str">"approval_status"</span>: <span class="str">"pending_review"</span>,
+        <span class="str">"risk_tier"</span>: <span class="str">"high"</span>,
+        <span class="str">"data_classification"</span>: <span class="str">"confidential"</span>
+    },
+    properties={
+        <span class="str">"training_compute"</span>: <span class="str">"Standard_NC24ads_A100_v4"</span>,
+        <span class="str">"training_duration_hours"</span>: <span class="str">"4.2"</span>,
+        <span class="str">"base_model"</span>: <span class="str">"bert-base-uncased"</span>,
+        <span class="str">"evaluation_dataset"</span>: <span class="str">"reviews-eval-q1-2026"</span>
+    }
+)
+
+<span class="param">registered_model</span> = client.models.create_or_update(model)
+<span class="fn">print</span>(<span class="str">f"Registered: <span class="param">{registered_model.name}</span> v<span class="param">{registered_model.version}</span>"</span>)</pre>
+
+        <h3>Querying Model Versions for Governance</h3>
+        <pre><span class="code-label">Python</span>
+<span class="cm"># List all versions of a model with governance metadata</span>
+<span class="param">versions</span> = client.models.list(name=<span class="str">"customer-sentiment-classifier"</span>)
+
+<span class="kw">for</span> v <span class="kw">in</span> versions:
+    <span class="fn">print</span>(<span class="str">f"Version: <span class="param">{v.version}</span>"</span>)
+    <span class="fn">print</span>(<span class="str">f"  Stage: <span class="param">{v.tags.get('stage', 'unknown')}</span>"</span>)
+    <span class="fn">print</span>(<span class="str">f"  Approval: <span class="param">{v.tags.get('approval_status', 'n/a')}</span>"</span>)
+    <span class="fn">print</span>(<span class="str">f"  Risk Tier: <span class="param">{v.tags.get('risk_tier', 'unclassified')}</span>"</span>)
+    <span class="fn">print</span>(<span class="str">f"  Created: <span class="param">{v.creation_context.created_at}</span>"</span>)
+    <span class="fn">print</span>(<span class="str">f"  Created By: <span class="param">{v.creation_context.created_by}</span>"</span>)
+    <span class="fn">print</span>()
+
+<span class="cm"># Archive a deprecated version</span>
+client.models.archive(name=<span class="str">"customer-sentiment-classifier"</span>, version=<span class="str">"1"</span>)</pre>
+
+        <h3>Version Comparison Workflow</h3>
+        <div class="workflow-diagram">
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <span class="step-icon">📝</span>
+                    <span class="step-label">Register<br>v(N+1)</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step">
+                    <span class="step-icon">🧪</span>
+                    <span class="step-label">Evaluate<br>&amp; Compare</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step">
+                    <span class="step-icon">📊</span>
+                    <span class="step-label">Review<br>Metrics</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step active">
+                    <span class="step-icon">✅</span>
+                    <span class="step-label">Approve<br>Promotion</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step">
+                    <span class="step-icon">🚀</span>
+                    <span class="step-label">Deploy to<br>Production</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <div class="callout-icon">💡</div>
+            <div class="callout-content">
+                <strong>Best Practice: Semantic Version Tagging</strong>
+                <p>
+                    Use tags to indicate model lifecycle stages rather than encoding stage names in version 
+                    numbers. This allows the same version number to progress through stages (candidate → staging 
+                    → production) while maintaining immutable version identifiers.
+                </p>
+            </div>
+        </div>
+    </article>
+
+    <!-- ═══════════════════ SECTION 3: AUDIT LOGS ═══════════════════ -->
+    <article class="article-section" id="audit-logs">
+        <h2><span class="section-icon">📜</span> Audit Logs for Deployments &amp; Access</h2>
+        <p>
+            Azure AI Foundry integrates with Azure Monitor and Activity Log to provide comprehensive audit 
+            trails for every action taken on your models and deployments. These logs are critical for compliance 
+            evidence, incident investigation, and operational visibility.
+        </p>
+
+        <h3>What Gets Logged</h3>
+        <table class="governance-table">
+            <thead>
+                <tr>
+                    <th>Event Category</th>
+                    <th>Events Captured</th>
+                    <th>Key Fields</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Model Registry</strong></td>
+                    <td>Register, archive, restore, delete model versions</td>
+                    <td>User, timestamp, model name, version, properties</td>
+                </tr>
+                <tr>
+                    <td><strong>Deployments</strong></td>
+                    <td>Create, update, delete, scale endpoints</td>
+                    <td>Endpoint name, model version, SKU, traffic allocation</td>
+                </tr>
+                <tr>
+                    <td><strong>Access Control</strong></td>
+                    <td>RBAC role assignments, API key generation/rotation</td>
+                    <td>Principal, role, scope, operation status</td>
+                </tr>
+                <tr>
+                    <td><strong>Inference</strong></td>
+                    <td>Endpoint invocations, latency metrics, error rates</td>
+                    <td>Request ID, response code, latency, token count</td>
+                </tr>
+                <tr>
+                    <td><strong>Data Access</strong></td>
+                    <td>Dataset reads, training data downloads, exports</td>
+                    <td>Data asset, user, access type, volume</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Simulated Audit Log Stream</h3>
+        <div class="audit-log-visual">
+            <div class="log-entry">
+                <span class="log-time">2026-04-15T09:14:22Z</span>
+                <span class="log-level info">INFO</span>
+                <span class="log-msg">Model registered: customer-sentiment-classifier v3 by user:alice@contoso.com</span>
+            </div>
+            <div class="log-entry">
+                <span class="log-time">2026-04-15T09:45:08Z</span>
+                <span class="log-level info">INFO</span>
+                <span class="log-msg">Evaluation started: sentiment-v3-eval-run (dataset: reviews-eval-q1-2026)</span>
+            </div>
+            <div class="log-entry">
+                <span class="log-time">2026-04-15T10:22:17Z</span>
+                <span class="log-level success">OK</span>
+                <span class="log-msg">Approval granted: sentiment-v3 approved by user:bob@contoso.com (role: MLOps Lead)</span>
+            </div>
+            <div class="log-entry">
+                <span class="log-time">2026-04-15T10:30:45Z</span>
+                <span class="log-level info">INFO</span>
+                <span class="log-msg">Deployment created: sentiment-prod-endpoint (model v3, SKU: Standard_DS3_v2)</span>
+            </div>
+            <div class="log-entry">
+                <span class="log-time">2026-04-15T10:31:02Z</span>
+                <span class="log-level warn">WARN</span>
+                <span class="log-msg">Traffic allocation updated: v2 → 80%, v3 → 20% (canary deployment)</span>
+            </div>
+            <div class="log-entry">
+                <span class="log-time">2026-04-15T14:00:00Z</span>
+                <span class="log-level success">OK</span>
+                <span class="log-msg">Health check passed: sentiment-prod-endpoint v3 (latency: 42ms, error rate: 0.01%)</span>
+            </div>
+        </div>
+
+        <h3>Querying Audit Logs with Azure Monitor</h3>
+        <pre><span class="code-label">KQL</span>
+<span class="cm">// Query model deployment events from Azure Activity Log</span>
+AzureActivity
+| <span class="kw">where</span> ResourceProvider == <span class="str">"Microsoft.MachineLearningServices"</span>
+| <span class="kw">where</span> OperationNameValue <span class="kw">has_any</span> (
+    <span class="str">"deployments/write"</span>,
+    <span class="str">"models/write"</span>,
+    <span class="str">"models/delete"</span>
+  )
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="num">30d</span>)
+| <span class="kw">project</span>
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceGroup,
+    ActivityStatusValue,
+    Properties_d
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></pre>
+
+        <pre><span class="code-label">KQL</span>
+<span class="cm">// Track endpoint access patterns and anomalies</span>
+AMLOnlineEndpointConsoleLog
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="num">7d</span>)
+| <span class="kw">summarize</span>
+    RequestCount = <span class="fn">count</span>(),
+    AvgLatencyMs = <span class="fn">avg</span>(DurationMs),
+    ErrorCount = <span class="fn">countif</span>(ResultType != <span class="str">"Success"</span>)
+    <span class="kw">by</span> <span class="fn">bin</span>(TimeGenerated, <span class="num">1h</span>), EndpointName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></pre>
+
+        <h3>Setting Up Diagnostic Logging</h3>
+        <pre><span class="code-label">Azure CLI</span>
+<span class="cm"># Enable diagnostic logging for your AI Foundry project</span>
+az monitor diagnostic-settings create \
+  --name <span class="str">"ai-foundry-audit"</span> \
+  --resource <span class="str">"/subscriptions/{sub-id}/resourceGroups/rg-ai-governance/providers/Microsoft.MachineLearningServices/workspaces/foundry-project-prod"</span> \
+  --logs <span class="str">'[
+    {"category": "AmlComputeClusterEvent", "enabled": true, "retentionPolicy": {"enabled": true, "days": 365}},
+    {"category": "AmlRunStatusChangedEvent", "enabled": true, "retentionPolicy": {"enabled": true, "days": 365}},
+    {"category": "AmlModelsEvent", "enabled": true, "retentionPolicy": {"enabled": true, "days": 365}},
+    {"category": "AmlDeploymentEvent", "enabled": true, "retentionPolicy": {"enabled": true, "days": 365}}
+  ]'</span> \
+  --workspace <span class="str">"/subscriptions/{sub-id}/resourceGroups/rg-monitoring/providers/Microsoft.OperationalInsights/workspaces/law-ai-governance"</span></pre>
+
+        <div class="callout callout-warning">
+            <div class="callout-icon">⚠️</div>
+            <div class="callout-content">
+                <strong>Retention Requirements</strong>
+                <p>
+                    For compliance with most regulatory frameworks, configure audit log retention to a minimum of 
+                    365 days. The EU AI Act requires that high-risk AI system logs be retained for at least the 
+                    duration of the system's operational period. Use Azure Monitor's archival tiers for cost-effective 
+                    long-term storage.
+                </p>
+            </div>
+        </div>
+    </article>
+
+    <!-- ═══════════════════ SECTION 4: CHANGE MANAGEMENT ═══════════════════ -->
+    <article class="article-section" id="change-management">
+        <h2><span class="section-icon">🔄</span> Change Management &amp; Approval Workflows</h2>
+        <p>
+            Effective model governance requires structured change management — preventing unapproved models 
+            from reaching production. Azure AI Foundry, combined with Azure DevOps or GitHub Actions, enables 
+            enterprise-grade approval gates that enforce human review before any model promotion or deployment.
+        </p>
+
+        <h3>Approval Workflow Architecture</h3>
+        <div class="workflow-diagram">
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <span class="step-icon">👩‍💻</span>
+                    <span class="step-label">Data Scientist<br>Trains Model</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step">
+                    <span class="step-icon">📝</span>
+                    <span class="step-label">Registers in<br>Model Registry</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step active">
+                    <span class="step-icon">🔒</span>
+                    <span class="step-label">Approval<br>Gate</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step">
+                    <span class="step-icon">🧪</span>
+                    <span class="step-label">Staging<br>Validation</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-step">
+                    <span class="step-icon">🚀</span>
+                    <span class="step-label">Production<br>Deployment</span>
+                </div>
+            </div>
+        </div>
+
+        <h3>Implementing Approval Gates with GitHub Actions</h3>
+        <pre><span class="code-label">YAML — .github/workflows/model-promotion.yml</span>
+<span class="kw">name:</span> Model Promotion Pipeline
+<span class="kw">on:</span>
+  <span class="kw">workflow_dispatch:</span>
+    <span class="kw">inputs:</span>
+      <span class="kw">model_name:</span>
+        <span class="kw">description:</span> <span class="str">"Model name in registry"</span>
+        <span class="kw">required:</span> <span class="num">true</span>
+      <span class="kw">model_version:</span>
+        <span class="kw">description:</span> <span class="str">"Version to promote"</span>
+        <span class="kw">required:</span> <span class="num">true</span>
+      <span class="kw">target_environment:</span>
+        <span class="kw">description:</span> <span class="str">"Target: staging | production"</span>
+        <span class="kw">required:</span> <span class="num">true</span>
+        <span class="kw">type:</span> choice
+        <span class="kw">options:</span>
+          - staging
+          - production
+
+<span class="kw">jobs:</span>
+  <span class="kw">validate-model:</span>
+    <span class="kw">runs-on:</span> ubuntu-latest
+    <span class="kw">steps:</span>
+      - <span class="kw">name:</span> Checkout
+        <span class="kw">uses:</span> actions/checkout@v4
+
+      - <span class="kw">name:</span> Validate model governance metadata
+        <span class="kw">run:</span> |
+          <span class="cm"># Verify the model has required governance tags</span>
+          python scripts/validate_governance.py \
+            --model-name ${{ github.event.inputs.model_name }} \
+            --model-version ${{ github.event.inputs.model_version }} \
+            --required-tags "risk_tier,approval_status,data_classification"
+
+      - <span class="kw">name:</span> Run automated evaluation suite
+        <span class="kw">run:</span> |
+          python scripts/run_evaluation.py \
+            --model-name ${{ github.event.inputs.model_name }} \
+            --model-version ${{ github.event.inputs.model_version }} \
+            --eval-dataset "governance-eval-suite"
+
+  <span class="kw">approval-gate:</span>
+    <span class="kw">needs:</span> validate-model
+    <span class="kw">runs-on:</span> ubuntu-latest
+    <span class="kw">environment:</span> ${{ github.event.inputs.target_environment }}
+    <span class="cm"># ↑ GitHub Environment with required reviewers configured</span>
+    <span class="kw">steps:</span>
+      - <span class="kw">name:</span> Approval received — proceed with deployment
+        <span class="kw">run:</span> <span class="str">echo "Approval granted for ${{ github.event.inputs.model_name }} v${{ github.event.inputs.model_version }}"</span>
+
+  <span class="kw">deploy-model:</span>
+    <span class="kw">needs:</span> approval-gate
+    <span class="kw">runs-on:</span> ubuntu-latest
+    <span class="kw">steps:</span>
+      - <span class="kw">name:</span> Deploy to Azure AI Foundry
+        <span class="kw">uses:</span> azure/login@v2
+        <span class="kw">with:</span>
+          <span class="kw">creds:</span> ${{ secrets.AZURE_CREDENTIALS }}
+
+      - <span class="kw">name:</span> Promote model and deploy endpoint
+        <span class="kw">run:</span> |
+          python scripts/deploy_model.py \
+            --model-name ${{ github.event.inputs.model_name }} \
+            --model-version ${{ github.event.inputs.model_version }} \
+            --environment ${{ github.event.inputs.target_environment }}</pre>
+
+        <h3>Governance Validation Script</h3>
+        <pre><span class="code-label">Python — scripts/validate_governance.py</span>
+<span class="kw">import</span> argparse
+<span class="kw">from</span> azure.ai.ml <span class="kw">import</span> MLClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="kw">def</span> <span class="fn">validate_governance</span>(model_name, model_version, required_tags):
+    <span class="param">client</span> = MLClient(
+        credential=DefaultAzureCredential(),
+        subscription_id=<span class="str">"your-subscription-id"</span>,
+        resource_group_name=<span class="str">"rg-ai-governance"</span>,
+        workspace_name=<span class="str">"foundry-project-prod"</span>
+    )
+
+    <span class="param">model</span> = client.models.get(name=model_name, version=model_version)
+    <span class="param">missing_tags</span> = [t <span class="kw">for</span> t <span class="kw">in</span> required_tags <span class="kw">if</span> t <span class="kw">not in</span> model.tags]
+
+    <span class="kw">if</span> missing_tags:
+        <span class="kw">raise</span> <span class="type">ValueError</span>(
+            <span class="str">f"Model <span class="param">{model_name}</span> v<span class="param">{model_version}</span> missing required "</span>
+            <span class="str">f"governance tags: <span class="param">{missing_tags}</span>"</span>
+        )
+
+    <span class="cm"># Verify risk tier has been assessed</span>
+    <span class="kw">if</span> model.tags.get(<span class="str">"risk_tier"</span>) == <span class="str">"high"</span>:
+        <span class="kw">if</span> model.tags.get(<span class="str">"approval_status"</span>) != <span class="str">"approved"</span>:
+            <span class="kw">raise</span> <span class="type">ValueError</span>(
+                <span class="str">"High-risk models require explicit approval before promotion"</span>
+            )
+
+    <span class="fn">print</span>(<span class="str">f"✅ Governance validation passed for <span class="param">{model_name}</span> v<span class="param">{model_version}</span>"</span>)
+    <span class="kw">return</span> <span class="num">True</span>
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    <span class="param">parser</span> = argparse.ArgumentParser()
+    parser.add_argument(<span class="str">"--model-name"</span>, required=<span class="num">True</span>)
+    parser.add_argument(<span class="str">"--model-version"</span>, required=<span class="num">True</span>)
+    parser.add_argument(<span class="str">"--required-tags"</span>, required=<span class="num">True</span>)
+    <span class="param">args</span> = parser.parse_args()
+    validate_governance(
+        args.model_name,
+        args.model_version,
+        args.required_tags.split(<span class="str">","</span>)
+    )</pre>
+
+        <div class="callout callout-tip">
+            <div class="callout-icon">💡</div>
+            <div class="callout-content">
+                <strong>Tip: Separate Environments for Risk Tiers</strong>
+                <p>
+                    Configure separate GitHub Environments (or Azure DevOps Environments) for different risk 
+                    tiers. High-risk models should require multiple reviewers, including a compliance officer, 
+                    while low-risk models may only need a single ML lead approval.
+                </p>
+            </div>
+        </div>
+    </article>
+
+    <!-- ═══════════════════ SECTION 5: MODEL CARDS ═══════════════════ -->
+    <article class="article-section" id="model-cards">
+        <h2><span class="section-icon">📄</span> Model Documentation &amp; Model Cards</h2>
+        <p>
+            Model cards are standardized documents that describe a model's intended use, performance characteristics, 
+            limitations, and ethical considerations. In Azure AI Foundry, model cards serve as the primary 
+            documentation artifact for governance, ensuring every deployed model has transparent, accessible 
+            documentation for stakeholders.
+        </p>
+
+        <h3>Model Card Framework</h3>
+        <p>
+            A comprehensive model card should cover the following sections, aligning with both the original 
+            Google Model Cards paper and regulatory requirements like the EU AI Act:
+        </p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="card-icon">🎯</div>
+                <h4>Intended Use</h4>
+                <p>Primary use cases, intended users, and out-of-scope applications that should be avoided.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">📊</div>
+                <h4>Performance Metrics</h4>
+                <p>Accuracy, precision, recall, F1, and disaggregated performance across subgroups.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">⚠️</div>
+                <h4>Limitations</h4>
+                <p>Known failure modes, bias assessments, and environmental conditions where performance degrades.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🔍</div>
+                <h4>Training Data</h4>
+                <p>Data sources, preprocessing steps, representation analysis, and data quality assessments.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">⚖️</div>
+                <h4>Ethical Considerations</h4>
+                <p>Fairness evaluations, potential harms, mitigation strategies, and human oversight requirements.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">📋</div>
+                <h4>Governance Metadata</h4>
+                <p>Owner, approval history, risk classification, deployment history, and compliance mappings.</p>
+            </div>
+        </div>
+
+        <h3>Creating Model Cards in Azure AI Foundry</h3>
+        <pre><span class="code-label">Python</span>
+<span class="kw">import</span> json
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="kw">def</span> <span class="fn">generate_model_card</span>(model_name, version, metrics, config):
+    <span class="str">"""Generate a structured model card for governance compliance."""</span>
+    <span class="param">model_card</span> = {
+        <span class="str">"schema_version"</span>: <span class="str">"1.0"</span>,
+        <span class="str">"model_details"</span>: {
+            <span class="str">"name"</span>: model_name,
+            <span class="str">"version"</span>: version,
+            <span class="str">"type"</span>: config[<span class="str">"model_type"</span>],
+            <span class="str">"framework"</span>: config[<span class="str">"framework"</span>],
+            <span class="str">"owner"</span>: config[<span class="str">"owner"</span>],
+            <span class="str">"created_date"</span>: datetime.utcnow().isoformat(),
+            <span class="str">"last_updated"</span>: datetime.utcnow().isoformat()
+        },
+        <span class="str">"intended_use"</span>: {
+            <span class="str">"primary_uses"</span>: config[<span class="str">"primary_uses"</span>],
+            <span class="str">"primary_users"</span>: config[<span class="str">"primary_users"</span>],
+            <span class="str">"out_of_scope"</span>: config[<span class="str">"out_of_scope"</span>]
+        },
+        <span class="str">"performance"</span>: {
+            <span class="str">"metrics"</span>: metrics,
+            <span class="str">"evaluation_data"</span>: config[<span class="str">"eval_dataset"</span>],
+            <span class="str">"disaggregated_results"</span>: config.get(<span class="str">"disaggregated"</span>, {})
+        },
+        <span class="str">"limitations"</span>: config.get(<span class="str">"limitations"</span>, []),
+        <span class="str">"ethical_considerations"</span>: {
+            <span class="str">"fairness_assessment"</span>: config.get(<span class="str">"fairness"</span>, <span class="str">"pending"</span>),
+            <span class="str">"bias_mitigations"</span>: config.get(<span class="str">"mitigations"</span>, []),
+            <span class="str">"human_oversight"</span>: config.get(<span class="str">"oversight"</span>, <span class="str">"required"</span>)
+        },
+        <span class="str">"governance"</span>: {
+            <span class="str">"risk_tier"</span>: config[<span class="str">"risk_tier"</span>],
+            <span class="str">"data_classification"</span>: config[<span class="str">"data_classification"</span>],
+            <span class="str">"approval_status"</span>: <span class="str">"pending_review"</span>,
+            <span class="str">"regulatory_mappings"</span>: config.get(<span class="str">"regulations"</span>, [])
+        }
+    }
+    <span class="kw">return</span> model_card
+
+<span class="cm"># Example usage</span>
+<span class="param">card</span> = generate_model_card(
+    model_name=<span class="str">"customer-sentiment-classifier"</span>,
+    version=<span class="str">"3"</span>,
+    metrics={
+        <span class="str">"accuracy"</span>: <span class="num">0.947</span>,
+        <span class="str">"precision"</span>: <span class="num">0.938</span>,
+        <span class="str">"recall"</span>: <span class="num">0.951</span>,
+        <span class="str">"f1_score"</span>: <span class="num">0.944</span>
+    },
+    config={
+        <span class="str">"model_type"</span>: <span class="str">"text-classification"</span>,
+        <span class="str">"framework"</span>: <span class="str">"transformers"</span>,
+        <span class="str">"owner"</span>: <span class="str">"nlp-engineering@contoso.com"</span>,
+        <span class="str">"primary_uses"</span>: [<span class="str">"Customer feedback sentiment analysis"</span>],
+        <span class="str">"primary_users"</span>: [<span class="str">"Customer Experience team"</span>],
+        <span class="str">"out_of_scope"</span>: [<span class="str">"Medical or legal sentiment analysis"</span>],
+        <span class="str">"eval_dataset"</span>: <span class="str">"reviews-eval-q1-2026"</span>,
+        <span class="str">"risk_tier"</span>: <span class="str">"high"</span>,
+        <span class="str">"data_classification"</span>: <span class="str">"confidential"</span>,
+        <span class="str">"limitations"</span>: [
+            <span class="str">"Performance degrades on texts shorter than 10 words"</span>,
+            <span class="str">"Not validated for languages other than English"</span>
+        ],
+        <span class="str">"regulations"</span>: [<span class="str">"EU AI Act Art. 13"</span>, <span class="str">"ISO 42001"</span>]
+    }
+)
+
+<span class="fn">print</span>(json.dumps(card, indent=<span class="num">2</span>))</pre>
+
+        <h3>Attaching Model Cards to Registered Models</h3>
+        <pre><span class="code-label">Python</span>
+<span class="kw">import</span> json
+
+<span class="cm"># Store model card as a JSON artifact alongside the model</span>
+<span class="param">card_path</span> = <span class="str">"./model-artifacts/sentiment-v3/model_card.json"</span>
+<span class="kw">with</span> <span class="fn">open</span>(card_path, <span class="str">"w"</span>) <span class="kw">as</span> f:
+    json.dump(card, f, indent=<span class="num">2</span>)
+
+<span class="cm"># Register model with the card included in artifacts</span>
+<span class="param">model</span> = Model(
+    name=<span class="str">"customer-sentiment-classifier"</span>,
+    version=<span class="str">"3"</span>,
+    path=<span class="str">"./model-artifacts/sentiment-v3"</span>,  <span class="cm"># includes model_card.json</span>
+    type=AssetTypes.CUSTOM_MODEL,
+    description=<span class="str">"Sentiment classifier v3 with full model card documentation"</span>,
+    tags={<span class="str">"has_model_card"</span>: <span class="str">"true"</span>, <span class="str">"card_version"</span>: <span class="str">"1.0"</span>}
+)
+
+<span class="param">registered</span> = client.models.create_or_update(model)
+<span class="fn">print</span>(<span class="str">f"✅ Model with card registered: <span class="param">{registered.name}</span> v<span class="param">{registered.version}</span>"</span>)</pre>
+
+        <div class="callout callout-governance">
+            <div class="callout-icon">📋</div>
+            <div class="callout-content">
+                <strong>EU AI Act — Article 13: Transparency</strong>
+                <p>
+                    High-risk AI systems must be designed to ensure their operation is sufficiently transparent 
+                    to enable deployers to interpret the system's output and use it appropriately. Model cards 
+                    serve as a key compliance artifact for this requirement.
+                </p>
+            </div>
+        </div>
+    </article>
+
+    <!-- ═══════════════════ VIDEO SECTION ═══════════════════ -->
+    <div class="video-section" id="video">
+        <h3>📺 Featured Video</h3>
+        <p>Building Trustworthy AI: Ensuring Responsible AI With Content Safety — Microsoft Azure</p>
+        <div class="video-container">
+            <iframe 
+                src="https://www.youtube.com/embed/bkssatMl0NE"
+                title="Building Trustworthy AI: Ensuring Responsible AI With Content Safety"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ MINI HACK ═══════════════════ -->
+    <div class="mini-hack" id="mini-hack">
+        <div class="mini-hack-badge">🏗️ Mini Hack</div>
+        <h3>Implement Model Versioning with Approval Gates</h3>
+        <p>
+            In this hands-on exercise, you'll build a complete model governance pipeline that registers 
+            model versions, enforces approval gates, and creates an audit trail — all within Azure AI Foundry.
+        </p>
+
+        <div class="step-group">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-title">Set Up the Governance-Enabled Model Registry</span>
+            </div>
+            <pre>
+<span class="cm"># Install required packages</span>
+pip install azure-ai-ml azure-identity azure-monitor-query
+
+<span class="cm"># Create a governance configuration file</span>
+cat > governance_config.json << <span class="str">'EOF'
+{
+  "required_tags": ["risk_tier", "data_classification", "owner", "approval_status"],
+  "risk_tiers": {
+    "high": {"min_reviewers": 2, "require_model_card": true, "require_fairness_eval": true},
+    "medium": {"min_reviewers": 1, "require_model_card": true, "require_fairness_eval": false},
+    "low": {"min_reviewers": 1, "require_model_card": false, "require_fairness_eval": false}
+  },
+  "approval_roles": ["MLOps Lead", "Compliance Officer", "Product Owner"],
+  "audit_retention_days": 365
+}
+EOF</span></pre>
+        </div>
+
+        <div class="step-group">
+            <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-title">Register a Model with Governance Metadata</span>
+            </div>
+            <pre>
+<span class="kw">from</span> azure.ai.ml <span class="kw">import</span> MLClient
+<span class="kw">from</span> azure.ai.ml.entities <span class="kw">import</span> Model
+<span class="kw">from</span> azure.ai.ml.constants <span class="kw">import</span> AssetTypes
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">import</span> json, os
+
+<span class="param">client</span> = MLClient(
+    credential=DefaultAzureCredential(),
+    subscription_id=os.environ[<span class="str">"AZURE_SUBSCRIPTION_ID"</span>],
+    resource_group_name=os.environ[<span class="str">"AZURE_RESOURCE_GROUP"</span>],
+    workspace_name=os.environ[<span class="str">"AZURE_AI_PROJECT"</span>]
+)
+
+<span class="cm"># Load governance rules</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"governance_config.json"</span>) <span class="kw">as</span> f:
+    <span class="param">governance</span> = json.load(f)
+
+<span class="cm"># Register model with all required governance tags</span>
+<span class="param">model</span> = Model(
+    name=<span class="str">"fraud-detection-model"</span>,
+    version=<span class="str">"2"</span>,
+    path=<span class="str">"./models/fraud-v2/"</span>,
+    type=AssetTypes.CUSTOM_MODEL,
+    description=<span class="str">"Fraud detection v2 — XGBoost with updated feature set"</span>,
+    tags={
+        <span class="str">"risk_tier"</span>: <span class="str">"high"</span>,
+        <span class="str">"data_classification"</span>: <span class="str">"highly_confidential"</span>,
+        <span class="str">"owner"</span>: <span class="str">"fraud-team@contoso.com"</span>,
+        <span class="str">"approval_status"</span>: <span class="str">"pending_review"</span>,
+        <span class="str">"has_model_card"</span>: <span class="str">"true"</span>,
+        <span class="str">"fairness_evaluated"</span>: <span class="str">"true"</span>
+    }
+)
+
+<span class="param">registered</span> = client.models.create_or_update(model)
+<span class="fn">print</span>(<span class="str">f"✅ Registered <span class="param">{registered.name}</span> v<span class="param">{registered.version}</span>"</span>)</pre>
+        </div>
+
+        <div class="step-group">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-title">Implement the Approval Gate</span>
+            </div>
+            <pre>
+<span class="kw">def</span> <span class="fn">check_approval_gate</span>(client, model_name, version, governance_config):
+    <span class="str">"""Enforce governance approval gate before model promotion."""</span>
+    <span class="param">model</span> = client.models.get(name=model_name, version=version)
+    <span class="param">risk_tier</span> = model.tags.get(<span class="str">"risk_tier"</span>, <span class="str">"unclassified"</span>)
+    <span class="param">rules</span> = governance_config[<span class="str">"risk_tiers"</span>].get(risk_tier, {})
+
+    <span class="cm"># Check required governance tags</span>
+    <span class="kw">for</span> tag <span class="kw">in</span> governance_config[<span class="str">"required_tags"</span>]:
+        <span class="kw">if</span> tag <span class="kw">not in</span> model.tags:
+            <span class="kw">return</span> <span class="num">False</span>, <span class="str">f"Missing required tag: <span class="param">{tag}</span>"</span>
+
+    <span class="cm"># Enforce model card requirement</span>
+    <span class="kw">if</span> rules.get(<span class="str">"require_model_card"</span>) <span class="kw">and</span> model.tags.get(<span class="str">"has_model_card"</span>) != <span class="str">"true"</span>:
+        <span class="kw">return</span> <span class="num">False</span>, <span class="str">"Model card is required for this risk tier"</span>
+
+    <span class="cm"># Enforce fairness evaluation</span>
+    <span class="kw">if</span> rules.get(<span class="str">"require_fairness_eval"</span>) <span class="kw">and</span> model.tags.get(<span class="str">"fairness_evaluated"</span>) != <span class="str">"true"</span>:
+        <span class="kw">return</span> <span class="num">False</span>, <span class="str">"Fairness evaluation required for this risk tier"</span>
+
+    <span class="kw">return</span> <span class="num">True</span>, <span class="str">"All governance checks passed"</span>
+
+<span class="cm"># Run the approval gate</span>
+<span class="param">passed</span>, <span class="param">message</span> = check_approval_gate(
+    client, <span class="str">"fraud-detection-model"</span>, <span class="str">"2"</span>, governance
+)
+<span class="fn">print</span>(<span class="str">f"Gate result: <span class="param">{message}</span>"</span>)
+
+<span class="kw">if</span> passed:
+    <span class="cm"># Update approval status</span>
+    <span class="param">model</span> = client.models.get(name=<span class="str">"fraud-detection-model"</span>, version=<span class="str">"2"</span>)
+    model.tags[<span class="str">"approval_status"</span>] = <span class="str">"approved"</span>
+    model.tags[<span class="str">"approved_by"</span>] = <span class="str">"mlops-lead@contoso.com"</span>
+    model.tags[<span class="str">"approved_at"</span>] = datetime.utcnow().isoformat()
+    client.models.create_or_update(model)</pre>
+        </div>
+
+        <div class="step-group">
+            <div class="step-header">
+                <span class="step-number">4</span>
+                <span class="step-title">Query the Audit Trail</span>
+            </div>
+            <pre>
+<span class="kw">from</span> azure.monitor.query <span class="kw">import</span> LogsQueryClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> datetime <span class="kw">import</span> timedelta
+
+<span class="param">logs_client</span> = LogsQueryClient(DefaultAzureCredential())
+
+<span class="cm"># Query model governance audit trail</span>
+<span class="param">query</span> = <span class="str">"""
+AzureActivity
+| where ResourceProvider == "Microsoft.MachineLearningServices"
+| where OperationNameValue has "models"
+| project TimeGenerated, Caller, OperationNameValue, 
+          ActivityStatusValue, Properties_d
+| order by TimeGenerated desc
+| take 50
+"""</span>
+
+<span class="param">result</span> = logs_client.query_workspace(
+    workspace_id=os.environ[<span class="str">"LOG_ANALYTICS_WORKSPACE_ID"</span>],
+    query=query,
+    timespan=timedelta(days=<span class="num">30</span>)
+)
+
+<span class="kw">for</span> row <span class="kw">in</span> result.tables[<span class="num">0</span>].rows:
+    <span class="fn">print</span>(<span class="str">f"<span class="param">{row[0]}</span> | <span class="param">{row[1]}</span> | <span class="param">{row[2]}</span> | <span class="param">{row[3]}</span>"</span>)</pre>
+        </div>
+
+        <div class="callout callout-tip" style="background: rgba(16,124,16,0.1); border-color: #3fb950;">
+            <div class="callout-icon">🎯</div>
+            <div class="callout-content">
+                <strong style="color: #3fb950;">Challenge Extension</strong>
+                <p style="color: #94a3b8;">
+                    Extend the pipeline to send Slack or Teams notifications when an approval gate is pending, 
+                    include automated model card generation from evaluation results, and set up Azure Monitor 
+                    alerts for unauthorized model deployment attempts.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ KEY TAKEAWAYS ═══════════════════ -->
+    <div class="takeaways" id="takeaways">
+        <h3>✅ Key Takeaways</h3>
+        <ul>
+            <li>
+                <span class="takeaway-check">✔</span>
+                <span>Azure AI Foundry's Model Registry provides immutable versioning with governance metadata, 
+                enabling complete traceability from training to production.</span>
+            </li>
+            <li>
+                <span class="takeaway-check">✔</span>
+                <span>Azure Monitor and Activity Log capture every model lifecycle event — registrations, 
+                deployments, access changes — creating a comprehensive audit trail.</span>
+            </li>
+            <li>
+                <span class="takeaway-check">✔</span>
+                <span>Approval workflows using GitHub Environments or Azure DevOps gates enforce human review 
+                before model promotion, with risk-tier-based policies.</span>
+            </li>
+            <li>
+                <span class="takeaway-check">✔</span>
+                <span>Model cards provide standardized documentation covering intended use, performance, 
+                limitations, and ethical considerations — critical for EU AI Act compliance.</span>
+            </li>
+            <li>
+                <span class="takeaway-check">✔</span>
+                <span>Governance metadata (risk tier, data classification, approval status) attached as tags 
+                enables automated policy enforcement across the model lifecycle.</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ═══════════════════ BOTTOM NAVIGATION ═══════════════════ -->
+    <nav class="bottom-nav">
+        <a href="../module-32/blog.html" class="nav-btn">
+            <span class="nav-arrow">←</span>
+            <div>
+                <span class="nav-label">Previous</span>
+                Module 32
+            </div>
+        </a>
+        <div class="nav-center">
+            Module 33 of 45<br>
+            <strong>Azure AI Foundry: Zero to Hero</strong>
+        </div>
+        <a href="../module-34/blog.html" class="nav-btn">
+            <div>
+                <span class="nav-label">Next</span>
+                Module 34
+            </div>
+            <span class="nav-arrow">→</span>
+        </a>
+    </nav>
+</main>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="site-footer">
+    <div class="footer-brand">Azure AI Foundry: Zero to Hero</div>
+    <p>Module 33: Model Governance &amp; Audit Trails — Arc 7: Security, Governance &amp; Compliance</p>
+    <p>© 2026 Azure AI Foundry Training. Built with ❤️ for the AI community.</p>
+    <p style="margin-top: 12px;">
+        <a href="https://learn.microsoft.com/azure/ai-foundry/" target="_blank">Azure AI Foundry Docs</a> ·
+        <a href="https://azure.microsoft.com/products/ai-foundry" target="_blank">Azure AI Foundry</a> ·
+        <a href="https://learn.microsoft.com/azure/ai-foundry/model-catalog" target="_blank">Model Catalog</a>
+    </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 45 — Publish Your Final Blog: What I Learned in 45 Modules | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --primary-light: #e8f4fd;
+            --accent: #ffb900;
+            --accent-glow: #ffd54f;
+            --success: #107c10;
+            --gradient-hero: linear-gradient(135deg, #0f0c29 0%, #1a1a4e 25%, #24243e 50%, #0078d4 100%);
+            --gradient-gold: linear-gradient(135deg, #f9a825 0%, #ffb900 50%, #ffd54f 100%);
+            --gradient-celebration: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --surface: #ffffff;
+            --surface-alt: #f8f9fa;
+            --text: #1a1a1a;
+            --text-secondary: #555;
+            --text-light: #fff;
+            --border: #e1e4e8;
+            --radius: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+            --shadow-hero: 0 20px 60px rgba(0,120,212,0.3);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            line-height: 1.7;
+            background: var(--surface-alt);
+        }
+
+        /* ── Top Banner ── */
+        .top-banner {
+            background: linear-gradient(90deg, #0f0c29, #1a1a4e, #0078d4);
+            color: #fff;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        .top-banner .sparkle { animation: sparkle 2s ease-in-out infinite; }
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
+        }
+
+        /* ── Hero Section — GRAND FINALE ── */
+        .hero {
+            background: var(--gradient-hero);
+            color: var(--text-light);
+            padding: 100px 20px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(255,185,0,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0,120,212,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(118,75,162,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,0.15)'/%3E%3C/svg%3E") repeat;
+            pointer-events: none;
+            animation: starsFloat 60s linear infinite;
+        }
+        @keyframes starsFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-60px); }
+        }
+
+        .hero-content { position: relative; z-index: 2; max-width: 900px; margin: 0 auto; }
+
+        .hero .finale-badge {
+            display: inline-block;
+            background: var(--gradient-gold);
+            color: #1a1a1a;
+            padding: 8px 28px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            animation: badgePulse 3s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(255,185,0,0.4);
+        }
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(255,185,0,0.4); }
+            50% { box-shadow: 0 4px 40px rgba(255,185,0,0.7); }
+        }
+
+        .hero .arc-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero .trophy-icon {
+            font-size: 5rem;
+            margin-bottom: 16px;
+            animation: trophyBounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 20px rgba(255,185,0,0.5));
+        }
+        @keyframes trophyBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(-3deg); }
+            75% { transform: translateY(-5px) rotate(3deg); }
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        .hero h1 .highlight {
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 28px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero .meta-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+        .hero .meta-row span { display: flex; align-items: center; gap: 6px; }
+
+        .confetti-container {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            animation: confettiFall 4s ease-in-out infinite;
+        }
+        .confetti:nth-child(1) { left: 10%; background: #ffb900; animation-delay: 0s; border-radius: 50%; }
+        .confetti:nth-child(2) { left: 20%; background: #0078d4; animation-delay: 0.5s; }
+        .confetti:nth-child(3) { left: 35%; background: #107c10; animation-delay: 1s; border-radius: 50%; }
+        .confetti:nth-child(4) { left: 50%; background: #d83b01; animation-delay: 1.5s; }
+        .confetti:nth-child(5) { left: 65%; background: #8661c5; animation-delay: 0.8s; border-radius: 50%; }
+        .confetti:nth-child(6) { left: 78%; background: #ffb900; animation-delay: 1.2s; }
+        .confetti:nth-child(7) { left: 88%; background: #0078d4; animation-delay: 0.3s; border-radius: 50%; }
+        .confetti:nth-child(8) { left: 45%; background: #107c10; animation-delay: 2s; }
+        .confetti:nth-child(9) { left: 5%; background: #d83b01; animation-delay: 1.8s; border-radius: 50%; }
+        .confetti:nth-child(10) { left: 92%; background: #8661c5; animation-delay: 0.6s; }
+        @keyframes confettiFall {
+            0% { top: -10%; opacity: 1; transform: rotate(0deg) scale(1); }
+            100% { top: 110%; opacity: 0; transform: rotate(720deg) scale(0.5); }
+        }
+
+        /* ── Layout ── */
+        .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+        .content-section {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            margin: 32px auto;
+            max-width: 900px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h2 .icon { font-size: 1.6rem; }
+
+        h3 {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin: 28px 0 12px;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin: 20px 0 8px;
+        }
+
+        p { margin-bottom: 16px; color: var(--text-secondary); }
+
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        ul, ol { margin: 0 0 16px 24px; color: var(--text-secondary); }
+        li { margin-bottom: 8px; }
+
+        code {
+            background: #f0f2f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 24px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            border: 1px solid #333;
+        }
+        pre code { background: none; color: inherit; padding: 0; }
+
+        .cm { color: #6a9955; }
+        .kw { color: #569cd6; }
+        .st { color: #ce9178; }
+        .fn { color: #dcdcaa; }
+        .nb { color: #9cdcfe; }
+        .op { color: #d4d4d4; }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            padding: 20px 24px;
+            border-radius: var(--radius);
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        .callout-info {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+        .callout-success {
+            background: #e8f5e9;
+            border-color: var(--success);
+        }
+        .callout-warning {
+            background: #fff8e1;
+            border-color: var(--accent);
+        }
+        .callout-celebrate {
+            background: linear-gradient(135deg, #fef9e7, #fde2e4, #e8f4fd);
+            border-color: var(--accent);
+            border-left-width: 5px;
+        }
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .callout p:last-child { margin-bottom: 0; }
+
+        /* ── Video ── */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            margin: 24px 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ── Journey Map ── */
+        .journey-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .arc-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .arc-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .arc-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+        }
+        .arc-card.arc-1::before { background: linear-gradient(90deg, #0078d4, #50e6ff); }
+        .arc-card.arc-2::before { background: linear-gradient(90deg, #107c10, #5dc75d); }
+        .arc-card.arc-3::before { background: linear-gradient(90deg, #8661c5, #b785f5); }
+        .arc-card.arc-4::before { background: linear-gradient(90deg, #d83b01, #ff6d3a); }
+        .arc-card.arc-5::before { background: linear-gradient(90deg, #008272, #30d5c8); }
+        .arc-card.arc-6::before { background: linear-gradient(90deg, #ffb900, #ffd54f); }
+        .arc-card.arc-7::before { background: linear-gradient(90deg, #e3008c, #ff6eb4); }
+        .arc-card.arc-8::before { background: linear-gradient(90deg, #005b70, #0097a7); }
+        .arc-card.arc-9::before { background: linear-gradient(90deg, #f9a825, #ffb900); }
+
+        .arc-card .arc-number {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+        .arc-card .arc-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .arc-card .arc-modules {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ── Certificate Section ── */
+        .certificate-section {
+            background: linear-gradient(135deg, #0f0c29, #1a1a4e, #24243e);
+            border-radius: var(--radius-lg);
+            padding: 60px 48px;
+            margin: 40px auto;
+            max-width: 900px;
+            text-align: center;
+            color: var(--text-light);
+            position: relative;
+            overflow: hidden;
+        }
+        .certificate-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 3px solid rgba(255,185,0,0.3);
+            border-radius: var(--radius-lg);
+            margin: 16px;
+            pointer-events: none;
+        }
+        .certificate-section::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(255,185,0,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0,120,212,0.08) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .certificate-content { position: relative; z-index: 2; }
+
+        .certificate-seal {
+            font-size: 5rem;
+            margin-bottom: 12px;
+            animation: sealSpin 8s linear infinite;
+        }
+        @keyframes sealSpin {
+            0% { transform: rotate(0deg); }
+            10% { transform: rotate(5deg); }
+            20% { transform: rotate(-3deg); }
+            30% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .certificate-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .certificate-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            margin-bottom: 24px;
+        }
+
+        .certificate-line {
+            width: 200px;
+            height: 2px;
+            background: var(--gradient-gold);
+            margin: 0 auto 24px;
+            border-radius: 2px;
+        }
+
+        .certificate-name {
+            font-size: 1.6rem;
+            font-style: italic;
+            color: var(--accent-glow);
+            margin-bottom: 8px;
+            padding: 8px 32px;
+            border-bottom: 2px solid rgba(255,185,0,0.3);
+            display: inline-block;
+        }
+
+        .certificate-desc {
+            font-size: 1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 16px auto 0;
+            line-height: 1.8;
+        }
+
+        .certificate-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+        .cert-stat {
+            text-align: center;
+        }
+        .cert-stat .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .cert-stat .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── Career Path Cards ── */
+        .career-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .career-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .career-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .career-card .career-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .career-card h4 { margin-top: 0; text-align: center; }
+        .career-card p { font-size: 0.9rem; margin-bottom: 0; }
+
+        /* ── Checklist ── */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 10px 0 10px 36px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 4px;
+            font-size: 1.2rem;
+        }
+
+        /* ── Blog Template ── */
+        .blog-template {
+            background: #1e1e1e;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            color: #d4d4d4;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        .blog-template h4 {
+            color: #569cd6;
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+        .blog-template .section-label {
+            color: #6a9955;
+            font-style: italic;
+            font-size: 0.85rem;
+            margin: 16px 0 4px;
+        }
+        .blog-template .section-content {
+            color: #ce9178;
+            margin-bottom: 12px;
+            padding-left: 16px;
+            border-left: 2px solid #333;
+        }
+
+        /* ── Portfolio Grid ── */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .portfolio-item {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .portfolio-item .item-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .portfolio-item h4 { margin-top: 0; }
+
+        /* ── Timeline ── */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin: 24px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary), var(--accent), var(--success));
+            border-radius: 3px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: var(--surface-alt);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 20px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--surface);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        .timeline-item .time-label {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation ── */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 24px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .nav-prev {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .nav-prev:hover {
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+        }
+        .nav-complete {
+            background: var(--gradient-gold);
+            color: #1a1a1a;
+            font-weight: 700;
+            padding: 12px 28px;
+            box-shadow: 0 4px 16px rgba(255,185,0,0.3);
+            cursor: default;
+            animation: completeGlow 2s ease-in-out infinite;
+        }
+        @keyframes completeGlow {
+            0%, 100% { box-shadow: 0 4px 16px rgba(255,185,0,0.3); }
+            50% { box-shadow: 0 4px 32px rgba(255,185,0,0.6); }
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        footer .final-message {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hero { padding: 60px 16px 50px; }
+            .hero h1 { font-size: 2rem; }
+            .content-section { padding: 28px 20px; margin: 20px 16px; }
+            .certificate-section { padding: 40px 20px; margin: 20px 16px; }
+            .journey-map { grid-template-columns: 1fr; }
+            .career-grid { grid-template-columns: 1fr; }
+            .certificate-stats { gap: 24px; }
+            .bottom-nav { flex-direction: column; gap: 12px; margin: 20px 16px; }
+            h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════ TOP BANNER ════════════════════ -->
+<div class="top-banner">
+    <span class="sparkle">🏆</span> <strong>GRAND FINALE</strong> — Azure AI Foundry: Zero to Hero · Module 45 of 45 · <strong>ARC 9: CAPSTONE &amp; MASTERY</strong> <span class="sparkle">🏆</span>
+</div>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<section class="hero">
+    <div class="confetti-container">
+        <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+        <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+        <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+        <div class="confetti"></div>
+    </div>
+    <div class="hero-content">
+        <div class="finale-badge">🏆 Grand Finale — Module 45 of 45</div>
+        <br>
+        <span class="arc-badge">ARC 9 · CAPSTONE &amp; MASTERY</span>
+        <div class="trophy-icon">🎓</div>
+        <h1>Publish Your Final Blog:<br><span class="highlight">What I Learned in 45 Modules</span></h1>
+        <p class="subtitle">
+            The culmination of your Azure AI Foundry journey. Reflect, document your capstone,
+            share your story, and celebrate everything you've achieved from zero to hero.
+        </p>
+        <div class="meta-row">
+            <span>📅 April 2026</span>
+            <span>⏱️ 90 min</span>
+            <span>🎓 Grand Finale</span>
+            <span>🏆 Capstone</span>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════ INTRO ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🌟</span> Welcome to the Grand Finale</h2>
+
+    <div class="callout callout-celebrate">
+        <div class="callout-title">🎉 Congratulations — You Made It!</div>
+        <p>
+            If you are reading this, you have completed an incredible journey through <strong>45 modules</strong>,
+            <strong>9 learning arcs</strong>, and hundreds of hands-on exercises. You started at zero and now
+            you are here — a <strong>hero</strong> of Azure AI Foundry. This final module is about
+            <em>you</em>: your story, your accomplishments, and the future you are building.
+        </p>
+    </div>
+
+    <p>
+        This module is different from every other. There is no new technical concept to master. Instead,
+        you will reflect on your journey, document your capstone project, write a blog post that tells
+        your story, and present your work. This is the moment where learning transforms into legacy.
+    </p>
+
+    <h3>🎯 What You'll Do in This Module</h3>
+    <ul>
+        <li>Reflect on your learning journey from Module 1 to Module 45</li>
+        <li>Document your capstone project with architecture, insights, and results</li>
+        <li>Write and publish a blog post sharing what you learned</li>
+        <li>Build a portfolio of your AI projects</li>
+        <li>Explore career paths in AI: developer, architect, consultant, and more</li>
+        <li>Present your capstone to peers</li>
+    </ul>
+</section>
+
+<!-- ════════════════════ VIDEO ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🎬</span> Featured Video</h2>
+    <p>
+        Watch this overview of Microsoft Foundry — the AI app and agent factory — to frame your
+        final reflections on the platform that powered your entire journey.
+    </p>
+    <div class="video-wrapper">
+        <iframe
+            src="https://www.youtube.com/embed/ooZ3xXEdOKI"
+            title="Microsoft Foundry: The AI app and agent factory"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy">
+        </iframe>
+    </div>
+    <div class="callout callout-info">
+        <div class="callout-title">📺 Microsoft Foundry: The AI app and agent factory</div>
+        <p>This video showcases the full vision of Azure AI Foundry — from model deployment to
+        agentic architectures — everything you have learned to build across these 45 modules.</p>
+    </div>
+</section>
+
+<!-- ════════════════════ YOUR JOURNEY — ALL 9 ARCS ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🗺️</span> Your Journey — All 9 Arcs, 45 Modules</h2>
+    <p>
+        Look how far you have come. Each arc built on the last, taking you from foundational
+        concepts to advanced mastery. Here is the complete map of your learning journey:
+    </p>
+
+    <div class="journey-map">
+        <div class="arc-card arc-1">
+            <div class="arc-number">Arc 1 — Modules 1–5</div>
+            <div class="arc-title">🏗️ Foundations &amp; Setup</div>
+            <div class="arc-modules">
+                Portal navigation, resource provisioning, model catalog, first deployment, prompt engineering basics
+            </div>
+        </div>
+        <div class="arc-card arc-2">
+            <div class="arc-number">Arc 2 — Modules 6–10</div>
+            <div class="arc-title">🤖 Model Deployment &amp; Integration</div>
+            <div class="arc-modules">
+                SDK quickstart, REST APIs, multi-model routing, content safety, batch processing
+            </div>
+        </div>
+        <div class="arc-card arc-3">
+            <div class="arc-number">Arc 3 — Modules 11–15</div>
+            <div class="arc-title">🔍 RAG &amp; Grounding</div>
+            <div class="arc-modules">
+                Embeddings, vector search, Azure AI Search, RAG pipelines, evaluation &amp; optimization
+            </div>
+        </div>
+        <div class="arc-card arc-4">
+            <div class="arc-number">Arc 4 — Modules 16–20</div>
+            <div class="arc-title">🧠 Agents &amp; Automation</div>
+            <div class="arc-modules">
+                Agent Service fundamentals, tool use, function calling, multi-agent systems, orchestration
+            </div>
+        </div>
+        <div class="arc-card arc-5">
+            <div class="arc-number">Arc 5 — Modules 21–25</div>
+            <div class="arc-title">⚙️ Advanced Patterns</div>
+            <div class="arc-modules">
+                Prompt flow, fine-tuning, custom models, evaluation frameworks, responsible AI
+            </div>
+        </div>
+        <div class="arc-card arc-6">
+            <div class="arc-number">Arc 6 — Modules 26–30</div>
+            <div class="arc-title">🏢 Enterprise Architecture</div>
+            <div class="arc-modules">
+                Networking &amp; security, RBAC &amp; identity, monitoring, cost management, multi-region deployment
+            </div>
+        </div>
+        <div class="arc-card arc-7">
+            <div class="arc-number">Arc 7 — Modules 31–35</div>
+            <div class="arc-title">🚀 Production &amp; Scale</div>
+            <div class="arc-modules">
+                CI/CD pipelines, load testing, blue-green deployment, disaster recovery, SLA design
+            </div>
+        </div>
+        <div class="arc-card arc-8">
+            <div class="arc-number">Arc 8 — Modules 36–40</div>
+            <div class="arc-title">🌍 Real-World Solutions</div>
+            <div class="arc-modules">
+                Industry solutions, multimodal AI, IoT integration, knowledge mining, hybrid architectures
+            </div>
+        </div>
+        <div class="arc-card arc-9">
+            <div class="arc-number">Arc 9 — Modules 41–45</div>
+            <div class="arc-title">🏆 Capstone &amp; Mastery</div>
+            <div class="arc-modules">
+                Capstone planning, building, testing, presentation, and this grand finale — your blog &amp; celebration!
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════ REFLECTING ON YOUR JOURNEY ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🔮</span> Reflecting on Your Journey</h2>
+
+    <p>
+        Before writing your blog, take time to genuinely reflect. The best technical blog posts
+        are not just tutorials — they are <em>stories</em>. Your story of growth, struggle,
+        discovery, and triumph is what will inspire others.
+    </p>
+
+    <h3>📝 Reflection Prompts</h3>
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="time-label">The Beginning</div>
+            <p>What did you know about AI and Azure before Module 1? What were your expectations?
+            What surprised you most in those first few modules?</p>
+        </div>
+        <div class="timeline-item">
+            <div class="time-label">The Struggle</div>
+            <p>What was the hardest concept to grasp? Where did you get stuck? How did you
+            push through? The struggle is where the real learning happened.</p>
+        </div>
+        <div class="timeline-item">
+            <div class="time-label">The Breakthrough</div>
+            <p>Was there a moment where everything clicked? When did you first feel confident
+            building with Azure AI Foundry? What module or exercise was the turning point?</p>
+        </div>
+        <div class="timeline-item">
+            <div class="time-label">The Mastery</div>
+            <p>What can you build now that you couldn't before? How has your thinking about
+            AI applications changed? What would you tell your Day-1 self?</p>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════ DOCUMENTING YOUR CAPSTONE ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">📋</span> Documenting Your Capstone Project</h2>
+
+    <p>
+        Your capstone project is the crown jewel of this course. Whether you built a
+        multi-agent customer service system, a RAG-powered knowledge base, or an
+        intelligent automation pipeline — it deserves to be properly documented.
+    </p>
+
+    <h3>📐 Capstone Documentation Template</h3>
+    <div class="blog-template">
+        <h4>📄 Capstone Project Documentation</h4>
+        <div class="section-label">## Project Title &amp; Vision</div>
+        <div class="section-content">What problem does your project solve? Who benefits?</div>
+        <div class="section-label">## Architecture Overview</div>
+        <div class="section-content">Diagram + description of components, data flow, Azure services used</div>
+        <div class="section-label">## Azure AI Foundry Services Used</div>
+        <div class="section-content">Models deployed, agents configured, RAG pipelines, safety filters</div>
+        <div class="section-label">## Key Technical Decisions</div>
+        <div class="section-content">Why you chose specific models, patterns, and architectures</div>
+        <div class="section-label">## Challenges &amp; Solutions</div>
+        <div class="section-content">What went wrong, how you debugged it, what you learned</div>
+        <div class="section-label">## Results &amp; Impact</div>
+        <div class="section-content">Performance metrics, user feedback, evaluation scores</div>
+        <div class="section-label">## Future Enhancements</div>
+        <div class="section-content">What would you add with more time? What's the roadmap?</div>
+    </div>
+
+    <h3>💻 Sample: Capstone README</h3>
+    <pre><code><span class="cm"># 🏆 Capstone Project: Intelligent Customer Support Agent</span>
+
+<span class="cm">## Overview</span>
+<span class="st">A multi-agent system built on Azure AI Foundry that handles
+customer inquiries using RAG-grounded responses, routes complex
+issues to specialized agents, and learns from interactions.</span>
+
+<span class="cm">## Architecture</span>
+<span class="st">┌─────────────┐    ┌──────────────────┐    ┌─────────────┐
+│   User UI   │───▶│  Orchestrator    │───▶│  AI Search  │
+│  (React)    │    │  Agent (GPT-4o)  │    │  (RAG Index)│
+└─────────────┘    └──────┬───────────┘    └─────────────┘
+                          │
+              ┌───────────┼───────────┐
+              ▼           ▼           ▼
+        ┌──────────┐ ┌──────────┐ ┌──────────┐
+        │ Billing  │ │ Technical│ │ Feedback │
+        │ Agent    │ │ Agent    │ │ Agent    │
+        └──────────┘ └──────────┘ └──────────┘</span>
+
+<span class="cm">## Services Used</span>
+<span class="kw">- Azure AI Foundry</span> <span class="st">(Project Hub)</span>
+<span class="kw">- GPT-4o</span> <span class="st">(Primary reasoning model)</span>
+<span class="kw">- text-embedding-3-large</span> <span class="st">(Vector embeddings)</span>
+<span class="kw">- Azure AI Search</span> <span class="st">(Knowledge retrieval)</span>
+<span class="kw">- Azure AI Agent Service</span> <span class="st">(Multi-agent orchestration)</span>
+<span class="kw">- Content Safety</span> <span class="st">(Input/output filtering)</span>
+
+<span class="cm">## Results</span>
+<span class="st">✅ 94% answer relevance (GPT-based eval)
+✅ 87% groundedness score
+✅ Avg response time: 2.3 seconds
+✅ Successfully handles 12 intent categories</span></code></pre>
+</section>
+
+<!-- ════════════════════ WRITING YOUR BLOG POST ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">✍️</span> Writing &amp; Publishing Your Blog Post</h2>
+
+    <p>
+        Your blog post is more than homework — it is a career asset. A well-written technical
+        blog demonstrates expertise, communication skills, and passion. Here is how to write
+        one that resonates.
+    </p>
+
+    <h3>🏗️ Blog Post Structure</h3>
+    <ol>
+        <li><strong>Hook:</strong> Start with a compelling opening — a question, a bold claim, or a personal anecdote</li>
+        <li><strong>Context:</strong> Briefly explain the course and what Azure AI Foundry is</li>
+        <li><strong>Journey Narrative:</strong> Walk through your key learning moments (not every module — the highlights)</li>
+        <li><strong>Capstone Showcase:</strong> Present your project with visuals, architecture, and results</li>
+        <li><strong>Lessons Learned:</strong> Share 3–5 key takeaways that others can apply</li>
+        <li><strong>Advice for Beginners:</strong> What would you tell someone starting this journey today?</li>
+        <li><strong>Call to Action:</strong> Encourage others to start their own AI learning journey</li>
+    </ol>
+
+    <h3>📝 Blog Post Template</h3>
+    <pre><code><span class="cm"># What I Learned Building AI Apps in 45 Modules</span>
+<span class="cm"># with Azure AI Foundry</span>
+
+<span class="st">Eight months ago, I couldn't tell you the difference between
+a language model and a machine learning model. Today, I've
+built a production-grade multi-agent system on Azure AI Foundry
+that handles real customer inquiries with 94% accuracy.</span>
+
+<span class="st">Here's my story — and what I'd tell you if you're
+thinking about starting your own AI journey.</span>
+
+<span class="cm">## The Journey: From Zero to Hero</span>
+
+<span class="st">[Your narrative here — key moments, breakthroughs, struggles]</span>
+
+<span class="cm">## My Capstone: [Project Name]</span>
+
+<span class="st">[Architecture diagram, tech stack, results]</span>
+
+<span class="cm">## 5 Things I Wish I Knew on Day One</span>
+
+<span class="kw">1.</span> <span class="st">Start with the portal, not the SDK</span>
+<span class="kw">2.</span> <span class="st">Prompt engineering is 80% of the work</span>
+<span class="kw">3.</span> <span class="st">RAG is powerful but needs clean data</span>
+<span class="kw">4.</span> <span class="st">Evaluation is not optional — it's essential</span>
+<span class="kw">5.</span> <span class="st">Agents are the future — learn them now</span>
+
+<span class="cm">## Start Your Journey</span>
+
+<span class="st">[Call to action + links to resources]</span></code></pre>
+
+    <h3>🌐 Where to Publish</h3>
+    <ul>
+        <li><strong>Dev.to</strong> — Developer-friendly platform with great reach and Markdown support</li>
+        <li><strong>Hashnode</strong> — Custom domain support, built for developer blogs</li>
+        <li><strong>Medium</strong> — Large audience, good for reaching non-technical readers too</li>
+        <li><strong>LinkedIn Articles</strong> — Professional network visibility, great for career growth</li>
+        <li><strong>Personal Blog / GitHub Pages</strong> — Full control over your content and presentation</li>
+        <li><strong>Microsoft Tech Community</strong> — Direct visibility within the Azure ecosystem</li>
+    </ul>
+
+    <div class="callout callout-success">
+        <div class="callout-title">💡 Pro Tip</div>
+        <p>Cross-post your blog to multiple platforms to maximize reach. Write it once on your
+        primary platform, then syndicate to the others with canonical URL links.</p>
+    </div>
+</section>
+
+<!-- ════════════════════ BUILDING YOUR PORTFOLIO ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">💼</span> Building Your AI Project Portfolio</h2>
+
+    <p>
+        Your 45-module journey has produced a wealth of projects, labs, and experiments.
+        Organize these into a compelling portfolio that showcases your range of skills.
+    </p>
+
+    <h3>📂 Portfolio Components</h3>
+    <div class="portfolio-grid">
+        <div class="portfolio-item">
+            <div class="item-label">GitHub Repository</div>
+            <h4>🗂️ Organized Code</h4>
+            <p>Clean repos with READMEs, architecture diagrams, and deployment instructions for each project.</p>
+        </div>
+        <div class="portfolio-item">
+            <div class="item-label">Documentation</div>
+            <h4>📝 Technical Writing</h4>
+            <p>Blog posts, technical guides, and how-to articles that demonstrate communication skills.</p>
+        </div>
+        <div class="portfolio-item">
+            <div class="item-label">Live Demos</div>
+            <h4>🌐 Working Prototypes</h4>
+            <p>Deployed applications that recruiters and peers can interact with directly.</p>
+        </div>
+        <div class="portfolio-item">
+            <div class="item-label">Presentations</div>
+            <h4>🎤 Talk Slides</h4>
+            <p>Slide decks from your capstone presentation and any meetup talks.</p>
+        </div>
+    </div>
+
+    <h3>💻 Portfolio README Template</h3>
+    <pre><code><span class="cm"># 🏆 My Azure AI Foundry Portfolio</span>
+
+<span class="cm">## About Me</span>
+<span class="st">[Your bio — background, interests, what excites you about AI]</span>
+
+<span class="cm">## 🌟 Featured Project: Capstone</span>
+<span class="st">[Link to capstone repo with summary and demo link]</span>
+
+<span class="cm">## 📚 Projects by Category</span>
+
+<span class="kw">### Model Deployment &amp; Inference</span>
+<span class="st">- Multi-model routing service (Module 8)
+- Batch inference pipeline (Module 10)</span>
+
+<span class="kw">### RAG &amp; Knowledge Systems</span>
+<span class="st">- Enterprise knowledge base (Module 14)
+- Hybrid search system (Module 15)</span>
+
+<span class="kw">### Agents &amp; Automation</span>
+<span class="st">- Multi-agent customer support (Module 20)
+- Tool-calling agent framework (Module 18)</span>
+
+<span class="kw">### Enterprise &amp; Production</span>
+<span class="st">- CI/CD pipeline for AI apps (Module 31)
+- Multi-region deployment (Module 30)</span>
+
+<span class="cm">## 📊 Skills Matrix</span>
+<span class="st">| Skill                  | Proficiency |
+|------------------------|-------------|
+| Azure AI Foundry       | ⭐⭐⭐⭐⭐     |
+| Prompt Engineering     | ⭐⭐⭐⭐⭐     |
+| RAG Architecture       | ⭐⭐⭐⭐      |
+| Agent Development      | ⭐⭐⭐⭐      |
+| MLOps / AI Ops         | ⭐⭐⭐⭐      |</span></code></pre>
+</section>
+
+<!-- ════════════════════ CAREER PATHS ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🚀</span> Career Paths in AI</h2>
+
+    <p>
+        With 45 modules of Azure AI Foundry training, you have skills that are in enormous demand.
+        Here are the career paths open to you:
+    </p>
+
+    <div class="career-grid">
+        <div class="career-card">
+            <div class="career-icon">👩‍💻</div>
+            <h4>AI Application Developer</h4>
+            <p>Build intelligent apps using Azure AI Foundry, integrate models into products, create RAG systems and agent workflows.</p>
+        </div>
+        <div class="career-card">
+            <div class="career-icon">🏛️</div>
+            <h4>AI Solutions Architect</h4>
+            <p>Design enterprise-grade AI architectures, make technology decisions, ensure scalability, security, and compliance.</p>
+        </div>
+        <div class="career-card">
+            <div class="career-icon">🎯</div>
+            <h4>AI Consultant</h4>
+            <p>Advise organizations on AI strategy, evaluate use cases, implement solutions, and measure business impact.</p>
+        </div>
+        <div class="career-card">
+            <div class="career-icon">🔬</div>
+            <h4>AI/ML Engineer</h4>
+            <p>Fine-tune models, build training pipelines, optimize inference performance, and push the boundaries of what AI can do.</p>
+        </div>
+        <div class="career-card">
+            <div class="career-icon">🛡️</div>
+            <h4>Responsible AI Lead</h4>
+            <p>Ensure AI systems are fair, transparent, and safe. Build evaluation frameworks and governance policies.</p>
+        </div>
+        <div class="career-card">
+            <div class="career-icon">📢</div>
+            <h4>Developer Advocate</h4>
+            <p>Teach others to build with AI, create content, speak at conferences, and bridge the gap between product and community.</p>
+        </div>
+    </div>
+
+    <div class="callout callout-info">
+        <div class="callout-title">📈 Market Insight</div>
+        <p>AI engineering roles have grown 3x since 2023. Professionals with hands-on experience
+        building AI applications on cloud platforms are among the most sought-after in the industry.
+        Your portfolio of 45 modules of work is a powerful differentiator.</p>
+    </div>
+</section>
+
+<!-- ════════════════════ THE FUTURE OF AI FOUNDRY ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🔮</span> The Future of Azure AI Foundry</h2>
+
+    <p>
+        Azure AI Foundry is evolving rapidly. Here is what's on the horizon and how
+        your skills position you for what comes next:
+    </p>
+
+    <h3>🌅 What's Coming</h3>
+    <ul>
+        <li><strong>Autonomous Agent Networks:</strong> Multi-agent systems that plan, execute, and self-correct across enterprise workflows</li>
+        <li><strong>Multimodal by Default:</strong> Every model understanding text, images, audio, and video natively</li>
+        <li><strong>Real-Time AI:</strong> Streaming responses, live collaboration, and sub-second inference at scale</li>
+        <li><strong>AI-Native Development:</strong> AI Foundry becoming the default platform for building any application, not just "AI apps"</li>
+        <li><strong>Industry-Specific Agents:</strong> Pre-built, compliant agents for healthcare, finance, legal, and manufacturing</li>
+        <li><strong>Edge AI Integration:</strong> Foundry models deployed to IoT devices, mobile apps, and embedded systems</li>
+    </ul>
+
+    <h3>🎯 How to Stay Current</h3>
+    <ul>
+        <li>Follow the <a href="https://azure.microsoft.com/blog/" target="_blank" rel="noopener">Azure Blog</a> and <a href="https://devblogs.microsoft.com/" target="_blank" rel="noopener">Microsoft Dev Blog</a></li>
+        <li>Join the <a href="https://techcommunity.microsoft.com/" target="_blank" rel="noopener">Microsoft Tech Community</a></li>
+        <li>Attend Microsoft Build and Ignite conferences</li>
+        <li>Contribute to open-source AI projects on GitHub</li>
+        <li>Experiment with new models as they appear in the Model Catalog</li>
+        <li>Build, break, learn, repeat</li>
+    </ul>
+</section>
+
+<!-- ════════════════════ MINI HACK ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🧪</span> Mini Hack: Publish Your Blog &amp; Present Your Capstone</h2>
+
+    <p>
+        This is your final Mini Hack — and it is the most important one. This is not about
+        code. This is about <em>you</em> sharing your work with the world.
+    </p>
+
+    <h3>📋 Final Challenge Checklist</h3>
+    <ul class="checklist">
+        <li><strong>Write your blog post</strong> — Use the template above, tell your authentic story</li>
+        <li><strong>Include your capstone</strong> — Architecture diagram, code highlights, results</li>
+        <li><strong>Add visuals</strong> — Screenshots, diagrams, metrics charts</li>
+        <li><strong>Publish to at least one platform</strong> — Dev.to, Hashnode, Medium, LinkedIn, or personal blog</li>
+        <li><strong>Share on social media</strong> — LinkedIn, Twitter/X with #AzureAIFoundry and #ZeroToHero</li>
+        <li><strong>Prepare a 10-minute presentation</strong> — Capstone demo + key learnings</li>
+        <li><strong>Present to peers</strong> — Team meeting, meetup, or recorded video</li>
+        <li><strong>Update your portfolio</strong> — GitHub profile, LinkedIn, resume</li>
+        <li><strong>Star your favorite repos</strong> — Give back to the community that helped you learn</li>
+        <li><strong>Celebrate!</strong> — You've earned it 🎉</li>
+    </ul>
+
+    <h3>🚀 Publishing with GitHub Pages</h3>
+    <pre><code><span class="cm"># Create your portfolio site</span>
+<span class="kw">mkdir</span> <span class="nb">my-ai-portfolio</span>
+<span class="kw">cd</span> <span class="nb">my-ai-portfolio</span>
+<span class="kw">git</span> <span class="nb">init</span>
+
+<span class="cm"># Create your blog post as index.html or use Jekyll</span>
+<span class="kw">echo</span> <span class="st">"# My Azure AI Foundry Journey"</span> <span class="op">&gt;</span> <span class="nb">README.md</span>
+
+<span class="cm"># Copy your blog content</span>
+<span class="kw">cp</span> <span class="nb">blog-post.md</span> <span class="st">docs/index.md</span>
+
+<span class="cm"># Push to GitHub</span>
+<span class="kw">git</span> <span class="nb">add .</span>
+<span class="kw">git</span> <span class="nb">commit</span> <span class="op">-m</span> <span class="st">"🏆 My Azure AI Foundry Zero-to-Hero blog"</span>
+<span class="kw">git</span> <span class="nb">remote add origin</span> <span class="st">https://github.com/YOUR_USERNAME/my-ai-portfolio.git</span>
+<span class="kw">git</span> <span class="nb">push</span> <span class="op">-u</span> <span class="st">origin main</span>
+
+<span class="cm"># Enable GitHub Pages in Settings → Pages → main branch → /docs</span>
+<span class="cm"># Your blog is now live at https://YOUR_USERNAME.github.io/my-ai-portfolio</span></code></pre>
+
+    <h3>📊 Presentation Structure (10 Minutes)</h3>
+    <ol>
+        <li><strong>Introduction (1 min):</strong> Who you are and your starting point</li>
+        <li><strong>The Problem (1 min):</strong> What your capstone project solves</li>
+        <li><strong>Architecture (2 min):</strong> How you built it with Azure AI Foundry</li>
+        <li><strong>Live Demo (3 min):</strong> Show it working</li>
+        <li><strong>Results &amp; Lessons (2 min):</strong> Metrics and key takeaways</li>
+        <li><strong>What's Next (1 min):</strong> Future plans and call to action</li>
+    </ol>
+</section>
+
+<!-- ════════════════════ ADVICE FOR OTHERS ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">💡</span> Advice for Future Learners</h2>
+
+    <p>
+        You have walked the path. Now share your wisdom with those who will follow.
+        Here are common pieces of advice from graduates of intensive AI training programs:
+    </p>
+
+    <h3>🎓 Top 10 Tips from Zero-to-Hero Graduates</h3>
+    <ol>
+        <li><strong>Start before you feel ready.</strong> You will never feel 100% prepared — that is normal.</li>
+        <li><strong>Build things, don't just read about them.</strong> Every lab exercise is worth more than three tutorials.</li>
+        <li><strong>Embrace the confusion.</strong> If a concept is hard, it means you are growing.</li>
+        <li><strong>Use the portal first, then code.</strong> Understand the UI before automating with SDKs.</li>
+        <li><strong>Prompt engineering is a skill.</strong> It takes practice, iteration, and evaluation to get right.</li>
+        <li><strong>RAG is a game-changer.</strong> Master retrieval-augmented generation — it solves real problems.</li>
+        <li><strong>Agents are the future.</strong> Invest heavily in understanding agentic architectures.</li>
+        <li><strong>Evaluation is not optional.</strong> If you can't measure it, you can't improve it.</li>
+        <li><strong>Build in public.</strong> Share your progress on social media and blogs — accountability accelerates learning.</li>
+        <li><strong>Never stop learning.</strong> AI is moving faster than any technology before it. Stay curious.</li>
+    </ol>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">📣 Your Voice Matters</div>
+        <p>The AI community needs diverse voices sharing real experiences. Your unique background,
+        perspective, and learning journey adds value that no one else can provide. Publish that blog
+        post. Give that talk. Your story will help someone take their first step.</p>
+    </div>
+</section>
+
+<!-- ════════════════════ CERTIFICATE ════════════════════ -->
+<section class="certificate-section">
+    <div class="certificate-content">
+        <div class="certificate-seal">🏅</div>
+        <div class="certificate-title">Certificate of Completion</div>
+        <div class="certificate-subtitle">Azure AI Foundry: Zero to Hero</div>
+        <div class="certificate-line"></div>
+        <div class="certificate-name">[ Your Name Here ]</div>
+        <p class="certificate-desc">
+            Has successfully completed all <strong>45 modules</strong> across <strong>9 learning arcs</strong>
+            of the Azure AI Foundry: Zero to Hero training program. This individual has demonstrated
+            proficiency in model deployment, RAG architectures, agentic AI systems, enterprise patterns,
+            production operations, and capstone project delivery.
+        </p>
+        <div class="certificate-stats">
+            <div class="cert-stat">
+                <div class="stat-number">45</div>
+                <div class="stat-label">Modules</div>
+            </div>
+            <div class="cert-stat">
+                <div class="stat-number">9</div>
+                <div class="stat-label">Learning Arcs</div>
+            </div>
+            <div class="cert-stat">
+                <div class="stat-number">45+</div>
+                <div class="stat-label">Hands-on Labs</div>
+            </div>
+            <div class="cert-stat">
+                <div class="stat-number">450+</div>
+                <div class="stat-label">Quiz Questions</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════ KEY TAKEAWAYS ════════════════════ -->
+<section class="content-section">
+    <h2><span class="icon">🎯</span> Grand Finale — Key Takeaways</h2>
+
+    <div class="callout callout-celebrate">
+        <div class="callout-title">🏆 You Are Now a Hero</div>
+        <p>
+            You have completed an extraordinary learning journey. You can deploy models, build
+            RAG systems, create intelligent agents, architect enterprise solutions, run production
+            workloads, and now — tell your story. That is the complete package.
+        </p>
+    </div>
+
+    <h3>📌 What This Module Covered</h3>
+    <ul>
+        <li>✅ Reflected on your complete learning journey across 9 arcs and 45 modules</li>
+        <li>✅ Documented your capstone project with architecture and results</li>
+        <li>✅ Learned how to write and publish a compelling technical blog post</li>
+        <li>✅ Built a portfolio of AI projects to showcase your skills</li>
+        <li>✅ Explored career paths: developer, architect, consultant, advocate, and more</li>
+        <li>✅ Looked ahead at the future of Azure AI Foundry</li>
+        <li>✅ Published your blog and presented your capstone (Mini Hack)</li>
+    </ul>
+
+    <h3>🌟 Final Words</h3>
+    <p>
+        Every expert was once a beginner. Every hero started at zero. You have taken 45 steps
+        on a journey that most people never start. The AI revolution is not something happening
+        to you — it is something you are now a part of building.
+    </p>
+    <p>
+        Go build amazing things. Share your knowledge. Lift others up. And never stop being
+        curious about what is possible.
+    </p>
+    <p style="font-size: 1.3rem; text-align: center; color: var(--primary-dark); font-weight: 700; margin-top: 32px;">
+        🎓 From zero to hero — the journey was the destination.<br>
+        Now go change the world. 🚀
+    </p>
+</section>
+
+<!-- ════════════════════ BOTTOM NAV ════════════════════ -->
+<nav class="bottom-nav">
+    <a href="../module-44/blog.html" class="nav-btn nav-prev">
+        ← Module 44
+    </a>
+    <span class="nav-btn nav-complete">
+        🎓 Congratulations — Course Complete!
+    </span>
+</nav>
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer>
+    <div class="final-message">
+        🏆 Azure AI Foundry: Zero to Hero — Complete! 🏆
+    </div>
+    <p>
+        Module 45 of 45 · ARC 9: Capstone &amp; Mastery · April 2026<br>
+        Built with 💛 for the AI builders of tomorrow
+    </p>
+    <p style="margin-top: 8px; font-size: 0.8rem; opacity: 0.6;">
+        Azure AI Foundry is a product of Microsoft. This training content is community-created.
+    </p>
+</footer>
+
+</body>
+</html>

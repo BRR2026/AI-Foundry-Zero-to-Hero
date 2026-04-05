@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 28: Monitoring, Observability & Drift Detection — Slides</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-slide: #161b22;
+            --bg-code: #1e252e;
+            --primary: #58a6ff;
+            --accent: #3fb950;
+            --accent-warm: #f0883e;
+            --accent-red: #f85149;
+            --accent-purple: #bc8cff;
+            --accent-cyan: #39d2c0;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ── Slide Container ── */
+        .deck { position: relative; width: 100vw; height: 100vh; }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 6rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            background: var(--bg-slide);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ── Slide Types ── */
+        .slide-title {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #1a2332 100%);
+            text-align: center;
+            justify-content: center;
+        }
+
+        .slide-section {
+            background: linear-gradient(135deg, #0d1f3c 0%, #0d1117 100%);
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* ── Typography ── */
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        h1 .gradient {
+            background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 1rem 0 0.5rem;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-arc {
+            background: rgba(88,166,255,0.15);
+            border: 1px solid rgba(88,166,255,0.3);
+            color: var(--primary);
+        }
+
+        .badge-hack {
+            background: rgba(63,185,80,0.15);
+            border: 1px solid rgba(63,185,80,0.3);
+            color: var(--accent);
+        }
+
+        /* ── Lists ── */
+        ul, ol {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        li {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        li strong { color: var(--text-primary); }
+
+        /* ── Code ── */
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            font-size: 0.85rem;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .code-inline {
+            background: var(--bg-code);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            color: var(--accent-warm);
+        }
+
+        /* ── Grids ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── KPI ── */
+        .kpi-row {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .kpi {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        .kpi.blue .kpi-value { color: var(--primary); }
+        .kpi.green .kpi-value { color: var(--accent); }
+        .kpi.orange .kpi-value { color: var(--accent-warm); }
+        .kpi.red .kpi-value { color: var(--accent-red); }
+        .kpi.purple .kpi-value { color: var(--accent-purple); }
+
+        /* ── Table ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(88,166,255,0.1);
+            color: var(--primary);
+            padding: 0.6rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* ── Diagram Box ── */
+        .diagram {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        /* ── Pipeline ── */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .pipe-step {
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.3);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .pipe-arrow { color: var(--accent-cyan); font-size: 1.2rem; }
+
+        /* ── Controls ── */
+        .controls {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 2rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .controls button {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            width: 44px; height: 44px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover {
+            background: rgba(88,166,255,0.15);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ── Slide Counter ── */
+        .counter {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            z-index: 100;
+        }
+
+        /* ── Progress ── */
+        .slide-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        /* ── Highlight Box ── */
+        .highlight-box {
+            background: rgba(88,166,255,0.08);
+            border: 1px solid rgba(88,166,255,0.25);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .warn-box {
+            background: rgba(248,81,73,0.08);
+            border: 1px solid rgba(248,81,73,0.25);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        /* ── Drift Bars ── */
+        .drift-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .drift-label {
+            width: 120px;
+            font-size: 0.85rem;
+            text-align: right;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .drift-track {
+            flex: 1;
+            height: 18px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 9px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .drift-fill {
+            height: 100%;
+            border-radius: 9px;
+        }
+
+        .drift-threshold {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background: var(--accent-red);
+        }
+
+        .drift-val {
+            width: 60px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-progress" id="slideProgress"></div>
+
+    <div class="deck" id="deck">
+
+        <!-- ══════════ SLIDE 1: Title ══════════ -->
+        <div class="slide slide-title active" data-slide="1">
+            <div class="badge badge-arc">ARC 6 · DEPLOYMENT & MLOps</div>
+            <h1>Monitoring, Observability &<br><span class="gradient">Drift Detection</span></h1>
+            <p class="subtitle">Azure AI Foundry: Zero to Hero · Module 28 of 45</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">April 2026</p>
+        </div>
+
+        <!-- ══════════ SLIDE 2: Agenda ══════════ -->
+        <div class="slide" data-slide="2">
+            <h2>📋 Agenda</h2>
+            <ol>
+                <li><strong>Why Observability Matters for AI</strong> — The silent failure problem</li>
+                <li><strong>Azure Monitor Integration</strong> — Diagnostics, OpenTelemetry, Log Analytics</li>
+                <li><strong>Key Metrics</strong> — Latency, token usage, error rates, safety</li>
+                <li><strong>Model Drift & Quality Degradation</strong> — Types, detection, evaluation</li>
+                <li><strong>Alerting & Dashboards</strong> — Rules, severity, layout design</li>
+                <li><strong>Application Insights for Agents</strong> — Distributed tracing</li>
+                <li><strong>🧪 Mini Hack</strong> — Build a monitoring dashboard</li>
+            </ol>
+        </div>
+
+        <!-- ══════════ SLIDE 3: The Problem ══════════ -->
+        <div class="slide" data-slide="3">
+            <h2>⚠️ The Silent Failure Problem</h2>
+            <div class="grid-2">
+                <div>
+                    <h3>Traditional Software</h3>
+                    <ul>
+                        <li>Fails with clear error codes (500, timeout)</li>
+                        <li>Same input → same output (deterministic)</li>
+                        <li>Standard monitoring catches failures</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>AI Systems</h3>
+                    <ul>
+                        <li>Returns <em>plausible but wrong</em> answers</li>
+                        <li>Same input → different outputs (stochastic)</li>
+                        <li>Quality degrades <em>silently</em></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="warn-box" style="margin-top: 1.5rem;">
+                <p style="color: var(--accent-red); margin: 0;">
+                    <strong>💀 Without AI-specific observability, you won't know your model is degrading until users complain — or leave.</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 4: Four Pillars ══════════ -->
+        <div class="slide" data-slide="4">
+            <h2>📊 Four Pillars of AI Observability</h2>
+            <div class="grid-4">
+                <div class="card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-title">Metrics</div>
+                    <div class="card-desc">Latency, throughput, tokens, cost-per-request</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔗</div>
+                    <div class="card-title">Traces</div>
+                    <div class="card-desc">End-to-end request flow, agent steps, tool calls</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">Logs</div>
+                    <div class="card-desc">Structured events, guardrail triggers, prompt pairs</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Evaluations</div>
+                    <div class="card-desc">Quality scores, drift indicators, safety checks</div>
+                </div>
+            </div>
+            <div class="highlight-box" style="margin-top: 1.5rem;">
+                <p style="margin: 0;"><strong>Evaluations</strong> are unique to AI — traditional monitoring doesn't have this pillar.</p>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 5: Architecture ══════════ -->
+        <div class="slide" data-slide="5">
+            <h2>🏗️ Azure Monitor Architecture</h2>
+            <div class="diagram">
+┌──────────────────────────────────────────────┐
+│          Azure AI Foundry Project             │
+│  ┌─────────┐ ┌─────────┐ ┌─────────────────┐│
+│  │ Model   │ │ Agent   │ │ Prompt Flow     ││
+│  │Endpoints│ │ Service │ │                 ││
+│  └────┬────┘ └────┬────┘ └───────┬─────────┘│
+│       └───────────┼──────────────┘           │
+│          Diagnostic Settings                  │
+└───────────────────┬──────────────────────────┘
+                    │
+         ┌──────────▼──────────┐
+         │    Azure Monitor     │
+         │  ┌───────────────┐   │
+         │  │ Log Analytics │   │
+         │  └───────┬───────┘   │
+         │  ┌───────▼───────┐   │
+         │  │  App Insights │   │
+         │  └───────────────┘   │
+         └──────────┬──────────┘
+             ┌──────┼──────┐
+         Dashboards Alerts Workbooks
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 6: Key Metrics ══════════ -->
+        <div class="slide" data-slide="6">
+            <h2>📏 Key Metrics for AI Workloads</h2>
+            <div class="kpi-row">
+                <div class="kpi blue">
+                    <div class="kpi-value">142ms</div>
+                    <div class="kpi-label">P50 Latency</div>
+                </div>
+                <div class="kpi green">
+                    <div class="kpi-value">1,247</div>
+                    <div class="kpi-label">Avg Tokens</div>
+                </div>
+                <div class="kpi orange">
+                    <div class="kpi-value">0.3%</div>
+                    <div class="kpi-label">Error Rate</div>
+                </div>
+                <div class="kpi purple">
+                    <div class="kpi-value">$0.42</div>
+                    <div class="kpi-label">Cost/Request</div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Category</th><th>Metric</th><th>Alert Threshold</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Latency</td><td>P50/P95/P99 response time</td><td>P95 > 3s for 5 min</td></tr>
+                    <tr><td>Tokens</td><td>Prompt + completion tokens</td><td>> 2x baseline avg</td></tr>
+                    <tr><td>Errors</td><td>HTTP 4xx/5xx, filter blocks</td><td>> 1% over 10 min</td></tr>
+                    <tr><td>Rate Limiting</td><td>429 responses</td><td>Any sustained > 1 min</td></tr>
+                    <tr><td>Safety</td><td>Content filter triggers</td><td>> 5% trigger rate</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ══════════ SLIDE 7: KQL Queries ══════════ -->
+        <div class="slide" data-slide="7">
+            <h2>🔍 KQL for AI Telemetry</h2>
+            <h3>Latency Percentiles</h3>
+            <pre><code>AzureDiagnostics
+| where Category == "AmlModelsEvent"
+| where TimeGenerated > ago(24h)
+| summarize
+    P50=percentile(DurationMs, 50),
+    P95=percentile(DurationMs, 95),
+    P99=percentile(DurationMs, 99)
+  by bin(TimeGenerated, 1h)
+| render timechart</code></pre>
+            <h3>Error Rate by Hour</h3>
+            <pre><code>AzureDiagnostics
+| where Category == "AmlModelsEvent"
+| summarize
+    ErrorRate = round(
+      countif(ResultType != "Success") * 100.0 / count(), 2)
+  by bin(TimeGenerated, 1h)
+| render timechart</code></pre>
+        </div>
+
+        <!-- ══════════ SLIDE 8: OpenTelemetry ══════════ -->
+        <div class="slide" data-slide="8">
+            <h2>🔭 OpenTelemetry Instrumentation</h2>
+            <pre><code>from azure.monitor.opentelemetry import configure_azure_monitor
+from opentelemetry import trace, metrics
+
+configure_azure_monitor(
+    connection_string="InstrumentationKey=&lt;key&gt;;..."
+)
+
+tracer = trace.get_tracer("ai-foundry-app")
+meter  = metrics.get_meter("ai-foundry-app")
+
+# Custom AI metrics
+token_counter = meter.create_counter("ai.tokens.total")
+latency_hist  = meter.create_histogram("ai.request.duration",
+                                        unit="ms")</code></pre>
+            <div class="highlight-box">
+                <p style="margin: 0;">
+                    <strong>Key packages:</strong> <span class="code-inline">azure-monitor-opentelemetry</span>, <span class="code-inline">opentelemetry-api</span>, <span class="code-inline">opentelemetry-sdk</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 9: What is Drift? ══════════ -->
+        <div class="slide slide-section" data-slide="9">
+            <div class="badge badge-arc">Section</div>
+            <h1>Model Drift &<br><span class="gradient">Quality Degradation</span></h1>
+            <p class="subtitle">When your model quietly stops being good</p>
+        </div>
+
+        <!-- ══════════ SLIDE 10: Types of Drift ══════════ -->
+        <div class="slide" data-slide="10">
+            <h2>🌊 Types of Model Drift</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Data Drift</div>
+                    <div class="card-desc">User prompts shift to new topics or phrasing not seen during optimization</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <div class="card-title">Concept Drift</div>
+                    <div class="card-desc">The "correct" answer changes — regulations update, products change</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📉</div>
+                    <div class="card-title">Quality Drift</div>
+                    <div class="card-desc">Outputs gradually become less relevant, accurate, or grounded</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">Behavioral Drift</div>
+                    <div class="card-desc">Provider-side model updates silently change response patterns</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 11: Drift Detection ══════════ -->
+        <div class="slide" data-slide="11">
+            <h2>🔍 Drift Detection Pipeline</h2>
+            <div class="pipeline">
+                <div class="pipe-step">📥 Collect<br>Samples</div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-step">📊 Compute<br>Baselines</div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-step">🤖 AI-Judge<br>Evaluation</div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-step">📈 Compare to<br>Baseline</div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-step">🚨 Alert &<br>Respond</div>
+            </div>
+
+            <h3>Current Drift Indicators</h3>
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="drift-row">
+                    <span class="drift-label">Groundedness</span>
+                    <div class="drift-track">
+                        <div class="drift-fill" style="width: 85%; background: linear-gradient(90deg, #3fb950, #56d364);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-val" style="color: var(--accent);">0.85 ✓</span>
+                </div>
+                <div class="drift-row">
+                    <span class="drift-label">Relevance</span>
+                    <div class="drift-track">
+                        <div class="drift-fill" style="width: 72%; background: linear-gradient(90deg, #f0883e, #ffa657);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-val" style="color: var(--accent-warm);">0.72 ⚠️</span>
+                </div>
+                <div class="drift-row">
+                    <span class="drift-label">Safety</span>
+                    <div class="drift-track">
+                        <div class="drift-fill" style="width: 62%; background: linear-gradient(90deg, #f85149, #ff7b72);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-val" style="color: var(--accent-red);">0.62 🚨</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 12: Alerting Strategy ══════════ -->
+        <div class="slide" data-slide="12">
+            <h2>🔔 Alerting Strategy</h2>
+            <table>
+                <thead>
+                    <tr><th>Alert</th><th>Condition</th><th>Severity</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>High Latency</td><td>P95 > 5s for 5 min</td><td>Sev 2</td><td>Page on-call</td></tr>
+                    <tr><td>Error Spike</td><td>Error rate > 5%</td><td>Sev 1</td><td>Page + investigate</td></tr>
+                    <tr><td>Token Budget</td><td>Daily tokens > 80%</td><td>Sev 3</td><td>Notify team</td></tr>
+                    <tr><td>Drift Detected</td><td>Quality < baseline - 10%</td><td>Sev 2</td><td>Run eval pipeline</td></tr>
+                    <tr><td>Rate Limiting</td><td>429s > 10 in 5 min</td><td>Sev 2</td><td>Scale up</td></tr>
+                    <tr><td>Safety Trigger</td><td>Filter rate > 5%</td><td>Sev 1</td><td>Review inputs</td></tr>
+                </tbody>
+            </table>
+            <div class="highlight-box" style="margin-top: 1rem;">
+                <p style="margin: 0;"><strong>Golden Rule:</strong> Every alert must have a clear runbook action. If you can't define what to do when it fires, don't create it.</p>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 13: Agent Tracing ══════════ -->
+        <div class="slide" data-slide="13">
+            <h2>🔗 Agent Trace Anatomy</h2>
+            <div class="diagram">
+Trace: agent-invocation-abc123
+│
+├─ Span: agent.run (12.4s)
+│  ├─ Span: llm.chat (2.1s)     [model: gpt-4o, tokens: 847]
+│  ├─ Span: tool.search (3.2s)  [tool: azure_search]
+│  ├─ Span: llm.chat (1.8s)     [model: gpt-4o, tokens: 1,203]
+│  ├─ Span: tool.code (4.1s)    [tool: code_interpreter]
+│  └─ Span: llm.chat (1.2s)     [model: gpt-4o, tokens: 624]
+│
+└─ Events:
+   ├─ guardrail.input_check  → PASS
+   ├─ guardrail.output_check → PASS
+   └─ evaluation.groundedness → 0.87
+            </div>
+            <p>Application Insights captures every step — correlated via a single <span class="code-inline">operation_Id</span></p>
+        </div>
+
+        <!-- ══════════ SLIDE 14: Mini Hack ══════════ -->
+        <div class="slide" data-slide="14">
+            <div class="badge badge-hack">🧪 Mini Hack</div>
+            <h2>Build a Monitoring Dashboard</h2>
+            <div class="grid-2">
+                <div>
+                    <h3>You'll Build</h3>
+                    <ul>
+                        <li>OpenTelemetry instrumentation</li>
+                        <li>Log Analytics KQL queries</li>
+                        <li>Azure Monitor dashboard (4+ tiles)</li>
+                        <li>Drift detection evaluation</li>
+                        <li>Alert rules (latency + errors)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Success Criteria</h3>
+                    <ul>
+                        <li>✅ Real-time latency/token/error tiles</li>
+                        <li>✅ KQL returns accurate percentiles</li>
+                        <li>✅ Drift scores for 3+ metrics</li>
+                        <li>✅ Alert fires on simulation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="highlight-box" style="margin-top: 1.5rem;">
+                <p style="margin: 0;"><strong>⏱️ Time:</strong> 80 minutes · <strong>📝 Detailed instructions:</strong> <span class="code-inline">lab/hands-on-lab.md</span></p>
+            </div>
+        </div>
+
+        <!-- ══════════ SLIDE 15: Key Takeaways ══════════ -->
+        <div class="slide slide-title" data-slide="15">
+            <h2 style="color: var(--text-primary); font-size: 2rem; margin-bottom: 1.5rem;">🎯 Key Takeaways</h2>
+            <div style="text-align: left; max-width: 700px; margin: 0 auto;">
+                <ul>
+                    <li>AI systems fail <strong>silently</strong> — you need AI-specific observability</li>
+                    <li>Track the <strong>four pillars</strong>: metrics, traces, logs, and evaluations</li>
+                    <li>Azure Monitor + Application Insights = unified AI observability</li>
+                    <li><strong>Drift is inevitable</strong> — automate detection, don't rely on manual checks</li>
+                    <li>Every alert needs a <strong>runbook</strong> — actionable, not just noise</li>
+                    <li>Establish <strong>baselines before production</strong> — you can't detect drift without them</li>
+                </ul>
+            </div>
+            <p style="margin-top: 2rem; color: var(--text-muted);">
+                Module 28 of 45 · Next: Module 29 →
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="counter" id="counter">1 / 15</div>
+    <div class="controls">
+        <button onclick="prevSlide()" title="Previous (←)">◀</button>
+        <button onclick="nextSlide()" title="Next (→)">▶</button>
+    </div>
+
+    <script>
+        let current = 1;
+        const total = document.querySelectorAll('.slide').length;
+
+        function showSlide(n) {
+            if (n < 1 || n > total) return;
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.querySelector(`[data-slide="${n}"]`).classList.add('active');
+            current = n;
+            document.getElementById('counter').textContent = `${current} / ${total}`;
+            document.getElementById('slideProgress').style.width = ((current / total) * 100) + '%';
+        }
+
+        function nextSlide() { showSlide(current + 1); }
+        function prevSlide() { showSlide(current - 1); }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+            if (e.key === 'Home') { e.preventDefault(); showSlide(1); }
+            if (e.key === 'End') { e.preventDefault(); showSlide(total); }
+        });
+
+        showSlide(1);
+    </script>
+</body>
+</html>

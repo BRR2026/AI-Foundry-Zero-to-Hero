@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 16: Intro to AI Agents & Agent Framework — Azure AI Foundry Zero to Hero. Learn what AI agents are and build your first prompt agent.">
+    <meta name="author" content="Zero to Hero Training Team">
+    <meta name="keywords" content="Azure AI Foundry, AI Agents, Agent Framework, Azure AI Agent Service, Prompt Agents, Hosted Agents, Microsoft Foundry">
+    <meta name="date" content="2026-04">
+    <title>Module 16: Intro to AI Agents & Agent Framework | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ============================================
+           CSS VARIABLES & RESET
+           ============================================ */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-light-purple: #e8d4f0;
+            --ms-green: #107c10;
+            --ms-yellow: #fff4ce;
+            --ms-yellow-border: #ffb900;
+            --ms-red: #d13438;
+            --ms-red-light: #fde7e9;
+            --ms-green-light: #dff6dd;
+            --ms-blue-light: #e6f2fb;
+            --text-primary: #1a1a1a;
+            --text-secondary: #505050;
+            --text-muted: #6e6e6e;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f6f6;
+            --bg-tertiary: #faf9f8;
+            --border-color: #e1dfdd;
+            --border-light: #edebe9;
+            --code-bg: #f5f5f5;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --content-max-width: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 52px;
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============================================
+           SCROLL PROGRESS BAR
+           ============================================ */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10000; transition: width 0.1s linear;
+        }
+
+        /* ============================================
+           TOP NAVIGATION BAR
+           ============================================ */
+        .top-nav {
+            position: sticky; top: 0; z-index: 9000;
+            background: #1b1b1b; color: #ffffff;
+            height: var(--nav-height);
+            display: flex; align-items: center;
+            padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .top-nav__logo {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: #ffffff;
+            font-weight: 600; font-size: 15px; margin-right: auto;
+        }
+        .top-nav__logo svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+        .top-nav__links { display: flex; align-items: center; gap: 24px; list-style: none; }
+        .top-nav__links a {
+            color: #cccccc; text-decoration: none; font-size: 13px;
+            font-weight: 500; transition: color var(--transition-fast);
+        }
+        .top-nav__links a:hover { color: #ffffff; }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #ffffff; padding: 72px 24px 64px;
+            text-align: center; position: relative; overflow: hidden;
+        }
+
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero__badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 24px; padding: 6px 18px;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+            text-transform: uppercase; margin-bottom: 20px; backdrop-filter: blur(8px);
+        }
+        .hero__module-number { font-size: 14px; font-weight: 400; opacity: 0.9; margin-bottom: 8px; }
+
+        .hero h1 {
+            font-size: 2.6rem; font-weight: 700; line-height: 1.2;
+            margin-bottom: 16px; max-width: 700px; margin-left: auto; margin-right: auto;
+        }
+
+        .hero__subtitle {
+            font-size: 1.15rem; opacity: 0.92; max-width: 600px;
+            margin: 0 auto 24px; line-height: 1.6;
+        }
+
+        .hero__meta {
+            display: flex; justify-content: center; gap: 24px;
+            flex-wrap: wrap; font-size: 13px; opacity: 0.85;
+        }
+        .hero__meta span { display: flex; align-items: center; gap: 6px; }
+
+        .hero__tier-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.4);
+            border-radius: 16px; padding: 4px 14px;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+            text-transform: uppercase; margin-top: 16px;
+        }
+
+        /* ============================================
+           MAIN LAYOUT: SIDEBAR + CONTENT
+           ============================================ */
+        .layout {
+            display: flex;
+            max-width: calc(var(--content-max-width) + var(--sidebar-width) + 80px);
+            margin: 0 auto; padding: 40px 24px; gap: 40px;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width); flex-shrink: 0;
+            position: sticky; top: calc(var(--nav-height) + 24px);
+            align-self: flex-start;
+            max-height: calc(100vh - var(--nav-height) - 48px); overflow-y: auto;
+        }
+
+        .sidebar__title {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; padding-left: 12px;
+        }
+        .sidebar__nav { list-style: none; }
+        .sidebar__nav li { margin-bottom: 2px; }
+
+        .sidebar__nav a {
+            display: block; padding: 7px 12px; font-size: 13px;
+            color: var(--text-secondary); text-decoration: none;
+            border-radius: var(--radius-sm); border-left: 3px solid transparent;
+            transition: all var(--transition-fast); line-height: 1.4;
+        }
+        .sidebar__nav a:hover { background: var(--bg-secondary); color: var(--ms-blue); }
+        .sidebar__nav a.active {
+            background: var(--ms-blue-light); color: var(--ms-blue);
+            border-left-color: var(--ms-blue); font-weight: 600;
+        }
+
+        .content { flex: 1; max-width: var(--content-max-width); min-width: 0; }
+
+        /* ============================================
+           TYPOGRAPHY
+           ============================================ */
+        .content h2 {
+            font-size: 1.75rem; font-weight: 700; color: var(--text-primary);
+            margin: 48px 0 16px; padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-light); scroll-margin-top: 80px;
+        }
+        .content h3 { font-size: 1.3rem; font-weight: 600; margin: 32px 0 12px; scroll-margin-top: 80px; }
+        .content h4 { font-size: 1.05rem; font-weight: 600; color: var(--text-secondary); margin: 24px 0 8px; }
+        .content p { margin-bottom: 16px; }
+        .content ul, .content ol { margin-bottom: 16px; padding-left: 28px; }
+        .content li { margin-bottom: 8px; line-height: 1.6; }
+        .content a { color: var(--ms-blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color var(--transition-fast); }
+        .content a:hover { border-bottom-color: var(--ms-blue); }
+        .content img { max-width: 100%; border-radius: var(--radius-md); }
+
+        /* ============================================
+           CODE BLOCKS
+           ============================================ */
+        .content code {
+            font-family: var(--font-mono); font-size: 0.88em;
+            background: var(--code-bg); padding: 2px 6px; border-radius: 3px; color: var(--ms-dark-blue);
+        }
+
+        .content pre {
+            background: #1e1e1e; color: #d4d4d4; border-radius: var(--radius-md);
+            padding: 20px 24px; overflow-x: auto; margin-bottom: 24px;
+            font-size: 14px; line-height: 1.6; position: relative; border: 1px solid #333;
+        }
+        .content pre code { background: none; padding: 0; border-radius: 0; color: inherit; font-size: inherit; }
+
+        .code-header {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #2d2d2d; border: 1px solid #333; border-bottom: none;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            padding: 8px 16px; font-size: 12px; color: #999; font-family: var(--font-mono);
+        }
+        .code-header + pre { border-radius: 0 0 var(--radius-md) var(--radius-md); margin-top: 0; }
+
+        .copy-btn {
+            background: transparent; border: 1px solid #555; color: #aaa;
+            padding: 3px 10px; border-radius: 3px; cursor: pointer;
+            font-size: 11px; font-family: var(--font-sans); transition: all var(--transition-fast);
+        }
+        .copy-btn:hover { background: #444; color: #fff; }
+
+        /* Syntax highlighting */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .op { color: #d4d4d4; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+
+        /* ============================================
+           CALLOUT BOXES
+           ============================================ */
+        .callout {
+            border-radius: var(--radius-md); padding: 20px 24px;
+            margin: 24px 0; border-left: 4px solid; position: relative;
+        }
+        .callout__title {
+            font-weight: 700; font-size: 14px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .callout p:last-child { margin-bottom: 0; }
+
+        .callout--info { background: var(--ms-blue-light); border-color: var(--ms-blue); }
+        .callout--info .callout__title { color: var(--ms-dark-blue); }
+        .callout--tip { background: var(--ms-yellow); border-color: var(--ms-yellow-border); }
+        .callout--tip .callout__title { color: #6d5700; }
+        .callout--success { background: var(--ms-green-light); border-color: var(--ms-green); }
+        .callout--success .callout__title { color: #0b5a0b; }
+        .callout--warning { background: var(--ms-red-light); border-color: var(--ms-red); }
+        .callout--warning .callout__title { color: #a80000; }
+        .callout--celebration {
+            background: linear-gradient(135deg, #fff9e6 0%, #f0e6ff 50%, #e6f0ff 100%);
+            border-color: var(--ms-purple); border-width: 4px;
+        }
+        .callout--celebration .callout__title { color: var(--ms-purple); font-size: 16px; }
+
+        /* ============================================
+           TABLES
+           ============================================ */
+        .table-wrapper {
+            overflow-x: auto; margin: 24px 0;
+            border-radius: var(--radius-md); border: 1px solid var(--border-color);
+        }
+        .content table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .content th {
+            background: var(--bg-secondary); font-weight: 600; text-align: left;
+            padding: 12px 16px; border-bottom: 2px solid var(--border-color); white-space: nowrap;
+        }
+        .content td { padding: 10px 16px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+        .content tr:last-child td { border-bottom: none; }
+        .content tr:hover td { background: var(--bg-tertiary); }
+
+        /* ============================================
+           VIDEO EMBEDS
+           ============================================ */
+        .video-container {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+            margin: 24px 0; border-radius: var(--radius-md); box-shadow: var(--shadow-md); background: #000;
+        }
+        .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        .video-label { font-size: 13px; color: var(--text-muted); margin-top: 8px; text-align: center; font-style: italic; }
+
+        /* ============================================
+           ARCHITECTURE / DIAGRAM CARDS
+           ============================================ */
+        .arch-diagram {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg); padding: 32px; margin: 24px 0; text-align: center;
+        }
+        .arch-diagram__title {
+            font-size: 14px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px;
+        }
+        .arch-layers { display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto; }
+
+        .arch-layer {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px;
+        }
+        .arch-layer--model { background: linear-gradient(135deg, var(--ms-blue), var(--ms-dark-blue)); color: #fff; }
+        .arch-layer--tools { background: linear-gradient(135deg, #107c10, #0e6b0e); color: #fff; }
+        .arch-layer--memory { background: linear-gradient(135deg, var(--ms-purple), #7b3fb5); color: #fff; }
+        .arch-layer--instructions { background: linear-gradient(135deg, #d83b01, #c23501); color: #fff; }
+
+        .arch-layer__icon { font-size: 20px; width: 32px; text-align: center; }
+        .arch-layer__label { flex: 1; text-align: left; }
+        .arch-layer__desc { font-size: 12px; font-weight: 400; opacity: 0.9; }
+        .arch-connector { text-align: center; color: var(--text-muted); font-size: 18px; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all var(--transition-normal);
+        }
+
+        .feature-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--ms-blue);
+            transform: translateY(-2px);
+        }
+
+        .feature-card__icon { font-size: 28px; margin-bottom: 12px; }
+        .feature-card__title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+        .feature-card__desc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+        /* Comparison cards */
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+
+        .comparison__card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+        }
+        .comparison__card--agent { border-color: var(--ms-purple); }
+        .comparison__card--chatbot { border-color: var(--ms-blue); }
+
+        .comparison__card h4 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
+
+        /* Steps */
+        .steps { counter-reset: step-counter; list-style: none; padding-left: 0; margin: 24px 0; }
+
+        .steps li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 56px;
+            margin-bottom: 24px;
+            min-height: 44px;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute; left: 0; top: 0;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--ms-blue); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 16px;
+        }
+
+        .steps li strong { display: block; font-size: 15px; margin-bottom: 4px; }
+
+        /* Key takeaways */
+        .key-takeaways {
+            background: linear-gradient(135deg, #f0e6ff, #e6f0ff);
+            border: 1px solid #d0c0e8;
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            margin: 32px 0;
+        }
+        .key-takeaways h3 { color: var(--ms-purple); margin-top: 0; margin-bottom: 16px; }
+        .key-takeaways ul { margin-bottom: 0; }
+
+        /* ============================================
+           BOTTOM NAVIGATION
+           ============================================ */
+        .bottom-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 24px 0; margin-top: 48px; border-top: 2px solid var(--border-light);
+        }
+
+        .bottom-nav a {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 20px; background: var(--bg-secondary);
+            border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            text-decoration: none; color: var(--text-primary);
+            font-weight: 600; font-size: 14px; transition: all var(--transition-fast);
+        }
+        .bottom-nav a:hover { background: var(--ms-blue); color: #fff; border-color: var(--ms-blue); }
+
+        .bottom-nav__prev { margin-right: auto; }
+        .bottom-nav__next { margin-left: auto; }
+        .back-to-top {
+            position: fixed; bottom: 32px; right: 32px;
+            width: 44px; height: 44px;
+            background: var(--ms-blue); color: #fff; border: none; border-radius: 50%;
+            cursor: pointer; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-md);
+            opacity: 0; visibility: hidden;
+            transition: all var(--transition-normal); z-index: 5000;
+        }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            background: #1b1b1b; color: #999;
+            text-align: center; padding: 32px 24px; font-size: 13px;
+        }
+        .footer a { color: #ccc; text-decoration: none; }
+        .footer a:hover { color: #fff; }
+
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 960px) {
+            .sidebar {
+                display: none;
+            }
+
+            .layout {
+                padding: 24px 16px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 48px 16px 40px;
+            }
+
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+
+            .hero__subtitle {
+                font-size: 1rem;
+            }
+
+            .content h2 {
+                font-size: 1.4rem;
+            }
+
+            .top-nav__links {
+                gap: 12px;
+            }
+
+            .top-nav__links a {
+                font-size: 12px;
+            }
+
+            .bottom-nav {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .bottom-nav a {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .arch-diagram {
+                padding: 20px;
+            }
+
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 38px;
+                height: 38px;
+            }
+        }
+
+        /* ============================================
+           PRINT STYLES
+           ============================================ */
+        @media print {
+            .top-nav,
+            .sidebar,
+            .back-to-top,
+            .scroll-progress,
+            .bottom-nav,
+            .video-container,
+            .copy-btn {
+                display: none !important;
+            }
+
+            .hero {
+                background: #f0f0f0 !important;
+                color: #000 !important;
+                padding: 32px 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .layout {
+                display: block;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .content {
+                max-width: 100%;
+            }
+
+            .content h2 {
+                page-break-after: avoid;
+            }
+
+            .content pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                border: 1px solid #ccc;
+                background: #f9f9f9 !important;
+                color: #000 !important;
+            }
+
+            .callout {
+                break-inside: avoid;
+            }
+
+            body {
+                font-size: 11pt;
+                line-height: 1.5;
+            }
+
+            a[href]::after {
+                content: " (" attr(href) ")";
+                font-size: 0.8em;
+                color: #666;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ============================================
+     TOP NAVIGATION
+     ============================================ -->
+<nav class="top-nav">
+    <a href="#" class="top-nav__logo">
+        <!-- Microsoft 4-color grid logo -->
+        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="9.5" height="9.5" fill="#f25022"/>
+            <rect x="10.5" y="0" width="9.5" height="9.5" fill="#7fba00"/>
+            <rect x="0" y="10.5" width="9.5" height="9.5" fill="#00a4ef"/>
+            <rect x="10.5" y="10.5" width="9.5" height="9.5" fill="#ffb900"/>
+        </svg>
+        AI Foundry Training Blog
+    </a>
+    <ul class="top-nav__links">
+        <li><a href="../index.html">Curriculum</a></li>
+        <li><a href="../resources.html">Resources</a></li>
+        <li><a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a></li>
+    </ul>
+</nav>
+
+<!-- ============================================
+     HERO SECTION
+     ============================================ -->
+<header class="hero">
+    <div class="hero__badge">🤖 ARC 4 · AI AGENTS</div>
+    <p class="hero__module-number">Module 16 of 45</p>
+    <h1>Intro to AI Agents &amp; Agent Framework</h1>
+    <p class="hero__subtitle">
+        Discover what AI agents are, how they differ from chatbots, and build your first prompt agent using the Azure AI Agent Service in Microsoft Foundry.
+    </p>
+    <div class="hero__meta">
+        <span>📝 Zero to Hero Training Team</span>
+        <span>📅 April 2026</span>
+        <span>⏱️ 45 min read</span>
+        <span>🎯 Intermediate</span>
+    </div>
+    <div class="hero__tier-badge">🟡 Intermediate Tier Begins</div>
+</header>
+
+<!-- ============================================
+     MAIN LAYOUT
+     ============================================ -->
+<div class="layout">
+
+    <!-- SIDEBAR TOC -->
+    <aside class="sidebar" id="sidebar">
+        <p class="sidebar__title">On This Page</p>
+        <ul class="sidebar__nav" id="tocNav">
+            <li><a href="#welcome-intermediate">Welcome to Intermediate</a></li>
+            <li><a href="#what-are-agents">What Are AI Agents?</a></li>
+            <li><a href="#agents-vs-chatbots">Agents vs. Chatbots</a></li>
+            <li><a href="#agent-service-overview">Agent Service Overview</a></li>
+            <li><a href="#agent-architecture">Agent Architecture</a></li>
+            <li><a href="#agent-types">Agent Types</a></li>
+            <li><a href="#prompt-agents-deep-dive">Prompt Agents Deep Dive</a></li>
+            <li><a href="#hosted-agents-deep-dive">Hosted Agents Deep Dive</a></li>
+            <li><a href="#choosing-agent-type">Choosing an Agent Type</a></li>
+            <li><a href="#video-resources">Video Resources</a></li>
+            <li><a href="#mini-hack">Mini Hack</a></li>
+            <li><a href="#security-considerations">Security Considerations</a></li>
+            <li><a href="#key-takeaways">Key Takeaways</a></li>
+            <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+
+        <!-- ========== CELEBRATION CALLOUT ========== -->
+        <section id="welcome-intermediate">
+            <div class="callout callout--celebration">
+                <div class="callout__title">🎉🏆 Congratulations — You've Reached Intermediate Level!</div>
+                <p>
+                    You've completed the <strong>Beginner tier</strong> (Modules 1–15) and mastered the foundations of Azure AI Foundry — from portal navigation and model deployment to prompt engineering, RAG patterns, and content safety. That's a major achievement!
+                </p>
+                <p>
+                    Starting with this module, you're stepping into the <strong>🟡 Intermediate tier</strong>, where you'll build on those fundamentals to create autonomous AI agents, multi-step workflows, advanced evaluation pipelines, and production-ready AI solutions. Welcome to <strong>Arc 4: AI Agents</strong> — the most exciting part of the journey begins now!
+                </p>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: WHAT ARE AI AGENTS ========== -->
+        <section id="what-are-agents">
+            <h2>What Are AI Agents?</h2>
+            <p>
+                AI agents represent a paradigm shift. Unlike traditional AI that responds to a single prompt and stops, <strong>AI agents are autonomous systems</strong> that reason, plan, use tools, maintain state, and take actions to accomplish goals across multiple steps.
+            </p>
+
+            <p>
+                Think of an AI agent as a knowledgeable digital colleague. When asked to "analyze Q3 sales data and prepare recommendations," a colleague doesn't just answer — they <strong>plan</strong> the approach, <strong>access tools</strong> (spreadsheets, databases), <strong>remember context</strong>, <strong>iterate</strong> on results, and <strong>deliver</strong> actionable output.
+            </p>
+
+            <p>
+                AI agents follow this same pattern. Powered by LLMs as their "reasoning engine," agents break down complex tasks, decide which tools to use, execute multi-step workflows, and adapt based on intermediate results — all without step-by-step user instructions.
+            </p>
+
+            <div class="callout callout--info">
+                <div class="callout__title">ℹ️ Key Insight</div>
+                <p>
+                    The fundamental difference is <strong>agency</strong> — the ability to make decisions and take actions autonomously. A chatbot waits for your next prompt; an agent decides what to do next on its own based on its goal, instructions, and the tools available to it.
+                </p>
+            </div>
+
+            <h3>The Evolution: From Prompts to Agents</h3>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-card__icon">💬</div>
+                    <div class="feature-card__title">Single Prompts</div>
+                    <div class="feature-card__desc">
+                        User sends one prompt, model returns one response. No memory, no tools. Example: "Translate this sentence."
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🔄</div>
+                    <div class="feature-card__title">Chat Applications</div>
+                    <div class="feature-card__desc">
+                        Multi-turn conversations with memory of the session. Still reactive — waits for user input. Example: Customer support chat.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🔗</div>
+                    <div class="feature-card__title">RAG Applications</div>
+                    <div class="feature-card__desc">
+                        Retrieves external knowledge to augment responses. Grounded in data. You built these in previous modules!
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🤖</div>
+                    <div class="feature-card__title">AI Agents</div>
+                    <div class="feature-card__desc">
+                        Autonomous, goal-driven, multi-step reasoning. Uses tools, maintains state, adapts plans. <strong>This is where we are now.</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: AGENTS VS CHATBOTS ========== -->
+        <section id="agents-vs-chatbots">
+            <h2>Agents vs. Chatbots: Understanding the Difference</h2>
+            <p>
+                One of the most common misconceptions is that AI agents and chatbots are the same thing. They're not — and understanding the difference is crucial for choosing the right architecture for your AI solutions.
+            </p>
+
+            <div class="comparison">
+                <div class="comparison__card comparison__card--chatbot">
+                    <h4>💬 Traditional Chatbot</h4>
+                    <ul>
+                        <li><strong>Reactive</strong> — responds only when prompted</li>
+                        <li><strong>Single-turn logic</strong> — each response is independent</li>
+                        <li><strong>No tool access</strong> — can only generate text</li>
+                        <li><strong>No planning</strong> — doesn't break down complex tasks</li>
+                        <li><strong>Session memory</strong> — forgets after conversation ends</li>
+                        <li><strong>Human-guided</strong> — user must direct each step</li>
+                    </ul>
+                </div>
+                <div class="comparison__card comparison__card--agent">
+                    <h4>🤖 AI Agent</h4>
+                    <ul>
+                        <li><strong>Proactive</strong> — plans and executes autonomously</li>
+                        <li><strong>Multi-step reasoning</strong> — chains of thought and actions</li>
+                        <li><strong>Tool-equipped</strong> — calls APIs, searches, computes</li>
+                        <li><strong>Goal-oriented</strong> — decomposes complex tasks into subtasks</li>
+                        <li><strong>Persistent memory</strong> — retains context across sessions</li>
+                        <li><strong>Self-directed</strong> — decides next actions independently</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>A Concrete Example</h3>
+            <p>
+                Consider: <em>"Book a meeting room for our standup next Tuesday at 10 AM, send invites, and prepare an agenda from last week's action items."</em>
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Chatbot Response</th>
+                            <th>Agent Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Room booking</strong></td>
+                            <td>"I can't book rooms. Try Outlook."</td>
+                            <td>Checks room availability → Books Room B</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Calendar invites</strong></td>
+                            <td>"Here's a template email you can send."</td>
+                            <td>Calls Calendar API → Sends invites to team</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Agenda</strong></td>
+                            <td>"Here's a generic standup template."</td>
+                            <td>Retrieves last week's notes → Extracts action items → Creates agenda</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Steps taken</strong></td>
+                            <td>1 (text response)</td>
+                            <td>6+ (plan, search, book, compose, send, confirm)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout--tip">
+                <div class="callout__title">💡 When to Use Each</div>
+                <p>
+                    <strong>Use a chatbot</strong> when your scenario is primarily Q&amp;A, doesn't require external actions, and the user is available to guide the conversation. <strong>Use an agent</strong> when you need autonomous task completion, multi-step workflows, tool integration, or complex reasoning across multiple data sources.
+                </p>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: AGENT SERVICE OVERVIEW ========== -->
+        <section id="agent-service-overview">
+            <h2>Azure AI Agent Service Overview</h2>
+            <p>
+                The <strong>Azure AI Agent Service</strong> is a fully managed platform within <strong>Microsoft Foundry</strong> for building, deploying, and scaling AI agents without managing infrastructure. It provides the runtime, tool integration, memory management, and observability to go from prototype to production.
+            </p>
+
+            <div class="callout callout--info">
+                <div class="callout__title">ℹ️ Naming Clarification</div>
+                <p>
+                    You may encounter references to "Azure AI Foundry Agent Service," "AI Agent Service," or just "Agent Service" — these all refer to the same platform. The service is a core component of the broader <strong>Microsoft Foundry</strong> platform, which provides the unified AI development experience including models, agents, evaluation, and deployment.
+                </p>
+            </div>
+
+            <h3>Core Capabilities</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-card__icon">🧠</div>
+                    <div class="feature-card__title">Model Flexibility</div>
+                    <div class="feature-card__desc">
+                        Use any model from the Azure AI model catalog — GPT-4o, GPT-4.1, Phi-4, Llama, Mistral, and more. Swap models without changing agent code.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🔧</div>
+                    <div class="feature-card__title">Built-in Tools</div>
+                    <div class="feature-card__desc">
+                        File Search, Code Interpreter, Bing Grounding, Azure Functions, Azure Logic Apps, API connections, and OpenAPI tools — all out of the box.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">💾</div>
+                    <div class="feature-card__title">Managed State</div>
+                    <div class="feature-card__desc">
+                        Threads and conversation history managed automatically. No need to build your own state store or manage token windows manually.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">📊</div>
+                    <div class="feature-card__title">Observability</div>
+                    <div class="feature-card__desc">
+                        Built-in tracing with OpenTelemetry, Application Insights integration, and the Foundry portal's trace explorer for debugging agent behavior.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🔒</div>
+                    <div class="feature-card__title">Enterprise Security</div>
+                    <div class="feature-card__desc">
+                        Azure RBAC, managed identity, VNET integration, content filtering, and data residency controls for compliance-sensitive deployments.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">⚡</div>
+                    <div class="feature-card__title">Scalable Runtime</div>
+                    <div class="feature-card__desc">
+                        Auto-scaling agent execution with managed compute. Handle spikes in agent workloads without provisioning infrastructure.
+                    </div>
+                </div>
+            </div>
+
+            <h3>How Agent Service Fits in the Foundry Ecosystem</h3>
+            <p>
+                The Azure AI Agent Service is not a standalone product — it's deeply integrated with the Microsoft Foundry ecosystem you've been learning about throughout this course:
+            </p>
+            <ul>
+                <li><strong>Model Catalog</strong> — provides the LLM "brain" for your agents</li>
+                <li><strong>AI Search</strong> — powers the File Search and knowledge retrieval tools</li>
+                <li><strong>Prompt Flow</strong> — enables advanced orchestration and evaluation</li>
+                <li><strong>Content Safety</strong> — applies content filtering to agent inputs/outputs</li>
+                <li><strong>Azure Monitor</strong> — captures telemetry and traces for production monitoring</li>
+                <li><strong>Evaluation SDK</strong> — measures agent quality with specialized metrics</li>
+            </ul>
+        </section>
+
+        <!-- ========== SECTION: AGENT ARCHITECTURE ========== -->
+        <section id="agent-architecture">
+            <h2>Agent Architecture: The Four Pillars</h2>
+            <p>
+                Every AI agent in Azure AI Foundry is built on four fundamental components. Understanding this architecture is essential for designing effective agents.
+            </p>
+
+            <div class="arch-diagram">
+                <div class="arch-diagram__title">AI Agent Architecture</div>
+                <div class="arch-layers">
+                    <div class="arch-layer arch-layer--instructions">
+                        <span class="arch-layer__icon">📋</span>
+                        <div class="arch-layer__label">
+                            Instructions
+                            <div class="arch-layer__desc">System prompt defining persona, goals, rules &amp; constraints</div>
+                        </div>
+                    </div>
+                    <div class="arch-connector">↕</div>
+                    <div class="arch-layer arch-layer--model">
+                        <span class="arch-layer__icon">🧠</span>
+                        <div class="arch-layer__label">
+                            Model (LLM)
+                            <div class="arch-layer__desc">The reasoning engine — GPT-4o, Phi-4, Llama, etc.</div>
+                        </div>
+                    </div>
+                    <div class="arch-connector">↕</div>
+                    <div class="arch-layer arch-layer--tools">
+                        <span class="arch-layer__icon">🔧</span>
+                        <div class="arch-layer__label">
+                            Tools
+                            <div class="arch-layer__desc">Code Interpreter, File Search, APIs, Azure Functions</div>
+                        </div>
+                    </div>
+                    <div class="arch-connector">↕</div>
+                    <div class="arch-layer arch-layer--memory">
+                        <span class="arch-layer__icon">💾</span>
+                        <div class="arch-layer__label">
+                            Memory (Threads)
+                            <div class="arch-layer__desc">Conversation history, file uploads, execution state</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>1. Instructions (System Prompt)</h3>
+            <p>
+                Instructions are the <strong>soul of your agent</strong> — they define who it is, what it should do, how it should behave, and what constraints apply.
+            </p>
+
+            <div class="code-header">
+                <span>Agent Instructions Example</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+<pre><code><span class="cm">## Role</span>
+You are a <span class="str">Financial Analysis Agent</span> for Contoso Corp.
+
+<span class="cm">## Goals</span>
+- Analyze financial data uploaded by users
+- Generate quarterly reports with key metrics
+- Provide actionable recommendations based on trends
+
+<span class="cm">## Constraints</span>
+- Never fabricate financial numbers — always use provided data
+- If data is incomplete, clearly state what's missing
+- Format all currency values in USD with 2 decimal places
+- Always include a confidence level with recommendations
+
+<span class="cm">## Tools Available</span>
+- Use <span class="str">Code Interpreter</span> for calculations and charts
+- Use <span class="str">File Search</span> to reference company policies
+- Use <span class="str">Bing Grounding</span> for market comparisons</code></pre>
+
+            <div class="callout callout--tip">
+                <div class="callout__title">💡 Instruction Design Tip</div>
+                <p>
+                    Structure your instructions with clear sections: <strong>Role</strong> (who is the agent), <strong>Goals</strong> (what should it accomplish), <strong>Constraints</strong> (what it must NOT do), and <strong>Tool guidance</strong> (when to use which tools). This structure helps the model follow instructions reliably. You'll practice advanced prompt engineering for agents in later modules.
+                </p>
+            </div>
+
+            <h3>2. Model (The Reasoning Engine)</h3>
+            <p>
+                The model is the <strong>brain of your agent</strong> — it processes instructions, reasons about tasks, decides which tools to use, and generates responses. You can choose from any model in the Azure AI catalog:
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Best For</th>
+                            <th>Key Strengths</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>GPT-4o</strong></td>
+                            <td>General-purpose agents</td>
+                            <td>Strong reasoning, multimodal, fast</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GPT-4.1</strong></td>
+                            <td>Complex agentic workflows</td>
+                            <td>Best instruction following, long context</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GPT-4o-mini</strong></td>
+                            <td>Cost-sensitive agents</td>
+                            <td>Fast, affordable, good for simpler tasks</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phi-4</strong></td>
+                            <td>Lightweight agents</td>
+                            <td>Small, efficient, on-device capable</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Llama 4</strong></td>
+                            <td>Open-source requirements</td>
+                            <td>Flexible licensing, strong performance</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>3. Tools (The Agent's Hands)</h3>
+            <p>
+                Tools give your agent the ability to <strong>interact with the real world</strong>. Without tools, an agent is just a chatbot with a fancy system prompt.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-card__icon">📂</div>
+                    <div class="feature-card__title">File Search</div>
+                    <div class="feature-card__desc">
+                        Searches through uploaded files and knowledge bases using Azure AI Search. Supports PDFs, DOCX, TXT, and more.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">💻</div>
+                    <div class="feature-card__title">Code Interpreter</div>
+                    <div class="feature-card__desc">
+                        Executes Python code in a sandboxed environment. Performs calculations, generates charts, processes data files.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🌐</div>
+                    <div class="feature-card__title">Bing Grounding</div>
+                    <div class="feature-card__desc">
+                        Searches the web for real-time information. Grounds agent responses in current, factual data from the internet.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">⚙️</div>
+                    <div class="feature-card__title">Azure Functions</div>
+                    <div class="feature-card__desc">
+                        Calls custom serverless functions. Extend your agent with any custom business logic, API integrations, or computations.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🔗</div>
+                    <div class="feature-card__title">OpenAPI Tools</div>
+                    <div class="feature-card__desc">
+                        Connect to any REST API via OpenAPI specification. Your agent can interact with CRMs, ERPs, or any third-party service.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">🔄</div>
+                    <div class="feature-card__title">Azure Logic Apps</div>
+                    <div class="feature-card__desc">
+                        Trigger automated workflows. Send emails, update databases, integrate with 400+ connectors through Logic Apps.
+                    </div>
+                </div>
+            </div>
+
+            <h3>4. Memory (Threads &amp; State)</h3>
+            <p>
+                Memory is managed through <strong>threads</strong> — conversation sessions storing the complete interaction history:
+            </p>
+            <ul>
+                <li><strong>Message history</strong> — all user and agent messages in order</li>
+                <li><strong>File attachments</strong> — files uploaded during the conversation</li>
+                <li><strong>Tool execution results</strong> — outputs from Code Interpreter, File Search, etc.</li>
+                <li><strong>Run metadata</strong> — details about each agent execution step</li>
+            </ul>
+
+            <p>
+                The Agent Service handles <strong>token management automatically</strong> — truncating older messages when the context window fills up while retaining the most relevant history.
+            </p>
+
+            <div class="code-header">
+                <span>Python — Creating a Thread and Running an Agent</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+<pre><code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="cm"># Connect to your Foundry project</span>
+<span class="param">client</span> = AIProjectClient(
+    <span class="param">credential</span>=DefaultAzureCredential(),
+    <span class="param">endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+<span class="cm"># Create a new thread (conversation session)</span>
+<span class="param">thread</span> = client.agents.<span class="fn">create_thread</span>()
+
+<span class="cm"># Add a user message to the thread</span>
+client.agents.<span class="fn">create_message</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">role</span>=<span class="str">"user"</span>,
+    <span class="param">content</span>=<span class="str">"Analyze the Q3 revenue trends from the uploaded data."</span>
+)
+
+<span class="cm"># Run the agent on the thread</span>
+<span class="param">run</span> = client.agents.<span class="fn">create_and_process_run</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">agent_id</span>=<span class="str">"&lt;your-agent-id&gt;"</span>
+)
+
+<span class="cm"># Retrieve the agent's response</span>
+<span class="param">messages</span> = client.agents.<span class="fn">list_messages</span>(<span class="param">thread_id</span>=thread.id)
+<span class="kw">for</span> msg <span class="kw">in</span> messages:
+    <span class="kw">if</span> msg.role == <span class="str">"assistant"</span>:
+        <span class="fn">print</span>(msg.content)</code></pre>
+        </section>
+
+        <!-- ========== SECTION: AGENT TYPES ========== -->
+        <section id="agent-types">
+            <h2>Agent Types: Prompt Agents vs. Hosted Agents</h2>
+            <p>
+                Azure AI Foundry offers <strong>two primary agent types</strong> for different complexity levels and deployment scenarios.
+            </p>
+
+            <div class="comparison">
+                <div class="comparison__card comparison__card--chatbot">
+                    <h4>📝 Prompt Agent</h4>
+                    <ul>
+                        <li><strong>No code required</strong> — configure entirely in the portal</li>
+                        <li>Powered by a model + instructions + built-in tools</li>
+                        <li>Ideal for getting started quickly</li>
+                        <li>Managed by the platform — no infrastructure</li>
+                        <li>Use built-in tools: File Search, Code Interpreter, Bing</li>
+                        <li>Great for Q&amp;A, data analysis, document processing</li>
+                    </ul>
+                </div>
+                <div class="comparison__card comparison__card--agent">
+                    <h4>🐳 Hosted Agent</h4>
+                    <ul>
+                        <li><strong>Custom code</strong> — bring your own Python/container</li>
+                        <li>Full control over agent logic and orchestration</li>
+                        <li>Supports any framework (Semantic Kernel, LangChain, etc.)</li>
+                        <li>Containerized deployment with managed hosting</li>
+                        <li>Integrate any external service, database, or API</li>
+                        <li>Ideal for complex, multi-agent workflows</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: PROMPT AGENTS DEEP DIVE ========== -->
+        <section id="prompt-agents-deep-dive">
+            <h2>Prompt Agents Deep Dive</h2>
+            <p>
+                Prompt agents are the <strong>fastest path to your first AI agent</strong>. No code required — define the agent entirely through the portal or API. The platform handles execution, tool orchestration, and state management.
+            </p>
+
+            <h3>What Makes a Prompt Agent</h3>
+            <p>
+                A prompt agent is defined by a configuration that includes:
+            </p>
+            <ul>
+                <li><strong>Name &amp; Description</strong> — identifies the agent in your project</li>
+                <li><strong>Model deployment</strong> — which LLM to use (e.g., GPT-4o)</li>
+                <li><strong>Instructions</strong> — the system prompt that defines behavior</li>
+                <li><strong>Tools</strong> — which built-in tools the agent can access</li>
+                <li><strong>Knowledge sources</strong> — files or data the agent can search</li>
+                <li><strong>Parameters</strong> — temperature, top-p, and response format settings</li>
+            </ul>
+
+            <div class="code-header">
+                <span>Python SDK — Creating a Prompt Agent</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+<pre><code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    FileSearchTool,
+    CodeInterpreterTool,
+    BingGroundingTool
+)
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="param">client</span> = AIProjectClient(
+    <span class="param">credential</span>=DefaultAzureCredential(),
+    <span class="param">endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+<span class="cm"># Define the tools this agent can use</span>
+<span class="param">tools</span> = [
+    FileSearchTool(),
+    CodeInterpreterTool(),
+    BingGroundingTool(<span class="param">connection_name</span>=<span class="str">"bing-connection"</span>)
+]
+
+<span class="cm"># Create the prompt agent</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"Financial Analyst"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a financial analyst agent for Contoso Corp.
+    Analyze uploaded financial documents, compute key metrics,
+    and provide data-driven recommendations.
+    Always show your calculations using Code Interpreter.
+    Cross-reference company policies using File Search."""</span>,
+    <span class="param">tools</span>=tools,
+    <span class="param">temperature</span>=<span class="num">0.3</span>,
+    <span class="param">top_p</span>=<span class="num">0.9</span>
+)
+
+<span class="fn">print</span>(<span class="str">f"Agent created: <span class="param">{agent.id}</span>"</span>)</code></pre>
+
+            <h3>When to Choose Prompt Agents</h3>
+            <ul>
+                <li>You want to <strong>prototype quickly</strong> without writing code</li>
+                <li>Your use case primarily uses <strong>built-in tools</strong> (File Search, Code Interpreter, Bing)</li>
+                <li>You need <strong>no custom business logic</strong> beyond what the model provides</li>
+                <li>You're building a <strong>single-agent solution</strong> (not multi-agent orchestration)</li>
+                <li>You want the <strong>simplest possible deployment</strong> — fully managed by the platform</li>
+            </ul>
+        </section>
+
+        <!-- ========== SECTION: HOSTED AGENTS DEEP DIVE ========== -->
+        <section id="hosted-agents-deep-dive">
+            <h2>Hosted Agents Deep Dive</h2>
+            <p>
+                Hosted agents give you <strong>full control over your agent's logic</strong> while benefiting from Foundry's managed infrastructure. Write custom Python code, package it as a container, and deploy to the Agent Service.
+            </p>
+
+            <h3>Architecture of a Hosted Agent</h3>
+            <p>
+                A hosted agent consists of:
+            </p>
+            <ul>
+                <li><strong>Custom code</strong> — your Python application with agent logic</li>
+                <li><strong>agent.yaml</strong> — configuration file defining the agent's metadata and entry point</li>
+                <li><strong>Container image</strong> — Docker image pushed to Azure Container Registry (ACR)</li>
+                <li><strong>Managed hosting</strong> — the Agent Service runs your container with auto-scaling</li>
+            </ul>
+
+            <div class="code-header">
+                <span>agent.yaml — Hosted Agent Configuration</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+<pre><code><span class="kw">name</span>: <span class="str">order-processing-agent</span>
+<span class="kw">description</span>: <span class="str">Processes customer orders and manages inventory</span>
+<span class="kw">model</span>: <span class="str">gpt-4o</span>
+<span class="kw">instructions</span>: |
+  <span class="str">You are an order processing agent. Validate orders,</span>
+  <span class="str">check inventory, compute totals, and update records.</span>
+<span class="kw">tools</span>:
+  - <span class="kw">type</span>: <span class="str">function</span>
+    <span class="kw">function</span>:
+      <span class="kw">name</span>: <span class="str">check_inventory</span>
+      <span class="kw">description</span>: <span class="str">Check product availability</span>
+      <span class="kw">parameters</span>:
+        <span class="kw">type</span>: <span class="str">object</span>
+        <span class="kw">properties</span>:
+          <span class="kw">product_id</span>:
+            <span class="kw">type</span>: <span class="str">string</span>
+            <span class="kw">description</span>: <span class="str">The product SKU</span>
+<span class="kw">entry_point</span>: <span class="str">app.main:agent_handler</span></code></pre>
+
+            <h3>When to Choose Hosted Agents</h3>
+            <ul>
+                <li>You need <strong>custom business logic</strong> that goes beyond built-in tools</li>
+                <li>You're building <strong>multi-agent systems</strong> with coordination between agents</li>
+                <li>You need to <strong>integrate with proprietary databases</strong>, internal APIs, or legacy systems</li>
+                <li>You want to use a <strong>specific framework</strong> like Semantic Kernel, LangChain, or AutoGen</li>
+                <li>You require <strong>fine-grained control</strong> over the agent's reasoning loop</li>
+            </ul>
+
+            <div class="callout callout--info">
+                <div class="callout__title">ℹ️ Looking Ahead</div>
+                <p>
+                    In upcoming modules, you'll build hosted agents with custom tools, multi-agent orchestration, and production deployment. For now, focus on understanding the difference — and we'll start hands-on with prompt agents in the Mini Hack below.
+                </p>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: CHOOSING AN AGENT TYPE ========== -->
+        <section id="choosing-agent-type">
+            <h2>Choosing the Right Agent Type</h2>
+            <p>
+                Use this decision framework to guide your choice:
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Criteria</th>
+                            <th>Prompt Agent ✅</th>
+                            <th>Hosted Agent ✅</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Development speed</strong></td>
+                            <td>Minutes to deploy</td>
+                            <td>Hours to days</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Code required</strong></td>
+                            <td>None</td>
+                            <td>Python + Docker</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Customization</strong></td>
+                            <td>Instructions + built-in tools</td>
+                            <td>Unlimited — any code</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tool integration</strong></td>
+                            <td>Built-in tools only</td>
+                            <td>Any API, service, or SDK</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Multi-agent</strong></td>
+                            <td>Single agent</td>
+                            <td>Multi-agent orchestration</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Framework support</strong></td>
+                            <td>Agent Service native</td>
+                            <td>Semantic Kernel, LangChain, etc.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ideal for</strong></td>
+                            <td>Prototyping, simple tasks</td>
+                            <td>Production, complex workflows</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Infrastructure</strong></td>
+                            <td>Fully managed</td>
+                            <td>Container-based (managed hosting)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout--success">
+                <div class="callout__title">✅ Recommended Approach</div>
+                <p>
+                    <strong>Start with prompt agents</strong> to validate your use case quickly, then graduate to hosted agents when you need custom logic, external integrations, or multi-agent patterns. Many production systems start as prompt agents and evolve into hosted agents as requirements grow.
+                </p>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: VIDEO RESOURCES ========== -->
+        <section id="video-resources">
+            <h2>Video Resources</h2>
+            <p>
+                Watch these videos to see AI agents and the Microsoft Foundry platform in action.
+            </p>
+
+            <h3>Microsoft Foundry — AI App &amp; Agent Factory</h3>
+            <div class="video-container">
+                <iframe
+                    src="https://www.youtube.com/embed/C6rxEGJay70"
+                    title="Microsoft Foundry - AI app & agent factory | MS Mechanics"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy">
+                </iframe>
+            </div>
+            <p class="video-label">MS Mechanics — Microsoft Foundry: AI app &amp; agent factory</p>
+
+            <h3>Build an AI Agent from Scratch Using Microsoft Foundry</h3>
+            <div class="video-container">
+                <iframe
+                    src="https://www.youtube.com/embed/wL8H0RySf6I"
+                    title="Build An AI Agent From Scratch Using Microsoft Foundry | Azure Innovation Station"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy">
+                </iframe>
+            </div>
+            <p class="video-label">Azure Innovation Station — Build an AI Agent from Scratch Using Microsoft Foundry</p>
+        </section>
+
+        <!-- ========== SECTION: MINI HACK ========== -->
+        <section id="mini-hack">
+            <h2>🧪 Mini Hack: Create Your First Prompt Agent</h2>
+            <p>
+                Time to get hands-on! In this Mini Hack, you'll create your first prompt agent using the Azure AI Foundry portal. No code required — just the portal and your creativity.
+            </p>
+
+            <div class="callout callout--info">
+                <div class="callout__title">ℹ️ Prerequisites</div>
+                <p>
+                    You need an <strong>Azure AI Foundry project</strong> with a <strong>deployed GPT-4o model</strong> (or any chat model from the catalog). If you completed Modules 3–5, you already have this set up. If not, refer to Module 4 for model deployment instructions.
+                </p>
+            </div>
+
+            <h3>Step-by-Step Instructions</h3>
+            <ol class="steps">
+                <li>
+                    <strong>Navigate to the Agent Builder</strong>
+                    Go to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>, open your project, and click <strong>"Agents"</strong> in the left navigation menu. Click <strong>"+ New agent"</strong> to start.
+                </li>
+                <li>
+                    <strong>Configure the Agent Basics</strong>
+                    Set the agent name to <code>Travel Planner</code>. Select your deployed <strong>GPT-4o</strong> model from the model dropdown. Leave the default parameters for now.
+                </li>
+                <li>
+                    <strong>Write the Instructions</strong>
+                    In the Instructions field, enter:
+                    <br><br>
+                    <em>"You are a helpful travel planning agent. Help users plan trips by suggesting destinations, creating itineraries, estimating budgets, and providing travel tips. Always ask clarifying questions about travel dates, budget range, and preferences before making recommendations. Format itineraries with day-by-day breakdowns."</em>
+                </li>
+                <li>
+                    <strong>Enable Tools</strong>
+                    Toggle on <strong>Code Interpreter</strong> (for budget calculations) and <strong>Bing Grounding</strong> (for current travel information). Leave File Search off for now.
+                </li>
+                <li>
+                    <strong>Test in the Playground</strong>
+                    Click <strong>"Try in Playground"</strong> and send a message: <em>"I want to plan a 5-day trip to Japan for two people in November with a $5,000 budget."</em> Watch how the agent asks follow-up questions, uses Bing for current info, and provides structured recommendations.
+                </li>
+                <li>
+                    <strong>Iterate on Instructions</strong>
+                    Try adding a constraint like <em>"Always include at least one off-the-beaten-path recommendation"</em> and test again. Observe how the agent's behavior changes with updated instructions.
+                </li>
+            </ol>
+
+            <div class="callout callout--success">
+                <div class="callout__title">✅ What You Just Built</div>
+                <p>
+                    Congratulations! You've created your first AI agent. Unlike the chatbots you've built before, this agent can <strong>use tools autonomously</strong> — it decides when to search the web and when to run calculations without you telling it to. That's the power of agents.
+                </p>
+            </div>
+
+            <div class="callout callout--tip">
+                <div class="callout__title">💡 Bonus Challenge</div>
+                <p>
+                    Try these extensions to deepen your understanding:
+                </p>
+                <ul>
+                    <li>Create a second agent — a "Restaurant Recommender" — and compare how different instructions produce different behaviors with the same model</li>
+                    <li>Upload a CSV file with hotel prices and enable File Search to let the agent reference it</li>
+                    <li>Adjust the <strong>temperature</strong> from 0.3 to 0.9 and observe how response creativity changes</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ========== SECTION: SECURITY ========== -->
+        <section id="security-considerations">
+            <h2>Security Considerations for Agents</h2>
+            <p>
+                Because agents take <strong>autonomous actions</strong>, security is critical. Key principles:
+            </p>
+
+            <div class="callout callout--warning">
+                <div class="callout__title">⚠️ Agent Security is Non-Negotiable</div>
+                <p>
+                    An agent with unrestricted tool access and poor instructions can cause real harm — deleting data, exposing sensitive information, or executing unintended operations. Always apply the <strong>principle of least privilege</strong>: give agents only the tools and permissions they need for their specific task.
+                </p>
+            </div>
+
+            <ul>
+                <li><strong>Least Privilege</strong> — Only enable the tools your agent actually needs. Don't enable Code Interpreter if the agent only does Q&amp;A.</li>
+                <li><strong>Content Filtering</strong> — Always keep Azure Content Safety filters active on agent inputs and outputs.</li>
+                <li><strong>Managed Identity</strong> — Use Azure Managed Identity for service-to-service authentication. Never embed API keys in instructions.</li>
+                <li><strong>Input Validation</strong> — Guard against prompt injection attempts by including defensive instructions.</li>
+                <li><strong>Output Guardrails</strong> — Define what the agent should <em>never</em> do in its instructions (e.g., "Never share personal data" or "Never execute destructive operations").</li>
+                <li><strong>Monitoring</strong> — Enable tracing and logging to audit all agent actions in production.</li>
+                <li><strong>Human-in-the-Loop</strong> — For high-stakes decisions, require human approval before the agent takes action.</li>
+            </ul>
+        </section>
+
+        <!-- ========== KEY TAKEAWAYS ========== -->
+        <section id="key-takeaways">
+            <div class="key-takeaways">
+                <h3>🎯 Key Takeaways</h3>
+                <ul>
+                    <li><strong>AI agents are autonomous, goal-driven systems</strong> that use LLMs to reason, plan, and take actions — fundamentally different from reactive chatbots.</li>
+                    <li><strong>The four pillars of agent architecture</strong> are Instructions (persona/goals), Model (reasoning engine), Tools (actions), and Memory (threads/state).</li>
+                    <li><strong>Azure AI Agent Service</strong> in Microsoft Foundry provides a fully managed platform for building, deploying, and scaling agents.</li>
+                    <li><strong>Prompt agents</strong> are configured without code (portal/API) and use built-in tools — ideal for rapid prototyping and simpler use cases.</li>
+                    <li><strong>Hosted agents</strong> use custom code in containers — required for complex business logic, custom integrations, and multi-agent systems.</li>
+                    <li><strong>Start with prompt agents</strong>, validate your use case, then graduate to hosted agents as complexity grows.</li>
+                    <li><strong>Security is paramount</strong> — always apply least privilege, content filtering, and monitoring for autonomous agents.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ========== NEXT STEPS ========== -->
+        <section id="next-steps">
+            <h2>Next Steps</h2>
+            <p>
+                You've taken your first step into the world of AI agents — an exciting new paradigm that goes far beyond chatbots. Here's what's coming next in Arc 4:
+            </p>
+            <ul>
+                <li><strong>Module 17</strong> — Build agents with tools (File Search, Code Interpreter, Bing grounding) and learn how tool calling works under the hood</li>
+                <li><strong>Module 18</strong> — Master agent instructions and prompt engineering specifically for agentic workflows</li>
+                <li><strong>Module 19</strong> — Implement multi-agent patterns and orchestration using the Agent Service</li>
+                <li><strong>Module 20</strong> — Deploy and monitor production agents with observability and tracing</li>
+            </ul>
+
+            <div class="callout callout--tip">
+                <div class="callout__title">💡 Preparation for Module 17</div>
+                <p>
+                    Before moving to Module 17, make sure your Travel Planner agent from the Mini Hack is working. Experiment with different tool combinations and instruction styles. The more you play with prompt agents now, the faster you'll progress through the upcoming agent modules.
+                </p>
+            </div>
+        </section>
+
+        <!-- ========== BOTTOM NAVIGATION ========== -->
+        <nav class="bottom-nav">
+            <a href="../module-15/blog.html" class="bottom-nav__prev">
+                ← Module 15
+            </a>
+            <a href="../module-17/blog.html" class="bottom-nav__next">
+                Module 17 →
+            </a>
+        </nav>
+
+    </main>
+</div>
+
+<!-- ============================================
+     FOOTER
+     ============================================ -->
+<footer class="footer">
+    <p>
+        Azure AI Foundry: Zero to Hero Training Course &middot;
+        Module 16: Intro to AI Agents &amp; Agent Framework &middot;
+        <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>
+    </p>
+    <p style="margin-top: 8px; font-size: 12px;">
+        &copy; 2026 Zero to Hero Training Team. For educational purposes. Content based on publicly available Azure AI Foundry features.
+    </p>
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+(function() {
+    'use strict';
+
+    // ---- Scroll Progress Bar ----
+    const scrollProgress = document.getElementById('scrollProgress');
+    function updateScrollProgress() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        scrollProgress.style.width = scrollPercent + '%';
+    }
+
+    // ---- Back to Top ----
+    const backToTop = document.getElementById('backToTop');
+    function updateBackToTop() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > 400) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    }
+
+    backToTop.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ---- Sticky TOC with IntersectionObserver ----
+    const tocLinks = document.querySelectorAll('#tocNav a');
+    const sections = [];
+
+    tocLinks.forEach(function(link) {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+            const section = document.getElementById(href.substring(1));
+            if (section) {
+                sections.push({ el: section, link: link });
+            }
+        }
+    });
+
+    function clearActiveLinks() {
+        tocLinks.forEach(function(link) {
+            link.classList.remove('active');
+        });
+    }
+
+    if ('IntersectionObserver' in window && sections.length > 0) {
+        const observerOptions = {
+            root: null,
+            rootMargin: '-80px 0px -70% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    clearActiveLinks();
+                    var matchingSection = sections.find(function(s) {
+                        return s.el === entry.target;
+                    });
+                    if (matchingSection) {
+                        matchingSection.link.classList.add('active');
+                    }
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(function(s) {
+            observer.observe(s.el);
+        });
+    }
+
+    // ---- Scroll Event Listener (throttled) ----
+    var ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                updateScrollProgress();
+                updateBackToTop();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+
+    // Initial updates
+    updateScrollProgress();
+    updateBackToTop();
+})();
+
+// ---- Copy Code Button ----
+function copyCode(btn) {
+    var pre = btn.closest('.code-header').nextElementSibling;
+    if (!pre) return;
+    var code = pre.querySelector('code');
+    var text = code ? code.textContent : pre.textContent;
+    navigator.clipboard.writeText(text).then(function() {
+        var originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.color = '#4ec9b0';
+        btn.style.borderColor = '#4ec9b0';
+        setTimeout(function() {
+            btn.textContent = originalText;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    }).catch(function() {
+        btn.textContent = 'Failed';
+        setTimeout(function() {
+            btn.textContent = 'Copy';
+        }, 2000);
+    });
+}
+</script>
+</body>
+</html>

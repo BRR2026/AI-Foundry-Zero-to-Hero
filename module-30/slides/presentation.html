@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 30: Cost Optimization &amp; Quota Management — AI Foundry Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --text-subtle: #6e7681;
+  --blue: #58a6ff;
+  --blue-dark: #1f6feb;
+  --green: #3fb950;
+  --green-dark: #238636;
+  --orange: #f0883e;
+  --orange-dark: #bd561d;
+  --purple: #bc8cff;
+  --red: #f85149;
+  --pink: #f778ba;
+  --yellow: #d29922;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  --slide-transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Progress Bar ── */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  z-index: 1000;
+  transition: width 0.4s ease;
+}
+
+/* ── Slide Counter ── */
+#slide-counter {
+  position: fixed;
+  bottom: 24px; right: 32px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-subtle);
+  font-family: var(--font-mono);
+  z-index: 900;
+  user-select: none;
+}
+
+/* ── Navigation Controls ── */
+.nav-controls {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 12px;
+  z-index: 900;
+}
+.nav-btn {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.nav-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text);
+  border-color: var(--blue);
+}
+.nav-btn:active { transform: scale(0.95); }
+
+/* ── Deck & Slides ── */
+#deck {
+  width: 100vw; height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100vw; height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 100px 80px;
+  opacity: 0;
+  transform: translateX(60px);
+  pointer-events: none;
+  transition: opacity var(--slide-transition), transform var(--slide-transition);
+  overflow-y: auto;
+}
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.slide.prev {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+
+/* ── Typography ── */
+h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; margin-bottom: 16px; letter-spacing: -0.02em; }
+h2 { font-size: 2rem; font-weight: 700; margin-bottom: 28px; letter-spacing: -0.01em; }
+h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
+p  { color: var(--text-muted); margin-bottom: 12px; }
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-green {
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Title Slide ── */
+.title-arc {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 20px;
+}
+.title-divider {
+  width: 80px; height: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  border-radius: 2px;
+  margin: 24px 0;
+}
+.title-course {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-subtle);
+}
+.slide-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  max-width: 700px;
+  line-height: 1.7;
+}
+
+/* ── Grids ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.card h3 { color: var(--text); }
+.card p, .card li { color: var(--text-muted); font-size: 0.92rem; }
+.card ul { list-style: none; padding: 0; }
+.card ul li { padding: 5px 0; padding-left: 20px; position: relative; }
+.card ul li::before {
+  content: '›';
+  position: absolute; left: 0;
+  color: var(--blue);
+  font-weight: 700;
+}
+.card.blue-accent   { border-top: 3px solid var(--blue); }
+.card.green-accent  { border-top: 3px solid var(--green); }
+.card.orange-accent { border-top: 3px solid var(--orange); }
+.card.purple-accent { border-top: 3px solid var(--purple); }
+.card.red-accent    { border-top: 3px solid var(--red); }
+.card.yellow-accent { border-top: 3px solid var(--yellow); }
+
+.card-icon {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* ── Bullet Lists ── */
+.check-list { list-style: none; padding: 0; }
+.check-list li {
+  padding: 8px 0 8px 32px;
+  position: relative;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.check-list li::before {
+  content: '✓';
+  position: absolute; left: 0;
+  color: var(--green);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.bullet-list { list-style: none; padding: 0; }
+.bullet-list li {
+  padding: 7px 0 7px 24px;
+  position: relative;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+}
+.bullet-list li::before {
+  content: '▸';
+  position: absolute; left: 0;
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* ── Tables ── */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 16px;
+}
+.comparison-table th {
+  background: var(--blue-dark);
+  color: var(--text);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+.comparison-table th:first-child { border-radius: 8px 0 0 0; }
+.comparison-table th:last-child  { border-radius: 0 8px 0 0; }
+.comparison-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.comparison-table tr:last-child td { border-bottom: none; }
+.comparison-table tbody tr:hover { background: var(--bg-tertiary); }
+.comparison-table .check { color: var(--green); font-weight: 600; }
+.comparison-table .none  { color: var(--text-subtle); }
+.comparison-table .cost-low    { color: var(--green); font-weight: 600; }
+.comparison-table .cost-med    { color: var(--orange); font-weight: 600; }
+.comparison-table .cost-high   { color: var(--red); font-weight: 600; }
+
+/* ── Code Blocks ── */
+.code-block {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+.code-block .kw  { color: var(--purple); }
+.code-block .fn  { color: var(--blue); }
+.code-block .str { color: var(--green); }
+.code-block .num { color: var(--orange); }
+.code-block .cmt { color: var(--text-subtle); font-style: italic; }
+
+/* ── Highlight Box ── */
+.highlight-box {
+  background: linear-gradient(135deg, rgba(31,111,235,0.1), rgba(188,140,255,0.08));
+  border: 1px solid rgba(88,166,255,0.25);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-top: 20px;
+}
+.highlight-box.green {
+  background: linear-gradient(135deg, rgba(63,185,80,0.1), rgba(88,166,255,0.08));
+  border-color: rgba(63,185,80,0.3);
+}
+.highlight-box.orange {
+  background: linear-gradient(135deg, rgba(240,136,62,0.1), rgba(210,153,34,0.08));
+  border-color: rgba(240,136,62,0.25);
+}
+.highlight-box h3 { margin-bottom: 8px; }
+
+/* ── Stat Cards ── */
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-subtle);
+}
+
+/* ── Progress Indicator ── */
+.course-progress {
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: inline-block;
+}
+.course-progress .bar-track {
+  width: 280px; height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.course-progress .bar-fill {
+  height: 100%;
+  width: 66.7%;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  border-radius: 4px;
+}
+
+/* ── Tag ── */
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tag.blue   { background: rgba(88,166,255,0.15); color: var(--blue); }
+.tag.green  { background: rgba(63,185,80,0.15);  color: var(--green); }
+.tag.orange { background: rgba(240,136,62,0.15); color: var(--orange); }
+.tag.red    { background: rgba(248,81,73,0.15);  color: var(--red); }
+.tag.purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+/* ── Animations ── */
+.anim-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.anim-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.anim-item:nth-child(1) { transition-delay: 0.05s; }
+.anim-item:nth-child(2) { transition-delay: 0.12s; }
+.anim-item:nth-child(3) { transition-delay: 0.19s; }
+.anim-item:nth-child(4) { transition-delay: 0.26s; }
+.anim-item:nth-child(5) { transition-delay: 0.33s; }
+.anim-item:nth-child(6) { transition-delay: 0.40s; }
+.anim-item:nth-child(7) { transition-delay: 0.47s; }
+.anim-item:nth-child(8) { transition-delay: 0.54s; }
+
+/* ── Next Module Banner ── */
+.next-module {
+  margin-top: 20px;
+  padding: 16px 24px;
+  background: rgba(248,81,73,0.08);
+  border: 1px solid rgba(248,81,73,0.25);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.next-module .emoji { font-size: 1.1rem; margin-right: 6px; }
+
+/* ── Steps ── */
+.step-list { list-style: none; padding: 0; counter-reset: step-counter; }
+.step-list li {
+  padding: 10px 0 10px 42px;
+  position: relative;
+  counter-increment: step-counter;
+  font-size: 0.98rem;
+  color: var(--text-muted);
+}
+.step-list li::before {
+  content: counter(step-counter);
+  position: absolute; left: 0; top: 10px;
+  width: 28px; height: 28px;
+  background: var(--blue-dark);
+  color: var(--text);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+}
+
+/* ── Responsive Tweaks ── */
+@media (max-width: 1200px) {
+  .slide { padding: 50px 60px 80px; }
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.7rem; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .slide { padding: 40px 28px 80px; }
+  h1 { font-size: 1.7rem; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar" style="width: 7.14%"></div>
+
+<!-- Slide Counter -->
+<div id="slide-counter">Slide <span id="current">1</span> / <span id="total">14</span></div>
+
+<!-- Navigation Controls -->
+<div class="nav-controls">
+  <button class="nav-btn" id="prev-btn" aria-label="Previous slide">◀</button>
+  <button class="nav-btn" id="next-btn" aria-label="Next slide">▶</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE DECK
+     ════════════════════════════════════════════════════════════════ -->
+<div id="deck">
+
+  <!-- ── SLIDE 1 — Title ── -->
+  <div class="slide active">
+    <div class="title-arc anim-item">ARC 6 · DEPLOYMENT &amp; MLOps</div>
+    <h1 class="gradient-text anim-item">Module 30: Cost Optimization &amp; Quota Management</h1>
+    <p class="slide-subtitle anim-item">Master pricing models, optimize token usage, and implement cost governance for AI workloads</p>
+    <div class="title-divider anim-item"></div>
+    <p class="title-course anim-item">Zero to Hero: 45-Module AI Foundry Mastery</p>
+    <p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-subtle);" class="anim-item">
+      <span class="tag blue">Intermediate</span>&ensp;·&ensp;Last module before Advanced tier
+    </p>
+  </div>
+
+  <!-- ── SLIDE 2 — Learning Objectives ── -->
+  <div class="slide">
+    <h2 class="anim-item">🎯 Learning Objectives</h2>
+    <ul class="check-list" style="max-width: 760px;">
+      <li class="anim-item">Understand AI Foundry pricing models — PTU vs Pay-as-You-Go — and when to use each</li>
+      <li class="anim-item">Implement token-level optimization strategies to reduce inference costs by up to 40%</li>
+      <li class="anim-item">Configure and manage quota allocations across models, deployments, and regions</li>
+      <li class="anim-item">Build cost monitoring dashboards with Azure Cost Management and AI Foundry analytics</li>
+      <li class="anim-item">Set up budget alerts, spending caps, and automated governance policies</li>
+      <li class="anim-item">Design a capacity planning framework for production-scale AI workloads</li>
+    </ul>
+  </div>
+
+  <!-- ── SLIDE 3 — The Cost Challenge ── -->
+  <div class="slide">
+    <h2 class="anim-item">💰 The AI Cost Challenge</h2>
+    <div class="grid-2">
+      <div class="card red-accent anim-item">
+        <h3>❌ Without Optimization</h3>
+        <ul>
+          <li>Uncontrolled token usage across teams</li>
+          <li>Over-provisioned models for simple tasks</li>
+          <li>No visibility into per-project spend</li>
+          <li>Quota throttling during peak demand</li>
+          <li>Budget overruns of 3–5× initial estimates</li>
+        </ul>
+        <div style="margin-top: 16px;">
+          <span class="stat-value" style="color: var(--red);">$47K</span>
+          <span class="stat-label">&ensp;avg. monthly waste per team</span>
+        </div>
+      </div>
+      <div class="card green-accent anim-item">
+        <h3>✅ With Optimization</h3>
+        <ul>
+          <li>Model tiering — right model for each task</li>
+          <li>Prompt compression &amp; response caching</li>
+          <li>Real-time cost dashboards per project</li>
+          <li>Predictable capacity with PTU reservations</li>
+          <li>Automated alerts before budget thresholds</li>
+        </ul>
+        <div style="margin-top: 16px;">
+          <span class="stat-value" style="color: var(--green);">40-60%</span>
+          <span class="stat-label">&ensp;typical savings achieved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 4 — Pricing Models Overview ── -->
+  <div class="slide">
+    <h2 class="anim-item">📊 AI Foundry Pricing Models</h2>
+    <div class="grid-2">
+      <div class="card blue-accent anim-item">
+        <span class="card-icon">🔒</span>
+        <h3>Provisioned Throughput Units (PTU)</h3>
+        <ul>
+          <li>Reserved capacity — guaranteed throughput</li>
+          <li>Fixed monthly cost, predictable billing</li>
+          <li>Ideal for steady, high-volume workloads</li>
+          <li>Committed SLA for latency &amp; availability</li>
+          <li>1-month or 1-year reservation terms</li>
+        </ul>
+        <div style="margin-top: 12px;">
+          <span class="tag blue">Best for: Production steady-state</span>
+        </div>
+      </div>
+      <div class="card green-accent anim-item">
+        <span class="card-icon">⚡</span>
+        <h3>Pay-as-You-Go (Token-Based)</h3>
+        <ul>
+          <li>Per-token pricing — pay only for what you use</li>
+          <li>No upfront commitment required</li>
+          <li>Ideal for variable, bursty workloads</li>
+          <li>Instant access to all available models</li>
+          <li>Subject to shared capacity &amp; throttling</li>
+        </ul>
+        <div style="margin-top: 12px;">
+          <span class="tag green">Best for: Dev/test &amp; variable loads</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 5 — PTU Deep Dive ── -->
+  <div class="slide">
+    <h2 class="anim-item">🔒 Provisioned Throughput Units (PTU)</h2>
+    <ul class="bullet-list anim-item" style="margin-bottom: 20px; max-width: 720px;">
+      <li>Each PTU provides a fixed amount of model processing capacity measured in tokens-per-minute</li>
+      <li>Capacity is dedicated — not shared with other customers, ensuring consistent performance</li>
+      <li>Includes higher SLA guarantees (99.9%+) and lower p95 latency compared to PAYG</li>
+      <li>Reservations are scoped to a specific model and version within a region</li>
+      <li>Use the AI Foundry capacity calculator to estimate PTU requirements from your TPM needs</li>
+    </ul>
+    <div class="anim-item" style="overflow-x: auto;">
+      <table class="comparison-table" style="max-width: 800px;">
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th>PTU (Reserved)</th>
+            <th>Pay-as-You-Go</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Billing Model</td><td>Fixed monthly / yearly</td><td>Per 1K tokens</td></tr>
+          <tr><td>Capacity</td><td class="check">Dedicated &amp; guaranteed</td><td class="none">Shared pool</td></tr>
+          <tr><td>Latency SLA</td><td class="check">Committed p95</td><td class="none">Best effort</td></tr>
+          <tr><td>Throttling</td><td class="check">No shared throttling</td><td class="none">Possible during peak</td></tr>
+          <tr><td>Best Fit</td><td>Predictable, high-volume</td><td>Variable, low-volume</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 6 — Pay-as-You-Go Deep Dive ── -->
+  <div class="slide">
+    <h2 class="anim-item">⚡ Pay-as-You-Go Pricing</h2>
+    <ul class="bullet-list anim-item" style="margin-bottom: 20px; max-width: 720px;">
+      <li>Pricing is per 1,000 tokens (separately for input and output tokens)</li>
+      <li>Output tokens typically cost 2–4× more than input tokens across all models</li>
+      <li>No minimum commitment — scale from zero to millions of tokens instantly</li>
+      <li>Available across all AI Foundry model families and versions</li>
+    </ul>
+    <div class="anim-item" style="overflow-x: auto;">
+      <table class="comparison-table" style="max-width: 800px;">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Input (per 1M tokens)</th>
+            <th>Output (per 1M tokens)</th>
+            <th>Context Window</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>GPT-4o</td><td class="cost-med">$2.50</td><td class="cost-med">$10.00</td><td>128K</td></tr>
+          <tr><td>GPT-4o mini</td><td class="cost-low">$0.15</td><td class="cost-low">$0.60</td><td>128K</td></tr>
+          <tr><td>GPT-4.1</td><td class="cost-med">$2.00</td><td class="cost-med">$8.00</td><td>1M</td></tr>
+          <tr><td>GPT-4.1 mini</td><td class="cost-low">$0.40</td><td class="cost-low">$1.60</td><td>1M</td></tr>
+          <tr><td>GPT-4.1 nano</td><td class="cost-low">$0.10</td><td class="cost-low">$0.40</td><td>1M</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="anim-item" style="margin-top: 14px; font-size: 0.82rem; color: var(--text-subtle);">
+      * Pricing shown is illustrative and may vary. Check the AI Foundry portal for current rates.
+    </p>
+  </div>
+
+  <!-- ── SLIDE 7 — Token Optimization Strategies ── -->
+  <div class="slide">
+    <h2 class="anim-item">🔧 Token Usage Optimization</h2>
+    <div class="grid-3">
+      <div class="card blue-accent anim-item">
+        <span class="card-icon">📦</span>
+        <h3>Prompt Compression</h3>
+        <ul>
+          <li>Remove redundant instructions and examples</li>
+          <li>Use concise system prompts with clear roles</li>
+          <li>Compress few-shot examples to minimal tokens</li>
+          <li>Leverage structured output (JSON mode) to reduce retries</li>
+        </ul>
+        <div style="margin-top: 10px;">
+          <span class="tag blue">Saves 15-30%</span>
+        </div>
+      </div>
+      <div class="card green-accent anim-item">
+        <span class="card-icon">📏</span>
+        <h3>Response Management</h3>
+        <ul>
+          <li>Set <code style="color:var(--orange);">max_tokens</code> to cap output length</li>
+          <li>Use <code style="color:var(--orange);">temperature: 0</code> for deterministic tasks</li>
+          <li>Request only needed fields with structured outputs</li>
+          <li>Stream responses and stop early when sufficient</li>
+        </ul>
+        <div style="margin-top: 10px;">
+          <span class="tag green">Saves 10-25%</span>
+        </div>
+      </div>
+      <div class="card purple-accent anim-item">
+        <span class="card-icon">💾</span>
+        <h3>Semantic Caching</h3>
+        <ul>
+          <li>Cache identical or semantically similar prompts</li>
+          <li>Use Azure Redis or Cosmos DB for cache store</li>
+          <li>Set TTL based on content freshness needs</li>
+          <li>Implement embedding-based similarity matching</li>
+        </ul>
+        <div style="margin-top: 10px;">
+          <span class="tag purple">Saves 20-50%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 8 — Model Selection for Cost ── -->
+  <div class="slide">
+    <h2 class="anim-item">🎯 Right-Sizing Your Models</h2>
+    <p class="anim-item" style="margin-bottom: 18px;">Match model capability to task complexity — don't use a sledgehammer to hang a picture frame.</p>
+    <div class="anim-item" style="overflow-x: auto;">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Best For</th>
+            <th>Relative Cost</th>
+            <th>Quality</th>
+            <th>Speed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>GPT-4o</strong></td>
+            <td>Complex reasoning, multi-step analysis</td>
+            <td class="cost-med">●●●○</td>
+            <td class="check">★★★★★</td>
+            <td>Fast</td>
+          </tr>
+          <tr>
+            <td><strong>GPT-4o mini</strong></td>
+            <td>Classification, extraction, summarization</td>
+            <td class="cost-low">●○○○</td>
+            <td class="check">★★★★</td>
+            <td>Very Fast</td>
+          </tr>
+          <tr>
+            <td><strong>GPT-4.1</strong></td>
+            <td>Coding, long-context, instruction-following</td>
+            <td class="cost-med">●●●○</td>
+            <td class="check">★★★★★</td>
+            <td>Fast</td>
+          </tr>
+          <tr>
+            <td><strong>GPT-4.1 mini</strong></td>
+            <td>Balanced quality-cost for most tasks</td>
+            <td class="cost-low">●●○○</td>
+            <td class="check">★★★★</td>
+            <td>Very Fast</td>
+          </tr>
+          <tr>
+            <td><strong>GPT-4.1 nano</strong></td>
+            <td>High-volume, simple tasks, routing</td>
+            <td class="cost-low">●○○○</td>
+            <td>★★★</td>
+            <td>Fastest</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="highlight-box anim-item" style="margin-top: 18px;">
+      <strong>💡 Pro Tip:</strong> Use a <em>model router</em> pattern — classify incoming requests by complexity, then dispatch to the cheapest model that meets quality requirements.
+    </div>
+  </div>
+
+  <!-- ── SLIDE 9 — Quota Management ── -->
+  <div class="slide">
+    <h2 class="anim-item">📋 Quota Management</h2>
+    <div class="grid-2" style="margin-bottom: 20px;">
+      <div class="card blue-accent anim-item">
+        <span class="card-icon">📈</span>
+        <h3>Tokens-Per-Minute (TPM)</h3>
+        <ul>
+          <li>Controls total throughput to a deployment</li>
+          <li>Shared across all requests hitting the endpoint</li>
+          <li>Default varies by model and subscription tier</li>
+          <li>Can be split across multiple deployments</li>
+        </ul>
+      </div>
+      <div class="card orange-accent anim-item">
+        <span class="card-icon">🔄</span>
+        <h3>Requests-Per-Minute (RPM)</h3>
+        <ul>
+          <li>Caps the number of API calls per minute</li>
+          <li>Automatically derived from TPM allocation</li>
+          <li>Prevents small-request flooding</li>
+          <li>Monitor via AI Foundry metrics pane</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card green-accent anim-item">
+        <span class="card-icon">🌍</span>
+        <h3>Regional Quotas</h3>
+        <ul>
+          <li>Quotas are region- and model-specific</li>
+          <li>Spread workloads across regions for higher aggregate capacity</li>
+          <li>Check availability per region in the portal</li>
+        </ul>
+      </div>
+      <div class="card purple-accent anim-item">
+        <span class="card-icon">📬</span>
+        <h3>Quota Increase Process</h3>
+        <ul>
+          <li>Request via Azure Portal → Quotas page</li>
+          <li>Provide business justification &amp; usage patterns</li>
+          <li>Typical turnaround: 1–3 business days</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 10 — Capacity Planning ── -->
+  <div class="slide">
+    <h2 class="anim-item">📐 Capacity Planning Framework</h2>
+    <div class="grid-2">
+      <div class="anim-item">
+        <ol class="step-list">
+          <li><strong>Profile your workload</strong> — measure avg. tokens per request (input + output) during pilot phase</li>
+          <li><strong>Estimate peak RPM</strong> — identify busiest hour, add 30% headroom for spikes</li>
+          <li><strong>Calculate TPM need</strong> — multiply avg tokens × peak RPM to get required tokens-per-minute</li>
+          <li><strong>Choose pricing model</strong> — if sustained TPM &gt; breakeven threshold, PTU is more cost-effective</li>
+          <li><strong>Plan multi-region</strong> — distribute deployments if single-region quota is insufficient</li>
+          <li><strong>Set up autoscaling</strong> — configure dynamic deployment scaling policies</li>
+        </ol>
+      </div>
+      <div class="anim-item">
+        <div class="code-block">
+<span class="cmt"># Capacity calculation example</span>
+<br><br>
+<span class="kw">avg_input_tokens</span>  = <span class="num">800</span>   <span class="cmt"># per request</span><br>
+<span class="kw">avg_output_tokens</span> = <span class="num">400</span>   <span class="cmt"># per request</span><br>
+<span class="kw">tokens_per_req</span>    = <span class="num">1200</span>  <span class="cmt"># total</span><br>
+<br>
+<span class="kw">peak_rpm</span>          = <span class="num">500</span>   <span class="cmt"># requests/min</span><br>
+<span class="kw">headroom</span>          = <span class="num">1.3</span>   <span class="cmt"># 30% buffer</span><br>
+<br>
+<span class="cmt"># Required TPM</span><br>
+<span class="kw">required_tpm</span> = <span class="fn">tokens_per_req</span> × <span class="fn">peak_rpm</span> × <span class="fn">headroom</span><br>
+<span class="cmt"># = 1200 × 500 × 1.3</span><br>
+<span class="cmt"># =</span> <span class="num">780,000 TPM</span><br>
+<br>
+<span class="cmt"># PTU estimation (model-specific)</span><br>
+<span class="cmt"># Check the AI Foundry capacity</span><br>
+<span class="cmt"># calculator for exact PTU mapping</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 11 — Cost Dashboards ── -->
+  <div class="slide">
+    <h2 class="anim-item">📊 Cost Monitoring &amp; Alerts</h2>
+    <div class="grid-2">
+      <div class="card blue-accent anim-item">
+        <span class="card-icon">💳</span>
+        <h3>Azure Cost Management</h3>
+        <ul>
+          <li>Unified cost view across all Azure AI resources</li>
+          <li>Filter by resource group, tag, subscription, or meter</li>
+          <li>Create custom views: daily/weekly/monthly trends</li>
+          <li>Export data to Power BI for executive reporting</li>
+          <li>Set anomaly detection rules for spend spikes</li>
+        </ul>
+      </div>
+      <div class="card green-accent anim-item">
+        <span class="card-icon">🔍</span>
+        <h3>AI Foundry Analytics</h3>
+        <ul>
+          <li>Per-deployment token usage breakdowns</li>
+          <li>Request latency &amp; throughput metrics</li>
+          <li>Quota utilization percentage over time</li>
+          <li>Model version comparison on cost efficiency</li>
+          <li>Integration with Azure Monitor &amp; Log Analytics</li>
+        </ul>
+      </div>
+    </div>
+    <div class="highlight-box anim-item" style="margin-top: 20px;">
+      <strong>🔑 Key Metrics to Track:</strong>&ensp;
+      <span class="tag blue">Cost / 1K requests</span>&ensp;
+      <span class="tag green">TPM utilization %</span>&ensp;
+      <span class="tag orange">Cache hit rate</span>&ensp;
+      <span class="tag purple">Cost per user session</span>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 12 — Budget Alerts & Governance ── -->
+  <div class="slide">
+    <h2 class="anim-item">🛡️ Budget Alerts &amp; Cost Governance</h2>
+    <div class="grid-2">
+      <div class="anim-item">
+        <h3 style="margin-bottom: 16px;">Setting Up Budget Alerts</h3>
+        <ol class="step-list">
+          <li>Navigate to <strong>Azure Cost Management → Budgets</strong></li>
+          <li>Create a budget scoped to your AI Foundry resource group</li>
+          <li>Set thresholds at <strong>50%</strong>, <strong>75%</strong>, <strong>90%</strong>, and <strong>100%</strong> of monthly budget</li>
+          <li>Configure alert recipients — email, Teams webhook, or Action Group</li>
+          <li>Add an <strong>action group</strong> to auto-disable deployments at 100%</li>
+        </ol>
+      </div>
+      <div class="anim-item">
+        <h3 style="margin-bottom: 16px;">Tagging Strategy</h3>
+        <div class="card" style="margin-bottom: 14px;">
+          <div class="code-block" style="margin: 0; border: none; padding: 14px;">
+<span class="cmt"># Required tags for cost allocation</span><br>
+<span class="kw">project</span>:    <span class="str">"customer-chatbot"</span><br>
+<span class="kw">team</span>:       <span class="str">"platform-ai"</span><br>
+<span class="kw">env</span>:        <span class="str">"production"</span><br>
+<span class="kw">cost-center</span>: <span class="str">"CC-4200"</span><br>
+<span class="kw">model-tier</span>:  <span class="str">"standard"</span>
+          </div>
+        </div>
+        <div class="highlight-box orange">
+          <strong>⚠️ Governance Policy:</strong> Use Azure Policy to enforce mandatory tags on all AI Foundry resources — block deployment if tags are missing.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 13 — Mini Hack Preview ── -->
+  <div class="slide">
+    <h2 class="gradient-text-green anim-item">🧪 Mini Hack: Cost Analysis &amp; Optimization</h2>
+    <p class="anim-item" style="margin-bottom: 20px; color: var(--text-muted);">
+      Apply what you've learned — analyze a simulated AI workload and implement cost-saving measures.
+    </p>
+    <div class="grid-2">
+      <div class="anim-item">
+        <h3 style="margin-bottom: 14px;">Challenge Steps</h3>
+        <ol class="step-list">
+          <li>Review the provided usage logs with token counts, model selections, and costs</li>
+          <li>Identify the top 3 cost drivers and calculate current monthly spend</li>
+          <li>Propose model-tier changes — move simple tasks to GPT-4.1 nano/mini</li>
+          <li>Implement prompt compression on the highest-volume endpoint</li>
+          <li>Calculate projected savings and breakeven point for PTU reservation</li>
+          <li>Configure budget alerts at 50%, 75%, and 100% thresholds</li>
+        </ol>
+      </div>
+      <div class="anim-item">
+        <div class="highlight-box green">
+          <h3>🏆 Success Criteria</h3>
+          <ul class="bullet-list">
+            <li>Achieve ≥ 35% projected cost reduction</li>
+            <li>Maintain quality benchmarks on all endpoints</li>
+            <li>Produce a one-page cost optimization report</li>
+            <li>Set up working budget alerts in the portal</li>
+          </ul>
+        </div>
+        <div class="card" style="margin-top: 16px; text-align: center;">
+          <span class="stat-value" style="color: var(--yellow);">⏱ 45 min</span>
+          <p class="stat-label">Recommended time</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 14 — Key Takeaways & Next Module ── -->
+  <div class="slide">
+    <h2 class="anim-item">📌 Key Takeaways</h2>
+    <ul class="check-list anim-item" style="max-width: 780px; margin-bottom: 22px;">
+      <li>Choose <strong>PTU</strong> for predictable, high-volume workloads; <strong>Pay-as-You-Go</strong> for variable or dev/test scenarios</li>
+      <li>Right-size models to tasks — use a <strong>model router</strong> to dispatch requests to the cheapest capable model</li>
+      <li>Optimize tokens through <strong>prompt compression</strong>, <strong>response caps</strong>, and <strong>semantic caching</strong></li>
+      <li>Manage quotas proactively — monitor TPM/RPM utilization and request increases before hitting limits</li>
+      <li>Implement <strong>budget alerts</strong> and <strong>tagging policies</strong> for organizational cost governance</li>
+      <li>Use <strong>Azure Cost Management + AI Foundry analytics</strong> together for complete cost visibility</li>
+    </ul>
+    <div class="next-module anim-item">
+      <span class="emoji">🔴</span>
+      <strong>Module 31 begins the Advanced tier!</strong>
+      &ensp;—&ensp; Next up: advanced deployment patterns, blue-green rollouts, and production hardening.
+    </div>
+    <div class="course-progress anim-item">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);">Course Progress</span>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--blue);">30 / 45 modules</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill"></div>
+      </div>
+      <p style="margin-top: 6px; font-size: 0.78rem; color: var(--text-subtle);">
+        Intermediate tier complete — you're ready for Advanced! 🚀
+      </p>
+    </div>
+  </div>
+
+</div><!-- end #deck -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     JAVASCRIPT — Navigation, Progress, Animations
+     ════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  const slides     = document.querySelectorAll('.slide');
+  const total      = slides.length;
+  const counter    = document.getElementById('current');
+  const totalEl    = document.getElementById('total');
+  const progressBar = document.getElementById('progress-bar');
+  const prevBtn    = document.getElementById('prev-btn');
+  const nextBtn    = document.getElementById('next-btn');
+
+  let current = 0;
+
+  totalEl.textContent = total;
+
+  function updateSlide(newIndex, direction) {
+    if (newIndex < 0 || newIndex >= total || newIndex === current) return;
+
+    const outgoing = slides[current];
+    const incoming = slides[newIndex];
+
+    // Remove previous transition classes
+    slides.forEach(s => s.classList.remove('active', 'prev'));
+
+    // Mark outgoing
+    if (newIndex > current) {
+      outgoing.classList.add('prev');
+    }
+
+    // Activate incoming
+    incoming.classList.add('active');
+    current = newIndex;
+
+    // Update counter & progress
+    counter.textContent = current + 1;
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+
+    // Trigger animations
+    triggerAnimations(incoming);
+  }
+
+  function triggerAnimations(slide) {
+    const items = slide.querySelectorAll('.anim-item');
+    items.forEach(item => item.classList.remove('visible'));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        items.forEach(item => item.classList.add('visible'));
+      });
+    });
+  }
+
+  function goNext() { updateSlide(current + 1, 'next'); }
+  function goPrev() { updateSlide(current - 1, 'prev'); }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function (e) {
+    switch (e.key) {
+      case 'ArrowRight':
+      case ' ':
+        e.preventDefault();
+        goNext();
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        goPrev();
+        break;
+      case 'Home':
+        e.preventDefault();
+        updateSlide(0, 'prev');
+        break;
+      case 'End':
+        e.preventDefault();
+        updateSlide(total - 1, 'next');
+        break;
+    }
+  });
+
+  // Button navigation
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+
+  // Touch / swipe support
+  let touchStartX = 0;
+  let touchStartY = 0;
+  document.addEventListener('touchstart', function (e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      dx < 0 ? goNext() : goPrev();
+    }
+  }, { passive: true });
+
+  // Initialise first slide animations
+  triggerAnimations(slides[0]);
+})();
+</script>
+</body>
+</html>

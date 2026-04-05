@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 42: Build the Data + Model + RAG Pipeline — Azure AI Foundry Zero to Hero Training Series">
+    <meta name="keywords" content="Azure AI Foundry, RAG Pipeline, Vector Index, Data Sources, Model Deployment, Retrieval Augmented Generation">
+    <meta name="author" content="Azure AI Foundry Training">
+    <title>Module 42: Build the Data + Model + RAG Pipeline | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ============================================================
+           MICROSOFT DEV BLOG INSPIRED DESIGN SYSTEM
+           Module 42 — Build the Data + Model + RAG Pipeline
+           Arc 9: Capstone & Mastery
+           ============================================================ */
+
+        :root {
+            --primary: #0078D4;
+            --primary-dark: #005A9E;
+            --primary-light: #DEECF9;
+            --accent: #E74856;
+            --accent-warm: #FF8C00;
+            --success: #107C10;
+            --success-light: #DFF6DD;
+            --warning: #FFB900;
+            --warning-light: #FFF4CE;
+            --info: #00B7C3;
+            --info-light: #D0F5F8;
+            --capstone-purple: #8B5CF6;
+            --capstone-gradient: linear-gradient(135deg, #6D28D9 0%, #8B5CF6 50%, #A78BFA 100%);
+            --capstone-glow: 0 0 30px rgba(139, 92, 246, 0.3);
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-tertiary: #6E6E6E;
+            --text-inverse: #FFFFFF;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F5F5F5;
+            --bg-tertiary: #FAFAFA;
+            --bg-code: #1E1E1E;
+            --border-light: #E1E1E1;
+            --border-medium: #D0D0D0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+            --shadow-xl: 0 20px 60px rgba(0,0,0,0.15);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ---- Top Navigation Bar ---- */
+        .top-nav {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 3px solid var(--capstone-purple);
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+        }
+
+        .top-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-inverse);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+        }
+
+        .top-nav-brand svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .top-nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .top-nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+
+        .top-nav-links a:hover {
+            color: var(--text-inverse);
+        }
+
+        .nav-module-badge {
+            background: var(--capstone-purple);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ---- Hero Section ---- */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 30%, #44337a 60%, #6D28D9 100%);
+            color: var(--text-inverse);
+            padding: 4rem 2rem 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(139,92,246,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0,120,212,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(167,139,250,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-arc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139,92,246,0.25);
+            border: 1px solid rgba(167,139,250,0.5);
+            padding: 8px 18px;
+            border-radius: 24px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--capstone-glow);
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); }
+            50% { box-shadow: 0 0 40px rgba(139,92,246,0.5); }
+        }
+
+        .hero-arc-badge .badge-icon {
+            font-size: 1rem;
+        }
+
+        .hero-module-num {
+            font-size: 1rem;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 1.2rem;
+            max-width: 800px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #E0D4FA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: 1.15rem;
+            opacity: 0.9;
+            max-width: 650px;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        .hero-meta-item svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.9;
+        }
+
+        /* ---- Pipeline Visualization ---- */
+        .pipeline-viz {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 2rem;
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+        }
+
+        .pipeline-stage {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(139,92,246,0.15);
+            border: 1px solid rgba(167,139,250,0.3);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all var(--transition);
+        }
+
+        .pipeline-stage:hover {
+            background: rgba(139,92,246,0.3);
+            transform: translateY(-2px);
+        }
+
+        .pipeline-arrow {
+            color: rgba(167,139,250,0.6);
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        /* ---- Progress Tracker ---- */
+        .progress-bar {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+        }
+
+        .progress-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 93.3%;
+            background: var(--capstone-gradient);
+            border-radius: 4px;
+            transition: width 1s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--capstone-purple);
+        }
+
+        /* ---- Main Content Layout ---- */
+        .content-layout {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2.5rem;
+        }
+
+        .main-content {
+            min-width: 0;
+        }
+
+        /* ---- Content Card ---- */
+        .content-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition);
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .content-card h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content-card h2 .section-icon {
+            font-size: 1.4rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.8rem 0 0.8rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 1.4rem 0 0.6rem;
+        }
+
+        .content-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .content-card ul, .content-card ol {
+            margin: 0.8rem 0 1.2rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .content-card li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+
+        /* ---- Learning Objectives ---- */
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .objective-card {
+            background: linear-gradient(135deg, #F5F0FF 0%, #EDE9FE 100%);
+            border: 1px solid rgba(139,92,246,0.2);
+            border-radius: var(--radius-md);
+            padding: 1.2rem;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            transition: all var(--transition);
+        }
+
+        .objective-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .objective-num {
+            background: var(--capstone-purple);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .objective-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* ---- Code Blocks ---- */
+        .code-block {
+            background: var(--bg-code);
+            border-radius: var(--radius-md);
+            margin: 1.2rem 0;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .code-header {
+            background: #2D2D2D;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #404040;
+        }
+
+        .code-lang {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .code-filename {
+            font-size: 0.75rem;
+            color: #6B7280;
+            font-family: var(--font-mono);
+        }
+
+        .code-copy-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #9CA3AF;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .code-copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        pre {
+            padding: 1.2rem 1.5rem;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #D4D4D4;
+        }
+
+        p code, li code {
+            background: #F0F0F0;
+            color: #C7254E;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .code-comment { color: #6A9955; }
+        .code-keyword { color: #569CD6; }
+        .code-string { color: #CE9178; }
+        .code-function { color: #DCDCAA; }
+        .code-type { color: #4EC9B0; }
+        .code-number { color: #B5CEA8; }
+
+        /* ---- Callout Boxes ---- */
+        .callout {
+            border-radius: var(--radius-md);
+            padding: 1.2rem 1.5rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .callout-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .callout-content {
+            flex: 1;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .callout-text {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .callout-info {
+            background: var(--info-light);
+            border-left: 4px solid var(--info);
+        }
+
+        .callout-warning {
+            background: var(--warning-light);
+            border-left: 4px solid var(--warning);
+        }
+
+        .callout-success {
+            background: var(--success-light);
+            border-left: 4px solid var(--success);
+        }
+
+        .callout-important {
+            background: #F5F0FF;
+            border-left: 4px solid var(--capstone-purple);
+        }
+
+        .callout-danger {
+            background: #FEE2E2;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* ---- Architecture Diagram ---- */
+        .architecture-diagram {
+            background: linear-gradient(135deg, #F8F7FF 0%, #F0EDFF 100%);
+            border: 2px solid rgba(139,92,246,0.15);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .arch-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--capstone-purple);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .arch-node {
+            background: white;
+            border: 2px solid var(--capstone-purple);
+            border-radius: var(--radius-md);
+            padding: 0.8rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+            min-width: 120px;
+            transition: all var(--transition);
+        }
+
+        .arch-node:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .arch-node-label {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .arch-connector {
+            color: var(--capstone-purple);
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        /* ---- Step-by-Step Process ---- */
+        .step-process {
+            margin: 1.5rem 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            transition: all var(--transition);
+        }
+
+        .step-item:hover {
+            border-color: var(--capstone-purple);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-number {
+            background: var(--capstone-gradient);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 0.4rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .step-content p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        /* ---- Video Section ---- */
+        .video-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            color: white;
+        }
+
+        .video-section h2 {
+            color: white;
+            border-bottom-color: rgba(167,139,250,0.3);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .video-meta-item {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ---- Sidebar ---- */
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            align-self: start;
+        }
+
+        .sidebar-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.3rem;
+        }
+
+        .toc-list a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition);
+        }
+
+        .toc-list a:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .sidebar-prereqs {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-prereqs li {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-prereqs li:last-child {
+            border-bottom: none;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            background: #F0EDFF;
+            color: var(--capstone-purple);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin: 3px 2px;
+        }
+
+        .sidebar-cta {
+            display: block;
+            background: var(--capstone-gradient);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            transition: all var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ---- Table ---- */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.88rem;
+        }
+
+        .styled-table th {
+            background: var(--primary-light);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .styled-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        .styled-table tr:hover td {
+            background: var(--bg-tertiary);
+        }
+
+        /* ---- Mini Hack Section ---- */
+        .mini-hack {
+            background: linear-gradient(135deg, #1a1a2e 0%, #44337a 100%);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mini-hack::before {
+            content: '🏆';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 8rem;
+            opacity: 0.08;
+        }
+
+        .mini-hack h2 {
+            color: white;
+            border-bottom-color: rgba(167,139,250,0.3);
+        }
+
+        .mini-hack h3 {
+            color: rgba(255,255,255,0.95);
+        }
+
+        .mini-hack p {
+            color: rgba(255,255,255,0.85);
+        }
+
+        .hack-checklist {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .hack-checklist li {
+            padding: 8px 0;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .hack-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(167,139,250,0.5);
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        /* ---- Bottom Navigation ---- */
+        .bottom-nav {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            padding: 0 2rem;
+        }
+
+        .bottom-nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 1.5rem;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1.2rem 1.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text-primary);
+            flex: 1;
+            transition: all var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-btn:hover {
+            border-color: var(--capstone-purple);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn-prev {
+            justify-content: flex-start;
+        }
+
+        .nav-btn-next {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .nav-btn-arrow {
+            font-size: 1.5rem;
+            color: var(--capstone-purple);
+            font-weight: 300;
+        }
+
+        .nav-btn-label {
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-btn-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* ---- Footer ---- */
+        .site-footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: rgba(255,255,255,0.7);
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-brand {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.82rem;
+            transition: color var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-copy {
+            font-size: 0.75rem;
+            opacity: 0.5;
+            margin-top: 1rem;
+        }
+
+        /* ---- Comparison Grid ---- */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .comparison-item-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .comparison-item h4 {
+            font-size: 0.9rem;
+            margin: 0.3rem 0;
+            color: var(--text-primary);
+        }
+
+        .comparison-item p {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            margin: 0;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 900px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .bottom-nav-inner {
+                flex-direction: column;
+            }
+
+            .pipeline-viz {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 2.5rem 1rem 3rem;
+            }
+
+            .content-card {
+                padding: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+
+            .objectives-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* ---- Print ---- */
+        @media print {
+            .top-nav, .sidebar, .bottom-nav, .video-section, .progress-bar { display: none; }
+            .content-layout { grid-template-columns: 1fr; }
+            .content-card { box-shadow: none; break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== TOP NAVIGATION ====== -->
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="#" class="top-nav-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
+                    <line x1="12" y1="22" x2="12" y2="15.5"></line>
+                    <polyline points="22 8.5 12 15.5 2 8.5"></polyline>
+                    <polyline points="2 15.5 12 8.5 22 15.5"></polyline>
+                    <line x1="12" y1="2" x2="12" y2="8.5"></line>
+                </svg>
+                Azure AI Foundry: Zero to Hero
+            </a>
+            <div class="top-nav-links">
+                <span class="nav-module-badge">Module 42 / 45</span>
+                <a href="#objectives">Objectives</a>
+                <a href="#video">Video</a>
+                <a href="#content">Content</a>
+                <a href="#mini-hack">Mini Hack</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ====== HERO SECTION ====== -->
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="hero-arc-badge">
+                <span class="badge-icon">🏆</span>
+                ARC 9 · CAPSTONE &amp; MASTERY
+            </div>
+            <div class="hero-module-num">MODULE 42 OF 45</div>
+            <h1>Build the Data + Model + RAG Pipeline</h1>
+            <p class="hero-description">
+                Master the complete end-to-end workflow for building production-grade Retrieval-Augmented Generation
+                pipelines in Azure AI Foundry — from data ingestion and vector indexing to model deployment,
+                orchestration, and pipeline validation.
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    4–5 hours
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    Advanced
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Hands-On Lab Included
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    April 2026
+                </div>
+            </div>
+
+            <!-- Pipeline Visualization -->
+            <div class="pipeline-viz">
+                <div class="pipeline-stage">📄 Data Sources</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-stage">🔢 Vector Index</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-stage">🤖 Model Deploy</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-stage">🔗 RAG Orchestration</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-stage">✅ Validation</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====== PROGRESS BAR ====== -->
+    <div class="progress-bar">
+        <div class="progress-inner">
+            <span class="progress-label">Course Progress</span>
+            <div class="progress-track">
+                <div class="progress-fill"></div>
+            </div>
+            <span class="progress-text">42 / 45 Modules (93%)</span>
+        </div>
+    </div>
+
+    <!-- ====== MAIN CONTENT ====== -->
+    <div class="content-layout">
+        <main class="main-content">
+
+            <!-- ---- Learning Objectives ---- -->
+            <section class="content-card" id="objectives">
+                <h2><span class="section-icon">🎯</span> Learning Objectives</h2>
+                <p>By the end of this module, you will be able to design, build, and validate a complete data-to-model RAG pipeline using Azure AI Foundry.</p>
+                <div class="objectives-grid">
+                    <div class="objective-card">
+                        <div class="objective-num">1</div>
+                        <div class="objective-text">Set up and configure heterogeneous data sources for ingestion into Azure AI Foundry</div>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-num">2</div>
+                        <div class="objective-text">Create and optimize vector indexes using Azure AI Search for retrieval</div>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-num">3</div>
+                        <div class="objective-text">Deploy and configure foundation models for generation tasks</div>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-num">4</div>
+                        <div class="objective-text">Build an end-to-end RAG pipeline that orchestrates retrieval and generation</div>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-num">5</div>
+                        <div class="objective-text">Test, validate, and monitor pipeline performance with built-in evaluation tools</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---- Section 1: Data Sources & Vector Indexes ---- -->
+            <section class="content-card" id="data-sources">
+                <h2><span class="section-icon">📊</span> Set Up Data Sources &amp; Vector Indexes</h2>
+
+                <p>Every RAG pipeline begins with your data. Azure AI Foundry supports ingesting data from multiple sources and building vector indexes for semantic retrieval.</p>
+
+                <h3>Supported Data Sources</h3>
+
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="comparison-item-icon">📦</div>
+                        <h4>Azure Blob Storage</h4>
+                        <p>PDFs, DOCX, TXT, images, and other unstructured files</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-item-icon">🗃️</div>
+                        <h4>Azure SQL / Cosmos DB</h4>
+                        <p>Structured and semi-structured data from databases</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-item-icon">🔗</div>
+                        <h4>SharePoint / OneDrive</h4>
+                        <p>Enterprise documents from Microsoft 365</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-item-icon">🌐</div>
+                        <h4>Web URLs / APIs</h4>
+                        <p>Crawled web content and REST API data</p>
+                    </div>
+                </div>
+
+                <h3>Creating a Vector Index with Azure AI Search</h3>
+                <p>Azure AI Search is the backbone of the retrieval component in your RAG pipeline. When you create a vector index in Azure AI Foundry, it automatically provisions and manages an Azure AI Search resource behind the scenes.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">create_vector_index.py</span>
+                    </div>
+                    <pre><code><span class="code-keyword">from</span> <span class="code-variable">azure.identity</span> <span class="code-keyword">import</span> <span class="code-type">DefaultAzureCredential</span>
+<span class="code-keyword">from</span> <span class="code-variable">azure.ai.projects</span> <span class="code-keyword">import</span> <span class="code-type">AIProjectClient</span>
+<span class="code-keyword">from</span> <span class="code-variable">azure.ai.projects.models</span> <span class="code-keyword">import</span> (
+    <span class="code-type">ConnectionType</span>,
+    <span class="code-type">IndexSource</span>,
+    <span class="code-type">AzureAISearchSource</span>,
+)
+
+<span class="code-comment"># Initialize the AI Foundry project client</span>
+<span class="code-variable">credential</span> = <span class="code-type">DefaultAzureCredential</span>()
+<span class="code-variable">project_client</span> = <span class="code-type">AIProjectClient</span>(
+    <span class="code-variable">credential</span>=credential,
+    <span class="code-variable">subscription_id</span>=<span class="code-string">"&lt;your-subscription-id&gt;"</span>,
+    <span class="code-variable">resource_group_name</span>=<span class="code-string">"rg-ai-foundry-capstone"</span>,
+    <span class="code-variable">project_name</span>=<span class="code-string">"rag-pipeline-project"</span>,
+)
+
+<span class="code-comment"># Get the Azure AI Search connection from the project</span>
+<span class="code-variable">search_connection</span> = <span class="code-variable">project_client</span>.<span class="code-function">connections</span>.<span class="code-function">get</span>(
+    <span class="code-variable">connection_name</span>=<span class="code-string">"my-search-connection"</span>
+)
+
+<span class="code-keyword">print</span>(<span class="code-string">f"Connected to AI Search: <span class="code-variable">{search_connection.name}</span>"</span>)</code></pre>
+                </div>
+
+                <h3>Document Processing &amp; Chunking Strategy</h3>
+                <p>The quality of your RAG pipeline depends heavily on how you process and chunk your documents. Azure AI Foundry supports multiple chunking strategies:</p>
+
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Chunking Strategy</th>
+                            <th>Best For</th>
+                            <th>Chunk Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fixed-size</strong></td>
+                            <td>Uniform documents, logs</td>
+                            <td>512–1024 tokens</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sentence-based</strong></td>
+                            <td>Natural language content</td>
+                            <td>3–5 sentences</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Semantic</strong></td>
+                            <td>Complex, mixed documents</td>
+                            <td>Variable (model-driven)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Page / Section</strong></td>
+                            <td>PDFs, structured reports</td>
+                            <td>By page or heading</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-important">
+                    <div class="callout-icon">💡</div>
+                    <div class="callout-content">
+                        <div class="callout-title">Best Practice: Overlap Your Chunks</div>
+                        <p class="callout-text">Always configure chunk overlap (typically 10–15% of chunk size) to preserve context across chunk boundaries. This significantly improves retrieval accuracy for questions that span multiple chunks.</p>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">index_documents.py</span>
+                    </div>
+                    <pre><code><span class="code-keyword">from</span> azure.ai.projects.models <span class="code-keyword">import</span> (
+    <span class="code-type">VectorStoreDataSource</span>, <span class="code-type">VectorStoreDataSourceAssetType</span>,
+    <span class="code-type">VectorStoreStaticChunkingStrategyRequest</span>,
+    <span class="code-type">VectorStoreStaticChunkingStrategyOptions</span>,
+)
+
+<span class="code-comment"># Create vector store with optimal chunking</span>
+vector_store = project_client.agents.<span class="code-function">create_vector_store_and_poll</span>(
+    name=<span class="code-string">"capstone-knowledge-base"</span>,
+    data_sources=[data_source],
+    chunking_strategy=<span class="code-type">VectorStoreStaticChunkingStrategyRequest</span>(
+        static=<span class="code-type">VectorStoreStaticChunkingStrategyOptions</span>(
+            max_chunk_size_tokens=<span class="code-number">800</span>,
+            chunk_overlap_tokens=<span class="code-number">100</span>,  <span class="code-comment"># ~12.5% overlap</span>
+        )
+    ),
+)
+
+<span class="code-keyword">print</span>(<span class="code-string">f"Vector store created: {vector_store.id}"</span>)
+<span class="code-keyword">print</span>(<span class="code-string">f"File count: {vector_store.file_counts}"</span>)</code></pre>
+                </div>
+            </section>
+
+            <!-- ---- Section 2: Model Deployment ---- -->
+            <section class="content-card" id="model-deployment">
+                <h2><span class="section-icon">🤖</span> Deploy &amp; Configure Models</h2>
+
+                <p>With your data indexed, the next step is deploying the models that power generation. Azure AI Foundry provides a unified model catalog with hundreds of foundation models.</p>
+
+                <h3>Choosing the Right Model</h3>
+
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Context Window</th>
+                            <th>Best For</th>
+                            <th>Deployment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>GPT-4o</strong></td>
+                            <td>128K tokens</td>
+                            <td>Complex reasoning, multi-step RAG</td>
+                            <td>Standard / Provisioned</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GPT-4o mini</strong></td>
+                            <td>128K tokens</td>
+                            <td>Cost-efficient RAG at scale</td>
+                            <td>Standard / Global</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phi-4</strong></td>
+                            <td>16K tokens</td>
+                            <td>Lightweight, low-latency scenarios</td>
+                            <td>Serverless / Managed</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mistral Large</strong></td>
+                            <td>128K tokens</td>
+                            <td>Multi-lingual RAG pipelines</td>
+                            <td>Serverless</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Deploying a Model via the SDK</h3>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">deploy_model.py</span>
+                    </div>
+                    <pre><code><span class="code-comment"># Get the inference client for chat completions</span>
+chat_client = project_client.inference.<span class="code-function">get_chat_completions_client</span>()
+
+<span class="code-comment"># Test the deployed model</span>
+response = chat_client.<span class="code-function">complete</span>(
+    model=<span class="code-string">"gpt-4o"</span>,
+    messages=[
+        {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">"You are a helpful assistant."</span>},
+        {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: <span class="code-string">"What is retrieval-augmented generation?"</span>},
+    ],
+    temperature=<span class="code-number">0.7</span>,
+    max_tokens=<span class="code-number">500</span>,
+)
+
+<span class="code-keyword">print</span>(response.choices[<span class="code-number">0</span>].message.content)</code></pre>
+                </div>
+
+                <div class="callout callout-warning">
+                    <div class="callout-icon">⚠️</div>
+                    <div class="callout-content">
+                        <div class="callout-title">Token Limits &amp; Rate Planning</div>
+                        <p class="callout-text">For production RAG pipelines, use <strong>provisioned throughput</strong> deployments to guarantee consistent tokens-per-minute. Standard deployments use shared capacity and may throttle under load. Monitor your deployment's TPM usage in the Azure AI Foundry portal.</p>
+                    </div>
+                </div>
+
+                <h3>Embedding Model Configuration</h3>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">configure_embeddings.py</span>
+                    </div>
+                    <pre><code><span class="code-comment"># Get the embeddings client from the project</span>
+embeddings_client = project_client.inference.<span class="code-function">get_embeddings_client</span>()
+
+<span class="code-comment"># Generate embeddings for a search query</span>
+embedding_response = embeddings_client.<span class="code-function">embed</span>(
+    model=<span class="code-string">"text-embedding-3-large"</span>,
+    input=[<span class="code-string">"How do I configure autoscaling in Azure?"</span>],
+)
+
+query_vector = embedding_response.data[<span class="code-number">0</span>].embedding
+<span class="code-keyword">print</span>(<span class="code-string">f"Embedding dimension: {len(query_vector)}"</span>)
+<span class="code-comment"># Output: Embedding dimension: 3072</span></code></pre>
+                </div>
+            </section>
+
+            <!-- ---- Section 3: RAG Pipeline ---- -->
+            <section class="content-card" id="rag-pipeline">
+                <h2><span class="section-icon">🔗</span> Build the RAG Pipeline End-to-End</h2>
+
+                <p>Now it's time to bring everything together. The RAG pipeline connects your data sources, vector indexes, and models into a unified workflow that retrieves relevant context and generates grounded responses.</p>
+
+                <!-- Architecture Diagram -->
+                <div class="architecture-diagram">
+                    <div class="arch-title">End-to-End RAG Pipeline Architecture</div>
+                    <div class="arch-flow">
+                        <div class="arch-node">
+                            <div class="arch-node-label">Input</div>
+                            User Query
+                        </div>
+                        <span class="arch-connector">→</span>
+                        <div class="arch-node">
+                            <div class="arch-node-label">Embed</div>
+                            Query Embedding
+                        </div>
+                        <span class="arch-connector">→</span>
+                        <div class="arch-node">
+                            <div class="arch-node-label">Retrieve</div>
+                            AI Search Index
+                        </div>
+                        <span class="arch-connector">→</span>
+                        <div class="arch-node">
+                            <div class="arch-node-label">Augment</div>
+                            Prompt + Context
+                        </div>
+                        <span class="arch-connector">→</span>
+                        <div class="arch-node">
+                            <div class="arch-node-label">Generate</div>
+                            GPT-4o Response
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Using the Azure AI Foundry Agent with File Search</h3>
+                <p>The simplest way to build a RAG pipeline in Azure AI Foundry is by using the <strong>Agents API</strong> with the built-in <strong>file_search</strong> tool. This approach handles retrieval, re-ranking, and context injection automatically.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">rag_agent_pipeline.py</span>
+                    </div>
+                    <pre><code><span class="code-keyword">from</span> <span class="code-variable">azure.ai.projects</span> <span class="code-keyword">import</span> <span class="code-type">AIProjectClient</span>
+<span class="code-keyword">from</span> <span class="code-variable">azure.ai.projects.models</span> <span class="code-keyword">import</span> (
+    <span class="code-type">FileSearchTool</span>,
+    <span class="code-type">FileSearchToolResource</span>,
+    <span class="code-type">VectorStoreDataSource</span>,
+    <span class="code-type">VectorStoreDataSourceAssetType</span>,
+)
+<span class="code-keyword">from</span> <span class="code-variable">azure.identity</span> <span class="code-keyword">import</span> <span class="code-type">DefaultAzureCredential</span>
+
+<span class="code-comment"># Initialize the project client</span>
+<span class="code-variable">project_client</span> = <span class="code-type">AIProjectClient</span>(
+    <span class="code-variable">credential</span>=<span class="code-type">DefaultAzureCredential</span>(),
+    <span class="code-variable">subscription_id</span>=<span class="code-string">"&lt;your-subscription-id&gt;"</span>,
+    <span class="code-variable">resource_group_name</span>=<span class="code-string">"rg-ai-foundry-capstone"</span>,
+    <span class="code-variable">project_name</span>=<span class="code-string">"rag-pipeline-project"</span>,
+)
+
+<span class="code-comment"># Create a vector store from a data asset</span>
+<span class="code-variable">ds</span> = <span class="code-type">VectorStoreDataSource</span>(
+    <span class="code-variable">asset_identifier</span>=project_client.<span class="code-function">scope</span>[<span class="code-string">"data_asset_uri"</span>],
+    <span class="code-variable">asset_type</span>=<span class="code-type">VectorStoreDataSourceAssetType</span>.URI_ASSET,
+)
+<span class="code-variable">vector_store</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">create_vector_store_and_poll</span>(
+    <span class="code-variable">data_sources</span>=[ds], <span class="code-variable">name</span>=<span class="code-string">"rag-knowledge-base"</span>
+)
+
+<span class="code-comment"># Create the RAG agent with file_search tool</span>
+<span class="code-variable">agent</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">create_agent</span>(
+    <span class="code-variable">model</span>=<span class="code-string">"gpt-4o"</span>,
+    <span class="code-variable">name</span>=<span class="code-string">"rag-pipeline-agent"</span>,
+    <span class="code-variable">instructions</span>=<span class="code-string">"""You are a knowledgeable assistant that answers questions
+using ONLY the provided knowledge base. Always cite your sources.
+If the answer is not found in the knowledge base, say so clearly."""</span>,
+    <span class="code-variable">tools</span>=<span class="code-type">FileSearchTool</span>().<span class="code-function">definitions</span>,
+    <span class="code-variable">tool_resources</span>={
+        <span class="code-string">"file_search"</span>: <span class="code-type">FileSearchToolResource</span>(
+            <span class="code-variable">vector_store_ids</span>=[vector_store.id]
+        )
+    },
+)
+
+<span class="code-comment"># Create a thread and send a query</span>
+<span class="code-variable">thread</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">create_thread</span>()
+<span class="code-variable">message</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">create_message</span>(
+    <span class="code-variable">thread_id</span>=thread.id,
+    <span class="code-variable">role</span>=<span class="code-string">"user"</span>,
+    <span class="code-variable">content</span>=<span class="code-string">"What are the best practices for scaling RAG pipelines?"</span>,
+)
+
+<span class="code-comment"># Run the agent and get the response</span>
+<span class="code-variable">run</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">create_and_process_run</span>(
+    <span class="code-variable">thread_id</span>=thread.id, <span class="code-variable">agent_id</span>=agent.id
+)
+
+<span class="code-comment"># Retrieve and display the response with citations</span>
+<span class="code-variable">messages</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">list_messages</span>(<span class="code-variable">thread_id</span>=thread.id)
+<span class="code-keyword">for</span> msg <span class="code-keyword">in</span> messages:
+    <span class="code-keyword">if</span> msg.role == <span class="code-string">"assistant"</span>:
+        <span class="code-keyword">for</span> content <span class="code-keyword">in</span> msg.content:
+            <span class="code-keyword">print</span>(content.text.value)
+            <span class="code-keyword">for</span> annotation <span class="code-keyword">in</span> content.text.annotations:
+                <span class="code-keyword">print</span>(<span class="code-string">f"  📎 Source: <span class="code-variable">{annotation.file_citation}</span>"</span>)</code></pre>
+                </div>
+
+                <h3>Custom RAG with Direct SDK (Advanced)</h3>
+                <p>For more control, build a custom RAG pipeline using direct SDK calls. This gives you fine-grained control over retrieval, re-ranking, and prompt construction.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">custom_rag_pipeline.py</span>
+                    </div>
+                    <pre><code><span class="code-keyword">from</span> azure.search.documents <span class="code-keyword">import</span> <span class="code-type">SearchClient</span>
+<span class="code-keyword">from</span> azure.search.documents.models <span class="code-keyword">import</span> <span class="code-type">VectorizableTextQuery</span>
+
+<span class="code-comment"># Step 1: Hybrid search (vector + keyword)</span>
+results = search_client.<span class="code-function">search</span>(
+    search_text=user_query,
+    vector_queries=[<span class="code-type">VectorizableTextQuery</span>(
+        text=user_query, k_nearest_neighbors=<span class="code-number">5</span>,
+        fields=<span class="code-string">"content_vector"</span>)],
+    select=[<span class="code-string">"title"</span>, <span class="code-string">"content"</span>, <span class="code-string">"source"</span>], top=<span class="code-number">5</span>,
+)
+
+<span class="code-comment"># Step 2: Assemble context from results</span>
+context = <span class="code-string">"\n---\n"</span>.join(
+    [<span class="code-string">f"[Source: {r['source']}]\n{r['content']}"</span> <span class="code-keyword">for</span> r <span class="code-keyword">in</span> results])
+
+<span class="code-comment"># Step 3: Generate grounded response</span>
+response = chat_client.<span class="code-function">complete</span>(
+    model=<span class="code-string">"gpt-4o"</span>,
+    messages=[
+        {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">f"Answer using ONLY this context:\n{context}"</span>},
+        {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: user_query},
+    ],
+    temperature=<span class="code-number">0.3</span>, max_tokens=<span class="code-number">1000</span>,
+)</code></pre>
+                </div>
+
+                <div class="callout callout-success">
+                    <div class="callout-icon">✅</div>
+                    <div class="callout-content">
+                        <div class="callout-title">Hybrid Search FTW</div>
+                        <p class="callout-text">Always use <strong>hybrid search</strong> (vector + keyword) rather than pure vector search. Research shows hybrid search improves recall by 10–15% compared to vector-only retrieval, especially for queries with specific technical terms or identifiers.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---- Section 4: Testing & Validation ---- -->
+            <section class="content-card" id="testing">
+                <h2><span class="section-icon">✅</span> Testing &amp; Validating the Pipeline</h2>
+
+                <p>A RAG pipeline is only as good as its evaluation. Azure AI Foundry provides built-in evaluation tools to measure retrieval quality, generation accuracy, and pipeline performance.</p>
+
+                <h3>Key Evaluation Metrics</h3>
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>What It Measures</th>
+                            <th>Target Range</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Groundedness</strong></td>
+                            <td>Are responses grounded in retrieved context?</td>
+                            <td>&gt; 4.0 / 5.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Relevance</strong></td>
+                            <td>How relevant is the response to the query?</td>
+                            <td>&gt; 4.0 / 5.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Coherence</strong></td>
+                            <td>Is the response well-structured and logical?</td>
+                            <td>&gt; 4.0 / 5.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Retrieval Score</strong></td>
+                            <td>Are the retrieved documents relevant?</td>
+                            <td>&gt; 3.5 / 5.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fluency</strong></td>
+                            <td>How natural and readable is the response?</td>
+                            <td>&gt; 4.0 / 5.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Running Evaluations with the AI Foundry SDK</h3>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <span class="code-filename">evaluate_pipeline.py</span>
+                    </div>
+                    <pre><code><span class="code-keyword">from</span> azure.ai.evaluation <span class="code-keyword">import</span> (
+    <span class="code-type">GroundednessEvaluator</span>, <span class="code-type">RelevanceEvaluator</span>,
+    <span class="code-type">CoherenceEvaluator</span>, <span class="code-type">FluencyEvaluator</span>, <span class="code-type">evaluate</span>,
+)
+
+<span class="code-comment"># Initialize evaluators with project scope</span>
+model_config = project_client.<span class="code-function">scope</span>
+groundedness = <span class="code-type">GroundednessEvaluator</span>(model_config)
+relevance = <span class="code-type">RelevanceEvaluator</span>(model_config)
+coherence = <span class="code-type">CoherenceEvaluator</span>(model_config)
+fluency = <span class="code-type">FluencyEvaluator</span>(model_config)
+
+<span class="code-comment"># Run batch evaluation</span>
+results = <span class="code-function">evaluate</span>(
+    data=<span class="code-string">"test_dataset.jsonl"</span>,
+    evaluators={
+        <span class="code-string">"groundedness"</span>: groundedness,
+        <span class="code-string">"relevance"</span>: relevance,
+        <span class="code-string">"coherence"</span>: coherence,
+        <span class="code-string">"fluency"</span>: fluency,
+    },
+    evaluator_config={<span class="code-string">"default"</span>: {
+        <span class="code-string">"query"</span>: <span class="code-string">"${data.query}"</span>,
+        <span class="code-string">"context"</span>: <span class="code-string">"${data.context}"</span>,
+        <span class="code-string">"response"</span>: <span class="code-string">"${data.response}"</span>,
+    }},
+    azure_ai_project=project_client.<span class="code-function">scope</span>,
+)
+
+<span class="code-keyword">for</span> metric, score <span class="code-keyword">in</span> results[<span class="code-string">"metrics"</span>].items():
+    <span class="code-keyword">print</span>(<span class="code-string">f"  {metric}: {score:.2f}"</span>)</code></pre>
+                </div>
+
+                <h3>Evaluation Dataset Format</h3>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">JSON</span>
+                        <span class="code-filename">test_dataset.jsonl</span>
+                    </div>
+                    <pre><code>{<span class="code-string">"query"</span>: <span class="code-string">"How do I configure autoscaling?"</span>, <span class="code-string">"context"</span>: <span class="code-string">"Autoscaling in Azure allows..."</span>, <span class="code-string">"response"</span>: <span class="code-string">"To configure autoscaling..."</span>, <span class="code-string">"ground_truth"</span>: <span class="code-string">"Configure autoscaling by..."</span>}
+{<span class="code-string">"query"</span>: <span class="code-string">"What are managed identities?"</span>, <span class="code-string">"context"</span>: <span class="code-string">"Managed identities provide..."</span>, <span class="code-string">"response"</span>: <span class="code-string">"Managed identities are..."</span>, <span class="code-string">"ground_truth"</span>: <span class="code-string">"Managed identities enable..."</span>}</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <div class="callout-icon">💡</div>
+                    <div class="callout-content">
+                        <div class="callout-title">Continuous Evaluation</div>
+                        <p class="callout-text">Integrate evaluations into your CI/CD pipeline. Use Azure AI Foundry's evaluation results API to set quality gates — if groundedness or relevance drops below thresholds, block the deployment automatically.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---- Video Section ---- -->
+            <section class="video-section" id="video">
+                <h2><span class="section-icon">🎬</span> Featured Video</h2>
+                <p style="color: rgba(255,255,255,0.8);">Watch this Microsoft Reactor session for a guided walkthrough of building RAG solutions with Azure AI Foundry.</p>
+                <div class="video-container">
+                    <iframe
+                        src="https://www.youtube.com/embed/IXGrwWcLJuE"
+                        title="Building RAG Solutions with Azure AI Foundry — Microsoft Reactor"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+                <div class="video-meta">
+                    <div class="video-meta-item">📺 Microsoft Reactor</div>
+                    <div class="video-meta-item">🎓 Building RAG Solutions with Azure AI Foundry</div>
+                    <div class="video-meta-item">🆔 IXGrwWcLJuE</div>
+                </div>
+            </section>
+
+            <!-- ---- Mini Hack ---- -->
+            <section class="mini-hack" id="mini-hack">
+                <h2><span class="section-icon">🏆</span> Mini Hack: Complete Your Data + Model Pipeline</h2>
+                <p>Put everything together in this capstone mini hack. You will build a complete, working RAG pipeline from scratch using Azure AI Foundry.</p>
+
+                <h3>Challenge Requirements</h3>
+                <ul class="hack-checklist">
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Create an Azure AI Foundry project with connected Azure AI Search and Azure OpenAI resources</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Upload at least 5 documents from different sources (PDF, Markdown, TXT) to a data asset</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Create a vector store with semantic chunking and 10% overlap using the SDK</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Deploy both an embedding model (text-embedding-3-large) and a generation model (GPT-4o)</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Build a RAG agent using the file_search tool that answers questions from your knowledge base</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Implement a custom RAG pipeline using hybrid search (vector + keyword) for comparison</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Create a test dataset with at least 10 query-context-response pairs in JSONL format</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Run the built-in evaluators (groundedness, relevance, coherence) and achieve scores above 4.0</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Compare the Agent-based RAG vs custom RAG pipeline evaluation results</span>
+                    </li>
+                    <li>
+                        <span class="hack-check">☐</span>
+                        <span>Document your pipeline architecture, configuration choices, and evaluation results</span>
+                    </li>
+                </ul>
+
+                <h3>🎯 Bonus Challenge</h3>
+                <p>Set up <strong>continuous evaluation</strong> by creating a script that re-runs evaluations after each data refresh and logs metrics to Azure Monitor. Configure alerts when groundedness drops below 3.5.</p>
+
+                <div class="callout callout-info" style="background: rgba(255,255,255,0.1); border-left-color: rgba(167,139,250,0.8);">
+                    <div class="callout-icon">⏱️</div>
+                    <div class="callout-content">
+                        <div class="callout-title" style="color: white;">Estimated Completion Time</div>
+                        <p class="callout-text" style="color: rgba(255,255,255,0.85);">90–120 minutes. Focus on getting the agent-based RAG pipeline working first, then tackle the custom pipeline for comparison.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---- Key Takeaways ---- -->
+            <section class="content-card" id="takeaways">
+                <h2><span class="section-icon">📌</span> Key Takeaways</h2>
+                <ol>
+                    <li><strong>Data quality drives RAG quality</strong> — invest time in chunking strategy, overlap configuration, and document processing before building the pipeline.</li>
+                    <li><strong>Azure AI Foundry Agents API</strong> simplifies RAG by handling retrieval, re-ranking, and context injection via the <code>file_search</code> tool.</li>
+                    <li><strong>Hybrid search</strong> (vector + keyword) consistently outperforms pure vector search for RAG retrieval accuracy.</li>
+                    <li><strong>Evaluation is not optional</strong> — use groundedness, relevance, and coherence evaluators as quality gates before deploying to production.</li>
+                    <li><strong>Model selection matters</strong> — match your model to your latency, cost, and quality requirements. Use provisioned throughput for production workloads.</li>
+                </ol>
+            </section>
+
+        </main>
+
+        <!-- ====== SIDEBAR ====== -->
+        <aside class="sidebar">
+            <div class="sidebar-card">
+                <h3>📑 Table of Contents</h3>
+                <ul class="toc-list">
+                    <li><a href="#objectives">🎯 Learning Objectives</a></li>
+                    <li><a href="#data-sources">📊 Data Sources &amp; Indexes</a></li>
+                    <li><a href="#model-deployment">🤖 Model Deployment</a></li>
+                    <li><a href="#rag-pipeline">🔗 RAG Pipeline</a></li>
+                    <li><a href="#testing">✅ Testing &amp; Validation</a></li>
+                    <li><a href="#video">🎬 Featured Video</a></li>
+                    <li><a href="#mini-hack">🏆 Mini Hack</a></li>
+                    <li><a href="#takeaways">📌 Key Takeaways</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>📋 Prerequisites</h3>
+                <ul class="sidebar-prereqs">
+                    <li>✅ Modules 1–41 completed</li>
+                    <li>✅ Azure AI Foundry project</li>
+                    <li>✅ Azure AI Search resource</li>
+                    <li>✅ Azure OpenAI deployment</li>
+                    <li>✅ Python 3.10+ with SDK</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>🛠️ Skills Covered</h3>
+                <div>
+                    <span class="skill-tag">Data Ingestion</span>
+                    <span class="skill-tag">Vector Indexing</span>
+                    <span class="skill-tag">AI Search</span>
+                    <span class="skill-tag">Model Deployment</span>
+                    <span class="skill-tag">RAG Patterns</span>
+                    <span class="skill-tag">Hybrid Search</span>
+                    <span class="skill-tag">Evaluation</span>
+                    <span class="skill-tag">Agents API</span>
+                    <span class="skill-tag">File Search</span>
+                    <span class="skill-tag">Prompt Engineering</span>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>📦 Azure Resources</h3>
+                <ul class="sidebar-prereqs">
+                    <li>🔷 Azure AI Foundry Hub</li>
+                    <li>🔷 Azure AI Foundry Project</li>
+                    <li>🔷 Azure AI Search</li>
+                    <li>🔷 Azure OpenAI Service</li>
+                    <li>🔷 Azure Blob Storage</li>
+                </ul>
+                <a href="#mini-hack" class="sidebar-cta">Start the Mini Hack →</a>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ====== BOTTOM NAVIGATION ====== -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="../module-41/blog.html" class="nav-btn nav-btn-prev">
+                <span class="nav-btn-arrow">←</span>
+                <div>
+                    <div class="nav-btn-label">Previous Module</div>
+                    <div class="nav-btn-title">Module 41</div>
+                </div>
+            </a>
+            <a href="../module-43/blog.html" class="nav-btn nav-btn-next">
+                <div>
+                    <div class="nav-btn-label">Next Module</div>
+                    <div class="nav-btn-title">Module 43</div>
+                </div>
+                <span class="nav-btn-arrow">→</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ====== FOOTER ====== -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">Azure AI Foundry: Zero to Hero</div>
+            <p style="font-size: 0.85rem; margin: 0.3rem 0;">Module 42 of 45 — Arc 9: Capstone &amp; Mastery</p>
+            <div class="footer-links">
+                <a href="https://ai.azure.com" target="_blank">Azure AI Foundry</a>
+                <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank">Documentation</a>
+                <a href="https://github.com/azure/ai-foundry-samples" target="_blank">GitHub Samples</a>
+                <a href="https://techcommunity.microsoft.com" target="_blank">Tech Community</a>
+            </div>
+            <p class="footer-copy">&copy; 2026 Azure AI Foundry Training. For educational purposes. Not affiliated with Microsoft Corporation.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Copy button functionality
+        document.querySelectorAll('.code-copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const codeBlock = btn.closest('.code-block').querySelector('code');
+                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                    btn.textContent = '✓ Copied!';
+                    setTimeout(() => btn.textContent = 'Copy', 2000);
+                });
+            });
+        });
+
+        // Smooth scroll for TOC links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Active TOC highlighting on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.toc-list a').forEach(a => { a.style.background = ''; a.style.color = ''; });
+                    const activeLink = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
+                    if (activeLink) { activeLink.style.background = 'var(--primary-light)'; activeLink.style.color = 'var(--primary)'; }
+                }
+            });
+        }, { threshold: 0.3 });
+        document.querySelectorAll('section[id]').forEach(section => observer.observe(section));
+    </script>
+
+</body>
+</html>

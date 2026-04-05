@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 32: Data Governance & Purview Integration — Slides</title>
+    <style>
+        /* ============================================================
+           PRESENTATION — Dark Theme · 14 Slides
+           Module 32: Data Governance & Purview Integration
+           ============================================================ */
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2333;
+            --bg-card: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-green: #3fb950;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --accent-teal: #39d353;
+            --border: #30363d;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            --slide-width: 1280px;
+            --slide-height: 720px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
+        body {
+            font-family: var(--font-sans);
+            background: #000;
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- Slide Container ---- */
+        .deck { position: relative; width: 100vw; height: 100vh; }
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3.5rem 5rem;
+            background: var(--bg-primary);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ---- Slide Backgrounds ---- */
+        .slide.bg-gradient { background: linear-gradient(135deg, #0d1117 0%, #1b1040 40%, #0e3b6d 100%); }
+        .slide.bg-dark { background: var(--bg-primary); }
+        .slide.bg-purple { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b69 50%, #1a0a2e 100%); }
+        .slide.bg-green { background: linear-gradient(135deg, #0d1117 0%, #0a2e1a 50%, #0d1117 100%); }
+        .slide.bg-hero {
+            background: linear-gradient(135deg, #1b1032 0%, #2b1a4e 30%, #0e3b6d 60%, #0a4a2e 100%);
+        }
+
+        /* ---- Typography ---- */
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.25rem;
+        }
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            max-width: 900px;
+        }
+        .subtitle {
+            font-size: 1.35rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ---- Badge ---- */
+        .slide-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(188, 140, 255, 0.15);
+            border: 1px solid rgba(188, 140, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-purple);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ---- Lists ---- */
+        ul, ol {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+        li { margin-bottom: 0.5rem; }
+        li strong { color: var(--text-primary); }
+
+        /* ---- Grid Layouts ---- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+        .grid-5 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* ---- Cards ---- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .card.highlight-blue { border-color: var(--accent-blue); border-width: 2px; }
+        .card.highlight-purple { border-color: var(--accent-purple); border-width: 2px; }
+        .card.highlight-green { border-color: var(--accent-green); border-width: 2px; }
+        .card.highlight-orange { border-color: var(--accent-orange); border-width: 2px; }
+        .card.highlight-red { border-color: var(--accent-red); border-width: 2px; }
+
+        /* ---- Code Block ---- */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: #e6edf3;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .code-block .kw { color: #ff7b72; }
+        .code-block .str { color: #a5d6ff; }
+        .code-block .cm { color: #8b949e; }
+        .code-block .fn { color: #d2a8ff; }
+        .code-block .num { color: #79c0ff; }
+
+        /* ---- Flow Diagram ---- */
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .flow-node {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-width: 130px;
+        }
+        .flow-node.purview { border-color: var(--accent-purple); }
+        .flow-node.data { border-color: var(--accent-blue); }
+        .flow-node.ai { border-color: var(--accent-green); }
+        .flow-node.compliance { border-color: var(--accent-red); }
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        /* ---- Table ---- */
+        .slide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .slide-table th {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .slide-table td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .slide-table td strong { color: var(--text-primary); }
+
+        /* ---- Metrics ---- */
+        .metric-box {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .metric-box.blue .metric-value { color: var(--accent-blue); }
+        .metric-box.purple .metric-value { color: var(--accent-purple); }
+        .metric-box.orange .metric-value { color: var(--accent-orange); }
+
+        /* ---- Navigation ---- */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0; right: 0;
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-bar button {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .nav-bar button:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+        }
+        .slide-counter {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue), var(--accent-green));
+            z-index: 101;
+            transition: width 0.3s ease;
+        }
+
+        /* ---- Compliance Badges ---- */
+        .badge-row {
+            display: flex;
+            gap: 0.75rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .c-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .c-badge .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+        }
+        .dot.blue { background: var(--accent-blue); }
+        .dot.red { background: var(--accent-red); }
+        .dot.green { background: var(--accent-green); }
+        .dot.purple { background: var(--accent-purple); }
+        .dot.orange { background: var(--accent-orange); }
+
+        /* ---- Separator ---- */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-track" id="progressTrack"></div>
+
+<div class="deck" id="deck">
+
+    <!-- ==================== SLIDE 1: TITLE ==================== -->
+    <div class="slide bg-hero active" data-slide="1">
+        <div class="slide-badge">🛡️ ARC 7 · SECURITY &amp; GOVERNANCE</div>
+        <h1>Data Governance &amp;<br><span class="gradient-text">Purview Integration</span></h1>
+        <p class="subtitle">
+            Microsoft Purview for AI data governance — classification, lineage tracking, and regulatory compliance in Azure AI Foundry.
+        </p>
+        <div style="margin-top: 2rem; display: flex; gap: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            <span>📘 Module 32 of 45</span>
+            <span>🎯 Intermediate–Advanced</span>
+            <span>📅 April 2026</span>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 2: AGENDA ==================== -->
+    <div class="slide bg-dark" data-slide="2">
+        <h2>📋 Today's Agenda</h2>
+        <div class="grid-2">
+            <div>
+                <ol>
+                    <li><strong>Why AI Data Governance Matters</strong></li>
+                    <li><strong>Microsoft Purview Overview</strong></li>
+                    <li><strong>Data Classification &amp; Labels</strong></li>
+                    <li><strong>Data Lineage for AI Pipelines</strong></li>
+                    <li><strong>GDPR, HIPAA &amp; SOC 2</strong></li>
+                    <li><strong>Purview × AI Foundry Integration</strong></li>
+                    <li><strong>Mini Hack: Classification Setup</strong></li>
+                </ol>
+            </div>
+            <div>
+                <div class="card highlight-purple">
+                    <div class="icon">🎯</div>
+                    <h4>Learning Goals</h4>
+                    <p>Configure Purview for AI governance, classify sensitive data, track pipeline lineage, and implement compliance strategies.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 3: WHY GOVERNANCE ==================== -->
+    <div class="slide bg-dark" data-slide="3">
+        <h2>Why AI Data Governance Matters</h2>
+        <p style="margin-bottom: 1.5rem;">AI systems consume vast data — governance ensures security, compliance, and transparency.</p>
+        <div class="grid-4">
+            <div class="card highlight-blue">
+                <div class="icon">🔍</div>
+                <h4>Discover</h4>
+                <p>Auto-scan and catalog all AI data assets</p>
+            </div>
+            <div class="card highlight-purple">
+                <div class="icon">🏷️</div>
+                <h4>Classify</h4>
+                <p>Apply sensitivity labels automatically</p>
+            </div>
+            <div class="card highlight-green">
+                <div class="icon">🔗</div>
+                <h4>Track</h4>
+                <p>Map data lineage source to prediction</p>
+            </div>
+            <div class="card highlight-orange">
+                <div class="icon">✅</div>
+                <h4>Comply</h4>
+                <p>Enforce regulatory policies on AI data</p>
+            </div>
+        </div>
+        <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: rgba(63, 185, 80, 0.1); border-left: 3px solid var(--accent-green); border-radius: 8px;">
+            <p style="font-size: 0.95rem; color: var(--accent-green);">
+                <strong>By 2026:</strong> Organizations with AI governance frameworks see 40% fewer compliance incidents.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 4: PURVIEW OVERVIEW ==================== -->
+    <div class="slide bg-dark" data-slide="4">
+        <h2>Microsoft Purview: Unified Governance</h2>
+        <p style="margin-bottom: 1rem;">One platform for data governance, risk management, and compliance.</p>
+        <table class="slide-table">
+            <thead>
+                <tr><th>Capability</th><th>AI Governance Use Case</th><th>Feature</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Data Map</strong></td><td>Discover AI training data sources</td><td>Automated scanning</td></tr>
+                <tr><td><strong>Data Catalog</strong></td><td>Search and understand AI assets</td><td>Business glossary</td></tr>
+                <tr><td><strong>Classification</strong></td><td>Identify PII, PHI in training sets</td><td>300+ classifiers</td></tr>
+                <tr><td><strong>Sensitivity Labels</strong></td><td>Protect sensitive AI data</td><td>Auto-labeling</td></tr>
+                <tr><td><strong>Data Lineage</strong></td><td>Trace data through AI pipelines</td><td>Visual explorer</td></tr>
+                <tr><td><strong>Access Policies</strong></td><td>Enforce AI data access controls</td><td>Policy-based access</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SLIDE 5: CLASSIFICATION ==================== -->
+    <div class="slide bg-purple" data-slide="5">
+        <h2>Data Classification for AI</h2>
+        <p style="margin-bottom: 1.5rem;">Automatically identify sensitive data before it enters AI training pipelines.</p>
+        <div class="grid-3">
+            <div class="card highlight-red">
+                <h4>🔴 Critical</h4>
+                <p><strong>PII:</strong> SSN, passports<br><strong>PHI:</strong> Medical records<br><strong>Financial:</strong> Credit cards</p>
+            </div>
+            <div class="card highlight-orange">
+                <h4>🟡 High</h4>
+                <p><strong>Credentials:</strong> API keys<br><strong>IP:</strong> Source code<br><strong>Secrets:</strong> Certificates</p>
+            </div>
+            <div class="card highlight-blue">
+                <h4>🟠 Medium</h4>
+                <p><strong>Location:</strong> GPS, IPs<br><strong>Behavioral:</strong> Usage data<br><strong>Demographic:</strong> Age, gender</p>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size: 0.95rem;">
+            <strong>300+</strong> built-in sensitive info types · <strong>Custom classifiers</strong> for AI-specific patterns · <strong>85%</strong> confidence threshold for auto-labeling
+        </p>
+    </div>
+
+    <!-- ==================== SLIDE 6: SENSITIVITY LABELS ==================== -->
+    <div class="slide bg-dark" data-slide="6">
+        <h2>Sensitivity Label Hierarchy</h2>
+        <p style="margin-bottom: 1.5rem;">Design labels that reflect your AI data lifecycle and risk levels.</p>
+        <div class="flow">
+            <div class="flow-node" style="border-color: var(--accent-green);">🟢 Public<br><small style="color:var(--text-muted)">Open datasets</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node data">🔵 General<br><small style="color:var(--text-muted)">Internal data</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node purview">🟣 Confidential<br><small style="color:var(--text-muted)">Customer / PII</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node compliance">🔴 Highly Conf.<br><small style="color:var(--text-muted)">PHI / Regulated</small></div>
+        </div>
+        <div class="grid-2" style="margin-top: 1.5rem;">
+            <div class="card">
+                <h4>Auto-Labeling Triggers</h4>
+                <ul style="font-size: 0.85rem;">
+                    <li>Sensitive info types detected in content</li>
+                    <li>Data source location (regulated stores)</li>
+                    <li>File naming patterns & metadata</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4>Label Protection Actions</h4>
+                <ul style="font-size: 0.85rem;">
+                    <li>Encryption at rest and in transit</li>
+                    <li>Access restriction to specific groups</li>
+                    <li>Content marking & watermarks</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 7: CUSTOM CLASSIFIERS CODE ==================== -->
+    <div class="slide bg-dark" data-slide="7">
+        <h2>Custom Classifiers for AI Data</h2>
+        <p>Create AI-specific classification rules with regex patterns and ML-based matching.</p>
+        <div class="code-block">
+            <span class="cm"># Define custom classification for AI training data</span><br>
+            custom_classification = {<br>
+            &nbsp;&nbsp;<span class="str">"name"</span>: <span class="str">"AI_Training_Dataset"</span>,<br>
+            &nbsp;&nbsp;<span class="str">"classificationRuleType"</span>: <span class="str">"Custom"</span>,<br>
+            &nbsp;&nbsp;<span class="str">"classificationRules"</span>: [{<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"kind"</span>: <span class="str">"RegexClassificationRule"</span>,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"pattern"</span>: <span class="str">r"training[_-]data[_-]\d{8}"</span>,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"minimumPercentageMatch"</span>: <span class="num">60</span><br>
+            &nbsp;&nbsp;}]<br>
+            }
+        </div>
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(88, 166, 255, 0.1); border-left: 3px solid var(--accent-blue); border-radius: 6px;">
+            <p style="font-size: 0.9rem;"><strong>Tip:</strong> Combine regex classifiers with trainable ML classifiers for complex AI data patterns that simple patterns can't capture.</p>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 8: DATA LINEAGE ==================== -->
+    <div class="slide bg-dark" data-slide="8">
+        <h2>Data Lineage for AI Pipelines</h2>
+        <p style="margin-bottom: 1rem;">Trace data from source through transformations to model predictions.</p>
+        <div class="flow">
+            <div class="flow-node data">📦 Raw Data<br><small style="color:var(--text-muted)">Blob, SQL, Cosmos</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node purview">⚙️ Data Prep<br><small style="color:var(--text-muted)">Cleaning, ETL</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node data">🧪 Features<br><small style="color:var(--text-muted)">Feature store</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node ai">🤖 Training<br><small style="color:var(--text-muted)">AI Foundry</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node compliance">🚀 Deploy<br><small style="color:var(--text-muted)">Endpoints</small></div>
+        </div>
+        <div class="divider"></div>
+        <div class="grid-2">
+            <div class="card">
+                <h4>Why Lineage Matters</h4>
+                <ul style="font-size: 0.85rem;">
+                    <li><strong>Explainability</strong> — trace predictions to training data</li>
+                    <li><strong>Impact analysis</strong> — what models affected by data changes?</li>
+                    <li><strong>Regulatory audits</strong> — prove data provenance</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4>Auto-Captured From</h4>
+                <ul style="font-size: 0.85rem;">
+                    <li>Azure Data Factory pipelines</li>
+                    <li>Synapse Analytics data flows</li>
+                    <li>Azure AI Foundry pipeline runs</li>
+                    <li>Custom REST API / Atlas SDK</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 9: GDPR ==================== -->
+    <div class="slide bg-dark" data-slide="9">
+        <h2>GDPR Compliance for AI</h2>
+        <div class="badge-row">
+            <span class="c-badge"><span class="dot blue"></span> GDPR</span>
+            <span class="c-badge"><span class="dot purple"></span> EU Regulation</span>
+        </div>
+        <table class="slide-table">
+            <thead>
+                <tr><th>Article</th><th>AI Requirement</th><th>Purview Solution</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Art. 13–14</strong></td><td>Transparency about AI decisions</td><td>Data catalog + lineage</td></tr>
+                <tr><td><strong>Art. 15</strong></td><td>Right of access to personal data</td><td>Data map + subject rights</td></tr>
+                <tr><td><strong>Art. 17</strong></td><td>Right to erasure from training sets</td><td>Discovery + classification</td></tr>
+                <tr><td><strong>Art. 22</strong></td><td>Human review of automated decisions</td><td>Lineage + audit logs</td></tr>
+                <tr><td><strong>Art. 25</strong></td><td>Data protection by design</td><td>Labels + access policies</td></tr>
+                <tr><td><strong>Art. 35</strong></td><td>Data Protection Impact Assessment</td><td>Data estate insights</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SLIDE 10: HIPAA & SOC 2 ==================== -->
+    <div class="slide bg-dark" data-slide="10">
+        <h2>HIPAA &amp; SOC 2 Compliance</h2>
+        <div class="badge-row">
+            <span class="c-badge"><span class="dot red"></span> HIPAA</span>
+            <span class="c-badge"><span class="dot green"></span> SOC 2</span>
+            <span class="c-badge"><span class="dot orange"></span> ISO 27001</span>
+        </div>
+        <div class="grid-2">
+            <div>
+                <h3 style="color: var(--accent-red);">HIPAA Requirements</h3>
+                <ul style="font-size: 0.9rem;">
+                    <li><strong>BAA</strong> with Microsoft Azure</li>
+                    <li><strong>PHI encryption</strong> at rest &amp; in transit</li>
+                    <li><strong>Access audit logging</strong> for all PHI</li>
+                    <li><strong>Minimum necessary</strong> access principle</li>
+                    <li><strong>Data retention</strong> &amp; destruction policies</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color: var(--accent-green);">SOC 2 Trust Criteria</h3>
+                <ul style="font-size: 0.9rem;">
+                    <li>🔒 <strong>Security</strong> — access controls, encryption</li>
+                    <li>⚡ <strong>Availability</strong> — uptime, DR</li>
+                    <li>🔄 <strong>Processing Integrity</strong> — lineage</li>
+                    <li>🔐 <strong>Confidentiality</strong> — labels, DLP</li>
+                    <li>👤 <strong>Privacy</strong> — consent, minimization</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 11: FOUNDRY INTEGRATION ==================== -->
+    <div class="slide bg-green" data-slide="11">
+        <h2>Purview × Azure AI Foundry</h2>
+        <p style="margin-bottom: 1.5rem;">Native integration points for seamless AI governance.</p>
+        <div class="grid-3">
+            <div class="card highlight-blue">
+                <h4>1. Register Sources</h4>
+                <p>Register AI Foundry storage, databases, and data lakes in Purview Data Map</p>
+            </div>
+            <div class="card highlight-purple">
+                <h4>2. Scan &amp; Classify</h4>
+                <p>Schedule automated scans with classification rules against AI data stores</p>
+            </div>
+            <div class="card highlight-green">
+                <h4>3. Capture Lineage</h4>
+                <p>Pipeline runs automatically reported to Purview lineage tracker</p>
+            </div>
+        </div>
+        <div class="grid-2" style="margin-top: 1rem;">
+            <div class="card highlight-orange">
+                <h4>4. Enforce Policies</h4>
+                <p>Purview access policies flow to AI Foundry data stores automatically</p>
+            </div>
+            <div class="card highlight-red">
+                <h4>5. Monitor &amp; Report</h4>
+                <p>Governance dashboards with classification coverage, violations, and scan health</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 12: GOVERNANCE METRICS ==================== -->
+    <div class="slide bg-dark" data-slide="12">
+        <h2>Governance Dashboard Metrics</h2>
+        <p style="margin-bottom: 1.5rem;">Track these KPIs to measure your AI data governance maturity.</p>
+        <div class="grid-3">
+            <div class="card">
+                <div class="metric-box blue">
+                    <div class="metric-value">≥ 95%</div>
+                    <div class="metric-label">Classification Coverage</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="metric-box purple">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">Label Coverage</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="metric-box">
+                    <div class="metric-value">≥ 90%</div>
+                    <div class="metric-label">Lineage Completeness</div>
+                </div>
+            </div>
+        </div>
+        <div class="grid-3" style="margin-top: 1rem;">
+            <div class="card">
+                <div class="metric-box orange">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Policy Violations / Mo</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="metric-box blue">
+                    <div class="metric-value">≤ 7d</div>
+                    <div class="metric-label">Scan Freshness</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="metric-box purple">
+                    <div class="metric-value">≥ 80%</div>
+                    <div class="metric-label">Glossary Adoption</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 13: MINI HACK ==================== -->
+    <div class="slide bg-purple" data-slide="13">
+        <h2>🧪 Mini Hack: Data Classification Setup</h2>
+        <p style="margin-bottom: 1.5rem;">Set up automated data classification for your AI Foundry data sources.</p>
+        <div class="grid-2">
+            <div>
+                <div class="card" style="margin-bottom: 0.75rem;">
+                    <h4>Step 1</h4>
+                    <p>Create Purview account + sample storage with PII data</p>
+                </div>
+                <div class="card" style="margin-bottom: 0.75rem;">
+                    <h4>Step 2</h4>
+                    <p>Register data sources and configure scan rules</p>
+                </div>
+                <div class="card" style="margin-bottom: 0.75rem;">
+                    <h4>Step 3</h4>
+                    <p>Run classification scan and review discovered types</p>
+                </div>
+            </div>
+            <div>
+                <div class="card" style="margin-bottom: 0.75rem;">
+                    <h4>Step 4</h4>
+                    <p>Query classified assets via Python SDK</p>
+                </div>
+                <div class="card" style="margin-bottom: 0.75rem;">
+                    <h4>Step 5</h4>
+                    <p>Apply sensitivity labels with auto-labeling policies</p>
+                </div>
+                <div class="card highlight-green" style="margin-bottom: 0.75rem;">
+                    <h4>✅ Success</h4>
+                    <p>Dashboard shows PII/PHI classifications &amp; sensitivity labels applied</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE 14: RECAP ==================== -->
+    <div class="slide bg-hero" data-slide="14">
+        <h2>🎯 Key Takeaways</h2>
+        <div class="grid-2">
+            <div>
+                <ol style="font-size: 1rem;">
+                    <li><strong>Purview = governance backbone</strong> for Azure AI Foundry</li>
+                    <li><strong>300+ classifiers</strong> + custom rules for AI data</li>
+                    <li><strong>End-to-end lineage</strong> from source to model output</li>
+                    <li><strong>Sensitivity labels</strong> enforce protection automatically</li>
+                    <li><strong>GDPR + HIPAA + SOC 2</strong> addressed via Purview</li>
+                    <li><strong>Access policies</strong> centralize data access control</li>
+                </ol>
+            </div>
+            <div>
+                <div class="card highlight-purple" style="margin-bottom: 1rem;">
+                    <h4>📺 Watch the Deep Dive</h4>
+                    <p>AI Foundry Networking & Security<br><small>youtube.com/watch?v=bL9n83uPV84</small></p>
+                </div>
+                <div class="card highlight-green">
+                    <h4>➡️ Next Module</h4>
+                    <p><strong>Module 33:</strong> Threat Protection — detection, monitoring, incident response</p>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 2rem; color: var(--text-muted); font-size: 0.85rem;">
+            Module 32 · ARC 7: Security, Governance &amp; Compliance · Azure AI Foundry: Zero to Hero
+        </div>
+    </div>
+
+</div>
+
+<!-- Navigation Bar -->
+<nav class="nav-bar">
+    <button onclick="prevSlide()" id="prevBtn">← Previous</button>
+    <span class="slide-counter" id="slideCounter">1 / 14</span>
+    <button onclick="nextSlide()" id="nextBtn">Next →</button>
+</nav>
+
+<script>
+    let current = 0;
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+
+    function showSlide(index) {
+        slides.forEach(s => s.classList.remove('active'));
+        slides[index].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${index + 1} / ${total}`;
+        document.getElementById('progressTrack').style.width = `${((index + 1) / total) * 100}%`;
+        document.getElementById('prevBtn').disabled = index === 0;
+        document.getElementById('nextBtn').disabled = index === total - 1;
+    }
+
+    function nextSlide() { if (current < total - 1) { current++; showSlide(current); } }
+    function prevSlide() { if (current > 0) { current--; showSlide(current); } }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'Home') { e.preventDefault(); current = 0; showSlide(current); }
+        if (e.key === 'End') { e.preventDefault(); current = total - 1; showSlide(current); }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+    });
+
+    showSlide(0);
+</script>
+
+</body>
+</html>

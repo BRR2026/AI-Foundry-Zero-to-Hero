@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 31 — Identity & Access Management | Slides</title>
+    <style>
+        /* ============================================================
+           DARK PRESENTATION THEME — Module 31
+           Identity & Access Management
+           ============================================================ */
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2333;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-purple: #b4a0ff;
+            --ms-teal: #008272;
+            --ms-green: #107c10;
+            --ms-red: #d13438;
+            --ms-orange: #ff8c00;
+            --accent-glow: rgba(0, 120, 212, 0.15);
+            --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; scroll-snap-type: y mandatory; height: 100%; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            height: 100%;
+            overflow-y: scroll;
+        }
+
+        /* ---- SLIDE LAYOUT ---- */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            scroll-snap-align: start;
+            position: relative;
+            overflow: hidden;
+        }
+        .slide-inner {
+            max-width: 1000px;
+            width: 100%;
+            z-index: 2;
+        }
+        .slide-number {
+            position: absolute;
+            bottom: 24px;
+            right: 40px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .slide-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 40px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        /* ---- SLIDE VARIANTS ---- */
+        .slide-title {
+            background: linear-gradient(135deg, var(--ms-dark-blue) 0%, var(--ms-purple) 55%, #1a0533 100%);
+            text-align: center;
+        }
+        .slide-title::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(0,120,212,0.2), transparent 60%),
+                        radial-gradient(circle at 70% 60%, rgba(92,45,145,0.2), transparent 60%);
+        }
+        .slide-section {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 100%);
+            border-left: 6px solid var(--ms-purple);
+        }
+        .slide-content {
+            background: var(--bg-primary);
+        }
+
+        /* ---- TYPOGRAPHY ---- */
+        h1 { font-size: 3rem; font-weight: 700; line-height: 1.15; margin-bottom: 16px; }
+        h1 .accent { color: var(--ms-light-purple); }
+        h2 { font-size: 2rem; font-weight: 700; color: var(--ms-light-purple); margin-bottom: 28px; }
+        h3 { font-size: 1.4rem; color: var(--ms-blue); margin-bottom: 18px; }
+        .subtitle { font-size: 1.2rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .tier-badge {
+            display: inline-block;
+            background: var(--ms-red);
+            padding: 3px 12px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-left: 8px;
+        }
+
+        /* ---- LISTS ---- */
+        ul, ol { margin: 12px 0 12px 28px; }
+        li { margin-bottom: 12px; font-size: 1.1rem; color: var(--text-primary); }
+        li::marker { color: var(--ms-blue); }
+        .compact li { font-size: 0.95rem; margin-bottom: 8px; }
+
+        /* ---- CODE ---- */
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 18px 22px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+            border-left: 3px solid var(--ms-purple);
+        }
+        code {
+            font-family: var(--font-mono);
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--ms-light-purple);
+        }
+        pre code { background: none; padding: 0; color: var(--text-primary); }
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cmt { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .type { color: #4ec9b0; }
+
+        /* ---- CARDS / GRIDS ---- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin: 20px 0;
+        }
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 24px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .card:hover { border-color: var(--ms-blue); transform: translateY(-2px); }
+        .card .icon { font-size: 2rem; margin-bottom: 12px; }
+        .card h4 { color: var(--ms-light-purple); margin-bottom: 8px; font-size: 1rem; }
+        .card p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; }
+
+        .card.owner { border-top: 3px solid var(--ms-red); }
+        .card.contributor { border-top: 3px solid var(--ms-blue); }
+        .card.reader { border-top: 3px solid var(--ms-green); }
+        .card.custom { border-top: 3px solid var(--ms-purple); }
+
+        /* ---- TABLES ---- */
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 16px 0; }
+        th { background: var(--ms-dark-blue); color: white; padding: 12px 14px; text-align: left; }
+        td { padding: 10px 14px; border-bottom: 1px solid #21262d; color: var(--text-primary); }
+        tbody tr:hover { background: var(--bg-secondary); }
+
+        /* ---- DIAGRAM ---- */
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+        .flow-node {
+            background: var(--bg-secondary);
+            border: 2px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 130px;
+        }
+        .flow-node.purple { border-color: var(--ms-purple); color: var(--ms-light-purple); }
+        .flow-node.green { border-color: var(--ms-green); color: #4caf50; }
+        .flow-node.red { border-color: var(--ms-red); color: #ef5350; }
+        .flow-arrow { font-size: 1.4rem; color: var(--text-muted); }
+
+        /* ---- CALLOUT ---- */
+        .callout {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 18px 22px;
+            margin: 20px 0;
+            font-size: 0.92rem;
+        }
+        .callout.warning { border-color: var(--ms-orange); }
+        .callout.success { border-color: var(--ms-green); }
+        .callout.danger { border-color: var(--ms-red); }
+        .callout strong { color: var(--ms-light-purple); }
+
+        /* ---- TWO-COLUMN ---- */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .slide { padding: 32px 24px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .two-col { grid-template-columns: 1fr; }
+            .card-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ---- HIGHLIGHT ---- */
+        .highlight {
+            background: linear-gradient(135deg, rgba(0,120,212,0.1) 0%, rgba(92,45,145,0.1) 100%);
+            border: 1px solid rgba(0,120,212,0.3);
+            border-radius: 10px;
+            padding: 24px;
+            margin: 16px 0;
+        }
+
+        /* ---- CHECKLIST ---- */
+        .checklist { list-style: none; padding: 0; margin: 16px 0; }
+        .checklist li { padding: 6px 0 6px 30px; position: relative; }
+        .checklist li::before { content: '☐'; position: absolute; left: 0; color: var(--ms-light-purple); }
+
+        /* ---- CELEBRATION ---- */
+        .celebration { font-size: 3rem; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+<!-- ======================== SLIDE 1: TITLE ======================== -->
+<section class="slide slide-title" id="slide-1">
+    <div class="slide-inner">
+        <div class="badge">ARC 7 · SECURITY & GOVERNANCE</div>
+        <h1>Identity &amp; <span class="accent">Access Management</span></h1>
+        <p class="subtitle">
+            Secure Azure AI Foundry with RBAC, Managed Identities, and least-privilege patterns
+        </p>
+        <p style="margin-top: 24px; color: var(--text-muted); font-size: 0.88rem;">
+            Module 31 of 45 · 🔴 Advanced Tier · April 2026
+        </p>
+    </div>
+    <div class="slide-number">1 / 14</div>
+</section>
+
+<!-- ======================== SLIDE 2: ADVANCED TIER ======================== -->
+<section class="slide slide-content" id="slide-2">
+    <div class="slide-inner" style="text-align: center;">
+        <div class="celebration">🎉🔴🎉</div>
+        <h2>Welcome to the Advanced Tier!</h2>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 680px; margin: 0 auto 28px;">
+            You've completed 30 modules across Beginner and Intermediate tiers. From here on,
+            you'll tackle <strong style="color: var(--ms-light-purple);">enterprise-grade patterns</strong>
+            that power production AI systems.
+        </p>
+        <div class="card-grid" style="max-width: 700px; margin: 0 auto;">
+            <div class="card">
+                <div class="icon">✅</div>
+                <h4>Completed</h4>
+                <p>30 modules · Beginner & Intermediate tiers · Arcs 1–6</p>
+            </div>
+            <div class="card">
+                <div class="icon">🚀</div>
+                <h4>Starting Now</h4>
+                <p>Arc 7: Security, Governance & Compliance · Advanced tier</p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">2 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 3: AGENDA ======================== -->
+<section class="slide slide-content" id="slide-3">
+    <div class="slide-inner">
+        <h2>📋 Today's Agenda</h2>
+        <ol style="font-size: 1.15rem;">
+            <li>Why IAM Matters for AI Foundry</li>
+            <li>RBAC Roles — Built-in & Custom</li>
+            <li>Managed Identity — Service-to-Service Auth</li>
+            <li>Service Principals & CI/CD Authentication</li>
+            <li>Least-Privilege Access Patterns</li>
+            <li>🧪 Mini Hack: Configure RBAC & Managed Identity</li>
+        </ol>
+    </div>
+    <div class="slide-number">3 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 4: WHY IAM ======================== -->
+<section class="slide slide-content" id="slide-4">
+    <div class="slide-inner">
+        <h2>🔐 Why IAM Matters</h2>
+        <div class="callout danger">
+            <strong>⚠️ 80%+ of cloud breaches</strong> involve misconfigured access controls.
+            A single over-permissioned identity can expose models, data, and inference pipelines.
+        </div>
+        <div class="card-grid" style="margin-top: 28px;">
+            <div class="card">
+                <div class="icon">🛡️</div>
+                <h4>RBAC</h4>
+                <p>Fine-grained permissions via roles scoped to resources</p>
+            </div>
+            <div class="card">
+                <div class="icon">🤖</div>
+                <h4>Managed Identity</h4>
+                <p>Zero-credential service-to-service authentication</p>
+            </div>
+            <div class="card">
+                <div class="icon">🔑</div>
+                <h4>Service Principals</h4>
+                <p>Non-interactive identities for CI/CD & automation</p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">4 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 5: RBAC OVERVIEW ======================== -->
+<section class="slide slide-content" id="slide-5">
+    <div class="slide-inner">
+        <h2>👥 RBAC Roles — Core Azure</h2>
+        <div class="card-grid">
+            <div class="card owner">
+                <div class="icon">👑</div>
+                <h4>Owner</h4>
+                <p>Full access + can assign roles. Use sparingly — subscription admins only.</p>
+            </div>
+            <div class="card contributor">
+                <div class="icon">🔧</div>
+                <h4>Contributor</h4>
+                <p>Create/manage all resources. Cannot grant access to others.</p>
+            </div>
+            <div class="card reader">
+                <div class="icon">👁️</div>
+                <h4>Reader</h4>
+                <p>View-only. Perfect for auditors & stakeholders.</p>
+            </div>
+            <div class="card custom">
+                <div class="icon">⚙️</div>
+                <h4>Custom</h4>
+                <p>Tailor permissions precisely for your specific needs.</p>
+            </div>
+        </div>
+        <div class="callout" style="margin-top: 20px;">
+            <strong>Key Concept:</strong> Roles are assigned to <em>security principals</em> at a <em>scope</em>
+            (management group → subscription → resource group → resource).
+        </div>
+    </div>
+    <div class="slide-number">5 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 6: AI FOUNDRY ROLES ======================== -->
+<section class="slide slide-content" id="slide-6">
+    <div class="slide-inner">
+        <h2>🤖 AI Foundry-Specific Roles</h2>
+        <table>
+            <thead>
+                <tr><th>Role</th><th>Key Permissions</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Azure AI Developer</strong></td><td>Deployments, endpoints, experiments</td><td>Data scientists, ML engineers</td></tr>
+                <tr><td><strong>AI Inference Deployment Operator</strong></td><td>Deploy models, manage endpoints</td><td>MLOps teams</td></tr>
+                <tr><td><strong>Cognitive Services User</strong></td><td>Call AI APIs, list keys</td><td>Applications</td></tr>
+                <tr><td><strong>Cognitive Services Contributor</strong></td><td>Create/manage AI resources</td><td>Provisioning teams</td></tr>
+                <tr><td><strong>Search Index Data Reader</strong></td><td>Query search indexes</td><td>RAG applications</td></tr>
+                <tr><td><strong>Storage Blob Data Contributor</strong></td><td>Read/write/delete blob data</td><td>Training data access</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="slide-number">6 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 7: ROLE ASSIGNMENT CLI ======================== -->
+<section class="slide slide-content" id="slide-7">
+    <div class="slide-inner">
+        <h2>⌨️ Assigning Roles via CLI</h2>
+        <pre><code><span class="cmt"># Assign Azure AI Developer at resource group scope</span>
+<span class="fn">az</span> role assignment create \
+  --assignee <span class="str">"user@contoso.com"</span> \
+  --role <span class="str">"Azure AI Developer"</span> \
+  --scope <span class="str">"/subscriptions/{sub}/resourceGroups/{rg}"</span></code></pre>
+        <pre><code><span class="cmt"># Assign Cognitive Services User to a managed identity</span>
+<span class="fn">az</span> role assignment create \
+  --assignee-object-id <span class="str">"{principal-id}"</span> \
+  --assignee-principal-type <span class="str">"ServicePrincipal"</span> \
+  --role <span class="str">"Cognitive Services User"</span> \
+  --scope <span class="str">"{resource-id}"</span></code></pre>
+        <div class="callout">
+            <strong>💡 Best Practice:</strong> Always assign at the narrowest scope possible.
+            Resource-level > Resource Group > Subscription.
+        </div>
+    </div>
+    <div class="slide-number">7 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 8: CUSTOM ROLES ======================== -->
+<section class="slide slide-content" id="slide-8">
+    <div class="slide-inner">
+        <h2>⚙️ Custom Role Definitions</h2>
+        <pre><code>{
+  <span class="str">"Name"</span>: <span class="str">"AI Foundry Model Deployer"</span>,
+  <span class="str">"Actions"</span>: [
+    <span class="str">"Microsoft.CognitiveServices/accounts/deployments/*"</span>,
+    <span class="str">"Microsoft.CognitiveServices/accounts/models/read"</span>
+  ],
+  <span class="str">"NotActions"</span>: [
+    <span class="str">"Microsoft.CognitiveServices/accounts/delete"</span>
+  ],
+  <span class="str">"DataActions"</span>: [
+    <span class="str">"Microsoft.CognitiveServices/accounts/OpenAI/deployments/completions/action"</span>
+  ],
+  <span class="str">"AssignableScopes"</span>: [<span class="str">"/subscriptions/{sub-id}"</span>]
+}</code></pre>
+        <p style="color: var(--text-secondary); margin-top: 12px;">
+            Create with: <code>az role definition create --role-definition @custom-role.json</code>
+        </p>
+    </div>
+    <div class="slide-number">8 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 9: MANAGED IDENTITY ======================== -->
+<section class="slide slide-section" id="slide-9">
+    <div class="slide-inner">
+        <h2>🤖 Managed Identity</h2>
+        <p class="subtitle" style="text-align: left; max-width: 100%; margin-bottom: 28px;">
+            Eliminate credentials from code. Azure handles token issuance and rotation automatically.
+        </p>
+        <div class="two-col">
+            <div>
+                <h3>System-Assigned</h3>
+                <ul class="compact">
+                    <li>Lifecycle tied to resource</li>
+                    <li>Cannot be shared</li>
+                    <li>Automatic management</li>
+                    <li>Best for: single-service workloads</li>
+                </ul>
+            </div>
+            <div>
+                <h3>User-Assigned</h3>
+                <ul class="compact">
+                    <li>Independent lifecycle</li>
+                    <li>Shareable across resources</li>
+                    <li>Requires explicit management</li>
+                    <li>Best for: production multi-service</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">9 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 10: AUTH FLOW ======================== -->
+<section class="slide slide-content" id="slide-10">
+    <div class="slide-inner">
+        <h2>🔄 Managed Identity Auth Flow</h2>
+        <div class="flow">
+            <div class="flow-node">AI Foundry<br>Project</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node purple">Azure AD<br>Token Service</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node green">Access Token<br>(Auto-rotated)</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">Target Service</div>
+        </div>
+        <pre><code><span class="cmt"># Python — zero secrets in code</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+
+credential = <span class="type">DefaultAzureCredential</span>()  <span class="cmt"># Managed Identity in Azure, CLI locally</span>
+client = <span class="type">AIProjectClient</span>(credential=credential, ...)</code></pre>
+        <div class="callout success">
+            <strong>✅ Same code</strong> works locally (Azure CLI auth) and in production (managed identity).
+        </div>
+    </div>
+    <div class="slide-number">10 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 11: SERVICE PRINCIPALS ======================== -->
+<section class="slide slide-content" id="slide-11">
+    <div class="slide-inner">
+        <h2>🔑 Service Principals & CI/CD</h2>
+        <div class="two-col">
+            <div>
+                <h3>Traditional (Secret-based)</h3>
+                <pre><code><span class="fn">az</span> ad sp create-for-rbac \
+  --name <span class="str">"sp-cicd"</span> \
+  --role <span class="str">"Contributor"</span> \
+  --scopes <span class="str">"{rg-scope}"</span></code></pre>
+                <div class="callout danger" style="margin-top: 12px;">
+                    ⚠️ Long-lived secrets. Rotate regularly. Store in Key Vault.
+                </div>
+            </div>
+            <div>
+                <h3>Modern (Federated) ✅</h3>
+                <pre><code><span class="fn">az</span> ad app federated-credential \
+  create --id <span class="str">"{app-id}"</span> \
+  --parameters <span class="str">'{ "issuer":
+  "https://token.actions
+  .githubusercontent.com",
+  "subject": "repo:org/repo
+  :ref:refs/heads/main" }'</span></code></pre>
+                <div class="callout success" style="margin-top: 12px;">
+                    ✅ No secrets. OIDC token exchange. Preferred approach.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">11 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 12: LEAST PRIVILEGE ======================== -->
+<section class="slide slide-content" id="slide-12">
+    <div class="slide-inner">
+        <h2>🎯 Least-Privilege Patterns</h2>
+        <table>
+            <thead>
+                <tr><th>Persona</th><th>Role(s)</th><th>Scope</th><th>Auth</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Platform Admin</td><td>Owner (PIM/JIT)</td><td>Subscription</td><td>Entra ID + MFA</td></tr>
+                <tr><td>AI Engineer</td><td>Azure AI Developer</td><td>Resource Group</td><td>Entra ID + MFA</td></tr>
+                <tr><td>Data Scientist</td><td>Cog Services User + Blob Reader</td><td>Resource</td><td>Entra ID + MFA</td></tr>
+                <tr><td>Application</td><td>Cognitive Services User</td><td>Resource</td><td>Managed Identity</td></tr>
+                <tr><td>CI/CD Pipeline</td><td>Custom Deployer</td><td>Resource Group</td><td>Workload Identity</td></tr>
+            </tbody>
+        </table>
+        <div class="callout" style="margin-top: 20px;">
+            <strong>Golden Rule:</strong> Assign at the narrowest scope. Use PIM for time-bound admin access. Audit quarterly.
+        </div>
+    </div>
+    <div class="slide-number">12 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 13: MINI HACK ======================== -->
+<section class="slide slide-content" id="slide-13">
+    <div class="slide-inner">
+        <h2>🧪 Mini Hack</h2>
+        <h3>Configure RBAC & Managed Identity for Your Project</h3>
+        <ol style="font-size: 1rem;">
+            <li>Create resource group + AI Foundry account</li>
+            <li>Create user-assigned managed identity <code>id-ai-foundry-hack</code></li>
+            <li>Assign <code>Cognitive Services User</code> + <code>Storage Blob Data Reader</code></li>
+            <li>Create custom "AI Foundry Model Reader" role</li>
+            <li>Validate with Python using <code>DefaultAzureCredential</code></li>
+            <li>Audit with <code>az role assignment list</code></li>
+        </ol>
+        <div class="highlight" style="margin-top: 24px;">
+            <strong>Success Criteria:</strong> ✅ MI calls endpoints · ✅ Custom role restricts writes ·
+            ✅ No over-privileged identities · ✅ Zero API keys in code
+        </div>
+    </div>
+    <div class="slide-number">13 / 14</div>
+    <div class="slide-footer">Module 31 — Identity & Access Management</div>
+</section>
+
+<!-- ======================== SLIDE 14: SUMMARY ======================== -->
+<section class="slide slide-title" id="slide-14">
+    <div class="slide-inner">
+        <h2 style="color: white;">🎓 Key Takeaways</h2>
+        <div class="card-grid" style="margin-top: 28px;">
+            <div class="card">
+                <h4>RBAC Roles</h4>
+                <p>Built-in + custom roles scoped to the narrowest resource</p>
+            </div>
+            <div class="card">
+                <h4>Managed Identity</h4>
+                <p>Zero-secret auth with auto-rotated tokens</p>
+            </div>
+            <div class="card">
+                <h4>Service Principals</h4>
+                <p>Workload Identity Federation for CI/CD</p>
+            </div>
+            <div class="card">
+                <h4>Least Privilege</h4>
+                <p>PIM, narrow scope, quarterly audits</p>
+            </div>
+        </div>
+        <p style="margin-top: 32px; color: var(--text-secondary); font-size: 1rem;">
+            <strong>Next →</strong> Module 32: Network Security — Private Endpoints & VNETs
+        </p>
+        <p style="margin-top: 16px; color: var(--text-muted); font-size: 0.82rem;">
+            Azure AI Foundry: Zero to Hero · Module 31 of 45 · Arc 7: Security & Governance
+        </p>
+    </div>
+    <div class="slide-number">14 / 14</div>
+</section>
+
+</body>
+</html>

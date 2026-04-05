@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 26: Deploying Model Endpoints | Azure AI Foundry: Zero to Hero</title>
+<meta name="description" content="Master model endpoint deployment in Azure AI Foundry — managed compute, serverless APIs, provisioned throughput, blue/green deployments, traffic splitting, and API key management.">
+<style>
+:root {
+  --primary: #0078d4;
+  --primary-dark: #005a9e;
+  --primary-light: #deecf9;
+  --accent: #00b7c3;
+  --accent-warm: #ff8c00;
+  --hero-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 40%, #2c5364 100%);
+  --surface: #ffffff;
+  --surface-alt: #f6f8fa;
+  --surface-elevated: #ffffff;
+  --border: #e1e4e8;
+  --border-light: #f0f0f0;
+  --text-primary: #1b1b1b;
+  --text-secondary: #505050;
+  --text-tertiary: #6e6e6e;
+  --text-inverse: #ffffff;
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --success: #107c10;
+  --warning: #ff8c00;
+  --danger: #d13438;
+  --info: #0078d4;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  --max-width: 860px;
+  --arc-color: #e74c3c;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--surface-alt);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Hero Section ── */
+.hero {
+  background: var(--hero-gradient);
+  padding: 4.5rem 2rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 300px at 20% 80%, rgba(0,120,212,0.25), transparent),
+    radial-gradient(ellipse 400px 400px at 85% 20%, rgba(0,183,195,0.18), transparent);
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(231,76,60,0.18);
+  border: 1px solid rgba(231,76,60,0.45);
+  color: #ff6b6b;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.hero-badge .arc-dot {
+  width: 8px; height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.hero-series {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 2.85rem);
+  font-weight: 800;
+  color: var(--text-inverse);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.hero h1 .gradient-text {
+  background: linear-gradient(135deg, #00b7c3, #0078d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.12rem;
+  color: rgba(255,255,255,0.72);
+  max-width: 640px;
+  line-height: 1.65;
+  margin-bottom: 1.5rem;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hero-meta .meta-icon {
+  font-size: 1rem;
+}
+
+/* ── Progress Bar ── */
+.progress-track {
+  background: var(--border);
+  height: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 57.7%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 0 2px 2px 0;
+  transition: width 0.3s;
+}
+
+/* ── Main Content ── */
+.content-wrapper {
+  max-width: var(--max-width);
+  margin: -2rem auto 0;
+  padding: 0 1.5rem 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.content-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 3rem;
+  margin-bottom: 2rem;
+}
+
+/* ── Typography ── */
+h2 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+h2:first-child { margin-top: 0; }
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin: 2rem 0 0.75rem;
+}
+
+h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 1.5rem 0 0.5rem;
+}
+
+p { margin-bottom: 1rem; color: var(--text-secondary); }
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+strong { color: var(--text-primary); font-weight: 600; }
+
+/* ── Lists ── */
+ul, ol { margin: 0.75rem 0 1.25rem 1.5rem; color: var(--text-secondary); }
+li { margin-bottom: 0.4rem; }
+li::marker { color: var(--primary); }
+
+/* ── Code ── */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 0.15em 0.45em;
+  border-radius: 4px;
+  color: var(--primary-dark);
+}
+
+pre {
+  background: var(--code-bg);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1.25rem 0 1.5rem;
+  border: 1px solid #333;
+  position: relative;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--code-text);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.code-label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45);
+  padding: 0.2rem 0.75rem;
+  border-radius: 0 var(--radius-md) 0 6px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Syntax Tokens ── */
+.kw { color: #569cd6; }
+.str { color: #ce9178; }
+.cm { color: #6a9955; }
+.fn { color: #dcdcaa; }
+.num { color: #b5cea8; }
+.op { color: #d4d4d4; }
+.param { color: #9cdcfe; }
+.type { color: #4ec9b0; }
+.prop { color: #9cdcfe; }
+
+/* ── Callout Boxes ── */
+.callout {
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  font-size: 0.92rem;
+}
+
+.callout-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.callout-content { flex: 1; }
+.callout-content p { margin-bottom: 0.4rem; }
+.callout-content p:last-child { margin-bottom: 0; }
+
+.callout-info {
+  background: #e8f4fd;
+  border-left: 4px solid var(--info);
+}
+
+.callout-tip {
+  background: #e6f7e6;
+  border-left: 4px solid var(--success);
+}
+
+.callout-warning {
+  background: #fff4e5;
+  border-left: 4px solid var(--warning);
+}
+
+.callout-danger {
+  background: #fde7e9;
+  border-left: 4px solid var(--danger);
+}
+
+/* ── Feature Cards Grid ── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.feature-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature-card .card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.feature-card h4 {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.feature-card p {
+  font-size: 0.88rem;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* ── Comparison Table ── */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+thead th {
+  background: var(--primary);
+  color: white;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+tbody tr:nth-child(even) { background: var(--surface-alt); }
+tbody tr:hover { background: var(--primary-light); }
+
+/* ── Video Section ── */
+.video-section {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f0fe 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.video-section h3 {
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+}
+
+.video-section .video-description {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: 56.25%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* ── Diagram / Architecture Boxes ── */
+.architecture-diagram {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.flow-box {
+  background: white;
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  min-width: 140px;
+}
+
+.flow-box.alt {
+  border-color: var(--accent);
+  color: #007a80;
+}
+
+.flow-box.highlight {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.flow-box.danger {
+  border-color: var(--arc-color);
+  color: var(--arc-color);
+}
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+
+/* ── Split Traffic Visualization ── */
+.traffic-visual {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  margin: 1.5rem 0;
+}
+
+.traffic-bar {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 40px;
+  margin: 1rem 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.traffic-bar .blue-segment {
+  background: linear-gradient(135deg, #0078d4, #005a9e);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: width 0.5s ease;
+}
+
+.traffic-bar .green-segment {
+  background: linear-gradient(135deg, #107c10, #0e6b0e);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: width 0.5s ease;
+}
+
+.traffic-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+
+.traffic-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.blue { background: #0078d4; }
+.legend-dot.green { background: #107c10; }
+
+/* ── Step Cards ── */
+.step-list {
+  counter-reset: step-counter;
+  margin: 1.5rem 0;
+}
+
+.step-item {
+  counter-increment: step-counter;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.step-item::before {
+  content: counter(step-counter);
+  flex-shrink: 0;
+  width: 36px; height: 36px;
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-item .step-content h4 {
+  margin: 0 0 0.3rem;
+  color: var(--text-primary);
+}
+
+.step-item .step-content p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ── Mini Hack Banner ── */
+.mini-hack {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  margin: 2.5rem 0;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.mini-hack::before {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,183,195,0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.mini-hack .hack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(0,183,195,0.2);
+  border: 1px solid rgba(0,183,195,0.4);
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.mini-hack h3 {
+  color: white;
+  font-size: 1.35rem;
+  margin: 0 0 0.75rem;
+}
+
+.mini-hack p {
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 0.75rem;
+}
+
+.mini-hack .hack-objectives {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.mini-hack .hack-objectives li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255,255,255,0.8);
+  font-size: 0.92rem;
+}
+
+.mini-hack .hack-objectives li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── Bottom Navigation ── */
+.bottom-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0;
+  margin-top: 2rem;
+  border-top: 2px solid var(--border);
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  text-decoration: none;
+}
+
+.nav-center {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+
+/* ── Footer ── */
+.site-footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ── Tabs ── */
+.tabs-container {
+  margin: 1.5rem 0;
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  gap: 0;
+}
+
+.tab-btn {
+  padding: 0.7rem 1.25rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  font-family: var(--font-sans);
+}
+
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-panel {
+  display: none;
+  padding: 1.25rem 0;
+}
+
+.tab-panel.active { display: block; }
+
+/* ── Key-Value Badge List ── */
+.kv-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.kv-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.kv-badge .kv-key {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-right: 0.35rem;
+}
+
+.kv-badge .kv-val {
+  color: var(--primary);
+}
+
+/* ── TOC ── */
+.toc {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.toc h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.toc ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.toc li {
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.toc a {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .content-card { padding: 1.75rem; }
+  .hero { padding: 3rem 1.25rem 3rem; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .flow-row { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .bottom-nav { flex-direction: column; gap: 0.75rem; }
+  .traffic-legend { flex-direction: column; align-items: center; }
+}
+
+@media (max-width: 480px) {
+  .content-card { padding: 1.25rem; }
+  .hero h1 { font-size: 1.7rem; }
+  pre { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════ HERO ══════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="arc-dot"></span>
+      ARC 6 · DEPLOYMENT &amp; MLOps
+    </div>
+    <div class="hero-series">Azure AI Foundry: Zero to Hero — Module 26 of 45</div>
+    <h1>Deploying <span class="gradient-text">Model Endpoints</span></h1>
+    <p class="hero-subtitle">
+      Take your AI models from development to production. Learn managed compute, serverless APIs, provisioned throughput, blue/green deployments, and secure API key management in Azure AI Foundry.
+    </p>
+    <div class="hero-meta">
+      <span><span class="meta-icon">📅</span> April 2026</span>
+      <span><span class="meta-icon">⏱️</span> 35 min read</span>
+      <span><span class="meta-icon">🎯</span> Intermediate–Advanced</span>
+      <span><span class="meta-icon">🧪</span> Hands-on Lab Included</span>
+    </div>
+  </div>
+</section>
+
+<!-- Progress -->
+<div class="progress-track"><div class="progress-fill" title="Module 26 of 45 (57.7%)"></div></div>
+
+<!-- ══════════════════════════════════════ CONTENT ══════════════════════════════════════ -->
+<main class="content-wrapper">
+<article class="content-card">
+
+<!-- Table of Contents -->
+<nav class="toc">
+  <h4>📑 In This Module</h4>
+  <ol>
+    <li><a href="#overview">Deployment Overview</a></li>
+    <li><a href="#deployment-types">Deployment Types</a></li>
+    <li><a href="#endpoint-config">Endpoint Configuration &amp; Scaling</a></li>
+    <li><a href="#blue-green">Blue/Green Deployments &amp; Traffic Splitting</a></li>
+    <li><a href="#api-keys">API Key Management &amp; Authentication</a></li>
+    <li><a href="#video">Video Walkthrough</a></li>
+    <li><a href="#mini-hack">Mini Hack: Blue/Green Traffic Splitting</a></li>
+    <li><a href="#best-practices">Best Practices</a></li>
+    <li><a href="#summary">Summary &amp; Next Steps</a></li>
+  </ol>
+</nav>
+
+<!-- ── 1. Deployment Overview ── -->
+<h2 id="overview">1. Deployment Overview</h2>
+
+<p>
+  Once you've built, fine-tuned, or selected a foundation model inside <strong>Azure AI Foundry</strong>, the next critical step is deploying it as a production-grade endpoint. An endpoint transforms a static model artifact into a live, scalable REST API that applications can consume. Without proper deployment, even the most sophisticated model remains a lab experiment.
+</p>
+
+<p>
+  Azure AI Foundry provides a unified deployment experience across multiple compute paradigms—each tailored to different workload profiles, latency requirements, and cost constraints. Whether you're spinning up a quick prototype or deploying a mission-critical production system, the platform gives you the tools to match infrastructure to your exact requirements.
+</p>
+
+<h3>What is an Endpoint?</h3>
+
+<p>
+  An <strong>endpoint</strong> in Azure AI Foundry is a durable, versioned REST API resource that accepts inference requests and returns model predictions. Each endpoint has:
+</p>
+
+<ul>
+  <li><strong>A unique URL</strong> — a stable address clients use to send requests, independent of the underlying model version.</li>
+  <li><strong>Authentication</strong> — API keys or Microsoft Entra ID tokens that secure access to the endpoint.</li>
+  <li><strong>One or more deployments</strong> — each deployment represents a specific model version and configuration running behind the endpoint.</li>
+  <li><strong>Traffic rules</strong> — percentage-based routing that determines how requests are distributed across deployments.</li>
+  <li><strong>Monitoring hooks</strong> — automatic integration with Azure Monitor for latency, throughput, and error tracking.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <span class="callout-icon">💡</span>
+  <div class="callout-content">
+    <p><strong>Key Distinction:</strong> An <em>endpoint</em> is the stable URL your application calls. A <em>deployment</em> is a specific model instance running behind that endpoint. One endpoint can host multiple deployments with traffic split between them.</p>
+  </div>
+</div>
+
+<h3>The Deployment Lifecycle</h3>
+
+<p>
+  Deploying a model in Azure AI Foundry follows a structured lifecycle that ensures reliability and traceability at every stage:
+</p>
+
+<div class="architecture-diagram">
+  <p style="font-weight:600; color:var(--text-primary); margin-bottom:1rem;">Deployment Lifecycle in Azure AI Foundry</p>
+  <div class="flow-row">
+    <div class="flow-box">Model Registry</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box highlight">Create Deployment</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box alt">Configure Endpoint</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box">Live Inference</div>
+  </div>
+  <div class="flow-row" style="margin-top:0.75rem;">
+    <div class="flow-box">Monitor &amp; Scale</div>
+    <span class="flow-arrow">↔</span>
+    <div class="flow-box alt">Traffic Split</div>
+    <span class="flow-arrow">↔</span>
+    <div class="flow-box">Update / Rollback</div>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <div class="callout-content">
+    <p><strong>Azure AI Foundry, Not Azure ML:</strong> This module covers deployments through <strong>Azure AI Foundry</strong> (formerly Azure AI Studio). The deployment APIs, SDK, and portal experiences are purpose-built for the Foundry platform. While concepts are similar to legacy ML platforms managed endpoints, the Foundry deployment surface provides a simplified, model-catalog-first experience.</p>
+  </div>
+</div>
+
+<!-- ── 2. Deployment Types ── -->
+<h2 id="deployment-types">2. Deployment Types</h2>
+
+<p>Azure AI Foundry supports three primary deployment types, each optimized for different production scenarios:</p>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="card-icon">🖥️</div>
+    <h4>Managed Compute</h4>
+    <p>Dedicated VM-based infrastructure for models that require custom containers, fine-tuned weights, or GPU acceleration. Full control over SKU, scaling rules, and networking.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">⚡</div>
+    <h4>Serverless API</h4>
+    <p>Pay-per-token deployment with no infrastructure management. Ideal for foundation models from the Model Catalog. Instant availability, usage-based billing.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">🔒</div>
+    <h4>Provisioned Throughput</h4>
+    <p>Reserved capacity measured in Provisioned Throughput Units (PTUs). Guaranteed throughput with predictable latency for mission-critical workloads.</p>
+  </div>
+</div>
+
+<h3>Decision Framework</h3>
+
+<p>Choosing the right deployment type depends on your specific requirements. Use this decision framework:</p>
+
+<div class="callout callout-info">
+  <span class="callout-icon">🤔</span>
+  <div class="callout-content">
+    <p><strong>Quick Decision Guide:</strong></p>
+    <p>→ <strong>Custom / fine-tuned model?</strong> Use <em>Managed Compute</em>.</p>
+    <p>→ <strong>Catalog model + variable load?</strong> Use <em>Serverless API</em>.</p>
+    <p>→ <strong>Production SLA + guaranteed latency?</strong> Use <em>Provisioned Throughput</em>.</p>
+    <p>→ <strong>Prototyping or experimentation?</strong> Start with <em>Serverless API</em>, migrate later.</p>
+  </div>
+</div>
+
+<h3>Comparison Matrix</h3>
+
+<div class="table-wrapper">
+<table>
+<thead>
+  <tr>
+    <th>Dimension</th>
+    <th>Managed Compute</th>
+    <th>Serverless API</th>
+    <th>Provisioned Throughput</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><strong>Infrastructure</strong></td>
+    <td>Dedicated VMs (GPU/CPU)</td>
+    <td>Fully managed (no VMs)</td>
+    <td>Reserved capacity (PTUs)</td>
+  </tr>
+  <tr>
+    <td><strong>Billing Model</strong></td>
+    <td>Per-VM-hour</td>
+    <td>Per-token (input/output)</td>
+    <td>Per-PTU-hour (reserved)</td>
+  </tr>
+  <tr>
+    <td><strong>Scaling</strong></td>
+    <td>Manual or auto (instance count)</td>
+    <td>Automatic (transparent)</td>
+    <td>Fixed PTU allocation</td>
+  </tr>
+  <tr>
+    <td><strong>Latency</strong></td>
+    <td>Low (dedicated resources)</td>
+    <td>Variable (shared infra)</td>
+    <td>Predictable &amp; consistent</td>
+  </tr>
+  <tr>
+    <td><strong>Custom Models</strong></td>
+    <td>✅ Full support</td>
+    <td>❌ Catalog models only</td>
+    <td>✅ Select models</td>
+  </tr>
+  <tr>
+    <td><strong>Best For</strong></td>
+    <td>Fine-tuned / custom models</td>
+    <td>Rapid prototyping, variable load</td>
+    <td>Production SLA workloads</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<h3>Deploying via the Azure AI Foundry SDK</h3>
+
+<p>The <code>azure-ai-projects</code> SDK provides a unified deployment API. Here's how to deploy a model from the catalog using a serverless (pay-per-token) deployment:</p>
+
+<pre><code><span class="cm"># Deploy a model using the Azure AI Foundry SDK</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+
+<span class="cm"># Initialize the Foundry project client</span>
+<span class="param">credential</span> = <span class="fn">DefaultAzureCredential</span>()
+<span class="param">project_client</span> = <span class="fn">AIProjectClient</span>(
+    <span class="param">credential</span>=credential,
+    <span class="param">subscription_id</span>=<span class="str">"&lt;subscription-id&gt;"</span>,
+    <span class="param">resource_group_name</span>=<span class="str">"&lt;resource-group&gt;"</span>,
+    <span class="param">project_name</span>=<span class="str">"&lt;project-name&gt;"</span>
+)
+
+<span class="cm"># Deploy a serverless (pay-per-token) model</span>
+<span class="param">deployment</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>,
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model_version</span>=<span class="str">"2024-11-20"</span>,
+    <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,    <span class="cm"># Serverless API tier</span>
+    <span class="param">sku_capacity</span>=<span class="num">50</span>,              <span class="cm"># Rate limit: 50K tokens/min</span>
+).<span class="fn">result</span>()
+
+<span class="fn">print</span>(<span class="str">f"Endpoint: <span class="op">{</span>deployment.properties.endpoint_url<span class="op">}</span>"</span>)
+<span class="fn">print</span>(<span class="str">f"Status:   <span class="op">{</span>deployment.properties.provisioning_state<span class="op">}</span>"</span>)
+<span class="code-label">Python</span></code></pre>
+
+<h3>Azure CLI Deployment</h3>
+
+<pre><code><span class="cm"># Deploy a model to a Foundry project via Azure CLI</span>
+az ai model deployment create \
+  --name gpt-4o-production \
+  --project-name my-ai-project \
+  --resource-group my-rg \
+  --model-id azureml://registries/azure-openai/models/gpt-4o/versions/2024-11-20 \
+  --sku-name GlobalStandard \
+  --sku-capacity 50
+<span class="code-label">Bash</span></code></pre>
+
+<!-- ── 3. Endpoint Configuration & Scaling ── -->
+<h2 id="endpoint-config">3. Endpoint Configuration &amp; Scaling</h2>
+
+<p>Every deployment creates an <strong>endpoint</strong>—a unique URL that accepts inference requests. Configuring the endpoint correctly ensures reliability, performance, and cost efficiency.</p>
+
+<h3>Key Configuration Parameters</h3>
+
+<div class="table-wrapper">
+<table>
+<thead>
+  <tr>
+    <th>Parameter</th>
+    <th>Description</th>
+    <th>Example</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><strong>SKU Name</strong></td>
+    <td>Deployment tier (GlobalStandard, Standard, ProvisionedManaged)</td>
+    <td><code>GlobalStandard</code></td>
+  </tr>
+  <tr>
+    <td><strong>SKU Capacity</strong></td>
+    <td>Rate limit in thousands of tokens/min (TPM) or PTUs</td>
+    <td><code>80</code> (80K TPM)</td>
+  </tr>
+  <tr>
+    <td><strong>Version Policy</strong></td>
+    <td>How model version upgrades are handled</td>
+    <td><code>NoAutoUpgrade</code></td>
+  </tr>
+  <tr>
+    <td><strong>Content Filter</strong></td>
+    <td>Content safety policy applied to inputs/outputs</td>
+    <td><code>DefaultV2</code></td>
+  </tr>
+  <tr>
+    <td><strong>Network Isolation</strong></td>
+    <td>Private endpoint or public access restrictions</td>
+    <td><code>PrivateEndpoint</code></td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<h3>Scaling Strategies</h3>
+
+<div class="tabs-container">
+  <div class="tabs-header">
+    <button class="tab-btn active" onclick="switchTab(event, 'tab-serverless')">Serverless API</button>
+    <button class="tab-btn" onclick="switchTab(event, 'tab-managed')">Managed Compute</button>
+    <button class="tab-btn" onclick="switchTab(event, 'tab-ptu')">Provisioned (PTU)</button>
+  </div>
+
+  <div id="tab-serverless" class="tab-panel active">
+    <p>Serverless deployments scale automatically. You control throughput via <strong>rate limits</strong> (tokens per minute):</p>
+    <pre><code><span class="cm"># Update rate limit for a serverless deployment</span>
+<span class="param">updated</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>,
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
+    <span class="param">sku_capacity</span>=<span class="num">120</span>,  <span class="cm"># Increase to 120K TPM</span>
+).<span class="fn">result</span>()
+<span class="code-label">Python</span></code></pre>
+  </div>
+
+  <div id="tab-managed" class="tab-panel">
+    <p>Managed compute deployments scale by <strong>instance count</strong>. Enable autoscaling to handle variable load:</p>
+    <pre><code><span class="cm"># Configure autoscaling for managed compute</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    ManagedComputeDeployment,
+    AutoScaleSettings
+)
+
+<span class="param">deployment</span> = <span class="fn">ManagedComputeDeployment</span>(
+    <span class="param">name</span>=<span class="str">"my-custom-model"</span>,
+    <span class="param">model</span>=<span class="str">"my-fine-tuned-llm"</span>,
+    <span class="param">instance_type</span>=<span class="str">"Standard_NC24ads_A100_v4"</span>,
+    <span class="param">instance_count</span>=<span class="num">2</span>,
+    <span class="param">scale_settings</span>=<span class="fn">AutoScaleSettings</span>(
+        <span class="param">min_instances</span>=<span class="num">1</span>,
+        <span class="param">max_instances</span>=<span class="num">5</span>,
+        <span class="param">polling_interval</span>=<span class="num">10</span>,       <span class="cm"># seconds</span>
+        <span class="param">target_utilization</span>=<span class="num">70</span>,   <span class="cm"># percent</span>
+    ),
+)
+<span class="code-label">Python</span></code></pre>
+  </div>
+
+  <div id="tab-ptu" class="tab-panel">
+    <p>Provisioned Throughput provides fixed, guaranteed capacity measured in <strong>PTUs</strong>. Capacity is reserved and billed hourly:</p>
+    <pre><code><span class="cm"># Deploy with Provisioned Throughput Units (PTUs)</span>
+<span class="param">deployment</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt-4o-ptu-prod"</span>,
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">sku_name</span>=<span class="str">"ProvisionedManaged"</span>,
+    <span class="param">sku_capacity</span>=<span class="num">100</span>,  <span class="cm"># 100 PTUs</span>
+).<span class="fn">result</span>()
+
+<span class="cm"># PTU Sizing Guide:</span>
+<span class="cm"># ~10 PTUs ≈ 6 requests/min for GPT-4o</span>
+<span class="cm"># Use the Capacity Calculator in the Foundry Portal</span>
+<span class="code-label">Python</span></code></pre>
+  </div>
+</div>
+
+<div class="callout callout-tip">
+  <span class="callout-icon">💡</span>
+  <div class="callout-content">
+    <p><strong>Cost Optimization Tip:</strong> Start with a <strong>Serverless API</strong> deployment during development and testing. Once you understand your token consumption patterns, evaluate whether <strong>Provisioned Throughput</strong> (PTU) offers better economics for your steady-state production workload.</p>
+  </div>
+</div>
+
+<!-- ── 4. Blue/Green Deployments ── -->
+<h2 id="blue-green">4. Blue/Green Deployments &amp; Traffic Splitting</h2>
+
+<p>
+  Blue/green deployment is a release strategy that lets you run two versions of a model simultaneously, gradually shifting traffic from the old version (blue) to the new version (green). This minimizes risk and enables instant rollback.
+</p>
+
+<h3>How It Works in Azure AI Foundry</h3>
+
+<p>Azure AI Foundry endpoints support <strong>multiple deployments behind a single endpoint URL</strong>. You control what percentage of traffic goes to each deployment:</p>
+
+<div class="traffic-visual">
+  <p style="font-weight:600; text-align:center; margin-bottom:0.5rem; color:var(--text-primary);">Traffic Split Visualization — Gradual Rollout</p>
+  
+  <p style="font-size:0.82rem; color:var(--text-tertiary); text-align:center; margin-bottom:1rem;">Phase 1: Canary (10% to green)</p>
+  <div class="traffic-bar">
+    <div class="blue-segment" style="width:90%;">Blue — 90%</div>
+    <div class="green-segment" style="width:10%;">10%</div>
+  </div>
+
+  <p style="font-size:0.82rem; color:var(--text-tertiary); text-align:center; margin:1rem 0 0.5rem;">Phase 2: Validation (50/50)</p>
+  <div class="traffic-bar">
+    <div class="blue-segment" style="width:50%;">Blue — 50%</div>
+    <div class="green-segment" style="width:50%;">Green — 50%</div>
+  </div>
+
+  <p style="font-size:0.82rem; color:var(--text-tertiary); text-align:center; margin:1rem 0 0.5rem;">Phase 3: Full Cutover</p>
+  <div class="traffic-bar">
+    <div class="blue-segment" style="width:0%;"></div>
+    <div class="green-segment" style="width:100%;">Green — 100%</div>
+  </div>
+
+  <div class="traffic-legend">
+    <span><span class="legend-dot blue"></span> Blue (current stable)</span>
+    <span><span class="legend-dot green"></span> Green (new version)</span>
+  </div>
+</div>
+
+<h3>Implementing Traffic Splitting</h3>
+
+<pre><code><span class="cm"># Step 1: Create the "blue" deployment (current production model)</span>
+<span class="param">blue</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt4o-blue"</span>,
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model_version</span>=<span class="str">"2024-08-06"</span>,
+    <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
+    <span class="param">sku_capacity</span>=<span class="num">80</span>,
+).<span class="fn">result</span>()
+
+<span class="cm"># Step 2: Create the "green" deployment (new model version)</span>
+<span class="param">green</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt4o-green"</span>,
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model_version</span>=<span class="str">"2024-11-20"</span>,
+    <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
+    <span class="param">sku_capacity</span>=<span class="num">30</span>,
+).<span class="fn">result</span>()
+
+<span class="cm"># Step 3: Configure traffic splitting on the endpoint</span>
+<span class="param">endpoint</span> = project_client.endpoints.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt4o-endpoint"</span>,
+    <span class="param">traffic</span>={
+        <span class="str">"gpt4o-blue"</span>: <span class="num">90</span>,    <span class="cm"># 90% to current version</span>
+        <span class="str">"gpt4o-green"</span>: <span class="num">10</span>,   <span class="cm"># 10% canary to new version</span>
+    },
+).<span class="fn">result</span>()
+
+<span class="fn">print</span>(<span class="str">f"Endpoint URL: <span class="op">{</span>endpoint.properties.scoring_uri<span class="op">}</span>"</span>)
+<span class="fn">print</span>(<span class="str">f"Traffic:      <span class="op">{</span>endpoint.properties.traffic<span class="op">}</span>"</span>)
+<span class="code-label">Python</span></code></pre>
+
+<h3>Gradual Rollout Strategy</h3>
+
+<div class="step-list">
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Deploy Green (Canary)</h4>
+      <p>Deploy the new model version alongside the existing blue deployment. Route 10% of traffic to green for initial validation.</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Monitor &amp; Validate</h4>
+      <p>Compare latency, error rates, and output quality between blue and green using Azure Monitor metrics and custom evaluation scripts.</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Increase Traffic</h4>
+      <p>If metrics are healthy, increase green traffic to 50%, then 75%, then 100%. At each phase, validate for at least 15–30 minutes.</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Full Cutover or Rollback</h4>
+      <p>Once green is at 100% with healthy metrics, decommission the blue deployment. If issues arise at any stage, set blue back to 100% instantly.</p>
+    </div>
+  </div>
+</div>
+
+<h3>Rollback in Seconds</h3>
+
+<p>One of the most powerful aspects of traffic splitting is the ability to perform an <strong>instant rollback</strong>. If the green deployment exhibits degraded performance, elevated error rates, or unexpected behavior, you can revert all traffic to the stable blue deployment in seconds:</p>
+
+<pre><code><span class="cm"># Instant rollback — shift all traffic back to blue</span>
+project_client.endpoints.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt4o-endpoint"</span>,
+    <span class="param">traffic</span>={
+        <span class="str">"gpt4o-blue"</span>: <span class="num">100</span>,
+        <span class="str">"gpt4o-green"</span>: <span class="num">0</span>,
+    },
+).<span class="fn">result</span>()
+<span class="fn">print</span>(<span class="str">"⚠️ Rollback complete — 100% traffic on blue"</span>)
+<span class="code-label">Python</span></code></pre>
+
+<h3>Rollback via Azure CLI</h3>
+
+<pre><code><span class="cm"># Rollback using Azure CLI — equally fast</span>
+az ai model deployment update-traffic \
+  --endpoint-name gpt4o-endpoint \
+  --project-name my-ai-project \
+  --resource-group my-rg \
+  --traffic "gpt4o-blue=100,gpt4o-green=0"
+
+<span class="cm"># Verify the rollback</span>
+az ai model deployment show-traffic \
+  --endpoint-name gpt4o-endpoint \
+  --project-name my-ai-project \
+  --resource-group my-rg
+<span class="code-label">Bash</span></code></pre>
+
+<h3>Monitoring During Traffic Splits</h3>
+
+<p>Effective blue/green deployment requires continuous monitoring. Key metrics to track at each phase:</p>
+
+<div class="table-wrapper">
+<table>
+<thead>
+  <tr>
+    <th>Metric</th>
+    <th>Blue Baseline</th>
+    <th>Green Threshold</th>
+    <th>Action if Exceeded</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><strong>Error Rate</strong></td>
+    <td>&lt; 0.5%</td>
+    <td>&lt; 2%</td>
+    <td>Rollback immediately</td>
+  </tr>
+  <tr>
+    <td><strong>P95 Latency</strong></td>
+    <td>Baseline ± 10%</td>
+    <td>&lt; 3x baseline</td>
+    <td>Investigate; rollback if sustained</td>
+  </tr>
+  <tr>
+    <td><strong>Token Usage</strong></td>
+    <td>Known average</td>
+    <td>&lt; 1.5x baseline</td>
+    <td>Check for prompt issues</td>
+  </tr>
+  <tr>
+    <td><strong>Content Filter Triggers</strong></td>
+    <td>Known rate</td>
+    <td>&lt; 2x baseline</td>
+    <td>Investigate model behavior</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-warning">
+  <span class="callout-icon">⚠️</span>
+  <div class="callout-content">
+    <p><strong>Important:</strong> Traffic percentages must always sum to 100. When you update the traffic split, the change propagates within seconds but existing in-flight requests will complete on their original deployment.</p>
+  </div>
+</div>
+
+<!-- ── 5. API Key Management ── -->
+<h2 id="api-keys">5. API Key Management &amp; Authentication</h2>
+
+<p>Securing your deployed endpoints is critical. Azure AI Foundry supports two authentication methods:</p>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="card-icon">🔑</div>
+    <h4>API Key Authentication</h4>
+    <p>Simple key-based auth using the <code>api-key</code> header. Each deployment has a primary and secondary key for zero-downtime rotation.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">🛡️</div>
+    <h4>Microsoft Entra ID (OAuth)</h4>
+    <p>Token-based auth using managed identities and RBAC. No secrets to manage — the recommended approach for production workloads.</p>
+  </div>
+</div>
+
+<h3>API Key Operations</h3>
+
+<pre><code><span class="cm"># Retrieve API keys for a deployment</span>
+<span class="param">keys</span> = project_client.deployments.<span class="fn">list_keys</span>(
+    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>
+)
+
+<span class="fn">print</span>(<span class="str">f"Primary Key:   <span class="op">{</span>keys.primary_key[:8]<span class="op">}</span>..."</span>)
+<span class="fn">print</span>(<span class="str">f"Secondary Key: <span class="op">{</span>keys.secondary_key[:8]<span class="op">}</span>..."</span>)
+
+<span class="cm"># Rotate the primary key (secondary stays active for zero-downtime)</span>
+project_client.deployments.<span class="fn">regenerate_key</span>(
+    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>,
+    <span class="param">key_type</span>=<span class="str">"primary"</span>
+)
+<span class="fn">print</span>(<span class="str">"✅ Primary key rotated. Update your clients to use the new key."</span>)
+<span class="code-label">Python</span></code></pre>
+
+<h3>Calling an Endpoint with API Key</h3>
+
+<pre><code><span class="kw">import</span> requests
+
+<span class="param">endpoint_url</span> = <span class="str">"https://&lt;project&gt;.services.ai.azure.com/models/chat/completions"</span>
+<span class="param">api_key</span> = <span class="str">"&lt;your-api-key&gt;"</span>
+
+<span class="param">response</span> = requests.<span class="fn">post</span>(
+    endpoint_url,
+    <span class="param">headers</span>={
+        <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>,
+        <span class="str">"api-key"</span>: api_key,
+    },
+    <span class="param">json</span>={
+        <span class="str">"model"</span>: <span class="str">"gpt-4o-production"</span>,
+        <span class="str">"messages"</span>: [
+            {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Explain blue/green deployments."</span>}
+        ],
+        <span class="str">"max_tokens"</span>: <span class="num">500</span>,
+    }
+)
+
+<span class="fn">print</span>(response.<span class="fn">json</span>()[<span class="str">"choices"</span>][<span class="num">0</span>][<span class="str">"message"</span>][<span class="str">"content"</span>])
+<span class="code-label">Python</span></code></pre>
+
+<h3>Using Microsoft Entra ID (Recommended for Production)</h3>
+
+<pre><code><span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> openai <span class="kw">import</span> AzureOpenAI
+
+<span class="param">credential</span> = <span class="fn">DefaultAzureCredential</span>()
+<span class="param">token</span> = credential.<span class="fn">get_token</span>(<span class="str">"https://cognitiveservices.azure.com/.default"</span>)
+
+<span class="param">client</span> = <span class="fn">AzureOpenAI</span>(
+    <span class="param">azure_endpoint</span>=<span class="str">"https://&lt;project&gt;.services.ai.azure.com"</span>,
+    <span class="param">azure_ad_token</span>=token.token,
+    <span class="param">api_version</span>=<span class="str">"2024-12-01-preview"</span>,
+)
+
+<span class="param">completion</span> = client.chat.completions.<span class="fn">create</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o-production"</span>,
+    <span class="param">messages</span>=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Hello!"</span>}],
+)
+<span class="fn">print</span>(completion.choices[<span class="num">0</span>].message.content)
+<span class="code-label">Python</span></code></pre>
+
+<h3>Key Rotation Best Practices</h3>
+
+<div class="step-list">
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Use Dual Keys for Zero-Downtime Rotation</h4>
+      <p>Always configure clients with the primary key. When rotating, regenerate primary → update clients → regenerate secondary. The secondary key remains valid during the transition window, ensuring no requests fail.</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Store Keys in Azure Key Vault</h4>
+      <p>Never hardcode API keys in source code or configuration files. Use Key Vault references and managed identity to securely access keys at runtime. This centralizes secret management and provides audit logging.</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Automate Rotation with Azure Functions</h4>
+      <p>Set up a scheduled Azure Function that rotates keys on a regular cadence (e.g., every 90 days) and updates Key Vault automatically. This eliminates manual rotation tasks and reduces the risk of key compromise.</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-content">
+      <h4>Implement Key Vault Event-Driven Rotation</h4>
+      <p>Use Azure Event Grid to trigger automatic key rotation when keys approach their expiration date. Combine with Azure Functions for a fully automated rotation pipeline.</p>
+    </div>
+  </div>
+</div>
+
+<h3>Network Security for Endpoints</h3>
+
+<p>Beyond authentication, secure your endpoints at the network level:</p>
+
+<ul>
+  <li><strong>Private Endpoints:</strong> Deploy endpoints within a VNet using Azure Private Link. Traffic never traverses the public internet.</li>
+  <li><strong>IP Allowlisting:</strong> Restrict access to known IP ranges for public endpoints.</li>
+  <li><strong>Service Tags:</strong> Use Azure service tags in NSG rules to allow traffic only from trusted Azure services.</li>
+  <li><strong>Content Filters:</strong> Apply content safety policies to prevent prompt injection, harmful content generation, and data exfiltration through model outputs.</li>
+</ul>
+
+<pre><code><span class="cm"># Example: Configure a deployment with private endpoint</span>
+<span class="param">deployment</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
+    <span class="param">name</span>=<span class="str">"gpt-4o-secure"</span>,
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
+    <span class="param">sku_capacity</span>=<span class="num">50</span>,
+    <span class="param">properties</span>={
+        <span class="str">"networkIsolation"</span>: {
+            <span class="str">"publicNetworkAccess"</span>: <span class="str">"Disabled"</span>,
+        },
+        <span class="str">"contentFilter"</span>: <span class="str">"DefaultV2"</span>,
+    },
+).<span class="fn">result</span>()
+<span class="code-label">Python</span></code></pre>
+
+<div class="callout callout-danger">
+  <span class="callout-icon">🔐</span>
+  <div class="callout-content">
+    <p><strong>Security Warning:</strong> Never commit API keys to source control. Use environment variables, Key Vault, or managed identity. Consider enabling <strong>Microsoft Entra ID</strong> authentication to eliminate API keys entirely for your production endpoints.</p>
+  </div>
+</div>
+
+<!-- ── 6. Video ── -->
+<h2 id="video">6. Video Walkthrough</h2>
+
+<div class="video-section">
+  <h3>🎬 How to Create AI Model Deployment | Microsoft Foundry</h3>
+  <p class="video-description">Watch the official Microsoft walkthrough on deploying models through the Azure AI Foundry portal and SDK.</p>
+  <div class="video-container">
+    <iframe
+      src="https://www.youtube.com/embed/LLO0lOufbwc"
+      title="How to create AI model deployment | Microsoft Foundry"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      loading="lazy">
+    </iframe>
+  </div>
+</div>
+
+<!-- ── 7. Mini Hack ── -->
+<section class="mini-hack" id="mini-hack">
+  <span class="hack-badge">🧪 MINI HACK</span>
+  <h3>Deploy a Model with Blue/Green Traffic Splitting</h3>
+  <p>
+    In this hands-on exercise, you'll deploy two versions of a model behind a single endpoint and implement a phased traffic cutover using the Azure AI Foundry SDK.
+  </p>
+  <ul class="hack-objectives">
+    <li>Deploy a "blue" model using the Azure AI Foundry SDK</li>
+    <li>Deploy a "green" model with a newer version</li>
+    <li>Configure 90/10 traffic split for canary testing</li>
+    <li>Validate both deployments respond correctly</li>
+    <li>Shift traffic to 50/50, then 100% green</li>
+    <li>Perform an instant rollback to blue</li>
+  </ul>
+  <p style="margin-top:1.25rem;">
+    <strong style="color:var(--accent);">Time Estimate:</strong> <span style="color:rgba(255,255,255,0.8);">30–40 minutes</span><br>
+    <strong style="color:var(--accent);">Prerequisites:</strong> <span style="color:rgba(255,255,255,0.8);">Azure AI Foundry project, Python 3.10+, <code style="color:var(--accent);background:rgba(0,183,195,0.15);border-color:rgba(0,183,195,0.3);">azure-ai-projects</code> SDK</span>
+  </p>
+</section>
+
+<!-- ── 8. Best Practices ── -->
+<h2 id="best-practices">8. Best Practices</h2>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="card-icon">📊</div>
+    <h4>Monitor Everything</h4>
+    <p>Enable Azure Monitor for latency (P50/P95/P99), token usage, error rates, and model-specific quality metrics on every deployment.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">🔄</div>
+    <h4>Always Use Traffic Splitting</h4>
+    <p>Never deploy a new model version directly to 100% traffic. Start with 5-10% canary and validate metrics before each increment.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">💰</div>
+    <h4>Right-Size Your Deployment</h4>
+    <p>Use the PTU Capacity Calculator for provisioned deployments. For serverless, set rate limits based on observed peak TPM + 20% headroom.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">🛡️</div>
+    <h4>Secure by Default</h4>
+    <p>Prefer Entra ID over API keys. Enable private endpoints for network isolation. Use content filters to prevent prompt injection and harmful outputs.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">📋</div>
+    <h4>Pin Model Versions</h4>
+    <p>Always specify exact model versions. Set <code>NoAutoUpgrade</code> for version policy to prevent unexpected model changes in production.</p>
+  </div>
+  <div class="feature-card">
+    <div class="card-icon">🏗️</div>
+    <h4>Infrastructure as Code</h4>
+    <p>Define deployments in Bicep or Terraform for reproducibility. Store endpoint configs alongside your application code in source control.</p>
+  </div>
+</div>
+
+<h3>Production Deployment Checklist</h3>
+
+<p>Before promoting any model endpoint to production, verify each item on this checklist:</p>
+
+<div class="table-wrapper">
+<table>
+<thead>
+  <tr>
+    <th>Category</th>
+    <th>Checklist Item</th>
+    <th>Status</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><strong>Model</strong></td>
+    <td>Model version pinned with <code>NoAutoUpgrade</code></td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Model</strong></td>
+    <td>Content filter policy applied and tested</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Scaling</strong></td>
+    <td>Rate limits or PTUs sized for expected peak + 20% headroom</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Scaling</strong></td>
+    <td>Autoscaling configured (managed compute) or capacity validated (PTU)</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Security</strong></td>
+    <td>Microsoft Entra ID authentication enabled</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Security</strong></td>
+    <td>API keys stored in Key Vault (if using key auth)</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Security</strong></td>
+    <td>Private endpoint configured (if required)</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Monitoring</strong></td>
+    <td>Azure Monitor alerts configured for error rate, latency, and availability</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Monitoring</strong></td>
+    <td>Dashboard created for real-time endpoint health</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Deployment</strong></td>
+    <td>Blue/green traffic split configured (not 100% to new version)</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>Deployment</strong></td>
+    <td>Rollback procedure documented and tested</td>
+    <td>☐</td>
+  </tr>
+  <tr>
+    <td><strong>IaC</strong></td>
+    <td>Deployment defined in Bicep/Terraform and version-controlled</td>
+    <td>☐</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<h3>Common Anti-Patterns to Avoid</h3>
+
+<div class="callout callout-danger">
+  <span class="callout-icon">❌</span>
+  <div class="callout-content">
+    <p><strong>Anti-Pattern 1: Big-Bang Deployments.</strong> Deploying a new model version to 100% traffic without canary validation. Always use traffic splitting with gradual rollout.</p>
+  </div>
+</div>
+
+<div class="callout callout-danger">
+  <span class="callout-icon">❌</span>
+  <div class="callout-content">
+    <p><strong>Anti-Pattern 2: Auto-Upgrading in Production.</strong> Setting <code>AutoUpgrade</code> version policy on production endpoints. Model behavior can change unexpectedly when a new version is released.</p>
+  </div>
+</div>
+
+<div class="callout callout-danger">
+  <span class="callout-icon">❌</span>
+  <div class="callout-content">
+    <p><strong>Anti-Pattern 3: Shared API Keys.</strong> Using the same API key across development, staging, and production environments. Each environment should have independent keys with separate rotation schedules.</p>
+  </div>
+</div>
+
+<div class="callout callout-danger">
+  <span class="callout-icon">❌</span>
+  <div class="callout-content">
+    <p><strong>Anti-Pattern 4: No Monitoring.</strong> Deploying an endpoint without configuring alerts. You won't know about degraded performance until users complain. Set up proactive monitoring from day one.</p>
+  </div>
+</div>
+
+<!-- ── 9. Summary ── -->
+<h2 id="summary">9. Summary &amp; Next Steps</h2>
+
+<p>In this module, you learned how to deploy AI models as production-ready endpoints in Azure AI Foundry:</p>
+
+<ul>
+  <li><strong>Deployment Types:</strong> Managed Compute for custom models, Serverless API for pay-per-token simplicity, and Provisioned Throughput (PTU) for guaranteed capacity.</li>
+  <li><strong>Endpoint Configuration:</strong> SKU selection, rate limiting, autoscaling, version policies, and content filtering.</li>
+  <li><strong>Blue/Green Deployments:</strong> Running two model versions simultaneously with traffic splitting for safe, gradual rollouts and instant rollback.</li>
+  <li><strong>Authentication:</strong> API key management with dual-key rotation and Microsoft Entra ID for keyless, identity-based security.</li>
+</ul>
+
+<h3>Deployment Decision Summary</h3>
+
+<div class="table-wrapper">
+<table>
+<thead>
+  <tr>
+    <th>Scenario</th>
+    <th>Recommended Type</th>
+    <th>Key Configuration</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Prototyping a chatbot with GPT-4o</td>
+    <td>Serverless API</td>
+    <td><code>GlobalStandard</code>, 30K TPM</td>
+  </tr>
+  <tr>
+    <td>Fine-tuned model for document classification</td>
+    <td>Managed Compute</td>
+    <td>A100 GPU, autoscale 1-3 instances</td>
+  </tr>
+  <tr>
+    <td>Enterprise customer-facing AI with SLA</td>
+    <td>Provisioned Throughput</td>
+    <td>100+ PTUs, private endpoint</td>
+  </tr>
+  <tr>
+    <td>Multi-region high-availability setup</td>
+    <td>Serverless API (per region)</td>
+    <td><code>GlobalStandard</code> with Traffic Manager</td>
+  </tr>
+  <tr>
+    <td>Cost-sensitive batch processing pipeline</td>
+    <td>Serverless API</td>
+    <td><code>GlobalStandard</code>, lower TPM</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<h3>Further Reading</h3>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/azure/ai-foundry/">Azure AI Foundry Documentation</a> — Official deployment guides and API reference.</li>
+  <li><a href="https://learn.microsoft.com/azure/ai-services/openai/concepts/provisioned-throughput">Provisioned Throughput Concepts</a> — Deep dive into PTU sizing and economics.</li>
+  <li><a href="https://learn.microsoft.com/azure/key-vault/general/best-practices">Azure Key Vault Best Practices</a> — Secure secret management for API keys.</li>
+  <li><a href="https://learn.microsoft.com/azure/architecture/">Azure Architecture Center</a> — Blue/green and canary deployment patterns.</li>
+</ul>
+
+<div class="callout callout-info">
+  <span class="callout-icon">🚀</span>
+  <div class="callout-content">
+    <p><strong>Coming Up in Module 27:</strong> We'll dive into <strong>monitoring and observability</strong> for deployed endpoints—setting up Azure Monitor dashboards, custom alerts, latency tracking, and building automated health checks for your model deployments.</p>
+  </div>
+</div>
+
+<!-- ── Bottom Navigation ── -->
+<nav class="bottom-nav">
+  <a href="../module-25/blog.html" class="nav-btn">← Module 25</a>
+  <span class="nav-center">Module 26 of 45</span>
+  <a href="../module-27/blog.html" class="nav-btn">Module 27 →</a>
+</nav>
+
+</article>
+</main>
+
+<!-- ══════════════════════════════════════ FOOTER ══════════════════════════════════════ -->
+<footer class="site-footer">
+  <p>Azure AI Foundry: Zero to Hero · Module 26 · Deploying Model Endpoints</p>
+  <p style="margin-top:0.3rem;">© 2026 Azure AI Foundry Training Series. Built for learning. Not affiliated with Microsoft official documentation.</p>
+</footer>
+
+<!-- ══════════════════════════════════════ SCRIPT ══════════════════════════════════════ -->
+<script>
+function switchTab(e, tabId) {
+  const container = e.target.closest('.tabs-container');
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Reading progress
+window.addEventListener('scroll', () => {
+  const fill = document.querySelector('.progress-fill');
+  if (!fill) return;
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docH > 0 ? Math.min((window.scrollY / docH) * 100, 100) : 0;
+  fill.style.width = pct + '%';
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 39 — AI Foundry in CSP & Managed Services | Presentation</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --bg-slide: #16162a;
+            --bg-card: #1e1e3a;
+            --primary: #7c5cfc;
+            --primary-light: #a78bfa;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #2d2d50;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); }
+
+        .slide {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 3rem 5rem;
+            position: relative;
+            background: var(--bg-slide);
+        }
+        .slide.active { display: flex; }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(124,92,252,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(6,182,212,0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-family: var(--mono);
+        }
+
+        .arc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(124,92,252,0.15);
+            border: 1px solid rgba(124,92,252,0.3);
+            color: var(--primary-light);
+            padding: 0.3rem 0.9rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+        }
+
+        p { font-size: 1.15rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem; }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            line-height: 1.6;
+        }
+
+        ul { list-style: none; padding: 0; }
+        ul li {
+            padding: 0.5rem 0 0.5rem 1.8rem;
+            position: relative;
+            font-size: 1.1rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--primary-light);
+            font-weight: 700;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; width: 100%; }
+
+        .g-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .g-card .icon { font-size: 2rem; margin-bottom: 0.75rem; }
+        .g-card .title { font-weight: 700; color: #fff; margin-bottom: 0.4rem; font-size: 1.05rem; }
+        .g-card .desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+
+        .code-block {
+            background: #0d0d1a;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--text);
+            overflow-x: auto;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .highlight { color: var(--primary-light); }
+        .str { color: #c3e88d; }
+        .comment { color: #546e7a; font-style: italic; }
+        .kw { color: #c792ea; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        th {
+            text-align: left;
+            padding: 0.7rem 1rem;
+            background: rgba(124,92,252,0.15);
+            color: var(--primary-light);
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: var(--text);
+        }
+
+        .diagram {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: pre;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .tier-label {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .tier-label.bronze { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .tier-label.silver { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+        .tier-label.gold { background: rgba(234,179,8,0.2); color: #facc15; }
+        .tier-label.platinum { background: rgba(167,139,250,0.2); color: #c4b5fd; }
+
+        .checklist li::before { content: '✅'; }
+        .checklist li { padding-left: 2rem; }
+
+        .nav-controls {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: rgba(124,92,252,0.2);
+            border: 1px solid rgba(124,92,252,0.3);
+            color: var(--primary-light);
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font);
+        }
+        .nav-btn:hover { background: rgba(124,92,252,0.4); }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        @media (max-width: 900px) {
+            .slide { padding: 2rem; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<!-- ═══════════════════ SLIDE 1: Title ═══════════════════ -->
+<div class="slide active" id="slide-1">
+    <div class="slide-content" style="text-align:center;">
+        <div class="arc-badge">ARC 8 · Advanced Patterns & Enterprise</div>
+        <h1>AI Foundry in CSP &<br>Managed Services</h1>
+        <p class="subtitle" style="margin:1rem auto;">
+            Cloud Solution Provider integration, multi-tenant management,<br>
+            cross-tenant governance, and SLA-driven AI operations.
+        </p>
+        <p style="color:var(--text-muted); font-size:0.95rem; margin-top:2rem;">
+            Module 39 of 45 · Azure AI Foundry: Zero to Hero · April 2026
+        </p>
+    </div>
+    <div class="slide-number">1 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 2: Agenda ═══════════════════ -->
+<div class="slide" id="slide-2">
+    <div class="slide-content">
+        <h2>📋 Module Agenda</h2>
+        <div class="grid-2">
+            <div>
+                <h3>Part 1: Foundation</h3>
+                <ul>
+                    <li>CSP program model & Partner Center</li>
+                    <li>Provisioning AI Foundry in customer tenants</li>
+                    <li>AOBO vs. Azure Lighthouse</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Part 2: Operations</h3>
+                <ul>
+                    <li>Multi-tenant deployment topologies</li>
+                    <li>Cross-tenant governance & policies</li>
+                    <li>SLA tiers & support models</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Part 3: Business</h3>
+                <ul>
+                    <li>Cost allocation & chargeback</li>
+                    <li>Compliance across tenants</li>
+                    <li>Security baseline</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Part 4: Practice</h3>
+                <ul>
+                    <li>Mini Hack: Multi-tenant CSP architecture</li>
+                    <li>Team presentations & review</li>
+                    <li>Key takeaways</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">2 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 3: CSP Model ═══════════════════ -->
+<div class="slide" id="slide-3">
+    <div class="slide-content">
+        <h2>☁️ The CSP Program Model</h2>
+        <p>Cloud Solution Providers own the customer relationship, billing, and first-line support for Azure services.</p>
+        <div class="grid-2" style="margin-top:1.5rem;">
+            <div class="g-card">
+                <div class="icon">🏢</div>
+                <div class="title">Tier 1 — Direct CSP</div>
+                <div class="desc">Partner transacts directly with Microsoft. Sets pricing, provides full support stack, manages billing via Partner Center.</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🤝</div>
+                <div class="title">Tier 2 — Indirect CSP</div>
+                <div class="desc">Partner works through an indirect provider for billing. Maintains customer relationship and technical management.</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🔑</div>
+                <div class="title">AOBO Access</div>
+                <div class="desc">Admin on Behalf Of grants Owner role on customer subscriptions by default. Simple but overly broad for AI workloads.</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🛡️</div>
+                <div class="title">Azure Lighthouse</div>
+                <div class="desc">Granular delegated access with specific RBAC roles. Auditable, customer-visible, revocable. Preferred for AI Foundry.</div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">3 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 4: AI Foundry in CSP ═══════════════════ -->
+<div class="slide" id="slide-4">
+    <div class="slide-content">
+        <h2>🚀 Provisioning AI Foundry via CSP</h2>
+        <div class="code-block"><span class="comment"># Create AI Foundry Hub in customer subscription</span>
+<span class="kw">az</span> ai foundry hub create \
+  --name <span class="str">"customer-acme-ai-hub"</span> \
+  --resource-group <span class="str">"rg-acme-ai"</span> \
+  --subscription <span class="str">"&lt;customer-sub-id&gt;"</span> \
+  --location <span class="str">"eastus2"</span>
+
+<span class="comment"># Create project within the hub</span>
+<span class="kw">az</span> ai foundry project create \
+  --name <span class="str">"acme-cs-bot"</span> \
+  --hub-name <span class="str">"customer-acme-ai-hub"</span> \
+  --resource-group <span class="str">"rg-acme-ai"</span>
+
+<span class="comment"># Deploy model for the customer</span>
+<span class="kw">az</span> ai foundry model deployment create \
+  --project-name <span class="str">"acme-cs-bot"</span> \
+  --name <span class="str">"gpt-4o-acme"</span> \
+  --model-id <span class="str">"azureai://openai/gpt-4o/2026-02"</span> \
+  --sku-name <span class="str">"GlobalStandard"</span> --sku-capacity <span class="highlight">50</span></div>
+    </div>
+    <div class="slide-number">4 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 5: Architecture ═══════════════════ -->
+<div class="slide" id="slide-5">
+    <div class="slide-content">
+        <h2>🏗️ CSP Management Architecture</h2>
+        <div class="diagram">
+┌──────────────────────────────────────────────────────────┐
+│              CSP PARTNER MANAGEMENT PLANE                 │
+│   Partner Center  ◄──►  Automation Engine  ◄──►  Billing │
+└─────────────────────────┬────────────────────────────────┘
+                          │  AOBO / Lighthouse
+         ┌────────────────┼────────────────┐
+         ▼                ▼                ▼
+  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+  │ Customer A   │  │ Customer B   │  │ Customer C   │
+  │ ┌─────────┐ │  │ ┌─────────┐ │  │ ┌─────────┐ │
+  │ │AI Foundry│ │  │ │AI Foundry│ │  │ │AI Foundry│ │
+  │ │Hub + Proj│ │  │ │Hub + Proj│ │  │ │Hub + Proj│ │
+  │ │+ Agents  │ │  │ │+ Agents  │ │  │ │+ Agents  │ │
+  │ └─────────┘ │  │ └─────────┘ │  │ └─────────┘ │
+  └─────────────┘  └─────────────┘  └─────────────┘</div>
+    </div>
+    <div class="slide-number">5 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 6: Deployment Topologies ═══════════════════ -->
+<div class="slide" id="slide-6">
+    <div class="slide-content">
+        <h2>📐 Deployment Topology Options</h2>
+        <table>
+            <thead>
+                <tr><th>Pattern</th><th>Isolation</th><th>Cost</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Dedicated Hub per Customer</strong></td>
+                    <td>🔒 Full</td>
+                    <td>💰 High</td>
+                    <td>Regulated (HIPAA, PCI), large enterprise</td>
+                </tr>
+                <tr>
+                    <td><strong>Shared Hub, Separate Projects</strong></td>
+                    <td>🔐 Moderate</td>
+                    <td>💰 Medium</td>
+                    <td>SMB, standardized AI solutions</td>
+                </tr>
+                <tr>
+                    <td><strong>Fully Shared (Logical)</strong></td>
+                    <td>🔑 Basic</td>
+                    <td>💰 Low</td>
+                    <td>Dev/test, non-sensitive workloads</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top:1.5rem;">
+            <h3>Decision Criteria</h3>
+            <ul>
+                <li>Regulatory requirements → Dedicated isolation</li>
+                <li>Cost sensitivity → Shared infrastructure with RBAC boundaries</li>
+                <li>Data sovereignty → Regional deployment controls</li>
+                <li>Capacity needs → Dedicated vs. shared PTU allocation</li>
+            </ul>
+        </div>
+    </div>
+    <div class="slide-number">6 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 7: Azure Lighthouse ═══════════════════ -->
+<div class="slide" id="slide-7">
+    <div class="slide-content">
+        <h2>🔭 Azure Lighthouse Deep Dive</h2>
+        <p>The preferred mechanism for cross-tenant AI Foundry management.</p>
+        <div class="grid-2" style="margin-top:1rem;">
+            <div>
+                <h3>Why Lighthouse > AOBO</h3>
+                <ul>
+                    <li>Granular RBAC (not just Owner)</li>
+                    <li>Just-in-Time elevation</li>
+                    <li>Full audit trail in customer logs</li>
+                    <li>Customer can revoke anytime</li>
+                    <li>Works across Entra ID tenants</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Recommended Role Assignments</h3>
+                <ul>
+                    <li><strong>AI Ops Team:</strong> Contributor</li>
+                    <li><strong>Model Admins:</strong> Cognitive Services Contributor</li>
+                    <li><strong>Monitoring:</strong> Reader + Monitoring Contributor</li>
+                    <li><strong>Security:</strong> Security Reader</li>
+                    <li><strong>Escalation:</strong> Eligible Owner (JIT)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">7 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 8: Governance Policies ═══════════════════ -->
+<div class="slide" id="slide-8">
+    <div class="slide-content">
+        <h2>📜 Cross-Tenant Governance</h2>
+        <h3>Azure Policy Initiatives for AI Foundry</h3>
+        <div class="grid-3">
+            <div class="g-card">
+                <div class="icon">🏷️</div>
+                <div class="title">Tag Enforcement</div>
+                <div class="desc">Require csp:customer, csp:tier, csp:managed tags on all AI Foundry resources</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🌐</div>
+                <div class="title">Network Rules</div>
+                <div class="desc">Deny public network access on AI Foundry hubs; require private endpoints</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">📍</div>
+                <div class="title">Regional Constraints</div>
+                <div class="desc">Restrict allowed regions based on customer data residency requirements</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🔐</div>
+                <div class="title">Encryption</div>
+                <div class="desc">Enforce CMK for Gold/Platinum tiers; platform keys minimum for all</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">📊</div>
+                <div class="title">Diagnostics</div>
+                <div class="desc">Require diagnostic settings forwarding to central Log Analytics workspace</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🛡️</div>
+                <div class="title">Content Safety</div>
+                <div class="desc">Require AI Content Safety filters on all model deployments</div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">8 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 9: Data Isolation ═══════════════════ -->
+<div class="slide" id="slide-9">
+    <div class="slide-content">
+        <h2>🔒 Data Isolation Strategies</h2>
+        <div class="grid-2">
+            <div>
+                <h3>Network Isolation</h3>
+                <ul>
+                    <li>Private endpoints per AI Foundry hub</li>
+                    <li>NSG rules between customer environments</li>
+                    <li>Separate Private DNS zones</li>
+                    <li>Hub-Spoke VNet topology for CSP management</li>
+                </ul>
+                <h3 style="margin-top:1.5rem;">Identity Isolation</h3>
+                <ul>
+                    <li>Managed Identity per customer hub</li>
+                    <li>Customer-Managed Keys (CMK)</li>
+                    <li>Conditional Access on CSP admin access</li>
+                    <li>Cross-tenant access policies</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Storage Isolation</h3>
+                <ul>
+                    <li>Separate storage accounts per customer</li>
+                    <li>Geo-restriction via Azure Policy</li>
+                    <li>Data classification tags</li>
+                    <li>Purge protection on Key Vaults</li>
+                </ul>
+                <h3 style="margin-top:1.5rem;">Compute Isolation</h3>
+                <ul>
+                    <li>Dedicated PTU for premium tiers</li>
+                    <li>Shared PTU with rate limiting for standard</li>
+                    <li>Separate agent compute pools</li>
+                    <li>Resource quotas per project</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">9 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 10: SLA Tiers ═══════════════════ -->
+<div class="slide" id="slide-10">
+    <div class="slide-content">
+        <h2>📊 SLA Tiers for Managed AI Services</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dimension</th>
+                    <th><span class="tier-label bronze">Bronze</span></th>
+                    <th><span class="tier-label silver">Silver</span></th>
+                    <th><span class="tier-label gold">Gold</span></th>
+                    <th><span class="tier-label platinum">Platinum</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Availability</td><td>99.5%</td><td>99.9%</td><td>99.95%</td><td>99.99%</td></tr>
+                <tr><td>Sev-1 Response</td><td>4 hrs</td><td>1 hr</td><td>30 min</td><td>15 min</td></tr>
+                <tr><td>Throughput</td><td>Best effort</td><td>30 TPM</td><td>100 TPM</td><td>500 TPM</td></tr>
+                <tr><td>Deployment</td><td>Shared PTU</td><td>Std PTU</td><td>Dedicated</td><td>Reserved + Burst</td></tr>
+                <tr><td>DR</td><td>Daily backup</td><td>6-hr RPO</td><td>1-hr RPO</td><td>Near-zero RPO</td></tr>
+                <tr><td>Named Engineer</td><td>❌</td><td>❌</td><td>Shared</td><td>✅ Dedicated</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="slide-number">10 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 11: Cost & Chargeback ═══════════════════ -->
+<div class="slide" id="slide-11">
+    <div class="slide-content">
+        <h2>💰 Cost Management & Chargeback</h2>
+        <div class="grid-2">
+            <div>
+                <h3>AI Foundry Cost Components</h3>
+                <ul>
+                    <li><strong>Model Inference:</strong> Per-token or provisioned throughput (PTU)</li>
+                    <li><strong>Compute:</strong> Agent hosting, evaluation pipelines</li>
+                    <li><strong>Storage:</strong> Data, logs, model artifacts</li>
+                    <li><strong>Networking:</strong> Private endpoints, data transfer</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Chargeback Strategies</h3>
+                <ul>
+                    <li><strong>Subscription-level:</strong> Cleanest; 1 sub per customer</li>
+                    <li><strong>Tag-based:</strong> csp:customer tags + Cost Management filters</li>
+                    <li><strong>Token metering:</strong> Custom per-project token tracking</li>
+                    <li><strong>Hybrid:</strong> Subscription for infra + tokens for inference</li>
+                </ul>
+            </div>
+        </div>
+        <div class="code-block" style="margin-top:1.5rem;font-size:0.8rem;">
+<span class="comment"># Token usage chargeback query</span>
+AzureDiagnostics
+| <span class="kw">where</span> ResourceProvider == <span class="str">"MICROSOFT.MACHINELEARNINGSERVICES"</span>
+| <span class="kw">extend</span> Customer = tostring(tags_s[<span class="str">"csp:customer"</span>])
+| <span class="kw">summarize</span> PromptTokens=sum(toint(properties_s[<span class="str">"promptTokens"</span>])),
+            CompletionTokens=sum(toint(properties_s[<span class="str">"completionTokens"</span>]))
+  <span class="kw">by</span> Customer, bin(TimeGenerated, <span class="highlight">1d</span>)</div>
+    </div>
+    <div class="slide-number">11 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 12: Security & Compliance ═══════════════════ -->
+<div class="slide" id="slide-12">
+    <div class="slide-content">
+        <h2>🛡️ Security & Compliance</h2>
+        <div class="grid-2">
+            <div>
+                <h3>Security Baseline Checklist</h3>
+                <ul class="checklist">
+                    <li>Private endpoints — no public access</li>
+                    <li>Managed identities — no credentials</li>
+                    <li>CMK for Gold/Platinum tiers</li>
+                    <li>Sentinel with cross-tenant connectors</li>
+                    <li>CIS benchmark policies on all subs</li>
+                    <li>Content Safety on all deployments</li>
+                    <li>Diagnostic settings to central workspace</li>
+                    <li>Geo-redundant DR for premium tiers</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Compliance Matrix</h3>
+                <table style="font-size:0.85rem;">
+                    <thead><tr><th>Standard</th><th>CSP Action</th></tr></thead>
+                    <tbody>
+                        <tr><td>SOC 2</td><td>AI-specific controls & access reviews</td></tr>
+                        <tr><td>HIPAA</td><td>BAA chain, PHI isolation</td></tr>
+                        <tr><td>GDPR</td><td>DPA, right-to-erasure, regional deploy</td></tr>
+                        <tr><td>ISO 27001</td><td>ISMS extension for AI workloads</td></tr>
+                        <tr><td>EU AI Act</td><td>Risk classification, documentation</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">12 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 13: Mini Hack ═══════════════════ -->
+<div class="slide" id="slide-13">
+    <div class="slide-content">
+        <h2>🛠️ Mini Hack: Multi-Tenant CSP Architecture</h2>
+        <p>Design an "AI-as-a-Service" architecture for three customer segments:</p>
+        <div class="grid-3" style="margin-top:1rem;">
+            <div class="g-card">
+                <div class="icon">🏥</div>
+                <div class="title">MedCare Health</div>
+                <div class="desc">Healthcare · HIPAA · PHI isolation · Dedicated capacity</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🛍️</div>
+                <div class="title">RetailCo (5 stores)</div>
+                <div class="desc">Retail · AI CS bots · Cost-optimized · Standard support</div>
+            </div>
+            <div class="g-card">
+                <div class="icon">🏦</div>
+                <div class="title">FinanceFirst</div>
+                <div class="desc">Financial · SOC 2 · Dedicated PTU · Named engineer</div>
+            </div>
+        </div>
+        <h3 style="margin-top:1.5rem;">Deliverables (90 min)</h3>
+        <ul>
+            <li>Architecture diagram covering all three segments</li>
+            <li>RBAC matrix: roles → resources → customers</li>
+            <li>Bicep template for one segment's onboarding</li>
+            <li>SLA dashboard KQL query set</li>
+            <li>Executive summary (one page)</li>
+        </ul>
+    </div>
+    <div class="slide-number">13 / 14</div>
+</div>
+
+<!-- ═══════════════════ SLIDE 14: Takeaways ═══════════════════ -->
+<div class="slide" id="slide-14">
+    <div class="slide-content" style="text-align:center;">
+        <h2>🎯 Key Takeaways</h2>
+        <div style="text-align:left; max-width:700px; margin:0 auto;">
+            <ul>
+                <li><strong>Azure Lighthouse</strong> over AOBO for AI Foundry management</li>
+                <li><strong>Match topology</strong> to customer compliance & cost needs</li>
+                <li><strong>Tiered SLAs</strong> = differentiated managed AI offering</li>
+                <li><strong>Tag-based cost tracking</strong> + token metering for chargeback</li>
+                <li><strong>Azure Policy</strong> enforces security baseline at scale</li>
+                <li><strong>Compliance is shared</strong> — know the responsibility boundaries</li>
+                <li><strong>Automate onboarding</strong> with Bicep/Terraform templates</li>
+            </ul>
+        </div>
+        <div style="margin-top:2.5rem;">
+            <div class="arc-badge">Module 39 of 45 · Azure AI Foundry: Zero to Hero</div>
+            <p style="color:var(--text-muted); margin-top:1rem;">
+                ← Module 38 &nbsp;|&nbsp; Module 40 →
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">14 / 14</div>
+</div>
+
+<!-- Navigation Controls -->
+<div class="nav-controls">
+    <button class="nav-btn" onclick="changeSlide(-1)">◀ Prev</button>
+    <button class="nav-btn" onclick="changeSlide(1)">Next ▶</button>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const progress = document.getElementById('progress');
+    let current = 0;
+    const total = slides.length;
+
+    function showSlide(n) {
+        slides[current].classList.remove('active');
+        current = Math.max(0, Math.min(n, total - 1));
+        slides[current].classList.add('active');
+        progress.style.width = ((current + 1) / total * 100) + '%';
+    }
+
+    function changeSlide(dir) { showSlide(current + dir); }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+        if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+        if (e.key === 'End') { e.preventDefault(); showSlide(total - 1); }
+    });
+
+    showSlide(0);
+</script>
+
+</body>
+</html>

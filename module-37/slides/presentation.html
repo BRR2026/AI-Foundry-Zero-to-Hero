@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 37 — Foundry Local: Edge & On-Device AI | Slides</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-alt: #161b22;
+    --surface: #1c2333;
+    --primary: #58a6ff;
+    --accent: #00d4aa;
+    --accent2: #e074c9;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --border: #30363d;
+    --code-bg: #0d1117;
+    --font: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── Slide Container ──────────────────────────── */
+  .deck { position: relative; width: 100vw; height: 100vh; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .slide.active { display: flex; opacity: 1; }
+
+  /* ── Slide Variants ───────────────────────────── */
+  .slide.title-slide {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0d1117 0%, #1a2744 40%, #0d2137 100%);
+  }
+  .slide.section-slide {
+    background: linear-gradient(135deg, var(--bg) 0%, #1a1a3e 100%);
+  }
+
+  /* ── Typography ───────────────────────────────── */
+  h1 {
+    font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--primary);
+  }
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .gradient-text {
+    background: linear-gradient(90deg, var(--accent), #50e6ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  p, li { font-size: 1.15rem; line-height: 1.7; color: var(--text); }
+  .dim { color: var(--text-dim); }
+  .small { font-size: 0.85rem; }
+
+  ul { list-style: none; margin: 12px 0; }
+  ul li { padding: 6px 0 6px 28px; position: relative; }
+  ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 4px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── Badge ────────────────────────────────────── */
+  .arc-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent2), #a855f7);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Code ──────────────────────────────────────── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: #c9d1d9;
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    background: rgba(88,166,255,.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--primary);
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+  .kw { color: #ff7b72; }
+  .str { color: #a5d6ff; }
+  .cmt { color: #8b949e; }
+  .fn { color: #d2a8ff; }
+  .num { color: #79c0ff; }
+
+  /* ── Diagram Box ──────────────────────────────── */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: var(--text-dim);
+  }
+
+  /* ── Grid ──────────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 16px 0; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin: 16px 0; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .card h4 { color: var(--accent); margin-bottom: 8px; font-size: 1rem; }
+  .card p { font-size: 0.92rem; color: var(--text-dim); margin: 0; }
+  .card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+
+  /* ── Table ─────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.95rem; }
+  th, td { padding: 10px 16px; text-align: left; border: 1px solid var(--border); }
+  th { background: rgba(88,166,255,.15); color: var(--primary); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+  td { color: var(--text); }
+  tr:nth-child(even) { background: rgba(255,255,255,.02); }
+
+  /* ── Progress & Nav ───────────────────────────── */
+  .slide-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+    background: rgba(13,17,23,.9);
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    z-index: 100;
+  }
+  .slide-progress {
+    height: 3px;
+    background: var(--border);
+    position: fixed;
+    bottom: 42px;
+    left: 0;
+    right: 0;
+    z-index: 101;
+  }
+  .slide-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width 0.3s ease;
+  }
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: var(--font);
+  }
+  .nav-btn:hover { background: var(--primary); color: var(--bg); }
+
+  /* ── Highlight box ─────────────────────────────── */
+  .highlight {
+    background: rgba(0,212,170,.08);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 1rem;
+  }
+
+  /* ── Responsive ────────────────────────────────── */
+  @media (max-width: 768px) {
+    .slide { padding: 32px 28px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: Title -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide title-slide active" data-slide="1">
+  <span class="arc-badge">ARC 8 · Advanced Patterns & Enterprise</span>
+  <h1>Foundry Local<br><span class="gradient-text">Edge & On-Device AI</span></h1>
+  <p class="dim" style="margin-top:12px; font-size:1.1rem;">Module 37 of 45 · Azure AI Foundry: Zero to Hero</p>
+  <p class="dim small" style="margin-top:8px;">April 2026 · ~55 min</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: Agenda -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <h2>📋 Agenda</h2>
+  <div class="grid-2">
+    <div>
+      <ul>
+        <li>What is Foundry Local?</li>
+        <li>When to use it (decision framework)</li>
+        <li>NPU / GPU / CPU execution</li>
+        <li>Architecture deep dive</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Offline & air-gapped scenarios</li>
+        <li>IoT & edge deployment patterns</li>
+        <li>Cross-platform support</li>
+        <li>🛠️ Mini Hack: Run Phi locally</li>
+      </ul>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:20px;">
+    <strong>🎯 Goal:</strong> By the end of this module, you will run a Phi model on your own device with zero cloud dependency.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: What Is Foundry Local? -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <h2>What Is Foundry Local?</h2>
+  <div class="grid-2">
+    <div>
+      <p>A <strong>lightweight local runtime</strong> for AI inference directly on your device — laptop, edge appliance, or IoT gateway.</p>
+      <ul>
+        <li>Part of the Azure AI Foundry ecosystem</li>
+        <li><strong>Not</strong> Azure Machine Learning</li>
+        <li>No Azure subscription required</li>
+        <li>OpenAI-compatible REST API</li>
+        <li>Powered by ONNX Runtime GenAI</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h4>Key Value Proposition</h4>
+        <p>Same code, same SDK — just change the base URL from a cloud endpoint to <code>localhost:5272</code>.</p>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="icon">🔒</div>
+        <h4>Data Never Leaves</h4>
+        <p>All processing stays on-device. Perfect for HIPAA, GDPR, and classified workloads.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: When to Use -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="4">
+  <h2>When to Use Foundry Local</h2>
+  <table>
+    <thead>
+      <tr><th>Scenario</th><th>Why Local?</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🚫 Offline / Air-Gapped</td><td>No internet needed</td><td>Military, submarines</td></tr>
+      <tr><td>⚡ Low Latency</td><td>No network round-trip</td><td>Real-time code assist</td></tr>
+      <tr><td>🔐 Data Privacy</td><td>Data stays on device</td><td>Healthcare, finance</td></tr>
+      <tr><td>💰 Cost Optimization</td><td>Zero per-token cost</td><td>High-volume classification</td></tr>
+      <tr><td>🏭 IoT / Edge</td><td>Runs on compact devices</td><td>Factory inspection</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight">
+    <strong>Rule of thumb:</strong> If model ≤ 14B params & you need privacy/latency/offline → Foundry Local. For 70B+ → cloud.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5: Hardware Targets -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <h2>NPU / GPU / CPU Execution</h2>
+  <div class="diagram">┌──────────────────────────────────────────────────────────────┐
+│                   Foundry Local Runtime                      │
+│                                                              │
+│   ┌──────────┐     ┌──────────┐     ┌──────────────────┐    │
+│   │   NPU    │     │   GPU    │     │      CPU         │    │
+│   │ < 5 W    │     │ 30-75 W  │     │   15-45 W        │    │
+│   │ 30-40t/s │     │ 80-120t/s│     │   8-15 tok/s     │    │
+│   └────┬─────┘     └────┬─────┘     └────────┬─────────┘    │
+│        └────────────────┼─────────────────────┘              │
+│                         ▼                                    │
+│            ONNX Runtime GenAI (Execution Providers)          │
+│            QNN EP │ CUDA/DML EP │ CPU EP                     │
+└──────────────────────────────────────────────────────────────┘</div>
+  <p class="dim small">Foundry Local auto-detects hardware. Priority: NPU → GPU → CPU</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6: Performance Comparison -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <h2>Performance by Hardware</h2>
+  <table>
+    <thead>
+      <tr><th>Hardware</th><th>Phi-3.5-mini Tokens/s</th><th>Power</th><th>Best For</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>NPU</td><td>~30-40</td><td>⭐⭐⭐⭐⭐ (< 5 W)</td><td>Always-on background tasks</td></tr>
+      <tr><td>Discrete GPU</td><td>~80-120</td><td>⭐⭐⭐ (30-75 W)</td><td>Batch processing</td></tr>
+      <tr><td>Integrated GPU</td><td>~25-45</td><td>⭐⭐⭐⭐ (10-15 W)</td><td>Balanced workloads</td></tr>
+      <tr><td>CPU (AVX-512)</td><td>~8-15</td><td>⭐⭐ (15-45 W)</td><td>Maximum compatibility</td></tr>
+    </tbody>
+  </table>
+  <pre><code><span class="cmt"># Specify hardware explicitly</span>
+<span class="kw">foundry</span> model run phi-3.5-mini <span class="str">--device</span> gpu
+<span class="kw">foundry</span> model run phi-3.5-mini <span class="str">--device</span> npu
+<span class="kw">foundry</span> model run phi-3.5-mini <span class="str">--device</span> cpu</code></pre>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: Architecture -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="7">
+  <h2>Architecture Deep Dive</h2>
+  <div class="diagram">┌─────────────────────────────────────────────────────────┐
+│  YOUR APP  (Python / C# / Node.js / cURL)               │
+│  POST http://localhost:5272/v1/chat/completions          │
+├──────────────────────────┬──────────────────────────────┤
+│  FOUNDRY LOCAL RUNTIME   │                              │
+│  ┌─────────────────┐     │  ┌────────────────────────┐  │
+│  │  API Gateway     │     │  │  Local Model Catalog   │  │
+│  │  • Streaming     │     │  │  • Registry            │  │
+│  │  • Token count   │     │  │  • Version mgmt        │  │
+│  └────────┬────────┘     │  │  • HW matching         │  │
+│           ▼              │  └────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  ONNX Runtime GenAI                             │    │
+│  │  INT4 / FP16 │ KV-Cache │ EP Selection          │    │
+│  └─────────────────────────────────────────────────┘    │
+├─────────────────────────────────────────────────────────┤
+│  HARDWARE:  NPU │ dGPU │ iGPU │ CPU │ RAM / VRAM       │
+└─────────────────────────────────────────────────────────┘</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8: API Compatibility -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="8">
+  <h2>OpenAI-Compatible API</h2>
+  <p>Switch between cloud and local with <strong>one line</strong>:</p>
+  <pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+<span class="cmt"># Cloud</span>
+<span class="cmt"># client = OpenAI(api_key="sk-...", base_url="https://...")</span>
+
+<span class="cmt"># Foundry Local — just change the URL</span>
+client = OpenAI(
+    base_url=<span class="str">"http://localhost:5272/v1"</span>,
+    api_key=<span class="str">"not-needed"</span>
+)
+
+response = client.chat.completions.create(
+    model=<span class="str">"phi-3.5-mini"</span>,
+    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>,
+               <span class="str">"content"</span>: <span class="str">"Explain edge AI"</span>}],
+    temperature=<span class="num">0.7</span>
+)
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)</code></pre>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9: Offline Deployment -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="9">
+  <h2>Offline & Air-Gapped Deployment</h2>
+  <div class="grid-2">
+    <div>
+      <h3>Workflow</h3>
+      <ul>
+        <li><strong>1.</strong> Download on connected machine</li>
+        <li><strong>2.</strong> Export cache to USB / media</li>
+        <li><strong>3.</strong> Transfer to air-gapped device</li>
+        <li><strong>4.</strong> Import & start service offline</li>
+      </ul>
+      <div class="highlight" style="margin-top:16px;">
+        Zero internet after model download. Verify by disconnecting Wi-Fi!
+      </div>
+    </div>
+    <div>
+      <pre><code><span class="cmt"># Connected machine</span>
+<span class="kw">foundry</span> model download phi-3.5-mini
+<span class="kw">foundry</span> cache export \
+  <span class="str">--output</span> /mnt/usb/models/
+
+<span class="cmt"># Air-gapped machine</span>
+<span class="kw">foundry</span> cache import \
+  <span class="str">--from</span> /mnt/usb/models/
+<span class="kw">foundry</span> service start
+<span class="cmt"># Ready at localhost:5272</span></code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10: IoT & Edge Patterns -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="10">
+  <h2>IoT & Edge Deployment Patterns</h2>
+  <div class="grid-3">
+    <div class="card">
+      <div class="icon">🏭</div>
+      <h4>Smart Factory</h4>
+      <p>Sensor → Edge Gateway → Foundry Local → Anomaly detection → Cloud sync</p>
+    </div>
+    <div class="card">
+      <div class="icon">🚜</div>
+      <h4>Agriculture</h4>
+      <p>Drone imagery → On-device classification → Disease alerts — no signal needed</p>
+    </div>
+    <div class="card">
+      <div class="icon">🏥</div>
+      <h4>Healthcare</h4>
+      <p>Patient forms → Local summarization → HIPAA-compliant triage notes</p>
+    </div>
+  </div>
+  <pre><code><span class="cmt"># Containerized edge deployment</span>
+<span class="kw">FROM</span> mcr.microsoft.com/foundry/local:latest
+<span class="kw">RUN</span>  foundry model download phi-3.5-mini
+<span class="kw">EXPOSE</span> <span class="num">5272</span>
+<span class="kw">CMD</span>  [<span class="str">"foundry"</span>, <span class="str">"service"</span>, <span class="str">"start"</span>, <span class="str">"--host"</span>, <span class="str">"0.0.0.0"</span>]</code></pre>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 11: Cross-Platform -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="11">
+  <h2>Cross-Platform Support</h2>
+  <table>
+    <thead>
+      <tr><th>Platform</th><th>GPU Accel.</th><th>NPU</th><th>Install</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Windows 11</td><td>DirectML / CUDA</td><td>✅</td><td><code>winget install Microsoft.FoundryLocal</code></td></tr>
+      <tr><td>macOS (M-series)</td><td>Metal</td><td>✅ ANE</td><td><code>brew install foundry-local</code></td></tr>
+      <tr><td>Linux</td><td>CUDA / Vulkan</td><td>Varies</td><td><code>curl -sL https://aka.ms/foundry-local | bash</code></td></tr>
+      <tr><td>Mobile</td><td>GPU delegates</td><td>Vendor</td><td>ONNX Runtime Mobile SDK</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight">
+    Same OpenAI-compatible API on every platform. Write once, run anywhere.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 12: Quantization -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="12">
+  <h2>Model Quantization & Sizing</h2>
+  <table>
+    <thead>
+      <tr><th>Format</th><th>Memory (3.8B)</th><th>Quality</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>INT4</strong></td><td>~2.4 GB</td><td>Good</td><td>Edge / IoT — recommended</td></tr>
+      <tr><td><strong>INT8</strong></td><td>~4.2 GB</td><td>Better</td><td>Desktop apps</td></tr>
+      <tr><td><strong>FP16</strong></td><td>~7.6 GB</td><td>Best</td><td>Accuracy-critical</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight">
+    <strong>Rule:</strong> INT4 size ≈ parameters (B) × 0.6 GB. A 16 GB device handles up to ~14B params (INT4).
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 13: Mini Hack -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide section-slide" data-slide="13">
+  <span class="arc-badge">Hands-On</span>
+  <h2>🛠️ Mini Hack: Run Phi Locally</h2>
+  <div class="grid-2">
+    <div>
+      <h3>Steps</h3>
+      <ul>
+        <li><strong>1.</strong> Install Foundry Local</li>
+        <li><strong>2.</strong> Browse model catalog</li>
+        <li><strong>3.</strong> Download & run Phi-3.5-mini</li>
+        <li><strong>4.</strong> Chat via CLI</li>
+        <li><strong>5.</strong> Call API from Python</li>
+        <li><strong>6.</strong> Test offline mode</li>
+      </ul>
+    </div>
+    <div>
+      <pre><code><span class="cmt"># Install</span>
+<span class="kw">winget</span> install Microsoft.FoundryLocal
+
+<span class="cmt"># Run model</span>
+<span class="kw">foundry</span> model run phi-3.5-mini
+
+<span class="cmt"># Chat</span>
+<span class="kw">foundry</span> chat
+
+<span class="cmt"># Check status</span>
+<span class="kw">foundry</span> status</code></pre>
+    </div>
+  </div>
+  <p class="dim small" style="margin-top:16px;">Full instructions: lab/hands-on-lab.md · Time: ~25 min</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 14: Best Practices -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="14">
+  <h2>Best Practices</h2>
+  <div class="grid-2">
+    <div>
+      <h3>Do ✅</h3>
+      <ul>
+        <li>Use INT4 for edge devices</li>
+        <li>Pin model versions in production</li>
+        <li>Containerize for reproducibility</li>
+        <li>Pre-warm on boot for low latency</li>
+        <li>Implement cloud fallback logic</li>
+        <li>Monitor with <code>foundry status</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Avoid ❌</h3>
+      <ul>
+        <li>Running FP32 on memory-constrained devices</li>
+        <li>Ignoring model license compliance</li>
+        <li>Exposing the API on 0.0.0.0 without auth</li>
+        <li>Skipping hardware capability checks</li>
+        <li>Using Foundry Local for 70B+ models</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 15: Summary & Next -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide title-slide" data-slide="15">
+  <h2 style="color: var(--text);">Key Takeaways</h2>
+  <div style="text-align:left; max-width:600px;">
+    <ul>
+      <li>Foundry Local = on-device AI runtime (not Azure ML)</li>
+      <li>Hardware priority: NPU → GPU → CPU</li>
+      <li>OpenAI-compatible API — one-line migration</li>
+      <li>Zero internet after model download</li>
+      <li>Containers for edge & IoT at scale</li>
+      <li>INT4 quantization for resource-constrained devices</li>
+    </ul>
+  </div>
+  <div class="highlight" style="max-width:600px; margin-top:20px;">
+    <strong>Next → Module 38:</strong> Hybrid Cloud-Edge Orchestration
+  </div>
+  <p class="dim small" style="margin-top:24px;">Module 37 of 45 · Azure AI Foundry: Zero to Hero</p>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ═══════════════ FOOTER NAV ═══════════════ -->
+<div class="slide-progress"><div class="slide-progress-fill" id="progressFill"></div></div>
+<div class="slide-footer">
+  <span>Module 37 — Foundry Local: Edge & On-Device AI</span>
+  <span>
+    <button class="nav-btn" onclick="navigate(-1)">◀ Prev</button>
+    <span id="slideCounter" style="margin:0 12px;">1 / 15</span>
+    <button class="nav-btn" onclick="navigate(1)">Next ▶</button>
+  </span>
+  <span>Azure AI Foundry: Zero to Hero</span>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function showSlide(idx) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[idx].classList.add('active');
+    document.getElementById('slideCounter').textContent = (idx + 1) + ' / ' + total;
+    document.getElementById('progressFill').style.width = ((idx + 1) / total * 100) + '%';
+  }
+
+  window.navigate = function(dir) {
+    current = Math.max(0, Math.min(total - 1, current + dir));
+    showSlide(current);
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') { e.preventDefault(); current = 0; showSlide(0); }
+    if (e.key === 'End') { e.preventDefault(); current = total - 1; showSlide(current); }
+  });
+
+  showSlide(0);
+})();
+</script>
+</body>
+</html>

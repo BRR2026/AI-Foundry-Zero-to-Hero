@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 35: Securing AI Workloads End-to-End — Presentation</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2333;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #bc8cff;
+            --accent-red: #ff7b72;
+            --accent-yellow: #d29922;
+            --accent-teal: #2dd4bf;
+            --border: #30363d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ── Slide Container ── */
+        .deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 100px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ── Slide Layouts ── */
+        .slide h1 {
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide h2 {
+            font-size: 40px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        .slide h3 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+        }
+
+        .slide p {
+            font-size: 22px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            max-width: 900px;
+        }
+
+        .slide ul, .slide ol {
+            font-size: 22px;
+            line-height: 1.8;
+            margin-left: 28px;
+            color: var(--text-primary);
+        }
+
+        .slide li { margin-bottom: 8px; }
+        .slide li strong { color: var(--accent-blue); }
+
+        .slide code {
+            background: var(--bg-card);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.85em;
+            color: var(--accent-teal);
+        }
+
+        .slide .subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(88,166,255,0.15), rgba(188,140,255,0.15));
+            border: 1px solid rgba(88,166,255,0.3);
+            color: var(--accent-blue);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        /* ── Two Column Layout ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            margin-top: 16px;
+        }
+
+        /* ── Info Cards ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 8px 0;
+        }
+
+        .card h4 {
+            font-size: 18px;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .card ul {
+            font-size: 16px;
+            margin-left: 20px;
+            color: var(--text-secondary);
+        }
+
+        .card ul li { margin-bottom: 4px; }
+
+        /* ── Grid Cards ── */
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .icon-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .icon-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+        }
+
+        .icon-card .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .icon-card h5 {
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .icon-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* ── Code Block ── */
+        .code-slide {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px 28px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 16px;
+            line-height: 1.7;
+            color: #d4d4d4;
+            overflow: auto;
+            margin: 16px 0;
+            max-height: 420px;
+            white-space: pre;
+        }
+
+        .code-slide .kw { color: #569cd6; }
+        .code-slide .str { color: #ce9178; }
+        .code-slide .cm { color: #6a9955; }
+        .code-slide .fn { color: #dcdcaa; }
+        .code-slide .num { color: #b5cea8; }
+        .code-slide .param { color: #9cdcfe; }
+
+        /* ── Architecture Diagram ── */
+        .arch-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .arch-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .arch-node {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 130px;
+        }
+
+        .arch-node.green { border-color: var(--accent-green); }
+        .arch-node.purple { border-color: var(--accent-purple); }
+        .arch-node.red { border-color: var(--accent-red); }
+
+        .arch-arrow {
+            color: var(--accent-blue);
+            font-size: 22px;
+        }
+
+        /* ── Table ── */
+        .slide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 16px;
+        }
+
+        .slide-table th {
+            background: var(--bg-card);
+            color: var(--accent-blue);
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 2px solid var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .slide-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .slide-table tr:hover td {
+            background: rgba(88,166,255,0.05);
+        }
+
+        /* ── Progress & Navigation ── */
+        .slide-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .slide-nav .progress-track {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0 24px;
+            position: relative;
+        }
+
+        .slide-nav .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .slide-nav button {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .slide-nav button:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .slide-counter {
+            color: var(--text-secondary);
+            font-size: 13px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* ── Highlight Text ── */
+        .highlight { color: var(--accent-green); font-weight: 600; }
+        .warn { color: var(--accent-yellow); font-weight: 600; }
+        .danger { color: var(--accent-red); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+    <!-- ══════════ SLIDE 1: Title ══════════ -->
+    <div class="slide active" data-slide="1">
+        <div class="badge">ARC 7 · SECURITY &amp; GOVERNANCE</div>
+        <h1>Securing AI Workloads<br>End-to-End</h1>
+        <p class="subtitle">Module 35 of 45 — Azure AI Foundry: Zero to Hero</p>
+        <p style="margin-top: 24px; font-size: 18px;">VNet Integration · Private Endpoints · NSGs &amp; Firewall · Key Vault</p>
+        <p style="margin-top: 40px; font-size: 16px; color: var(--text-secondary);">April 2026 · Use ← → arrow keys or buttons to navigate</p>
+    </div>
+
+    <!-- ══════════ SLIDE 2: Agenda ══════════ -->
+    <div class="slide" data-slide="2">
+        <h2>Agenda</h2>
+        <div class="two-col">
+            <div>
+                <ol style="font-size: 20px; line-height: 2.2;">
+                    <li>AI Threat Landscape</li>
+                    <li>Virtual Network Integration</li>
+                    <li>Private Endpoints for AI Services</li>
+                    <li>NSGs &amp; Firewall Rules</li>
+                    <li>Key Vault Secrets Management</li>
+                    <li>Reference Architecture</li>
+                    <li>Mini Hack: Secure Deployment</li>
+                </ol>
+            </div>
+            <div>
+                <div class="card">
+                    <h4>📎 Resources</h4>
+                    <ul>
+                        <li>Blog: <code>blog.html</code></li>
+                        <li>Lab: <code>hands-on-lab.md</code></li>
+                        <li>Quiz: <code>assessment.md</code></li>
+                        <li>Training Guide: <code>training-guide.md</code></li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-top: 16px;">
+                    <h4>⏱️ Duration</h4>
+                    <p>4 hours total (lecture + hands-on lab)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 3: Why Security Matters ══════════ -->
+    <div class="slide" data-slide="3">
+        <h2>Why AI Security Is Different</h2>
+        <div class="grid-4">
+            <div class="icon-card">
+                <div class="icon">🎯</div>
+                <h5>High-Value Targets</h5>
+                <p>Models and training data are valuable IP worth millions</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🔄</div>
+                <h5>Complex Pipelines</h5>
+                <p>Multiple services connected across network boundaries</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">📡</div>
+                <h5>API Surface Area</h5>
+                <p>Inference endpoints exposed to external consumers</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🔑</div>
+                <h5>Credential Sprawl</h5>
+                <p>API keys scattered across code, configs, and pipelines</p>
+            </div>
+        </div>
+        <p style="margin-top: 32px; font-size: 20px;"><span class="danger">73% of organizations</span> running AI workloads experienced a security incident in the past 12 months. The #1 root cause: <span class="warn">misconfigured network access</span>.</p>
+    </div>
+
+    <!-- ══════════ SLIDE 4: Defense in Depth ══════════ -->
+    <div class="slide" data-slide="4">
+        <h2>Defense-in-Depth for AI Foundry</h2>
+        <p style="margin-bottom: 24px;">Four complementary security layers protecting your AI workloads:</p>
+        <div class="grid-4">
+            <div class="icon-card">
+                <div class="icon">🌐</div>
+                <h5>Layer 1: VNet</h5>
+                <p>Network isolation — all resources in a private address space</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🔗</div>
+                <h5>Layer 2: Private Link</h5>
+                <p>Private Endpoints — no public internet exposure</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🛡️</div>
+                <h5>Layer 3: NSG/FW</h5>
+                <p>Granular traffic control at network and application level</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🔑</div>
+                <h5>Layer 4: Key Vault</h5>
+                <p>Centralized secrets with RBAC, auditing, rotation</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 5: VNet Integration ══════════ -->
+    <div class="slide" data-slide="5">
+        <h2>Virtual Network Integration</h2>
+        <div class="two-col">
+            <div>
+                <h3>Key Concepts</h3>
+                <ul>
+                    <li><strong>Private IP addresses</strong> for every AI Foundry component</li>
+                    <li><strong>Subnet isolation</strong> between hub, compute, and storage</li>
+                    <li><strong>DNS resolution</strong> pointing to internal addresses</li>
+                    <li><strong>No public internet traversal</strong> — Microsoft backbone only</li>
+                </ul>
+                <div class="card" style="margin-top: 20px;">
+                    <h4>💡 Tip</h4>
+                    <p>Plan subnet sizes before deployment. VNets cannot be easily resized without downtime.</p>
+                </div>
+            </div>
+            <div>
+                <div class="arch-diagram">
+                    <div class="arch-row">
+                        <div class="arch-node">Corporate Net</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node">VPN/ER</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node green">AI VNet</div>
+                    </div>
+                    <div class="arch-row" style="margin-top: 16px;">
+                        <div class="arch-node green">Hub Subnet<br>10.1.1.0/24</div>
+                        <div class="arch-arrow">⟷</div>
+                        <div class="arch-node green">Compute<br>10.1.2.0/23</div>
+                        <div class="arch-arrow">⟷</div>
+                        <div class="arch-node purple">Storage<br>10.1.4.0/26</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 6: Subnet Planning ══════════ -->
+    <div class="slide" data-slide="6">
+        <h2>Subnet Planning Guide</h2>
+        <table class="slide-table">
+            <thead>
+                <tr>
+                    <th>Subnet</th>
+                    <th>Purpose</th>
+                    <th>CIDR</th>
+                    <th>IPs</th>
+                    <th>Key Setting</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>snet-ai-hub</code></td>
+                    <td>AI Foundry Hub &amp; Projects</td>
+                    <td>/24</td>
+                    <td>256</td>
+                    <td>PE policies disabled</td>
+                </tr>
+                <tr>
+                    <td><code>snet-compute</code></td>
+                    <td>Compute instances &amp; clusters</td>
+                    <td>/23</td>
+                    <td>512</td>
+                    <td>NSG attached</td>
+                </tr>
+                <tr>
+                    <td><code>snet-storage</code></td>
+                    <td>Storage Private Endpoints</td>
+                    <td>/26</td>
+                    <td>64</td>
+                    <td>PE policies disabled</td>
+                </tr>
+                <tr>
+                    <td><code>snet-keyvault</code></td>
+                    <td>Key Vault Private Endpoints</td>
+                    <td>/27</td>
+                    <td>32</td>
+                    <td>PE policies disabled</td>
+                </tr>
+                <tr>
+                    <td><code>snet-acr</code></td>
+                    <td>Container Registry endpoints</td>
+                    <td>/27</td>
+                    <td>32</td>
+                    <td>PE policies disabled</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="margin-top: 20px; color: var(--accent-yellow);">⚠️ <code>privateEndpointNetworkPolicies</code> must be set to <code>Disabled</code> on PE subnets</p>
+    </div>
+
+    <!-- ══════════ SLIDE 7: Private Endpoints ══════════ -->
+    <div class="slide" data-slide="7">
+        <h2>Private Endpoints for AI Services</h2>
+        <div class="two-col">
+            <div>
+                <h3>How Private Link Works</h3>
+                <ul>
+                    <li>NIC provisioned in your subnet with a <span class="highlight">private IP</span></li>
+                    <li>Private DNS Zone resolves FQDN → private IP</li>
+                    <li>Public endpoint can be <span class="danger">disabled</span></li>
+                    <li>Traffic stays on <span class="highlight">Microsoft backbone</span></li>
+                </ul>
+                <div class="card" style="margin-top: 20px;">
+                    <h4>🔑 Critical Difference</h4>
+                    <p><strong>Service Endpoints</strong> = traffic from your VNet goes via optimized route but service still has a public IP.<br>
+                    <strong>Private Endpoints</strong> = service gets a private IP in your VNet. No public IP at all.</p>
+                </div>
+            </div>
+            <div>
+                <h3>Required Private Endpoints</h3>
+                <table class="slide-table" style="font-size: 14px;">
+                    <thead><tr><th>Service</th><th>Group ID</th></tr></thead>
+                    <tbody>
+                        <tr><td>AI Foundry Hub</td><td><code>amlworkspace</code></td></tr>
+                        <tr><td>Storage (Blob)</td><td><code>blob</code></td></tr>
+                        <tr><td>Storage (File)</td><td><code>file</code></td></tr>
+                        <tr><td>Key Vault</td><td><code>vault</code></td></tr>
+                        <tr><td>Container Registry</td><td><code>registry</code></td></tr>
+                        <tr><td>AI Services</td><td><code>account</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 8: PE CLI Demo ══════════ -->
+    <div class="slide" data-slide="8">
+        <h2>Creating Private Endpoints</h2>
+        <div class="code-slide"><span class="cm"># Create Private Endpoint for AI Foundry Hub</span>
+<span class="fn">az network private-endpoint create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"pe-ai-hub"</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --subnet <span class="str">"snet-ai-hub"</span> \
+  --private-connection-resource-id <span class="param">$HUB_ID</span> \
+  --group-id <span class="str">"amlworkspace"</span> \
+  --connection-name <span class="str">"conn-ai-hub"</span>
+
+<span class="cm"># Configure Private DNS Zone</span>
+<span class="fn">az network private-dns zone create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"privatelink.api.azureml.ms"</span>
+
+<span class="cm"># Link DNS zone to VNet</span>
+<span class="fn">az network private-dns link vnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --zone-name <span class="str">"privatelink.api.azureml.ms"</span> \
+  --name <span class="str">"link-ai-foundry"</span> \
+  --virtual-network <span class="param">$VNET_NAME</span> \
+  --registration-enabled <span class="kw">false</span></div>
+        <p style="margin-top: 12px;">After creating the PE, validate with <code>nslookup</code> — expect a <span class="highlight">private IP</span> (10.x.x.x)</p>
+    </div>
+
+    <!-- ══════════ SLIDE 9: NSGs ══════════ -->
+    <div class="slide" data-slide="9">
+        <h2>Network Security Groups</h2>
+        <div class="two-col">
+            <div>
+                <h3>Design Principles</h3>
+                <ul>
+                    <li><strong>Default deny</strong> — block all, then allow selectively</li>
+                    <li><strong>Service Tags</strong> — use Azure tags, not IPs</li>
+                    <li><strong>Subnet + NIC</strong> — layered rule application</li>
+                    <li><strong>Flow Logs</strong> — audit all traffic decisions</li>
+                </ul>
+            </div>
+            <div>
+                <table class="slide-table" style="font-size: 14px;">
+                    <thead><tr><th>Priority</th><th>Rule</th><th>Dest Tag</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <tr><td>100</td><td>AzureAD</td><td><code>AzureActiveDirectory</code></td><td class="highlight">Allow</td></tr>
+                        <tr><td>110</td><td>ARM</td><td><code>AzureResourceManager</code></td><td class="highlight">Allow</td></tr>
+                        <tr><td>120</td><td>Storage</td><td><code>Storage.EastUS2</code></td><td class="highlight">Allow</td></tr>
+                        <tr><td>130</td><td>KeyVault</td><td><code>AzureKeyVault</code></td><td class="highlight">Allow</td></tr>
+                        <tr><td>140</td><td>ACR</td><td><code>AzureContainerRegistry</code></td><td class="highlight">Allow</td></tr>
+                        <tr><td>4096</td><td>DenyAll</td><td><code>*</code></td><td class="danger">Deny</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 10: Azure Firewall ══════════ -->
+    <div class="slide" data-slide="10">
+        <h2>Azure Firewall for Centralized Egress</h2>
+        <div class="two-col">
+            <div>
+                <h3>Why Use Azure Firewall?</h3>
+                <ul>
+                    <li><strong>FQDN-based rules</strong> — allow <code>*.api.azureml.ms</code></li>
+                    <li><strong>Threat intelligence</strong> — block known malicious IPs</li>
+                    <li><strong>TLS inspection</strong> — decrypt and inspect traffic</li>
+                    <li><strong>Centralized logging</strong> — all egress in one place</li>
+                </ul>
+                <div class="card" style="margin-top: 16px;">
+                    <h4>🌐 Required FQDNs</h4>
+                    <ul style="font-size: 14px;">
+                        <li><code>*.api.azureml.ms</code></li>
+                        <li><code>*.notebooks.azure.net</code></li>
+                        <li><code>*.instances.azureml.ms</code></li>
+                        <li><code>*.blob.core.windows.net</code></li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <div class="arch-diagram">
+                    <p style="color: var(--accent-blue); font-weight: 600; margin-bottom: 16px;">Hub-Spoke with Firewall</p>
+                    <div class="arch-row">
+                        <div class="arch-node red">Azure Firewall<br>Hub VNet</div>
+                    </div>
+                    <div style="text-align: center; color: var(--accent-blue); font-size: 24px; margin: 8px;">⇅ VNet Peering</div>
+                    <div class="arch-row">
+                        <div class="arch-node green">AI Foundry<br>Spoke VNet</div>
+                        <div class="arch-arrow">⟷</div>
+                        <div class="arch-node purple">Data<br>Spoke VNet</div>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-top: 12px;">UDRs force all egress through firewall</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 11: Key Vault ══════════ -->
+    <div class="slide" data-slide="11">
+        <h2>Key Vault for Secrets Management</h2>
+        <div class="two-col">
+            <div>
+                <h3>What AI Foundry Stores in Key Vault</h3>
+                <ul>
+                    <li><strong>Data store connection strings</strong></li>
+                    <li><strong>API keys</strong> for AI Services</li>
+                    <li><strong>Custom secrets</strong> for training/inference</li>
+                    <li><strong>SSL/TLS certificates</strong></li>
+                </ul>
+                <div class="card" style="margin-top: 16px;">
+                    <h4>🔒 Configuration</h4>
+                    <ul style="font-size: 14px;">
+                        <li>RBAC authorization (not access policies)</li>
+                        <li>Soft-delete + purge protection</li>
+                        <li>Private Endpoint for access</li>
+                        <li>Diagnostic logging enabled</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <h3>RBAC Roles</h3>
+                <table class="slide-table" style="font-size: 14px;">
+                    <thead><tr><th>Role</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td>KV Administrator</td><td>Full vault management</td></tr>
+                        <tr><td>KV Secrets Officer</td><td>Create/update secrets</td></tr>
+                        <tr><td>KV Secrets User</td><td>Read secrets only</td></tr>
+                        <tr><td>KV Crypto Officer</td><td>Manage encryption keys</td></tr>
+                        <tr><td>KV Certs Officer</td><td>Manage certificates</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 12: Managed Identity ══════════ -->
+    <div class="slide" data-slide="12">
+        <h2>No Keys in Code — Managed Identities</h2>
+        <div class="code-slide"><span class="cm"># Python — authenticate with managed identity</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.keyvault.secrets <span class="kw">import</span> SecretClient
+
+<span class="cm"># No API keys needed — uses managed identity automatically</span>
+<span class="param">credential</span> = <span class="fn">DefaultAzureCredential</span>()
+<span class="param">vault_url</span> = <span class="str">"https://kv-ai-foundry-secure.vault.azure.net"</span>
+<span class="param">client</span> = <span class="fn">SecretClient</span>(vault_url=<span class="param">vault_url</span>, credential=<span class="param">credential</span>)
+
+<span class="cm"># Retrieve secret at runtime</span>
+<span class="param">secret</span> = <span class="param">client</span>.<span class="fn">get_secret</span>(<span class="str">"openai-api-key"</span>)
+<span class="fn">print</span>(<span class="str">f"Retrieved: {secret.name}"</span>)</div>
+        <div class="grid-3" style="margin-top: 20px;">
+            <div class="icon-card">
+                <div class="icon">✅</div>
+                <h5>No Credentials to Rotate</h5>
+                <p>Azure manages the identity lifecycle</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">✅</div>
+                <h5>No Keys in Source Control</h5>
+                <p>Eliminates accidental exposure</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">✅</div>
+                <h5>Audit Trail</h5>
+                <p>Every access logged in Key Vault diagnostics</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 13: Reference Architecture ══════════ -->
+    <div class="slide" data-slide="13">
+        <h2>Reference Architecture</h2>
+        <div class="arch-diagram">
+            <p style="color: var(--accent-purple); font-weight: 600; font-size: 16px; margin-bottom: 16px;">Enterprise Secure AI Foundry — Zero Public Internet Exposure</p>
+            <div class="arch-row">
+                <div class="arch-node">🏢 On-Premises</div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node">ExpressRoute</div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node red">Azure Firewall</div>
+            </div>
+            <div style="text-align: center; color: var(--accent-blue); font-size: 20px; margin: 8px 0;">⇅ VNet Peering</div>
+            <div class="arch-row">
+                <div class="arch-node green">AI Foundry Hub<br><small>Private EP</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-node purple">Key Vault<br><small>Private EP</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-node green">Storage<br><small>Private EP</small></div>
+            </div>
+            <div class="arch-row" style="margin-top: 8px;">
+                <div class="arch-node green">Compute Cluster<br><small>Managed VNet</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-node purple">ACR<br><small>Private EP</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-node green">AI Services<br><small>Private EP</small></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 14: Mini Hack Preview ══════════ -->
+    <div class="slide" data-slide="14">
+        <h2>Mini Hack: Secure Deployment</h2>
+        <p style="margin-bottom: 24px;">Deploy a fully network-isolated AI Foundry environment in 5 steps:</p>
+        <div class="grid-3">
+            <div class="card">
+                <h4>Step 1–2</h4>
+                <p>Create VNet with subnets. Deploy Key Vault, Storage, ACR with public access disabled.</p>
+            </div>
+            <div class="card">
+                <h4>Step 3–4</h4>
+                <p>Create Private Endpoints for each service. Configure Private DNS Zones and link to VNet.</p>
+            </div>
+            <div class="card">
+                <h4>Step 5</h4>
+                <p>Deploy test VM inside VNet. Validate DNS resolves to private IPs. Clean up resources.</p>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 24px;">
+            <h4>⏱️ Time Estimate</h4>
+            <p>45–60 minutes. Resource provisioning takes 15–20 min — use wait time to review configurations.</p>
+        </div>
+    </div>
+
+    <!-- ══════════ SLIDE 15: Summary ══════════ -->
+    <div class="slide" data-slide="15">
+        <h2>Key Takeaways</h2>
+        <div class="grid-2">
+            <div class="icon-card">
+                <div class="icon">🌐</div>
+                <h5>VNet Integration</h5>
+                <p>Isolate all AI resources in a private address space with planned subnets</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🔗</div>
+                <h5>Private Endpoints</h5>
+                <p>Eliminate public internet exposure — traffic stays on Microsoft backbone</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🛡️</div>
+                <h5>NSGs &amp; Firewall</h5>
+                <p>Default-deny with service tags and centralized FQDN-based egress control</p>
+            </div>
+            <div class="icon-card">
+                <div class="icon">🔑</div>
+                <h5>Key Vault</h5>
+                <p>RBAC authorization, managed identities, soft-delete, and audit logging</p>
+            </div>
+        </div>
+        <p style="margin-top: 32px; font-size: 20px; text-align: center;">
+            <strong>Next:</strong> Module 36 — Cost Management &amp; FinOps for AI →
+        </p>
+        <p style="margin-top: 16px; font-size: 15px; text-align: center; color: var(--text-secondary);">
+            📺 Watch: <a href="https://www.youtube.com/watch?v=bL9n83uPV84" style="color: var(--accent-blue);">AI Foundry Networking &amp; Security: Deep Dive</a>
+        </p>
+    </div>
+
+</div>
+
+<!-- ── Navigation Bar ── -->
+<div class="slide-nav">
+    <button onclick="prevSlide()">← Prev</button>
+    <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <span class="slide-counter" id="slideCounter">1 / 15</span>
+    <button onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+    let current = 1;
+    const total = 15;
+
+    function showSlide(n) {
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        const target = document.querySelector(`[data-slide="${n}"]`);
+        if (target) target.classList.add('active');
+        document.getElementById('slideCounter').textContent = `${n} / ${total}`;
+        document.getElementById('progressFill').style.width = ((n / total) * 100) + '%';
+    }
+
+    function nextSlide() { if (current < total) { current++; showSlide(current); } }
+    function prevSlide() { if (current > 1) { current--; showSlide(current); } }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'Home') { current = 1; showSlide(current); }
+        if (e.key === 'End') { current = total; showSlide(current); }
+    });
+</script>
+
+</body>
+</html>

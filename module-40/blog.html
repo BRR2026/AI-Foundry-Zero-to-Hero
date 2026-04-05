@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Module 40 of Azure AI Foundry Zero to Hero — Enterprise Case Studies & Partner Success Patterns. Explore real-world partner success stories, common enterprise AI patterns, lessons learned, and build your AI practice roadmap." />
+    <meta name="author" content="Zero to Hero Training Team" />
+    <meta name="date" content="2026-04" />
+    <title>Module 40 — Enterprise Case Studies &amp; Partner Success Patterns | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ============================================================
+           CSS CUSTOM PROPERTIES
+           ============================================================ */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-gray: #f3f2f1;
+            --ms-border: #e1dfdd;
+            --ms-text: #323130;
+            --ms-text-secondary: #605e5c;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --ms-info: #0078d4;
+            --content-max: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 48px;
+            --font-stack: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-stack);
+            color: var(--ms-text);
+            background: #fff;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ============================================================
+           SCROLL PROGRESS BAR
+           ============================================================ */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* ============================================================
+           TOP NAVIGATION BAR
+           ============================================================ */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #1b1b1b;
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+        }
+        .top-nav .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            margin-right: auto;
+        }
+        .top-nav .nav-brand svg { flex-shrink: 0; }
+        .top-nav .nav-links { display: flex; gap: 20px; }
+        .top-nav .nav-links a {
+            color: #d4d4d4;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-links a:hover { color: #fff; }
+
+        /* ============================================================
+           HERO SECTION
+           ============================================================ */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #fff;
+            padding: 64px 24px 56px;
+            text-align: center;
+        }
+        .hero .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: 0.92;
+            max-width: 640px;
+            margin: 0 auto 24px;
+        }
+        .hero .meta {
+            font-size: 0.85rem;
+            opacity: 0.78;
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .hero .meta span { display: flex; align-items: center; gap: 6px; }
+
+        /* ============================================================
+           LAYOUT — SIDEBAR + CONTENT
+           ============================================================ */
+        .page-wrapper {
+            display: flex;
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* STICKY TOC SIDEBAR */
+        .toc-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + 24px);
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            max-height: calc(100vh - var(--nav-height) - 48px);
+            overflow-y: auto;
+            padding: 32px 16px 32px 0;
+            font-size: 13px;
+            align-self: flex-start;
+        }
+        .toc-sidebar h2 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+        }
+        .toc-sidebar ul { list-style: none; }
+        .toc-sidebar li { margin-bottom: 6px; }
+        .toc-sidebar a {
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 4px 0 4px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .toc-sidebar a:hover { color: var(--ms-blue); }
+        .toc-sidebar a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            font-weight: 600;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: var(--content-max);
+            padding: 40px 0 80px 48px;
+        }
+
+        /* ============================================================
+           TYPOGRAPHY
+           ============================================================ */
+        .main-content h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-border);
+            scroll-margin-top: calc(var(--nav-height) + 20px);
+        }
+        .main-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 32px 0 12px;
+            scroll-margin-top: calc(var(--nav-height) + 20px);
+        }
+        .main-content h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-text-secondary);
+            margin: 24px 0 8px;
+        }
+        .main-content p { margin-bottom: 16px; }
+        .main-content ul, .main-content ol {
+            margin: 0 0 16px 24px;
+        }
+        .main-content li { margin-bottom: 6px; }
+        .main-content a { color: var(--ms-blue); text-decoration: none; }
+        .main-content a:hover { text-decoration: underline; }
+        .main-content strong { font-weight: 600; }
+        .main-content img { max-width: 100%; border-radius: 6px; }
+
+        /* ============================================================
+           CODE BLOCKS
+           ============================================================ */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px 24px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+        }
+        :not(pre) > code {
+            background: var(--ms-light-gray);
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: var(--ms-dark-blue);
+        }
+
+        /* ============================================================
+           CALLOUT BOXES
+           ============================================================ */
+        .callout {
+            padding: 16px 20px;
+            border-left: 4px solid;
+            border-radius: 0 6px 6px 0;
+            margin: 20px 0;
+            font-size: 0.94rem;
+        }
+        .callout p:last-child { margin-bottom: 0; }
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .callout.info    { background: #eff6fc; border-color: var(--ms-info); }
+        .callout.tip     { background: #fff8e5; border-color: var(--ms-warning); }
+        .callout.success { background: #e8f5e9; border-color: var(--ms-success); }
+        .callout.warning { background: #fde7e9; border-color: var(--ms-error); }
+
+        .callout.info    .callout-title { color: var(--ms-info); }
+        .callout.tip     .callout-title { color: var(--ms-warning); }
+        .callout.success .callout-title { color: var(--ms-success); }
+        .callout.warning .callout-title { color: var(--ms-error); }
+
+        /* ============================================================
+           VIDEO EMBEDS
+           ============================================================ */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        /* ============================================================
+           TABLES
+           ============================================================ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.92rem;
+        }
+        th {
+            background: var(--ms-dark-blue);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--ms-border);
+        }
+        tr:nth-child(even) { background: var(--ms-light-gray); }
+
+        /* ============================================================
+           CASE STUDY CARDS
+           ============================================================ */
+        .case-study-card {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-radius: 10px;
+            padding: 28px;
+            margin: 20px 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .case-study-card:hover {
+            box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        .case-study-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .case-study-card .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .case-study-card .card-icon.support { background: #e8f5e9; }
+        .case-study-card .card-icon.finance { background: #e3f2fd; }
+        .case-study-card .card-icon.health { background: #fce4ec; }
+        .case-study-card .card-icon.retail { background: #fff3e0; }
+        .case-study-card .card-icon.mfg { background: #f3e5f5; }
+        .case-study-card .card-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-text-secondary);
+        }
+        .case-study-card .card-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--ms-dark-blue);
+        }
+        .case-study-card .metric-row {
+            display: flex;
+            gap: 24px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .case-study-card .metric {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        .case-study-card .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ms-blue);
+        }
+        .case-study-card .metric-label {
+            font-size: 0.78rem;
+            color: var(--ms-text-secondary);
+        }
+
+        /* ============================================================
+           PATTERN CARDS
+           ============================================================ */
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .pattern-card {
+            border: 2px solid var(--ms-border);
+            border-radius: 10px;
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+        .pattern-card:hover { border-color: var(--ms-blue); }
+        .pattern-card h4 {
+            color: var(--ms-dark-blue);
+            margin: 0 0 8px;
+            font-size: 1.05rem;
+        }
+        .pattern-card .pattern-tag {
+            display: inline-block;
+            background: var(--ms-light-gray);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--ms-text-secondary);
+            margin-bottom: 10px;
+        }
+
+        /* ============================================================
+           ROADMAP TIMELINE
+           ============================================================ */
+        .roadmap {
+            position: relative;
+            padding-left: 36px;
+            margin: 24px 0;
+        }
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--ms-blue), var(--ms-purple));
+            border-radius: 3px;
+        }
+        .roadmap-item {
+            position: relative;
+            margin-bottom: 28px;
+            padding-left: 24px;
+        }
+        .roadmap-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 6px;
+            width: 14px;
+            height: 14px;
+            background: var(--ms-blue);
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px var(--ms-blue);
+        }
+        .roadmap-item .phase {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-purple);
+            margin-bottom: 4px;
+        }
+        .roadmap-item h4 {
+            margin: 0 0 6px;
+            color: var(--ms-dark-blue);
+        }
+
+        /* ============================================================
+           MINI HACK BOX
+           ============================================================ */
+        .mini-hack {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f0ff 100%);
+            border: 2px solid var(--ms-purple);
+            border-radius: 10px;
+            padding: 28px 28px 24px;
+            margin: 32px 0;
+        }
+        .mini-hack h3 {
+            color: var(--ms-purple);
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+        .mini-hack ol { margin-left: 20px; }
+        .mini-hack li { margin-bottom: 8px; }
+
+        /* ============================================================
+           MODULE NAVIGATION
+           ============================================================ */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 32px 0;
+            margin-top: 48px;
+            border-top: 2px solid var(--ms-border);
+            font-size: 0.95rem;
+        }
+        .module-nav a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .module-nav a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        footer {
+            background: var(--ms-light-gray);
+            padding: 32px 24px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--ms-text-secondary);
+            border-top: 1px solid var(--ms-border);
+        }
+
+        /* ============================================================
+           BACK TO TOP BUTTON
+           ============================================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            transition: background 0.2s, transform 0.2s;
+            z-index: 900;
+        }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+        .back-to-top.visible { display: flex; }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 900px) {
+            .toc-sidebar { display: none; }
+            .main-content { padding-left: 0; }
+            .page-wrapper { padding: 0 16px; }
+            .pattern-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .hero { padding: 40px 16px 36px; }
+            .hero h1 { font-size: 1.5rem; }
+            .main-content h2 { font-size: 1.35rem; }
+            pre { font-size: 0.82rem; padding: 14px; }
+            .module-nav { flex-direction: column; gap: 12px; text-align: center; }
+            .case-study-card .metric-row { flex-direction: column; gap: 12px; }
+        }
+
+        /* ============================================================
+           PRINT STYLES
+           ============================================================ */
+        @media print {
+            .top-nav, .toc-sidebar, .scroll-progress, .back-to-top, .video-container { display: none !important; }
+            .main-content { max-width: 100%; padding: 0; }
+            .hero { background: #fff !important; color: #000 !important; padding: 20px 0; }
+            .hero .series-badge { border: 1px solid #ccc; background: #f0f0f0 !important; color: #333 !important; }
+            body { font-size: 11pt; line-height: 1.5; }
+            pre { border: 1px solid #ccc; }
+            a { color: #000; text-decoration: underline; }
+            a::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+            .module-nav a::after { content: ""; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ================================================================
+     TOP NAVIGATION
+     ================================================================ -->
+<nav class="top-nav">
+    <a href="../index.html" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="9.5" height="9.5" fill="#f25022"/>
+            <rect x="10.5" width="9.5" height="9.5" fill="#7fba00"/>
+            <rect y="10.5" width="9.5" height="9.5" fill="#00a4ef"/>
+            <rect x="10.5" y="10.5" width="9.5" height="9.5" fill="#ffb900"/>
+        </svg>
+        AI Foundry Training Blog
+    </a>
+    <div class="nav-links">
+        <a href="../index.html">Curriculum</a>
+        <a href="../resources.html">Resources</a>
+        <a href="https://ai.azure.com" target="_blank" rel="noopener noreferrer">AI Foundry Portal ↗</a>
+    </div>
+</nav>
+
+<!-- ================================================================
+     HERO SECTION
+     ================================================================ -->
+<header class="hero">
+    <div class="series-badge">ARC 8 · Advanced Patterns &amp; Enterprise</div>
+    <h1>Module 40: Enterprise Case Studies &amp; Partner Success Patterns</h1>
+    <p class="subtitle">Learn from real-world Microsoft partner deployments, discover proven enterprise AI patterns, avoid common pitfalls, and chart your own AI practice roadmap with Azure AI Foundry.</p>
+    <div class="meta">
+        <span>✍️ Zero to Hero Training Team</span>
+        <span>📅 April 2026</span>
+        <span>⏱️ 35 min read</span>
+        <span>📦 Module 40 of 45</span>
+    </div>
+</header>
+
+<!-- ================================================================
+     PAGE WRAPPER — SIDEBAR + CONTENT
+     ================================================================ -->
+<div class="page-wrapper">
+
+    <!-- ============================================================
+         STICKY TOC SIDEBAR
+         ============================================================ -->
+    <aside class="toc-sidebar" id="tocSidebar">
+        <h2>On This Page</h2>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#featured-video">Featured Video</a></li>
+            <li><a href="#case-study-support">Case Study: Customer Support</a></li>
+            <li><a href="#case-study-docproc">Case Study: Document Processing</a></li>
+            <li><a href="#case-study-analytics">Case Study: Predictive Analytics</a></li>
+            <li><a href="#case-study-health">Case Study: Healthcare</a></li>
+            <li><a href="#case-study-retail">Case Study: Retail</a></li>
+            <li><a href="#enterprise-patterns">Enterprise AI Patterns</a></li>
+            <li><a href="#lessons-pitfalls">Lessons &amp; Pitfalls</a></li>
+            <li><a href="#practice-roadmap">AI Practice Roadmap</a></li>
+            <li><a href="#architecture-reference">Architecture Reference</a></li>
+            <li><a href="#mini-hack">Mini Hack</a></li>
+            <li><a href="#key-takeaways">Key Takeaways</a></li>
+            <li><a href="#module-41-preview">Module 41 Preview</a></li>
+            <li><a href="#resources">Resources</a></li>
+        </ul>
+    </aside>
+
+    <!-- ============================================================
+         MAIN CONTENT
+         ============================================================ -->
+    <main class="main-content">
+
+        <!-- ============================
+             INTRODUCTION
+             ============================ -->
+        <h2 id="introduction">Introduction</h2>
+
+        <p>Throughout this training series, we have explored Azure AI Foundry's capabilities from foundational concepts to advanced agent orchestration. Now, in Module 40, we shift our lens to the <strong>real world</strong> — examining how Microsoft partners and enterprise customers have transformed their operations using the very patterns and services you've been learning.</p>
+
+        <p>Enterprise AI adoption is no longer a question of <em>if</em> but <em>how well</em>. The difference between a successful AI deployment and a stalled proof-of-concept often comes down to pattern selection, architectural decisions made in the first two weeks, and organizational readiness. This module distills those lessons from five distinct industries into actionable guidance you can apply today.</p>
+
+        <div class="callout info">
+            <div class="callout-title">📘 What You'll Learn</div>
+            <p>By the end of this module, you will be able to: (1) Analyze real-world case studies from five industry verticals, (2) Identify and apply common enterprise AI patterns, (3) Recognize and avoid the most frequent deployment pitfalls, (4) Build a structured AI practice roadmap for your organization, and (5) Present a case study of your own Azure AI Foundry project.</p>
+        </div>
+
+        <p>Each case study in this module is modeled after real partner engagements — with anonymized details — covering customer support automation, intelligent document processing, predictive analytics, healthcare compliance, and retail personalization. We conclude with a structured roadmap framework and a Mini Hack challenge where you present your own project as a professional case study.</p>
+
+        <!-- ============================
+             FEATURED VIDEO
+             ============================ -->
+        <h2 id="featured-video">Featured Video</h2>
+
+        <p>Watch this overview of Microsoft Foundry as an AI application and agent factory to understand the enterprise platform capabilities that power the case studies below:</p>
+
+        <div class="video-container">
+            <iframe
+                src="https://www.youtube.com/embed/ooZ3xXEdOKI"
+                title="Microsoft Foundry: The AI app and agent factory"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <div class="callout tip">
+            <div class="callout-title">🎬 Video Context</div>
+            <p><strong>"Microsoft Foundry: The AI app and agent factory"</strong> by MS Azure demonstrates how the Foundry platform serves as the unified hub for building, evaluating, and deploying AI applications at enterprise scale — the exact infrastructure underpinning every case study in this module.</p>
+        </div>
+
+        <!-- ============================
+             CASE STUDY 1: CUSTOMER SUPPORT
+             ============================ -->
+        <h2 id="case-study-support">Case Study 1: Intelligent Customer Support</h2>
+
+        <h3>Partner Profile: Global Financial Services Firm</h3>
+        <p>A Fortune 500 financial services company with 40,000+ employees and 12 million customers across 30 countries needed to modernize its customer support operations. Their legacy IVR system handled 2.3 million calls per month with an average resolution time of 18 minutes and a customer satisfaction score of just 62%.</p>
+
+        <div class="case-study-card">
+            <div class="card-header">
+                <div class="card-icon support">🏦</div>
+                <div>
+                    <div class="card-label">Financial Services · Customer Support</div>
+                    <div class="card-title">AI-Powered Omnichannel Support Agent</div>
+                </div>
+            </div>
+            <div class="metric-row">
+                <div class="metric">
+                    <div class="metric-value">73%</div>
+                    <div class="metric-label">Automated Resolution</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4.2 min</div>
+                    <div class="metric-label">Avg Resolution Time</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">89%</div>
+                    <div class="metric-label">CSAT Score</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$14M</div>
+                    <div class="metric-label">Annual Savings</div>
+                </div>
+            </div>
+            <p>Built with Azure AI Foundry agents, Azure AI Search for knowledge retrieval, and GPT-4o for multi-turn conversational reasoning. Deployed across chat, email, and voice channels with unified context.</p>
+        </div>
+
+        <h4>Architecture Overview</h4>
+        <p>The solution leverages a multi-agent architecture orchestrated through Azure AI Foundry:</p>
+
+<pre><span style="color:#569cd6"># Multi-agent orchestration for support triage</span>
+<span style="color:#c586c0">from</span> azure.ai.projects <span style="color:#c586c0">import</span> AIProjectClient
+<span style="color:#c586c0">from</span> azure.identity <span style="color:#c586c0">import</span> DefaultAzureCredential
+
+client = AIProjectClient(
+    credential=DefaultAzureCredential(),
+    project=<span style="color:#ce9178">"contoso-support-prod"</span>
+)
+
+<span style="color:#569cd6"># Triage agent classifies intent and routes to specialists</span>
+triage_agent = client.agents.create_agent(
+    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    name=<span style="color:#ce9178">"support-triage"</span>,
+    instructions=<span style="color:#ce9178">"""You are a support triage agent for a financial services firm.
+    Classify intent into: account_inquiry, transaction_dispute,
+    loan_application, technical_issue, or escalate_to_human."""</span>,
+    tools=[{<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"file_search"</span>}, {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"code_interpreter"</span>}]
+)
+
+<span style="color:#569cd6"># Specialist agent for transaction disputes</span>
+dispute_agent = client.agents.create_agent(
+    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    name=<span style="color:#ce9178">"dispute-specialist"</span>,
+    instructions=<span style="color:#ce9178">"""You are a transaction dispute specialist.
+    Follow the workflow: verify → investigate → resolve.
+    Always confirm the disputed amount and merchant."""</span>,
+    tools=[
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: get_transaction_history},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: initiate_dispute_claim},
+    ]
+)</pre>
+
+        <h4>Key Design Decisions</h4>
+        <ul>
+            <li><strong>Multi-agent triage</strong> — A routing agent classifies intent before handing off to domain-specific specialist agents, reducing hallucination risk by constraining each agent's scope.</li>
+            <li><strong>Azure AI Search integration</strong> — 50,000+ FAQ documents and policy manuals indexed with hybrid search (keyword + vector) for high-precision retrieval.</li>
+            <li><strong>Content safety guardrails</strong> — Azure AI Content Safety filters prevent generation of financial advice that could create regulatory liability.</li>
+            <li><strong>Human escalation path</strong> — Confidence thresholds trigger seamless handoff to human agents with full conversation context preserved.</li>
+        </ul>
+
+        <div class="callout success">
+            <div class="callout-title">✅ Partner Insight</div>
+            <p>"The biggest win wasn't the automation percentage — it was the consistency. Every customer interaction now follows our compliance-approved workflow, regardless of time zone or channel. Azure AI Foundry's evaluation framework lets us catch drift before it affects customers." — <em>VP of Digital Operations</em></p>
+        </div>
+
+        <!-- ============================
+             CASE STUDY 2: DOCUMENT PROCESSING
+             ============================ -->
+        <h2 id="case-study-docproc">Case Study 2: Intelligent Document Processing</h2>
+
+        <h3>Partner Profile: Insurance Industry ISV</h3>
+        <p>A mid-market ISV serving 200+ insurance carriers needed to automate claims processing across diverse document formats: handwritten forms, scanned PDFs, faxed medical records, and structured XML feeds from partner systems.</p>
+
+        <div class="case-study-card">
+            <div class="card-header">
+                <div class="card-icon finance">📄</div>
+                <div>
+                    <div class="card-label">Insurance · Document Processing</div>
+                    <div class="card-title">AI-Driven Claims Document Pipeline</div>
+                </div>
+            </div>
+            <div class="metric-row">
+                <div class="metric">
+                    <div class="metric-value">92%</div>
+                    <div class="metric-label">Extraction Accuracy</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">85%</div>
+                    <div class="metric-label">Straight-Through Processing</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3.2x</div>
+                    <div class="metric-label">Throughput Increase</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">6 wks</div>
+                    <div class="metric-label">Time to Production</div>
+                </div>
+            </div>
+            <p>Built with Azure AI Document Intelligence for structured extraction, Azure AI Foundry agents for unstructured reasoning, and Azure Blob Storage with event-driven processing.</p>
+        </div>
+
+        <h4>Processing Pipeline</h4>
+<pre><span style="color:#569cd6"># Document processing pipeline: Extract → Reason → Act</span>
+<span style="color:#c586c0">from</span> azure.ai.documentintelligence <span style="color:#c586c0">import</span> DocumentIntelligenceClient
+<span style="color:#c586c0">from</span> azure.ai.projects <span style="color:#c586c0">import</span> AIProjectClient
+
+<span style="color:#569cd6"># Step 1: Extract structured data with custom-trained model</span>
+doc_client = DocumentIntelligenceClient(
+    endpoint=<span style="color:#ce9178">"https://contoso-doc.cognitiveservices.azure.com/"</span>,
+    credential=DefaultAzureCredential()
+)
+result = doc_client.begin_analyze_document(
+    model_id=<span style="color:#ce9178">"insurance-claims-v3"</span>,
+    body={<span style="color:#ce9178">"url_source"</span>: document_url}
+).result()
+
+<span style="color:#569cd6"># Step 2: AI Foundry agent reasons over extracted data</span>
+claims_agent = client.agents.create_agent(
+    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    name=<span style="color:#ce9178">"claims-analyst"</span>,
+    instructions=<span style="color:#ce9178">"""Analyze claim data. Determine: (1) validity,
+    (2) coverage, (3) payout range, (4) fraud risk.
+    Flag documents requiring human review."""</span>
+)
+
+<span style="color:#569cd6"># Step 3: Route based on confidence and risk</span>
+<span style="color:#c586c0">if</span> analysis.confidence &gt; <span style="color:#b5cea8">0.95</span> <span style="color:#c586c0">and</span> analysis.fraud_risk &lt; <span style="color:#b5cea8">0.1</span>:
+    auto_approve(claim_id, analysis.payout)
+<span style="color:#c586c0">else</span>:
+    route_to_adjuster(claim_id, analysis)</pre>
+
+        <h4>Lessons from Document Processing at Scale</h4>
+        <ul>
+            <li><strong>Custom models outperform generic</strong> — Training Azure AI Document Intelligence on domain-specific forms improved extraction accuracy from 78% to 92%.</li>
+            <li><strong>Hybrid extraction strategy</strong> — Structured fields (dates, amounts, policy numbers) use Document Intelligence; unstructured narratives (injury descriptions, doctor's notes) route to GPT-4o for reasoning.</li>
+            <li><strong>Confidence-gated automation</strong> — Only claims scoring above 0.95 confidence proceed to auto-approval; this threshold was calibrated through 10,000+ evaluation runs in AI Foundry.</li>
+            <li><strong>Audit trail by design</strong> — Every extraction, reasoning step, and decision is logged to Azure Monitor for regulatory compliance.</li>
+        </ul>
+
+        <!-- ============================
+             CASE STUDY 3: PREDICTIVE ANALYTICS
+             ============================ -->
+        <h2 id="case-study-analytics">Case Study 3: Predictive Analytics Platform</h2>
+
+        <h3>Partner Profile: Manufacturing Conglomerate</h3>
+        <p>A global manufacturer with 45 production facilities needed to predict equipment failures 72 hours in advance to optimize maintenance schedules and reduce unplanned downtime costing $2.1M per incident.</p>
+
+        <div class="case-study-card">
+            <div class="card-header">
+                <div class="card-icon mfg">🏭</div>
+                <div>
+                    <div class="card-label">Manufacturing · Predictive Maintenance</div>
+                    <div class="card-title">AI-Powered Predictive Maintenance Platform</div>
+                </div>
+            </div>
+            <div class="metric-row">
+                <div class="metric">
+                    <div class="metric-value">94%</div>
+                    <div class="metric-label">Prediction Accuracy</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">68%</div>
+                    <div class="metric-label">Downtime Reduction</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$38M</div>
+                    <div class="metric-label">Annual Savings</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">45</div>
+                    <div class="metric-label">Facilities Deployed</div>
+                </div>
+            </div>
+            <p>Combines IoT telemetry with Azure AI Foundry agents for natural-language equipment diagnostics, anomaly detection, and maintenance scheduling optimization.</p>
+        </div>
+
+        <h4>Integration Architecture</h4>
+<pre><span style="color:#569cd6"># Maintenance advisor agent with IoT data integration</span>
+maintenance_agent = client.agents.create_agent(
+    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    name=<span style="color:#ce9178">"maintenance-advisor"</span>,
+    instructions=<span style="color:#ce9178">"""You are a predictive maintenance advisor.
+    Analyze sensor telemetry and maintenance history to:
+    1. Identify anomalous behavior patterns
+    2. Predict remaining useful life for components
+    3. Recommend optimal maintenance windows
+    4. Prioritize by business impact (cost of downtime)"""</span>,
+    tools=[
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: query_sensor_telemetry},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: get_maintenance_history},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: check_spare_parts_inventory},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"code_interpreter"</span>},
+    ]
+)</pre>
+
+        <div class="callout info">
+            <div class="callout-title">💡 Architecture Insight</div>
+            <p>The manufacturing case study demonstrates a key pattern: <strong>AI Foundry agents as the "reasoning layer"</strong> on top of existing data infrastructure. The IoT platform (Azure IoT Hub, Azure Data Explorer) handles data ingestion and storage, while AI Foundry agents provide natural-language interfaces for plant managers who aren't data scientists.</p>
+        </div>
+
+        <!-- ============================
+             CASE STUDY 4: HEALTHCARE
+             ============================ -->
+        <h2 id="case-study-health">Case Study 4: Healthcare Compliance</h2>
+
+        <h3>Partner Profile: Regional Health System</h3>
+        <p>A 15-hospital health system needed to streamline clinical documentation review, ensure HIPAA compliance across all AI-generated communications, and reduce the 6-week backlog in prior authorization processing.</p>
+
+        <div class="case-study-card">
+            <div class="card-header">
+                <div class="card-icon health">🏥</div>
+                <div>
+                    <div class="card-label">Healthcare · Compliance &amp; Documentation</div>
+                    <div class="card-title">HIPAA-Compliant Clinical Documentation Agent</div>
+                </div>
+            </div>
+            <div class="metric-row">
+                <div class="metric">
+                    <div class="metric-value">91%</div>
+                    <div class="metric-label">Documentation Accuracy</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4 hrs</div>
+                    <div class="metric-label">Prior Auth Turnaround</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">HIPAA Audit Pass Rate</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">340 hrs</div>
+                    <div class="metric-label">Weekly Staff Hours Saved</div>
+                </div>
+            </div>
+            <p>Azure AI Foundry with private endpoints, customer-managed keys, HIPAA BAA, and multi-layer content safety filtering for protected health information.</p>
+        </div>
+
+        <h4>Compliance-First Architecture Decisions</h4>
+        <ul>
+            <li><strong>Private network deployment</strong> — All AI Foundry resources deployed within a VNet with private endpoints; no data traverses the public internet.</li>
+            <li><strong>Customer-managed encryption keys</strong> — Azure Key Vault with HSM-backed keys for encryption at rest; key rotation automated on 90-day cycles.</li>
+            <li><strong>PHI detection guardrails</strong> — Custom content safety filters detect and redact protected health information before any data leaves the secure enclave.</li>
+            <li><strong>Evaluation-driven compliance</strong> — Automated evaluation pipelines run nightly against 500+ test cases covering HIPAA, state regulations, and internal policies.</li>
+        </ul>
+
+<pre><span style="color:#569cd6"># HIPAA-compliant project configuration</span>
+<span style="color:#c586c0">from</span> azure.ai.projects <span style="color:#c586c0">import</span> AIProjectClient
+<span style="color:#c586c0">from</span> azure.identity <span style="color:#c586c0">import</span> ManagedIdentityCredential
+
+client = AIProjectClient(
+    credential=ManagedIdentityCredential(),
+    project=<span style="color:#ce9178">"contoso-health-prod"</span>
+)
+
+clinical_agent = client.agents.create_agent(
+    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    name=<span style="color:#ce9178">"clinical-doc-assistant"</span>,
+    instructions=<span style="color:#ce9178">"""You are a clinical documentation assistant.
+    RULES: Never generate diagnoses or treatment recommendations.
+    Always cite source document and page number.
+    Flag inconsistent information. Redact patient IDs."""</span>,
+    tools=[{<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"file_search"</span>}]
+)</pre>
+
+        <!-- ============================
+             CASE STUDY 5: RETAIL
+             ============================ -->
+        <h2 id="case-study-retail">Case Study 5: Retail Personalization</h2>
+
+        <h3>Partner Profile: E-Commerce Platform</h3>
+        <p>A mid-market e-commerce platform serving 8 million active users wanted to replace its rule-based recommendation engine with an AI-powered conversational shopping assistant capable of understanding natural language preferences.</p>
+
+        <div class="case-study-card">
+            <div class="card-header">
+                <div class="card-icon retail">🛍️</div>
+                <div>
+                    <div class="card-label">Retail · Conversational Commerce</div>
+                    <div class="card-title">AI Shopping Assistant with Personalization</div>
+                </div>
+            </div>
+            <div class="metric-row">
+                <div class="metric">
+                    <div class="metric-value">34%</div>
+                    <div class="metric-label">Conversion Lift</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">28%</div>
+                    <div class="metric-label">Avg Order Value ↑</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4.6/5</div>
+                    <div class="metric-label">User Rating</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">2.1M</div>
+                    <div class="metric-label">Monthly Interactions</div>
+                </div>
+            </div>
+            <p>Azure AI Foundry agent with Azure AI Search product catalog, real-time inventory APIs, and personalization based on browsing history and stated preferences.</p>
+        </div>
+
+        <h4>Personalization Agent Architecture</h4>
+<pre><span style="color:#569cd6"># Shopping assistant agent with product search</span>
+shopping_agent = client.agents.create_agent(
+    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    name=<span style="color:#ce9178">"shopping-assistant"</span>,
+    instructions=<span style="color:#ce9178">"""You are a friendly shopping assistant.
+    Help customers find products by understanding preferences,
+    searching the catalog, comparing options honestly,
+    and suggesting complementary items.
+    Never pressure customers. Always show prices clearly."""</span>,
+    tools=[
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"file_search"</span>},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: check_inventory},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: get_user_preferences},
+        {<span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"function"</span>, <span style="color:#ce9178">"function"</span>: add_to_cart},
+    ]
+)</pre>
+
+        <!-- ============================
+             COMMON ENTERPRISE PATTERNS
+             ============================ -->
+        <h2 id="enterprise-patterns">Common Enterprise AI Patterns</h2>
+
+        <p>Across all five case studies — and hundreds of partner engagements — several recurring patterns emerge. These patterns represent proven blueprints that significantly reduce deployment risk when building with Azure AI Foundry.</p>
+
+        <div class="pattern-grid">
+            <div class="pattern-card">
+                <div class="pattern-tag">Pattern 1</div>
+                <h4>🔀 Multi-Agent Triage &amp; Routing</h4>
+                <p>A lightweight routing agent classifies user intent and delegates to specialized agents. Each specialist has constrained instructions and tools, reducing hallucination surface area.</p>
+                <p><strong>Best for:</strong> Customer support, IT helpdesk, multi-department portals</p>
+                <p><strong>Key metric:</strong> Intent classification accuracy > 95%</p>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-tag">Pattern 2</div>
+                <h4>📋 Extract → Reason → Act Pipeline</h4>
+                <p>Structured extraction (Document Intelligence) feeds into an AI Foundry agent for unstructured reasoning, which triggers downstream business actions via function tools.</p>
+                <p><strong>Best for:</strong> Claims processing, invoice automation, contract analysis</p>
+                <p><strong>Key metric:</strong> Straight-through processing rate > 80%</p>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-tag">Pattern 3</div>
+                <h4>🔍 RAG + Agent Hybrid</h4>
+                <p>Combines retrieval-augmented generation (Azure AI Search) with agentic tool use. The agent decides when to search vs. when to use function tools based on query complexity.</p>
+                <p><strong>Best for:</strong> Knowledge bases, product catalogs, policy lookup</p>
+                <p><strong>Key metric:</strong> Answer relevance > 0.9 (evaluated in AI Foundry)</p>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-tag">Pattern 4</div>
+                <h4>🛡️ Compliance-First Agent Design</h4>
+                <p>Private endpoints, customer-managed keys, content safety filters, and automated evaluation pipelines ensure every interaction meets regulatory requirements.</p>
+                <p><strong>Best for:</strong> Healthcare (HIPAA), financial services (SOX), government (FedRAMP)</p>
+                <p><strong>Key metric:</strong> Zero compliance violations in production</p>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-tag">Pattern 5</div>
+                <h4>🤝 Human-in-the-Loop Escalation</h4>
+                <p>Confidence thresholds and complexity heuristics trigger seamless handoff from AI agent to human expert, with full conversation context and agent reasoning preserved.</p>
+                <p><strong>Best for:</strong> Any regulated or high-stakes domain</p>
+                <p><strong>Key metric:</strong> Escalation rate between 15-25% (lower suggests overconfidence)</p>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-tag">Pattern 6</div>
+                <h4>📊 Conversational Analytics Interface</h4>
+                <p>AI Foundry agents with code interpreter act as natural-language interfaces to data warehouses, enabling business users to query complex datasets without SQL knowledge.</p>
+                <p><strong>Best for:</strong> Executive dashboards, operational analytics, self-service BI</p>
+                <p><strong>Key metric:</strong> Query accuracy validated against known correct answers</p>
+            </div>
+        </div>
+
+        <h3>Pattern Selection Decision Matrix</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Criteria</th>
+                    <th>Multi-Agent Triage</th>
+                    <th>Extract→Reason→Act</th>
+                    <th>RAG + Agent</th>
+                    <th>Compliance-First</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Complexity</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Time to Production</td>
+                    <td>4-6 weeks</td>
+                    <td>8-12 weeks</td>
+                    <td>3-5 weeks</td>
+                    <td>10-16 weeks</td>
+                </tr>
+                <tr>
+                    <td>Team Size (min)</td>
+                    <td>3-4 engineers</td>
+                    <td>4-6 engineers</td>
+                    <td>2-3 engineers</td>
+                    <td>5-8 engineers</td>
+                </tr>
+                <tr>
+                    <td>Regulatory Risk</td>
+                    <td>Low-Medium</td>
+                    <td>Medium</td>
+                    <td>Low</td>
+                    <td>High (mitigated)</td>
+                </tr>
+                <tr>
+                    <td>Typical ROI Timeline</td>
+                    <td>3-6 months</td>
+                    <td>6-9 months</td>
+                    <td>2-4 months</td>
+                    <td>9-12 months</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================
+             LESSONS LEARNED & PITFALLS
+             ============================ -->
+        <h2 id="lessons-pitfalls">Lessons Learned &amp; Pitfalls to Avoid</h2>
+
+        <p>The following lessons are distilled from post-mortem analyses of both successful and failed enterprise AI projects. Each pitfall includes a concrete mitigation strategy using Azure AI Foundry capabilities.</p>
+
+        <h3>🟢 Lessons That Accelerate Success</h3>
+
+        <h4>1. Start with Evaluation, Not Development</h4>
+        <p>The most successful partners build their evaluation datasets <em>before</em> writing agent code. This "evaluation-first" approach ensures you have a clear definition of success and can objectively measure progress from day one.</p>
+<pre><span style="color:#569cd6"># Evaluation-first: define success criteria before building agents</span>
+<span style="color:#c586c0">from</span> azure.ai.evaluation <span style="color:#c586c0">import</span> evaluate, RelevanceEvaluator, CoherenceEvaluator
+
+<span style="color:#569cd6"># Create golden dataset of expected Q&A pairs BEFORE building the agent</span>
+golden_dataset = [
+    {
+        <span style="color:#ce9178">"query"</span>: <span style="color:#ce9178">"What's my account balance?"</span>,
+        <span style="color:#ce9178">"expected_intent"</span>: <span style="color:#ce9178">"account_inquiry"</span>,
+        <span style="color:#ce9178">"expected_response_contains"</span>: [<span style="color:#ce9178">"balance"</span>, <span style="color:#ce9178">"account"</span>],
+        <span style="color:#ce9178">"must_not_contain"</span>: [<span style="color:#ce9178">"investment advice"</span>]
+    },
+    <span style="color:#569cd6"># ... 500+ test cases covering edge cases and adversarial inputs</span>
+]
+
+<span style="color:#569cd6"># Run evaluation against baseline</span>
+baseline_results = evaluate(
+    data=golden_dataset,
+    evaluators={
+        <span style="color:#ce9178">"relevance"</span>: RelevanceEvaluator(model_config),
+        <span style="color:#ce9178">"coherence"</span>: CoherenceEvaluator(model_config),
+    }
+)</pre>
+
+        <h4>2. Invest in Prompt Engineering Before Fine-Tuning</h4>
+        <p>Partners who achieved the fastest time-to-value spent 80% of their effort on prompt engineering, tool design, and retrieval optimization — and only considered fine-tuning when they hit measurable plateaus.</p>
+
+        <h4>3. Design for Observability from Day One</h4>
+        <p>Every successful deployment instruments agent interactions with structured logging, latency tracking, and cost monitoring from the initial prototype.</p>
+
+        <h4>4. Use Staged Rollouts with Evaluation Gates</h4>
+        <p>Progressive deployment — internal users → beta customers → 10% traffic → full rollout — with automated evaluation at each gate prevents costly production incidents.</p>
+
+        <h3>🔴 Pitfalls to Avoid</h3>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Pitfall 1: The "Demo-to-Production" Gap</div>
+            <p><strong>Symptom:</strong> An impressive demo built in 2 days that takes 6 months to productionize.<br>
+            <strong>Root cause:</strong> Demos skip error handling, authentication, rate limiting, content safety, and evaluation.<br>
+            <strong>Mitigation:</strong> Use Azure AI Foundry's production-ready agent infrastructure from day one. Deploy with managed identity, enable content safety, and configure evaluation pipelines even during prototyping.</p>
+        </div>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Pitfall 2: Ignoring Token Economics</div>
+            <p><strong>Symptom:</strong> Cost per interaction is 10x higher than projected.<br>
+            <strong>Root cause:</strong> No token usage monitoring or prompt optimization.<br>
+            <strong>Mitigation:</strong> Set token budgets per agent, monitor costs in Azure Monitor, and use AI Foundry's prompt optimization to reduce consumption by 30-50%.</p>
+        </div>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Pitfall 3: Under-investing in Knowledge Curation</div>
+            <p><strong>Symptom:</strong> RAG answers are technically correct but unhelpful.<br>
+            <strong>Root cause:</strong> Teams assume AI compensates for poor data quality.<br>
+            <strong>Mitigation:</strong> Allocate 30-40% of effort to knowledge curation — freshness policies, de-duplication, and chunk-quality evaluation.</p>
+        </div>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Pitfall 4: Single-Agent Monolith</div>
+            <p><strong>Symptom:</strong> One massive agent with a 4,000-word system prompt handling everything.<br>
+            <strong>Root cause:</strong> Continuously extending one prototype instead of decomposing.<br>
+            <strong>Mitigation:</strong> Apply multi-agent triage early. Each agent should have a focused scope, be testable independently.</p>
+        </div>
+
+        <div class="callout warning">
+            <div class="callout-title">⚠️ Pitfall 5: Skipping Adversarial Testing</div>
+            <p><strong>Symptom:</strong> Agent fails on unexpected inputs, prompt injection, or malformed data.<br>
+            <strong>Root cause:</strong> Evaluation datasets cover only "happy path" scenarios.<br>
+            <strong>Mitigation:</strong> Include adversarial test cases in your evaluation suite. Use Azure AI Content Safety's prompt shields and groundedness detection.</p>
+        </div>
+
+        <h3>Success Factor Summary</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Success Factor</th>
+                    <th>Impact</th>
+                    <th>Common Mistake</th>
+                    <th>AI Foundry Feature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Evaluation-first development</td>
+                    <td>2-3x faster iteration</td>
+                    <td>Building before defining success</td>
+                    <td>Evaluation SDK, AI Foundry portal</td>
+                </tr>
+                <tr>
+                    <td>Multi-agent architecture</td>
+                    <td>40% fewer hallucinations</td>
+                    <td>Single monolithic agent</td>
+                    <td>Agent Service, function tools</td>
+                </tr>
+                <tr>
+                    <td>Content safety from day one</td>
+                    <td>Zero compliance incidents</td>
+                    <td>Adding safety as afterthought</td>
+                    <td>Content Safety API, prompt shields</td>
+                </tr>
+                <tr>
+                    <td>Observability instrumentation</td>
+                    <td>60% faster debugging</td>
+                    <td>No structured logging</td>
+                    <td>Azure Monitor, Application Insights</td>
+                </tr>
+                <tr>
+                    <td>Staged rollouts</td>
+                    <td>90% fewer production incidents</td>
+                    <td>Big-bang deployment</td>
+                    <td>Evaluation gates, A/B testing</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================
+             AI PRACTICE ROADMAP
+             ============================ -->
+        <h2 id="practice-roadmap">Building Your AI Practice Roadmap</h2>
+
+        <p>Whether you're a system integrator, an ISV, or an enterprise internal team, building a sustainable AI practice requires more than technical skills. The following roadmap synthesizes patterns from partners who have successfully scaled from a single proof-of-concept to an organization-wide AI capability.</p>
+
+        <div class="roadmap">
+            <div class="roadmap-item">
+                <div class="phase">Phase 1 — Foundation (Months 1-2)</div>
+                <h4>Establish Core Capabilities</h4>
+                <p>Stand up your Azure AI Foundry environment, complete team training (this Zero to Hero series!), identify 2-3 candidate use cases, and build your first evaluation dataset. Select a low-risk, high-visibility pilot project.</p>
+                <ul>
+                    <li>Complete Azure AI Foundry environment setup with governance policies</li>
+                    <li>Train core team of 3-5 engineers on agent development</li>
+                    <li>Define evaluation criteria and build golden test dataset (500+ cases)</li>
+                    <li>Establish CI/CD pipeline with automated evaluation gates</li>
+                </ul>
+            </div>
+            <div class="roadmap-item">
+                <div class="phase">Phase 2 — Pilot (Months 3-4)</div>
+                <h4>Deliver First Production Win</h4>
+                <p>Deploy your pilot project with a focused scope. Use the RAG + Agent pattern for quickest time-to-value. Measure everything: latency, accuracy, cost per interaction, and user satisfaction.</p>
+                <ul>
+                    <li>Deploy pilot to 50-100 internal users for feedback</li>
+                    <li>Run weekly evaluation cycles and iterate on prompts/retrieval</li>
+                    <li>Document architecture decisions and lessons learned</li>
+                    <li>Build internal case study for stakeholder buy-in</li>
+                </ul>
+            </div>
+            <div class="roadmap-item">
+                <div class="phase">Phase 3 — Scale (Months 5-8)</div>
+                <h4>Expand and Harden</h4>
+                <p>Roll out pilot to production traffic, begin second and third use cases, establish reusable patterns and templates, and invest in advanced capabilities like multi-agent orchestration.</p>
+                <ul>
+                    <li>Staged rollout: 10% → 50% → 100% of target users</li>
+                    <li>Build reusable agent templates and shared evaluation datasets</li>
+                    <li>Implement centralized monitoring dashboard</li>
+                    <li>Start two additional use cases using proven patterns</li>
+                </ul>
+            </div>
+            <div class="roadmap-item">
+                <div class="phase">Phase 4 — Center of Excellence (Months 9-12)</div>
+                <h4>Institutionalize AI Practices</h4>
+                <p>Formalize your AI practice with governance frameworks, community of practice, shared tooling, and a portfolio management approach to AI investments.</p>
+                <ul>
+                    <li>Establish AI governance board with business and technical representation</li>
+                    <li>Create internal AI playbook with patterns, anti-patterns, and cost models</li>
+                    <li>Build self-service platform for business units to request AI capabilities</li>
+                    <li>Implement portfolio-level ROI tracking across all AI projects</li>
+                </ul>
+            </div>
+            <div class="roadmap-item">
+                <div class="phase">Phase 5 — Innovation (Month 12+)</div>
+                <h4>Push the Frontier</h4>
+                <p>Explore advanced patterns: autonomous multi-agent workflows, cross-domain knowledge graphs, and AI-driven process optimization. Contribute back to the partner ecosystem.</p>
+                <ul>
+                    <li>Experiment with autonomous agent orchestration for complex workflows</li>
+                    <li>Build cross-domain AI solutions spanning multiple business units</li>
+                    <li>Publish case studies and contribute to Microsoft partner community</li>
+                    <li>Evaluate emerging AI Foundry features for competitive advantage</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================
+             ARCHITECTURE REFERENCE
+             ============================ -->
+        <h2 id="architecture-reference">Enterprise Architecture Reference</h2>
+
+        <p>The following reference architecture synthesizes the common elements across all five case studies into a generalized enterprise AI deployment pattern using Azure AI Foundry:</p>
+
+<pre><span style="color:#569cd6">┌────────────────────────────────────────────────────────┐</span>
+<span style="color:#569cd6">│         ENTERPRISE AI ARCHITECTURE (AI Foundry)        │</span>
+<span style="color:#569cd6">├────────────────────────────────────────────────────────┤</span>
+<span style="color:#569cd6">│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐          │</span>
+<span style="color:#569cd6">│  │ Chat   │ │ Voice  │ │ Email  │ │  API   │ CHANNELS │</span>
+<span style="color:#569cd6">│  └───┬────┘ └───┬────┘ └───┬────┘ └───┬────┘          │</span>
+<span style="color:#569cd6">│      └──────────┼──────────┼──────────┘               │</span>
+<span style="color:#569cd6">│                  ▼                                    │</span>
+<span style="color:#569cd6">│         ┌─────────────────┐                           │</span>
+<span style="color:#569cd6">│         │  Triage Agent   │ ← Intent classification   │</span>
+<span style="color:#569cd6">│         └───────┬─────────┘                           │</span>
+<span style="color:#569cd6">│      ┌──────────┼──────────┐                          │</span>
+<span style="color:#569cd6">│      ▼          ▼          ▼                          │</span>
+<span style="color:#569cd6">│  ┌────────┐ ┌────────┐ ┌────────┐  SPECIALIST AGENTS  │</span>
+<span style="color:#569cd6">│  │Agent A │ │Agent B │ │Agent C │  (domain-scoped)    │</span>
+<span style="color:#569cd6">│  └────────┘ └────────┘ └────────┘                     │</span>
+<span style="color:#569cd6">│  ┌────────────────────────────────────────────────┐    │</span>
+<span style="color:#569cd6">│  │ SHARED: AI Search│Doc Intel│Safety│Eval SDK    │    │</span>
+<span style="color:#569cd6">│  └────────────────────────────────────────────────┘    │</span>
+<span style="color:#569cd6">│  ┌────────────────────────────────────────────────┐    │</span>
+<span style="color:#569cd6">│  │ GOVERN: Monitor │ App Insights │ KV │ RBAC     │    │</span>
+<span style="color:#569cd6">│  └────────────────────────────────────────────────┘    │</span>
+<span style="color:#569cd6">└────────────────────────────────────────────────────────┘</span></pre>
+
+        <div class="callout tip">
+            <div class="callout-title">🏗️ Architecture Principle</div>
+            <p>Notice how the architecture separates <strong>channels</strong> (how users interact), <strong>agents</strong> (how AI reasons), <strong>shared services</strong> (reusable AI capabilities), and <strong>governance</strong> (how you maintain control). This separation allows each layer to evolve independently.</p>
+        </div>
+
+        <!-- ============================
+             MINI HACK
+             ============================ -->
+        <h2 id="mini-hack">🧪 Mini Hack: Present Your AI Foundry Case Study</h2>
+
+        <div class="mini-hack">
+            <h3>🧪 Mini Hack Challenge</h3>
+            <p><strong>Objective:</strong> Create a professional case study presentation of your own Azure AI Foundry project — real or designed — following the enterprise case study format used in this module.</p>
+
+            <ol>
+                <li><strong>Choose Your Project:</strong> Select a real AI Foundry project you've built (from any module in this series) or design a hypothetical enterprise scenario for an industry you know well.</li>
+                <li><strong>Define the Problem Statement:</strong> Write a clear 2-3 sentence description of the business problem, including quantified pain points (e.g., "processing 5,000 documents/day with 3 FTE and 72-hour turnaround").</li>
+                <li><strong>Document the Architecture:</strong> Create an architecture diagram showing which Azure AI Foundry components you used and how they connect. Include at least one code snippet showing agent configuration.</li>
+                <li><strong>Quantify Results:</strong> Define 4 key metrics with target values. If the project is hypothetical, research realistic benchmarks from published case studies.</li>
+                <li><strong>Extract Lessons Learned:</strong> Identify 3 things that worked well, 2 things you would change, and 1 pitfall you avoided (or encountered).</li>
+                <li><strong>Build Your Roadmap:</strong> Create a 3-phase expansion plan showing how this pilot could scale to organization-wide impact.</li>
+                <li><strong>Present:</strong> Prepare a 10-minute presentation using the slides template provided with this module. Practice delivering it as if to a VP of Technology who needs to decide on funding the production rollout.</li>
+            </ol>
+
+            <p><strong>Bonus Challenge:</strong> Set up an automated evaluation pipeline in Azure AI Foundry for your project with at least 50 test cases covering happy paths, edge cases, and adversarial scenarios.</p>
+
+            <div class="callout success">
+                <div class="callout-title">✅ Success Criteria</div>
+                <p>Your case study should answer these four questions: (1) What business problem does this solve? (2) Why is Azure AI Foundry the right platform? (3) What evidence proves it works? (4) How does it scale?</p>
+            </div>
+        </div>
+
+        <!-- ============================
+             KEY TAKEAWAYS
+             ============================ -->
+        <h2 id="key-takeaways">Key Takeaways</h2>
+
+        <ol>
+            <li><strong>Patterns over point solutions</strong> — The six enterprise patterns (multi-agent triage, extract→reason→act, RAG+agent, compliance-first, human-in-the-loop, conversational analytics) provide repeatable blueprints for 90% of enterprise AI use cases.</li>
+            <li><strong>Evaluation is the foundation</strong> — Every successful case study started with a rigorous evaluation dataset and automated testing pipeline, not with agent code.</li>
+            <li><strong>Architecture separation matters</strong> — Separating channels, agents, shared services, and governance into distinct layers enables independent scaling and evolution.</li>
+            <li><strong>Multi-agent > monolithic agent</strong> — Decomposing into focused specialist agents consistently outperforms a single general-purpose agent in accuracy, debuggability, and maintainability.</li>
+            <li><strong>The roadmap is a practice, not a plan</strong> — Successful AI practices follow a phased approach from foundation through innovation, with continuous measurement and adjustment at every stage.</li>
+            <li><strong>Compliance is a feature, not a constraint</strong> — Partners who embraced compliance-first design delivered faster because they didn't need to retrofit security, privacy, and safety later.</li>
+        </ol>
+
+        <!-- ============================
+             MODULE 41 PREVIEW
+             ============================ -->
+        <h2 id="module-41-preview">Module 41 Preview</h2>
+
+        <p>In <strong>Module 41: Multi-Region &amp; Global Deployment Strategies</strong>, we take enterprise AI global. You'll learn how to deploy Azure AI Foundry projects across multiple Azure regions for low-latency worldwide access, implement disaster recovery patterns, manage data residency requirements, and optimize costs across regions. The patterns from this module's case studies will serve as the foundation for designing globally distributed AI architectures.</p>
+
+        <!-- ============================
+             RESOURCES
+             ============================ -->
+        <h2 id="resources">Resources</h2>
+
+        <h3>Official Documentation</h3>
+        <ul>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-foundry/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/agent-service" target="_blank" rel="noopener">Azure AI Foundry Agent Service</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/" target="_blank" rel="noopener">Azure AI Document Intelligence</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/search/" target="_blank" rel="noopener">Azure AI Search Documentation</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-services/content-safety/" target="_blank" rel="noopener">Azure AI Content Safety</a></li>
+        </ul>
+
+        <h3>Partner Resources</h3>
+        <ul>
+            <li><a href="https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/evaluate-generative-ai-app" target="_blank" rel="noopener">Evaluate Generative AI Applications</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/well-architected/ai/" target="_blank" rel="noopener">Azure Well-Architected Framework for AI</a></li>
+            <li><a href="https://learn.microsoft.com/en-us/azure/architecture/ai-ml/" target="_blank" rel="noopener">Azure AI Architecture Patterns</a></li>
+            <li><a href="https://partner.microsoft.com/en-us/solutions/ai" target="_blank" rel="noopener">Microsoft AI Partner Solutions</a></li>
+        </ul>
+
+        <h3>Videos</h3>
+        <ul>
+            <li><a href="https://www.youtube.com/watch?v=ooZ3xXEdOKI" target="_blank" rel="noopener">Microsoft Foundry: The AI app and agent factory</a></li>
+            <li><a href="https://www.youtube.com/results?search_query=azure+ai+foundry+enterprise" target="_blank" rel="noopener">Azure AI Foundry Enterprise Patterns — YouTube</a></li>
+        </ul>
+
+        <!-- ============================
+             MODULE NAVIGATION
+             ============================ -->
+        <div class="module-nav">
+            <a href="../module-39/blog.html">← Module 39</a>
+            <a href="../module-41/blog.html">Module 41 →</a>
+        </div>
+
+    </main>
+</div>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer>
+    <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. All rights reserved.</p>
+    <p>Built with ❤️ for the AI community.</p>
+</footer>
+
+<!-- ================================================================
+     BACK TO TOP BUTTON
+     ================================================================ -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ================================================================
+     JAVASCRIPT
+     ================================================================ -->
+<script>
+(function () {
+    'use strict';
+
+    /* ----- Scroll Progress Bar ----- */
+    const scrollProgress = document.getElementById('scrollProgress');
+    function updateProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        scrollProgress.style.width = progress + '%';
+    }
+
+    /* ----- Back-to-Top Button ----- */
+    const backToTop = document.getElementById('backToTop');
+    function toggleBackToTop() {
+        backToTop.classList.toggle('visible', window.scrollY > 400);
+    }
+    backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ----- Sticky TOC Active States via IntersectionObserver ----- */
+    const tocLinks = document.querySelectorAll('.toc-sidebar a');
+    const sections = [];
+    tocLinks.forEach(function (link) {
+        const id = link.getAttribute('href').replace('#', '');
+        const section = document.getElementById(id);
+        if (section) sections.push({ id: id, el: section });
+    });
+
+    let activeId = '';
+    const observer = new IntersectionObserver(
+        function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    activeId = entry.target.id;
+                    tocLinks.forEach(function (link) {
+                        link.classList.toggle(
+                            'active',
+                            link.getAttribute('href') === '#' + activeId
+                        );
+                    });
+                }
+            });
+        },
+        {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        }
+    );
+    sections.forEach(function (s) { observer.observe(s.el); });
+
+    /* ----- Unified Scroll Handler ----- */
+    let ticking = false;
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            window.requestAnimationFrame(function () {
+                updateProgress();
+                toggleBackToTop();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+
+    /* Initial state */
+    updateProgress();
+    toggleBackToTop();
+})();
+</script>
+
+</body>
+</html>

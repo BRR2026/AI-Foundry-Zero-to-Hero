@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 34 — Responsible AI Dashboards &amp; Content Safety at Scale | Azure AI Foundry: Zero to Hero</title>
+<meta name="description" content="Master Responsible AI dashboard configuration, enterprise content safety with custom blocklists, bias monitoring, and incident response in Azure AI Foundry.">
+<meta name="keywords" content="Azure AI Foundry, Responsible AI, Content Safety, Custom Blocklists, Bias Monitoring, AI Governance, Enterprise AI Safety">
+<meta name="author" content="Azure AI Foundry Training">
+<meta name="date" content="2026-04-15">
+<style>
+    :root {
+        --primary: #0078d4;
+        --primary-dark: #005a9e;
+        --primary-light: #deecf9;
+        --accent: #e74856;
+        --accent-secondary: #ff8c00;
+        --success: #107c10;
+        --warning: #ffb900;
+        --danger: #d13438;
+        --neutral-900: #1b1a19;
+        --neutral-800: #292827;
+        --neutral-700: #3b3a39;
+        --neutral-600: #605e5c;
+        --neutral-400: #a19f9d;
+        --neutral-200: #d2d0ce;
+        --neutral-100: #edebe9;
+        --neutral-50: #f3f2f1;
+        --white: #ffffff;
+        --governance-primary: #8764b8;
+        --governance-dark: #6b4fa0;
+        --governance-light: #e8dfec;
+        --governance-gradient: linear-gradient(135deg, #8764b8 0%, #5c2d91 50%, #0078d4 100%);
+        --safety-red: #d13438;
+        --safety-green: #107c10;
+        --safety-yellow: #ffb900;
+        --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+        --shadow-xl: 0 16px 48px rgba(0,0,0,0.2);
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: var(--font-sans);
+        line-height: 1.7;
+        color: var(--neutral-800);
+        background: var(--neutral-50);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Top Progress Bar ── */
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 4px;
+        background: var(--governance-gradient);
+        z-index: 10000;
+        transition: width 0.2s ease;
+    }
+
+    /* ── Navigation ── */
+    .top-nav {
+        position: fixed;
+        top: 4px;
+        left: 0;
+        right: 0;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--neutral-200);
+        z-index: 9999;
+        padding: 0 2rem;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .nav-brand {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--governance-primary);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-brand svg { width: 20px; height: 20px; }
+
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+
+    .nav-links a {
+        font-size: 0.82rem;
+        color: var(--neutral-600);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--governance-primary); }
+
+    .nav-module-indicator {
+        background: var(--governance-light);
+        color: var(--governance-primary);
+        padding: 0.2rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* ── Hero Section ── */
+    .hero {
+        margin-top: 56px;
+        background: var(--governance-gradient);
+        padding: 5rem 2rem 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 15% 50%, rgba(255,255,255,0.12) 0%, transparent 50%),
+            radial-gradient(circle at 85% 20%, rgba(255,255,255,0.08) 0%, transparent 40%),
+            url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L55 17.5 L55 42.5 L30 55 L5 42.5 L5 17.5 Z' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3C/svg%3E");
+    }
+
+    .hero-inner {
+        max-width: 900px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 30px;
+        padding: 0.4rem 1.2rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .hero-badge .shield-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .hero h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.15;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
+    }
+
+    .hero h1 .highlight {
+        background: linear-gradient(135deg, #ffb900, #ff8c00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        max-width: 680px;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .hero-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: rgba(255,255,255,0.85);
+        font-size: 0.85rem;
+    }
+
+    .hero-meta-item svg { width: 16px; height: 16px; opacity: 0.8; }
+
+    /* ── Main Content ── */
+    .content-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 2rem 4rem;
+    }
+
+    /* ── Table of Contents ── */
+    .toc {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-md);
+        border-left: 4px solid var(--governance-primary);
+    }
+
+    .toc h2 {
+        font-size: 1.1rem;
+        color: var(--governance-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .toc ol {
+        list-style: none;
+        counter-reset: toc-counter;
+    }
+
+    .toc ol li {
+        counter-increment: toc-counter;
+        margin-bottom: 0.5rem;
+    }
+
+    .toc ol li::before {
+        content: counter(toc-counter, decimal-leading-zero);
+        font-weight: 700;
+        color: var(--governance-primary);
+        margin-right: 0.7rem;
+        font-size: 0.82rem;
+        font-family: var(--font-mono);
+    }
+
+    .toc ol li a {
+        color: var(--neutral-700);
+        text-decoration: none;
+        font-size: 0.92rem;
+        transition: color 0.2s;
+    }
+
+    .toc ol li a:hover { color: var(--governance-primary); }
+
+    /* ── Section Styling ── */
+    .section {
+        margin-bottom: 3.5rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px solid var(--governance-light);
+    }
+
+    .section-number {
+        background: var(--governance-gradient);
+        color: #fff;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .section h2 {
+        font-size: 1.65rem;
+        color: var(--neutral-900);
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .section h3 {
+        font-size: 1.25rem;
+        color: var(--neutral-800);
+        font-weight: 700;
+        margin: 2rem 0 1rem;
+    }
+
+    .section h4 {
+        font-size: 1.05rem;
+        color: var(--governance-dark);
+        font-weight: 600;
+        margin: 1.5rem 0 0.8rem;
+    }
+
+    .section p {
+        margin-bottom: 1rem;
+        color: var(--neutral-700);
+        font-size: 0.95rem;
+    }
+
+    /* ── Code Blocks ── */
+    pre {
+        background: var(--neutral-900);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        position: relative;
+        box-shadow: var(--shadow-md);
+    }
+
+    pre::before {
+        content: attr(data-lang);
+        position: absolute;
+        top: 0.5rem;
+        right: 0.8rem;
+        font-size: 0.7rem;
+        color: var(--neutral-400);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    pre code {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.6;
+        color: #e1e1e1;
+    }
+
+    code {
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background: var(--neutral-100);
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        color: var(--governance-dark);
+    }
+
+    pre code {
+        background: none;
+        padding: 0;
+        color: #e1e1e1;
+    }
+
+    .code-comment { color: #6a9955; }
+    .code-keyword { color: #569cd6; }
+    .code-string { color: #ce9178; }
+    .code-function { color: #dcdcaa; }
+    .code-number { color: #b5cea8; }
+    .code-type { color: #4ec9b0; }
+
+    /* ── Callout Boxes ── */
+    .callout {
+        border-radius: var(--radius-md);
+        padding: 1.3rem 1.5rem;
+        margin: 1.5rem 0;
+        display: flex;
+        gap: 0.8rem;
+        align-items: flex-start;
+    }
+
+    .callout-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+
+    .callout-content { flex: 1; }
+    .callout-content strong { display: block; margin-bottom: 0.3rem; }
+
+    .callout-content p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .callout-info {
+        background: #e8f4fd;
+        border-left: 4px solid var(--primary);
+    }
+
+    .callout-warning {
+        background: #fff8e1;
+        border-left: 4px solid var(--warning);
+    }
+
+    .callout-danger {
+        background: #fde7e8;
+        border-left: 4px solid var(--danger);
+    }
+
+    .callout-success {
+        background: #e8f5e9;
+        border-left: 4px solid var(--success);
+    }
+
+    .callout-governance {
+        background: var(--governance-light);
+        border-left: 4px solid var(--governance-primary);
+    }
+
+    /* ── Cards Grid ── */
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.2rem;
+        margin: 1.5rem 0;
+    }
+
+    .card {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--neutral-200);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .card-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .card h4 {
+        font-size: 1rem;
+        color: var(--neutral-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .card p {
+        font-size: 0.85rem;
+        color: var(--neutral-600);
+        margin: 0;
+    }
+
+    /* ── Feature Table ── */
+    .feature-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        background: var(--white);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .feature-table th,
+    .feature-table td {
+        padding: 0.9rem 1.2rem;
+        text-align: left;
+        font-size: 0.88rem;
+        border-bottom: 1px solid var(--neutral-100);
+    }
+
+    .feature-table th {
+        background: var(--governance-primary);
+        color: var(--white);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        letter-spacing: 0.5px;
+    }
+
+    .feature-table tr:nth-child(even) {
+        background: var(--neutral-50);
+    }
+
+    .feature-table tr:hover {
+        background: var(--governance-light);
+    }
+
+    /* ── Severity Badges ── */
+    .severity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .severity-critical {
+        background: #fde7e8;
+        color: var(--danger);
+    }
+
+    .severity-high {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .severity-medium {
+        background: #fff8e1;
+        color: #f57f17;
+    }
+
+    .severity-low {
+        background: #e8f5e9;
+        color: var(--success);
+    }
+
+    /* ── Dashboard Preview ── */
+    .dashboard-preview {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin: 2rem 0;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--neutral-200);
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--neutral-100);
+    }
+
+    .dashboard-header h4 {
+        font-size: 1rem;
+        color: var(--neutral-900);
+        margin: 0;
+    }
+
+    .dashboard-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .metric-card {
+        background: var(--neutral-50);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.3rem;
+    }
+
+    .metric-label {
+        font-size: 0.72rem;
+        color: var(--neutral-600);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .metric-trend {
+        font-size: 0.72rem;
+        margin-top: 0.3rem;
+        font-weight: 600;
+    }
+
+    .trend-up { color: var(--success); }
+    .trend-down { color: var(--danger); }
+
+    /* ── Pipeline Flow ── */
+    .pipeline-flow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow-x: auto;
+    }
+
+    .pipeline-stage {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 110px;
+        text-align: center;
+    }
+
+    .pipeline-stage-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .pipeline-stage-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--neutral-700);
+    }
+
+    .pipeline-arrow {
+        font-size: 1.2rem;
+        color: var(--neutral-400);
+        flex-shrink: 0;
+    }
+
+    /* ── Video Embed ── */
+    .video-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        margin: 2rem 0;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        background: var(--neutral-900);
+    }
+
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    /* ── Lists ── */
+    .section ul, .section ol {
+        margin: 0.8rem 0 1.2rem 1.5rem;
+    }
+
+    .section li {
+        margin-bottom: 0.4rem;
+        font-size: 0.93rem;
+        color: var(--neutral-700);
+    }
+
+    .check-list {
+        list-style: none;
+        margin-left: 0;
+    }
+
+    .check-list li {
+        padding-left: 1.5rem;
+        position: relative;
+    }
+
+    .check-list li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--success);
+        font-weight: 700;
+    }
+
+    /* ── Incident Response ── */
+    .incident-timeline {
+        margin: 1.5rem 0;
+        padding-left: 2rem;
+        border-left: 3px solid var(--danger);
+    }
+
+    .incident-step {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .incident-step::before {
+        content: '';
+        width: 14px;
+        height: 14px;
+        background: var(--danger);
+        border-radius: 50%;
+        border: 3px solid var(--white);
+        position: absolute;
+        left: -2.55rem;
+        top: 0.2rem;
+    }
+
+    .incident-step-time {
+        font-size: 0.75rem;
+        color: var(--danger);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .incident-step h4 {
+        font-size: 0.95rem;
+        color: var(--neutral-900);
+        margin: 0.2rem 0 0.3rem;
+    }
+
+    .incident-step p {
+        font-size: 0.85rem;
+        color: var(--neutral-600);
+        margin: 0;
+    }
+
+    /* ── Mini Hack ── */
+    .mini-hack {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        margin: 2.5rem 0;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mini-hack::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(135,100,184,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .mini-hack-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 0.3rem 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ffb900;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+    }
+
+    .mini-hack h3 {
+        color: #fff;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .mini-hack p {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .mini-hack .step-list {
+        list-style: none;
+        margin: 1rem 0;
+        padding: 0;
+        counter-reset: hack-step;
+    }
+
+    .mini-hack .step-list li {
+        counter-increment: hack-step;
+        padding: 0.8rem 0 0.8rem 2.5rem;
+        position: relative;
+        color: rgba(255,255,255,0.85);
+        font-size: 0.9rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .mini-hack .step-list li::before {
+        content: counter(hack-step);
+        position: absolute;
+        left: 0;
+        top: 0.7rem;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--governance-primary);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ── Architecture Diagram ── */
+    .architecture-diagram {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: var(--shadow-md);
+        text-align: center;
+    }
+
+    .arch-layers {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        max-width: 700px;
+        margin: 1rem auto;
+    }
+
+    .arch-layer {
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        position: relative;
+    }
+
+    .arch-layer-apps { background: #e8f4fd; color: #0078d4; border: 1px solid #bce0fd; }
+    .arch-layer-safety { background: #fde7e8; color: #d13438; border: 1px solid #f5c6c7; }
+    .arch-layer-monitor { background: #fff8e1; color: #8a6d3b; border: 1px solid #ffeeba; }
+    .arch-layer-dashboard { background: var(--governance-light); color: var(--governance-dark); border: 1px solid #c9b8d8; }
+    .arch-layer-data { background: #e8f5e9; color: #107c10; border: 1px solid #c3e6c3; }
+
+    .arch-connector {
+        text-align: center;
+        font-size: 1.2rem;
+        color: var(--neutral-400);
+    }
+
+    /* ── Bottom Navigation ── */
+    .bottom-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 2rem 0;
+        margin-top: 3rem;
+        border-top: 2px solid var(--neutral-200);
+    }
+
+    .bottom-nav a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: var(--governance-primary);
+        font-weight: 600;
+        font-size: 0.92rem;
+        padding: 0.8rem 1.5rem;
+        border-radius: var(--radius-md);
+        border: 2px solid var(--governance-primary);
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav a:hover {
+        background: var(--governance-primary);
+        color: #fff;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+        background: var(--neutral-900);
+        color: var(--neutral-400);
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .footer-inner {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .footer-brand {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-links {
+        margin: 1rem 0;
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-links a {
+        color: var(--neutral-400);
+        text-decoration: none;
+        font-size: 0.82rem;
+        transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--governance-primary); }
+
+    .footer-copy { font-size: 0.78rem; margin-top: 1rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .hero { padding: 3.5rem 1.2rem 3rem; }
+        .hero h1 { font-size: 1.9rem; }
+        .hero-subtitle { font-size: 1rem; }
+        .content-wrapper { padding: 2rem 1.2rem; }
+        .dashboard-metrics { grid-template-columns: repeat(2, 1fr); }
+        .pipeline-flow { flex-direction: column; }
+        .pipeline-arrow { transform: rotate(90deg); }
+        .card-grid { grid-template-columns: 1fr; }
+        .bottom-nav { flex-direction: column; gap: 1rem; }
+        .nav-links { display: none; }
+    }
+
+    @media (max-width: 480px) {
+        .hero h1 { font-size: 1.5rem; }
+        .dashboard-metrics { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Animations ── */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* ── Print ── */
+    @media print {
+        .top-nav, .progress-bar, .video-container, .bottom-nav { display: none; }
+        .hero { padding: 2rem; }
+        body { background: #fff; }
+    }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Top Navigation -->
+<nav class="top-nav">
+    <a href="#" class="nav-brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Azure AI Foundry: Zero to Hero
+    </a>
+    <div class="nav-links">
+        <span class="nav-module-indicator">Module 34 of 45</span>
+        <a href="#overview">Overview</a>
+        <a href="#dashboards">Dashboards</a>
+        <a href="#content-safety">Content Safety</a>
+        <a href="#monitoring">Monitoring</a>
+        <a href="#incident-response">Incident Response</a>
+        <a href="#mini-hack">Mini Hack</a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<header class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            ARC 7 · SECURITY &amp; GOVERNANCE
+        </div>
+        <h1>Responsible AI Dashboards &amp;<br><span class="highlight">Content Safety at Scale</span></h1>
+        <p class="hero-subtitle">
+            Configure enterprise-grade Responsible AI dashboards, deploy content safety policies with custom blocklists,
+            and build incident response workflows for AI safety events in Azure AI Foundry.
+        </p>
+        <div class="hero-meta">
+            <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                90 minutes
+            </div>
+            <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                Advanced
+            </div>
+            <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                April 2026
+            </div>
+            <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Hands-on Lab
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="content-wrapper">
+
+    <!-- Table of Contents -->
+    <nav class="toc fade-in" id="toc">
+        <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            In This Module
+        </h2>
+        <ol>
+            <li><a href="#overview">Why Responsible AI at Enterprise Scale Matters</a></li>
+            <li><a href="#dashboards">Responsible AI Dashboard Configuration</a></li>
+            <li><a href="#content-safety">Content Safety at Enterprise Scale</a></li>
+            <li><a href="#monitoring">Monitoring for Bias, Fairness &amp; Harmful Outputs</a></li>
+            <li><a href="#incident-response">Incident Response for AI Safety Events</a></li>
+            <li><a href="#architecture">Enterprise RAI Architecture</a></li>
+            <li><a href="#video">Featured Video</a></li>
+            <li><a href="#mini-hack">Mini Hack: Enterprise Content Safety Policy</a></li>
+            <li><a href="#key-takeaways">Key Takeaways</a></li>
+        </ol>
+    </nav>
+
+    <!-- Section 1: Overview -->
+    <section class="section fade-in" id="overview">
+        <div class="section-header">
+            <div class="section-number">1</div>
+            <h2>Why Responsible AI at Enterprise Scale Matters</h2>
+        </div>
+        <p>
+            As organizations deploy generative AI models across thousands of users and critical business processes, the stakes for
+            ensuring responsible, safe, and unbiased AI behavior rise exponentially. A single harmful output can erode customer trust,
+            trigger regulatory scrutiny, and create legal liability. Azure AI Foundry provides a comprehensive platform for building
+            AI systems that are trustworthy by design—not as an afterthought.
+        </p>
+
+        <div class="callout callout-governance">
+            <span class="callout-icon">🏛️</span>
+            <div class="callout-content">
+                <strong>Azure AI Foundry — Not Azure ML</strong>
+                <p>
+                    This module focuses exclusively on <strong>Azure AI Foundry</strong> (the evolution of Azure AI Studio), which provides
+                    purpose-built Responsible AI dashboards, content safety APIs, and governance tooling. previous AI platforms has its own
+                    Responsible AI toolbox—here we cover the Foundry-native capabilities designed for generative AI workloads.
+                </p>
+            </div>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h4>Responsible AI Dashboards</h4>
+                <p>Unified views of fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability metrics across all deployed models.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🛡️</div>
+                <h4>Content Safety Service</h4>
+                <p>Enterprise-grade content filtering with custom blocklists, severity thresholds, and multi-modal safety (text, image, code) at massive scale.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📈</div>
+                <h4>Bias &amp; Fairness Monitoring</h4>
+                <p>Continuous monitoring of model outputs for demographic bias, stereotyping, and unfair treatment across protected attributes.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🚨</div>
+                <h4>Incident Response</h4>
+                <p>Structured playbooks for detecting, triaging, mitigating, and learning from AI safety incidents in production environments.</p>
+            </div>
+        </div>
+
+        <h3>Regulatory Landscape Driving RAI Adoption</h3>
+        <table class="feature-table">
+            <thead>
+                <tr>
+                    <th>Regulation / Framework</th>
+                    <th>Jurisdiction</th>
+                    <th>Key RAI Requirements</th>
+                    <th>Effective</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>EU AI Act</strong></td>
+                    <td>European Union</td>
+                    <td>Risk classification, transparency, human oversight, bias testing</td>
+                    <td>Aug 2025+</td>
+                </tr>
+                <tr>
+                    <td><strong>NIST AI RMF</strong></td>
+                    <td>United States</td>
+                    <td>Govern, Map, Measure, Manage lifecycle framework</td>
+                    <td>Active</td>
+                </tr>
+                <tr>
+                    <td><strong>ISO/IEC 42001</strong></td>
+                    <td>International</td>
+                    <td>AI Management System standard</td>
+                    <td>Active</td>
+                </tr>
+                <tr>
+                    <td><strong>Executive Order 14110</strong></td>
+                    <td>United States</td>
+                    <td>Safety testing, red-teaming, reporting for dual-use foundation models</td>
+                    <td>Active</td>
+                </tr>
+                <tr>
+                    <td><strong>Canada AIDA</strong></td>
+                    <td>Canada</td>
+                    <td>Algorithmic impact assessments, transparency obligations</td>
+                    <td>Pending</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 2: Responsible AI Dashboards -->
+    <section class="section fade-in" id="dashboards">
+        <div class="section-header">
+            <div class="section-number">2</div>
+            <h2>Responsible AI Dashboard Configuration</h2>
+        </div>
+        <p>
+            The Responsible AI Dashboard in Azure AI Foundry provides a centralized, interactive view of how your AI systems perform
+            across Microsoft's six Responsible AI principles. Unlike point-in-time assessments, these dashboards deliver continuous,
+            data-driven insights that connect directly to your deployed models and evaluation pipelines.
+        </p>
+
+        <!-- Dashboard Preview -->
+        <div class="dashboard-preview">
+            <div class="dashboard-header">
+                <h4>📊 RAI Dashboard — Enterprise GPT-4o Deployment</h4>
+                <span style="font-size:0.78rem;color:var(--neutral-400);">Last updated: 2 minutes ago</span>
+            </div>
+            <div class="dashboard-metrics">
+                <div class="metric-card">
+                    <div class="metric-value" style="color:var(--success);">97.2%</div>
+                    <div class="metric-label">Safety Score</div>
+                    <div class="metric-trend trend-up">▲ 1.3% vs last week</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:var(--primary);">0.94</div>
+                    <div class="metric-label">Fairness Index</div>
+                    <div class="metric-trend trend-up">▲ 0.02 vs last week</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:var(--warning);">142</div>
+                    <div class="metric-label">Blocked Today</div>
+                    <div class="metric-trend trend-down">▲ 23 more than avg</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:var(--governance-primary);">3</div>
+                    <div class="metric-label">Open Incidents</div>
+                    <div class="metric-trend trend-down">▲ 1 new since yesterday</div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Configuring the Dashboard via Azure AI Foundry SDK</h3>
+        <p>
+            You can create and configure Responsible AI dashboards programmatically using the Azure AI Foundry SDK. This enables
+            infrastructure-as-code practices for governance teams to standardize dashboard configurations across projects.
+        </p>
+
+<pre data-lang="Python"><code><span class="code-comment"># Configure a Responsible AI Dashboard in Azure AI Foundry</span>
+<span class="code-keyword">from</span> azure.ai.evaluation <span class="code-keyword">import</span> <span class="code-type">RAIDashboardConfig</span>, <span class="code-type">EvaluatorConfig</span>
+<span class="code-keyword">from</span> azure.ai.projects <span class="code-keyword">import</span> <span class="code-type">AIProjectClient</span>
+<span class="code-keyword">from</span> azure.identity <span class="code-keyword">import</span> <span class="code-type">DefaultAzureCredential</span>
+
+<span class="code-comment"># Initialize the Foundry project client</span>
+credential = <span class="code-type">DefaultAzureCredential</span>()
+project_client = <span class="code-type">AIProjectClient</span>(
+    credential=credential,
+    project_name=<span class="code-string">"enterprise-gpt4o"</span>,
+    subscription_id=<span class="code-string">"your-subscription-id"</span>,
+    resource_group=<span class="code-string">"rg-ai-production"</span>
+)
+
+<span class="code-comment"># Define dashboard evaluators for RAI monitoring</span>
+dashboard_config = <span class="code-type">RAIDashboardConfig</span>(
+    <span class="code-function">display_name</span>=<span class="code-string">"Enterprise RAI Dashboard - Production"</span>,
+    <span class="code-function">description</span>=<span class="code-string">"Continuous monitoring of safety, fairness, and content quality"</span>,
+    <span class="code-function">evaluators</span>=[
+        <span class="code-type">EvaluatorConfig</span>(
+            name=<span class="code-string">"content_safety"</span>,
+            severity_threshold=<span class="code-number">2</span>,       <span class="code-comment"># Block Medium+ severity</span>
+            categories=[<span class="code-string">"hate"</span>, <span class="code-string">"sexual"</span>, <span class="code-string">"violence"</span>, <span class="code-string">"self_harm"</span>],
+            custom_blocklist_ids=[
+                <span class="code-string">"blocklist-financial-terms"</span>,
+                <span class="code-string">"blocklist-competitor-names"</span>
+            ]
+        ),
+        <span class="code-type">EvaluatorConfig</span>(
+            name=<span class="code-string">"groundedness"</span>,
+            threshold=<span class="code-number">0.85</span>,            <span class="code-comment"># Min groundedness score</span>
+            data_source=<span class="code-string">"evaluation-dataset-v3"</span>
+        ),
+        <span class="code-type">EvaluatorConfig</span>(
+            name=<span class="code-string">"fairness"</span>,
+            protected_attributes=[<span class="code-string">"gender"</span>, <span class="code-string">"age_group"</span>, <span class="code-string">"ethnicity"</span>],
+            disparity_threshold=<span class="code-number">0.1</span>   <span class="code-comment"># Max allowed disparity</span>
+        ),
+    ],
+    <span class="code-function">schedule</span>=<span class="code-string">"0 */4 * * *"</span>,         <span class="code-comment"># Run every 4 hours</span>
+    <span class="code-function">alert_recipients</span>=[<span class="code-string">"rai-team@contoso.com"</span>],
+    <span class="code-function">alert_on_threshold_breach</span>=<span class="code-keyword">True</span>
+)
+
+<span class="code-comment"># Create the dashboard in the Foundry project</span>
+dashboard = project_client.rai_dashboards.create(config=dashboard_config)
+<span class="code-function">print</span>(<span class="code-string">f"Dashboard created: <span class="code-keyword">{</span>dashboard.id<span class="code-keyword">}</span>"</span>)
+<span class="code-function">print</span>(<span class="code-string">f"Portal URL: <span class="code-keyword">{</span>dashboard.portal_url<span class="code-keyword">}</span>"</span>)</code></pre>
+
+        <h3>Dashboard Components</h3>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">🎯</div>
+                <h4>Error Analysis</h4>
+                <p>Identify cohorts where your model underperforms. Tree maps and heat maps reveal which data segments produce the most harmful or inaccurate outputs.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚖️</div>
+                <h4>Fairness Assessment</h4>
+                <p>Compare model behavior across demographic groups. Detect disparities in output quality, safety triggers, and refusal rates by protected attributes.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🔍</div>
+                <h4>Data Explorer</h4>
+                <p>Interactive exploration of evaluation datasets. Filter and drill into specific examples to understand patterns in model failures and safety violations.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📝</div>
+                <h4>Explanation Cards</h4>
+                <p>Human-readable summaries of why specific outputs were flagged, blocked, or scored below thresholds—essential for audit trails.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <span class="callout-icon">💡</span>
+            <div class="callout-content">
+                <strong>Pro Tip: Dashboard-as-Code</strong>
+                <p>Store your dashboard configurations in version control alongside your model deployment configs. This ensures RAI governance
+                evolves with your models and provides a complete audit trail of policy changes over time.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Content Safety -->
+    <section class="section fade-in" id="content-safety">
+        <div class="section-header">
+            <div class="section-number">3</div>
+            <h2>Content Safety at Enterprise Scale</h2>
+        </div>
+        <p>
+            Azure AI Content Safety is a dedicated service within the Azure AI Foundry ecosystem that provides real-time detection and
+            filtering of harmful content across text and images. At enterprise scale, organizations move beyond default filters to
+            deploy custom blocklists, industry-specific policies, and multi-layered content moderation pipelines.
+        </p>
+
+        <!-- Content Safety Pipeline -->
+        <div class="pipeline-flow">
+            <div class="pipeline-stage">
+                <div class="pipeline-stage-icon" style="background:var(--primary);">📥</div>
+                <div class="pipeline-stage-label">User Input</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-stage">
+                <div class="pipeline-stage-icon" style="background:var(--danger);">🛡️</div>
+                <div class="pipeline-stage-label">Input Filter</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-stage">
+                <div class="pipeline-stage-icon" style="background:var(--governance-primary);">📋</div>
+                <div class="pipeline-stage-label">Custom Blocklists</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-stage">
+                <div class="pipeline-stage-icon" style="background:var(--accent-secondary);">🤖</div>
+                <div class="pipeline-stage-label">Model Inference</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-stage">
+                <div class="pipeline-stage-icon" style="background:var(--danger);">🛡️</div>
+                <div class="pipeline-stage-label">Output Filter</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-stage">
+                <div class="pipeline-stage-icon" style="background:var(--success);">✅</div>
+                <div class="pipeline-stage-label">Safe Response</div>
+            </div>
+        </div>
+
+        <h3>Content Safety Categories &amp; Severity Levels</h3>
+        <table class="feature-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Severity Levels</th>
+                    <th>Default Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hate &amp; Fairness</strong></td>
+                    <td>Content targeting identity groups with pejorative language, stereotyping, or discriminatory remarks</td>
+                    <td>0 (Safe) → 2 → 4 → 6 (Severe)</td>
+                    <td>Block at ≥ 4</td>
+                </tr>
+                <tr>
+                    <td><strong>Sexual</strong></td>
+                    <td>Sexually explicit content, romantic solicitation, or anatomically graphic descriptions</td>
+                    <td>0 (Safe) → 2 → 4 → 6 (Severe)</td>
+                    <td>Block at ≥ 4</td>
+                </tr>
+                <tr>
+                    <td><strong>Violence</strong></td>
+                    <td>Content describing, glorifying, or instructing physical harm to people or animals</td>
+                    <td>0 (Safe) → 2 → 4 → 6 (Severe)</td>
+                    <td>Block at ≥ 2</td>
+                </tr>
+                <tr>
+                    <td><strong>Self-Harm</strong></td>
+                    <td>Content about suicidal ideation, self-injury, or eating disorders</td>
+                    <td>0 (Safe) → 2 → 4 → 6 (Severe)</td>
+                    <td>Block at ≥ 2</td>
+                </tr>
+                <tr>
+                    <td><strong>Jailbreak Attacks</strong></td>
+                    <td>Prompt injection and jailbreak attempts designed to bypass safety guardrails</td>
+                    <td>Detected / Not Detected</td>
+                    <td>Block</td>
+                </tr>
+                <tr>
+                    <td><strong>Protected Material</strong></td>
+                    <td>Copyrighted content, song lyrics, or verbatim reproductions of licensed text</td>
+                    <td>Detected / Not Detected</td>
+                    <td>Block</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Custom Blocklists — Enterprise Configuration</h3>
+        <p>
+            Custom blocklists allow organizations to define domain-specific terms, phrases, or patterns that must be blocked in
+            addition to the built-in safety filters. This is critical for industries like financial services, healthcare, and
+            government where compliance requires strict control over AI-generated content.
+        </p>
+
+<pre data-lang="Python"><code><span class="code-comment"># Create and manage custom blocklists with Azure AI Content Safety</span>
+<span class="code-keyword">from</span> azure.ai.contentsafety <span class="code-keyword">import</span> <span class="code-type">ContentSafetyClient</span>
+<span class="code-keyword">from</span> azure.ai.contentsafety.models <span class="code-keyword">import</span> (
+    <span class="code-type">TextBlocklist</span>,
+    <span class="code-type">AddOrUpdateTextBlocklistItemsOptions</span>,
+    <span class="code-type">TextBlocklistItem</span>,
+    <span class="code-type">AnalyzeTextOptions</span>
+)
+<span class="code-keyword">from</span> azure.core.credentials <span class="code-keyword">import</span> <span class="code-type">AzureKeyCredential</span>
+
+<span class="code-comment"># Initialize the Content Safety client</span>
+client = <span class="code-type">ContentSafetyClient</span>(
+    endpoint=<span class="code-string">"https://contoso-content-safety.cognitiveservices.azure.com"</span>,
+    credential=<span class="code-type">AzureKeyCredential</span>(<span class="code-string">"your-content-safety-key"</span>)
+)
+
+<span class="code-comment"># ── Step 1: Create a custom blocklist ──</span>
+blocklist = client.create_or_update_text_blocklist(
+    blocklist_name=<span class="code-string">"financial-compliance"</span>,
+    options=<span class="code-type">TextBlocklist</span>(
+        blocklist_name=<span class="code-string">"financial-compliance"</span>,
+        description=<span class="code-string">"Block unauthorized financial advice and competitor names"</span>
+    )
+)
+
+<span class="code-comment"># ── Step 2: Add blocklist items (exact match + regex patterns) ──</span>
+blocklist_items = [
+    <span class="code-type">TextBlocklistItem</span>(text=<span class="code-string">"guaranteed returns"</span>, description=<span class="code-string">"Misleading financial claim"</span>),
+    <span class="code-type">TextBlocklistItem</span>(text=<span class="code-string">"risk-free investment"</span>, description=<span class="code-string">"Misleading financial claim"</span>),
+    <span class="code-type">TextBlocklistItem</span>(text=<span class="code-string">"insider trading tip"</span>, description=<span class="code-string">"Illegal activity"</span>),
+    <span class="code-type">TextBlocklistItem</span>(text=<span class="code-string">"buy this stock now"</span>, description=<span class="code-string">"Unauthorized advice"</span>),
+    <span class="code-type">TextBlocklistItem</span>(text=<span class="code-string">"competitor-product-x"</span>, description=<span class="code-string">"Competitor reference"</span>),
+    <span class="code-type">TextBlocklistItem</span>(text=<span class="code-string">"social security number"</span>, description=<span class="code-string">"PII protection"</span>),
+]
+
+result = client.add_or_update_blocklist_items(
+    blocklist_name=<span class="code-string">"financial-compliance"</span>,
+    options=<span class="code-type">AddOrUpdateTextBlocklistItemsOptions</span>(
+        blocklist_items=blocklist_items
+    )
+)
+<span class="code-function">print</span>(<span class="code-string">f"Added <span class="code-keyword">{</span>len(result.blocklist_items)<span class="code-keyword">}</span> items to blocklist"</span>)
+
+<span class="code-comment"># ── Step 3: Analyze text with custom blocklist ──</span>
+analysis = client.analyze_text(
+    <span class="code-type">AnalyzeTextOptions</span>(
+        text=<span class="code-string">"I can offer you a guaranteed returns investment strategy."</span>,
+        blocklist_names=[<span class="code-string">"financial-compliance"</span>],
+        halt_on_blocklist_hit=<span class="code-keyword">True</span>
+    )
+)
+
+<span class="code-keyword">if</span> analysis.blocklists_match:
+    <span class="code-keyword">for</span> match <span class="code-keyword">in</span> analysis.blocklists_match:
+        <span class="code-function">print</span>(<span class="code-string">f"🚫 Blocked: '<span class="code-keyword">{</span>match.blocklist_item_text<span class="code-keyword">}</span>'"</span>)
+        <span class="code-function">print</span>(<span class="code-string">f"   Blocklist: <span class="code-keyword">{</span>match.blocklist_name<span class="code-keyword">}</span>"</span>)</code></pre>
+
+        <h3>Multi-Layer Content Safety Policy</h3>
+        <p>Enterprise deployments typically implement a multi-layered approach to content safety:</p>
+
+<pre data-lang="Python"><code><span class="code-comment"># Multi-layer content safety policy configuration</span>
+<span class="code-keyword">from</span> azure.ai.projects <span class="code-keyword">import</span> <span class="code-type">AIProjectClient</span>
+<span class="code-keyword">from</span> azure.ai.contentsafety.models <span class="code-keyword">import</span> <span class="code-type">AnalyzeTextOptions</span>
+
+<span class="code-keyword">class</span> <span class="code-type">EnterpriseContentSafetyPolicy</span>:
+    <span class="code-string">"""Enterprise-grade multi-layer content safety pipeline."""</span>
+
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, safety_client, project_client):
+        self.safety_client = safety_client
+        self.project_client = project_client
+        self.blocklists = [
+            <span class="code-string">"financial-compliance"</span>,
+            <span class="code-string">"pii-protection"</span>,
+            <span class="code-string">"brand-safety"</span>,
+            <span class="code-string">"regulatory-terms"</span>
+        ]
+        self.severity_thresholds = {
+            <span class="code-string">"hate"</span>: <span class="code-number">2</span>,
+            <span class="code-string">"sexual"</span>: <span class="code-number">4</span>,
+            <span class="code-string">"violence"</span>: <span class="code-number">2</span>,
+            <span class="code-string">"self_harm"</span>: <span class="code-number">0</span>   <span class="code-comment"># Zero tolerance</span>
+        }
+
+    <span class="code-keyword">async def</span> <span class="code-function">evaluate_input</span>(self, text: str) -> dict:
+        <span class="code-string">"""Layer 1: Pre-inference input safety check."""</span>
+        result = self.safety_client.analyze_text(
+            <span class="code-type">AnalyzeTextOptions</span>(
+                text=text,
+                blocklist_names=self.blocklists,
+                halt_on_blocklist_hit=<span class="code-keyword">True</span>,
+                output_type=<span class="code-string">"EightSeverityLevels"</span>
+            )
+        )
+        <span class="code-keyword">return</span> self._check_thresholds(result)
+
+    <span class="code-keyword">async def</span> <span class="code-function">evaluate_output</span>(self, text: str) -> dict:
+        <span class="code-string">"""Layer 2: Post-inference output safety check."""</span>
+        result = self.safety_client.analyze_text(
+            <span class="code-type">AnalyzeTextOptions</span>(
+                text=text,
+                blocklist_names=self.blocklists,
+                halt_on_blocklist_hit=<span class="code-keyword">True</span>,
+                output_type=<span class="code-string">"EightSeverityLevels"</span>
+            )
+        )
+        safety_result = self._check_thresholds(result)
+
+        <span class="code-comment"># Layer 3: Groundedness check for RAG scenarios</span>
+        groundedness = <span class="code-keyword">await</span> self._check_groundedness(text)
+        safety_result[<span class="code-string">"groundedness"</span>] = groundedness
+
+        <span class="code-keyword">return</span> safety_result
+
+    <span class="code-keyword">def</span> <span class="code-function">_check_thresholds</span>(self, result) -> dict:
+        violations = []
+        <span class="code-keyword">for</span> category <span class="code-keyword">in</span> result.categories_analysis:
+            threshold = self.severity_thresholds.get(category.category, <span class="code-number">4</span>)
+            <span class="code-keyword">if</span> category.severity >= threshold:
+                violations.append({
+                    <span class="code-string">"category"</span>: category.category,
+                    <span class="code-string">"severity"</span>: category.severity,
+                    <span class="code-string">"threshold"</span>: threshold
+                })
+        <span class="code-keyword">return</span> {
+            <span class="code-string">"safe"</span>: len(violations) == <span class="code-number">0</span>,
+            <span class="code-string">"violations"</span>: violations,
+            <span class="code-string">"blocklist_hits"</span>: result.blocklists_match <span class="code-keyword">or</span> []
+        }</code></pre>
+
+        <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-content">
+                <strong>Blocklist Size Limits</strong>
+                <p>Each Azure AI Content Safety resource supports up to <strong>100 blocklists</strong>, with up to
+                <strong>10,000 items per blocklist</strong>. For larger vocabularies, consider using regex patterns or
+                combining multiple targeted blocklists. Always test blocklists against a representative dataset to
+                minimize false positives.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Monitoring for Bias -->
+    <section class="section fade-in" id="monitoring">
+        <div class="section-header">
+            <div class="section-number">4</div>
+            <h2>Monitoring for Bias, Fairness &amp; Harmful Outputs</h2>
+        </div>
+        <p>
+            Monitoring AI systems for bias is not a one-time activity—it requires continuous, automated observation of model outputs
+            in production. Azure AI Foundry's evaluation framework integrates with Azure Monitor to deliver real-time fairness
+            metrics and automated alerts when disparities exceed acceptable thresholds.
+        </p>
+
+        <h3>Key Fairness Metrics</h3>
+        <table class="feature-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>What It Measures</th>
+                    <th>Threshold Guidance</th>
+                    <th>Action on Breach</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Demographic Parity</strong></td>
+                    <td>Equal probability of positive outcome across groups</td>
+                    <td>Ratio ≥ 0.8 (80% rule)</td>
+                    <td>Review training data balance</td>
+                </tr>
+                <tr>
+                    <td><strong>Equalized Odds</strong></td>
+                    <td>Equal true positive &amp; false positive rates across groups</td>
+                    <td>Difference ≤ 0.1</td>
+                    <td>Re-evaluate model calibration</td>
+                </tr>
+                <tr>
+                    <td><strong>Quality Disparity</strong></td>
+                    <td>Output quality differences (coherence, relevance, groundedness) across demographics</td>
+                    <td>Score gap ≤ 0.15</td>
+                    <td>Investigate prompt sensitivity</td>
+                </tr>
+                <tr>
+                    <td><strong>Refusal Rate Disparity</strong></td>
+                    <td>Differences in how often the model refuses to answer by user group</td>
+                    <td>Ratio ≥ 0.9</td>
+                    <td>Audit safety filter sensitivity</td>
+                </tr>
+                <tr>
+                    <td><strong>Stereotyping Score</strong></td>
+                    <td>Presence of stereotypical associations in generated content</td>
+                    <td>Score ≤ 0.05</td>
+                    <td>Apply targeted prompt engineering</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Setting Up Continuous Monitoring</h3>
+
+<pre data-lang="Python"><code><span class="code-comment"># Configure continuous bias & fairness monitoring in Azure AI Foundry</span>
+<span class="code-keyword">from</span> azure.ai.evaluation <span class="code-keyword">import</span> (
+    <span class="code-type">FairnessEvaluator</span>,
+    <span class="code-type">ContentSafetyEvaluator</span>,
+    <span class="code-type">QualityEvaluator</span>
+)
+<span class="code-keyword">from</span> azure.ai.projects <span class="code-keyword">import</span> <span class="code-type">AIProjectClient</span>
+<span class="code-keyword">from</span> azure.monitor.opentelemetry <span class="code-keyword">import</span> <span class="code-function">configure_azure_monitor</span>
+
+<span class="code-comment"># Enable OpenTelemetry tracing for AI Foundry</span>
+<span class="code-function">configure_azure_monitor</span>(
+    connection_string=<span class="code-string">"InstrumentationKey=your-app-insights-key"</span>,
+    enable_live_metrics=<span class="code-keyword">True</span>
+)
+
+<span class="code-comment"># Define a fairness monitoring pipeline</span>
+<span class="code-keyword">class</span> <span class="code-type">FairnessMonitor</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, project_client: <span class="code-type">AIProjectClient</span>):
+        self.project = project_client
+        self.fairness_eval = <span class="code-type">FairnessEvaluator</span>(
+            model_config=project_client.inference,
+            eval_last_turn=<span class="code-keyword">True</span>
+        )
+        self.safety_eval = <span class="code-type">ContentSafetyEvaluator</span>(
+            project_scope=project_client.scope
+        )
+
+    <span class="code-keyword">async def</span> <span class="code-function">evaluate_batch</span>(self, interactions: list) -> dict:
+        <span class="code-string">"""Evaluate a batch of interactions for bias metrics."""</span>
+        results = {
+            <span class="code-string">"quality_by_group"</span>: {},
+            <span class="code-string">"safety_by_group"</span>: {},
+            <span class="code-string">"refusal_by_group"</span>: {}
+        }
+
+        <span class="code-keyword">for</span> group_name, group_data <span class="code-keyword">in</span> self._segment_by_demographics(interactions):
+            <span class="code-comment"># Run evaluations per demographic group</span>
+            quality = <span class="code-keyword">await</span> self.fairness_eval.evaluate(
+                data=group_data,
+                metrics=[<span class="code-string">"coherence"</span>, <span class="code-string">"relevance"</span>, <span class="code-string">"groundedness"</span>]
+            )
+            safety = <span class="code-keyword">await</span> self.safety_eval.evaluate(data=group_data)
+
+            results[<span class="code-string">"quality_by_group"</span>][group_name] = quality.metrics
+            results[<span class="code-string">"safety_by_group"</span>][group_name] = safety.metrics
+
+        <span class="code-comment"># Calculate disparity metrics</span>
+        results[<span class="code-string">"disparities"</span>] = self._calculate_disparities(results)
+        <span class="code-keyword">return</span> results
+
+    <span class="code-keyword">def</span> <span class="code-function">_calculate_disparities</span>(self, results: dict) -> dict:
+        groups = results[<span class="code-string">"quality_by_group"</span>]
+        <span class="code-keyword">if</span> len(groups) < <span class="code-number">2</span>:
+            <span class="code-keyword">return</span> {}
+
+        scores = [g.get(<span class="code-string">"coherence"</span>, <span class="code-number">0</span>) <span class="code-keyword">for</span> g <span class="code-keyword">in</span> groups.values()]
+        <span class="code-keyword">return</span> {
+            <span class="code-string">"max_quality_gap"</span>: max(scores) - min(scores),
+            <span class="code-string">"quality_ratio"</span>: min(scores) / max(scores) <span class="code-keyword">if</span> max(scores) > <span class="code-number">0</span> <span class="code-keyword">else</span> <span class="code-number">0</span>,
+            <span class="code-string">"threshold_breached"</span>: (max(scores) - min(scores)) > <span class="code-number">0.15</span>
+        }</code></pre>
+
+        <h3>Azure Monitor Integration — Alert Rules</h3>
+
+<pre data-lang="KQL"><code><span class="code-comment">// KQL query for Azure Monitor alert: Detect fairness threshold breaches</span>
+<span class="code-keyword">customMetrics</span>
+| <span class="code-keyword">where</span> name == <span class="code-string">"ai.foundry.fairness.quality_disparity"</span>
+| <span class="code-keyword">where</span> timestamp > ago(<span class="code-number">1h</span>)
+| <span class="code-keyword">summarize</span>
+    avg_disparity = <span class="code-function">avg</span>(value),
+    max_disparity = <span class="code-function">max</span>(value),
+    breach_count = <span class="code-function">countif</span>(value > <span class="code-number">0.15</span>)
+    <span class="code-keyword">by</span> <span class="code-function">bin</span>(timestamp, <span class="code-number">5m</span>),
+    cloud_RoleName
+| <span class="code-keyword">where</span> breach_count > <span class="code-number">0</span>
+| <span class="code-keyword">order by</span> timestamp <span class="code-keyword">desc</span></code></pre>
+
+        <div class="callout callout-success">
+            <span class="callout-icon">✅</span>
+            <div class="callout-content">
+                <strong>Best Practice: Demographic Proxies</strong>
+                <p>Never collect or infer protected demographic data from end users directly. Instead, use evaluation datasets
+                with controlled demographic attributes to test fairness offline. Monitor production systems via aggregate
+                statistical tests on anonymized output patterns.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Incident Response -->
+    <section class="section fade-in" id="incident-response">
+        <div class="section-header">
+            <div class="section-number">5</div>
+            <h2>Incident Response for AI Safety Events</h2>
+        </div>
+        <p>
+            AI safety incidents—such as harmful model outputs, bias discoveries, jailbreak successes, or data leakage via model
+            responses—require a structured incident response process similar to traditional cybersecurity incident handling, but
+            adapted for the unique characteristics of AI systems.
+        </p>
+
+        <h3>AI Safety Incident Classification</h3>
+        <table class="feature-table">
+            <thead>
+                <tr>
+                    <th>Severity</th>
+                    <th>Description</th>
+                    <th>Examples</th>
+                    <th>Response SLA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="severity-badge severity-critical">● Critical</span></td>
+                    <td>Immediate threat to user safety or major regulatory violation</td>
+                    <td>Self-harm instructions, PII leakage at scale, CSAM generation</td>
+                    <td><strong>15 minutes</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="severity-badge severity-high">● High</span></td>
+                    <td>Significant harmful content bypassing safety filters</td>
+                    <td>Successful jailbreak pattern, systematic bias, copyrighted material</td>
+                    <td><strong>1 hour</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="severity-badge severity-medium">● Medium</span></td>
+                    <td>Quality degradation or minor safety filter gaps</td>
+                    <td>Elevated false negative rates, new edge cases in content filtering</td>
+                    <td><strong>4 hours</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="severity-badge severity-low">● Low</span></td>
+                    <td>Cosmetic or informational issues</td>
+                    <td>Slightly elevated toxicity scores, minor fairness metric drift</td>
+                    <td><strong>24 hours</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Incident Response Playbook</h3>
+        <div class="incident-timeline">
+            <div class="incident-step">
+                <div class="incident-step-time">Phase 1 — Detection (0–15 min)</div>
+                <h4>🔍 Detect &amp; Triage</h4>
+                <p>Automated alerts from Azure Monitor trigger the on-call RAI engineer. Validate the incident against
+                the severity matrix. Assign an incident commander for Critical/High severity events.</p>
+            </div>
+            <div class="incident-step">
+                <div class="incident-step-time">Phase 2 — Containment (15–60 min)</div>
+                <h4>🛑 Contain the Impact</h4>
+                <p>For Critical: Immediately activate the emergency content filter override to block the attack vector.
+                For High: Add the offending pattern to the hotfix blocklist. Reduce model temperature or switch to a
+                more restrictive safety configuration. Notify affected stakeholders.</p>
+            </div>
+            <div class="incident-step">
+                <div class="incident-step-time">Phase 3 — Investigation (1–24 hrs)</div>
+                <h4>🔬 Root Cause Analysis</h4>
+                <p>Analyze the full interaction chain in Azure AI Foundry tracing. Identify whether the issue stems from
+                the model, the safety filters, the prompt template, or the data. Reproduce the scenario in a sandboxed
+                evaluation environment.</p>
+            </div>
+            <div class="incident-step">
+                <div class="incident-step-time">Phase 4 — Remediation (1–7 days)</div>
+                <h4>🔧 Fix &amp; Harden</h4>
+                <p>Deploy permanent fixes: update blocklists, adjust safety thresholds, modify system prompts, or retrain
+                safety classifiers. Add the incident scenario to the automated evaluation red-team dataset for regression
+                testing.</p>
+            </div>
+            <div class="incident-step">
+                <div class="incident-step-time">Phase 5 — Post-Incident Review</div>
+                <h4>📋 Learn &amp; Improve</h4>
+                <p>Conduct a blameless post-incident review. Document findings in the RAI incident registry. Update
+                monitoring thresholds, playbooks, and training materials. Share anonymized learnings with the broader
+                AI safety community.</p>
+            </div>
+        </div>
+
+        <h3>Emergency Content Filter Override</h3>
+
+<pre data-lang="Python"><code><span class="code-comment"># Emergency incident response: Activate emergency content filter</span>
+<span class="code-keyword">from</span> azure.ai.contentsafety <span class="code-keyword">import</span> <span class="code-type">ContentSafetyClient</span>
+<span class="code-keyword">from</span> azure.ai.contentsafety.models <span class="code-keyword">import</span> <span class="code-type">TextBlocklistItem</span>
+<span class="code-keyword">import</span> logging
+
+logger = logging.getLogger(<span class="code-string">"ai_safety_incident"</span>)
+
+<span class="code-keyword">async def</span> <span class="code-function">activate_emergency_block</span>(
+    client: <span class="code-type">ContentSafetyClient</span>,
+    attack_pattern: str,
+    incident_id: str
+):
+    <span class="code-string">"""Add an attack pattern to the emergency blocklist immediately."""</span>
+    logger.critical(
+        <span class="code-string">f"🚨 INCIDENT <span class="code-keyword">{</span>incident_id<span class="code-keyword">}</span>: Activating emergency block for pattern"</span>
+    )
+
+    <span class="code-comment"># Add to emergency hotfix blocklist</span>
+    client.add_or_update_blocklist_items(
+        blocklist_name=<span class="code-string">"emergency-hotfix"</span>,
+        options={
+            <span class="code-string">"blocklistItems"</span>: [
+                <span class="code-type">TextBlocklistItem</span>(
+                    text=attack_pattern,
+                    description=<span class="code-string">f"Emergency block - Incident <span class="code-keyword">{</span>incident_id<span class="code-keyword">}</span>"</span>
+                )
+            ]
+        }
+    )
+
+    <span class="code-comment"># Log the action for audit trail</span>
+    logger.info(
+        <span class="code-string">f"✅ Emergency block activated | Incident: <span class="code-keyword">{</span>incident_id<span class="code-keyword">}</span> | "
+        f"Pattern: <span class="code-keyword">{</span>attack_pattern[:50]<span class="code-keyword">}</span>..."</span>
+    )
+
+    <span class="code-comment"># Notify incident response team</span>
+    <span class="code-keyword">await</span> <span class="code-function">send_incident_notification</span>(
+        channel=<span class="code-string">"#ai-safety-critical"</span>,
+        severity=<span class="code-string">"CRITICAL"</span>,
+        incident_id=incident_id,
+        action=<span class="code-string">"Emergency blocklist pattern deployed"</span>
+    )</code></pre>
+
+        <div class="callout callout-danger">
+            <span class="callout-icon">🚨</span>
+            <div class="callout-content">
+                <strong>Critical: Test Your Incident Response</strong>
+                <p>Run quarterly AI safety incident tabletop exercises. Simulate jailbreak scenarios, data leakage events,
+                and systematic bias discoveries. Measure your team's response time against the SLAs defined in your
+                incident classification matrix. Document lessons learned and update playbooks accordingly.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Architecture -->
+    <section class="section fade-in" id="architecture">
+        <div class="section-header">
+            <div class="section-number">6</div>
+            <h2>Enterprise RAI Architecture</h2>
+        </div>
+        <p>
+            A well-architected Responsible AI system in Azure AI Foundry integrates content safety, fairness monitoring, and incident
+            response into a layered architecture that operates across the entire AI lifecycle.
+        </p>
+
+        <div class="architecture-diagram">
+            <h4 style="margin-bottom:1rem;color:var(--neutral-700);">Enterprise Responsible AI Architecture — Azure AI Foundry</h4>
+            <div class="arch-layers">
+                <div class="arch-layer arch-layer-apps">
+                    🌐 &nbsp; <strong>Application Layer</strong> — Chat Apps · Copilots · AI Agents · API Consumers
+                </div>
+                <div class="arch-connector">↕</div>
+                <div class="arch-layer arch-layer-safety">
+                    🛡️ &nbsp; <strong>Content Safety Layer</strong> — Input/Output Filters · Custom Blocklists · Jailbreak Detection
+                </div>
+                <div class="arch-connector">↕</div>
+                <div class="arch-layer arch-layer-monitor">
+                    📈 &nbsp; <strong>Monitoring Layer</strong> — Fairness Metrics · Bias Detection · Quality Tracking · Alert Rules
+                </div>
+                <div class="arch-connector">↕</div>
+                <div class="arch-layer arch-layer-dashboard">
+                    📊 &nbsp; <strong>RAI Dashboard</strong> — Error Analysis · Fairness Assessment · Explanation Cards · Audit Logs
+                </div>
+                <div class="arch-connector">↕</div>
+                <div class="arch-layer arch-layer-data">
+                    💾 &nbsp; <strong>Data &amp; Governance</strong> — Evaluation Datasets · Incident Registry · Policy Configs · Compliance Docs
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Video -->
+    <section class="section fade-in" id="video">
+        <div class="section-header">
+            <div class="section-number">7</div>
+            <h2>Featured Video</h2>
+        </div>
+        <p>
+            Watch this deep dive from Microsoft Azure on building trustworthy AI systems with content safety guardrails.
+        </p>
+        <div class="video-container">
+            <iframe
+                src="https://www.youtube.com/embed/bkssatMl0NE"
+                title="Building Trustworthy AI: Ensuring Responsible AI With Content Safety"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+    </section>
+
+    <!-- Section 8: Mini Hack -->
+    <section class="section fade-in" id="mini-hack">
+        <div class="mini-hack">
+            <div class="mini-hack-badge">⚡ Mini Hack</div>
+            <h3>Build an Enterprise Content Safety Policy with Custom Blocklists</h3>
+            <p>
+                In this hands-on exercise, you'll build a complete enterprise content safety policy using Azure AI Content Safety.
+                You'll create custom blocklists, configure severity thresholds, and test your policy against adversarial inputs.
+            </p>
+            <ol class="step-list">
+                <li><strong>Provision Resources:</strong> Create an Azure AI Content Safety resource and an Azure AI Foundry project. Configure RBAC for your team.</li>
+                <li><strong>Create Blocklists:</strong> Build three custom blocklists — <code style="background:rgba(255,255,255,0.15);color:#fff;">financial-compliance</code>, <code style="background:rgba(255,255,255,0.15);color:#fff;">pii-protection</code>, and <code style="background:rgba(255,255,255,0.15);color:#fff;">brand-safety</code> — with 10+ items each.</li>
+                <li><strong>Configure Severity Thresholds:</strong> Set category-specific severity levels (zero tolerance for self-harm, configurable for other categories).</li>
+                <li><strong>Build the Pipeline:</strong> Implement a multi-layer content safety pipeline that applies blocklists on both input and output paths.</li>
+                <li><strong>Adversarial Testing:</strong> Run 20 adversarial test cases including jailbreak attempts, PII probes, and blocklist evasion techniques.</li>
+                <li><strong>Dashboard &amp; Alerts:</strong> Configure an RAI dashboard to visualize safety metrics and set up Azure Monitor alerts for threshold breaches.</li>
+                <li><strong>Incident Simulation:</strong> Simulate a Critical severity incident and execute your incident response playbook end-to-end.</li>
+            </ol>
+            <p style="margin-top:1.5rem;font-size:0.88rem;">
+                <strong style="color:#ffb900;">⏱ Time Estimate:</strong> 60–90 minutes &nbsp;|&nbsp;
+                <strong style="color:#ffb900;">📋 Prerequisites:</strong> Azure subscription, Azure AI Foundry project, Python 3.10+ &nbsp;|&nbsp;
+                <strong style="color:#ffb900;">💰 Estimated Cost:</strong> ~$2–5 USD
+            </p>
+        </div>
+    </section>
+
+    <!-- Section 9: Key Takeaways -->
+    <section class="section fade-in" id="key-takeaways">
+        <div class="section-header">
+            <div class="section-number">9</div>
+            <h2>Key Takeaways</h2>
+        </div>
+        <ul class="check-list">
+            <li><strong>Dashboard-as-Code:</strong> Responsible AI dashboards in Azure AI Foundry can be provisioned and configured programmatically, enabling version-controlled governance that evolves with your models.</li>
+            <li><strong>Multi-Layer Content Safety:</strong> Enterprise deployments require layered content safety with custom blocklists on both input and output paths, combined with built-in category filters and jailbreak detection.</li>
+            <li><strong>Continuous Fairness Monitoring:</strong> Monitor fairness metrics (demographic parity, equalized odds, quality disparity) continuously—not just at model evaluation time—using Azure Monitor integration.</li>
+            <li><strong>Structured Incident Response:</strong> AI safety incidents require dedicated playbooks with severity classification, response SLAs, and post-incident review processes modeled on cybersecurity best practices.</li>
+            <li><strong>Custom Blocklists at Scale:</strong> Up to 100 blocklists with 10,000 items each provide granular, industry-specific content control beyond the built-in safety categories.</li>
+            <li><strong>Regulatory Readiness:</strong> Azure AI Foundry's RAI tooling maps directly to EU AI Act, NIST AI RMF, and ISO 42001 requirements—building compliance into your AI infrastructure from day one.</li>
+        </ul>
+    </section>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="../module-33/blog.html">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            ← Module 33
+        </a>
+        <a href="../module-35/blog.html">
+            Module 35 →
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+    </nav>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Azure AI Foundry: Zero to Hero</div>
+        <p style="font-size:0.85rem;margin-bottom:0.5rem;">Module 34 of 45 — Arc 7: Security, Governance &amp; Compliance</p>
+        <div class="footer-links">
+            <a href="https://learn.microsoft.com/azure/ai-services/content-safety/">Content Safety Docs</a>
+            <a href="https://learn.microsoft.com/azure/ai-studio/responsible-use-of-ai-overview">Responsible AI in Foundry</a>
+            <a href="https://learn.microsoft.com/azure/ai-studio/">Azure AI Foundry Docs</a>
+            <a href="https://aka.ms/rai">Microsoft RAI</a>
+        </div>
+        <div class="footer-copy">
+            &copy; 2026 Azure AI Foundry Training. Built for learning purposes.
+            <br>Part of the Zero to Hero 45-module training curriculum.
+        </div>
+    </div>
+</footer>
+
+<script>
+// Reading progress bar
+window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+});
+
+// Intersection Observer for fade-in animations
+const observer = new IntersectionObserver(
+    (entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+);
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+</script>
+</body>
+</html>

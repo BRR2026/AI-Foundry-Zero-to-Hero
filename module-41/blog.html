@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Module 41 of Azure AI Foundry Zero to Hero — Choose Your Capstone Project: project ideas, scope definition, requirements gathering, architecture planning, success criteria, and project templates for AI Foundry.">
+<meta name="author" content="Zero to Hero Training Team">
+<meta name="date" content="2026-04">
+<title>Module 41: Choose Your Capstone Project — Azure AI Foundry: Zero to Hero</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & DESIGN TOKENS
+   ============================================================ */
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #50e6ff;
+  --ms-teal: #00b7c3;
+  --ms-green: #107c10;
+  --ms-yellow: #ffb900;
+  --ms-orange: #d83b01;
+  --ms-red: #e74856;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eef1f5;
+  --bg-dark: #1b1b1b;
+  --bg-code: #1e1e1e;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #424242;
+  --text-muted: #6e6e6e;
+  --text-inverse: #ffffff;
+  --text-link: #0078d4;
+
+  --border-light: #e1e4e8;
+  --border-medium: #d0d7de;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-xl: 0 12px 48px rgba(0,0,0,0.15);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --content-max: 780px;
+  --toc-width: 220px;
+
+  --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  z-index: 10000;
+  transition: width 0.1s linear;
+}
+
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 9000;
+  background: var(--bg-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.nav-links a:hover { color: #ffffff; }
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #0078d4, #5c2d91);
+  color: var(--text-inverse);
+  padding: 80px 24px 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(80,230,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 5px 16px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  opacity: 0.92;
+  line-height: 1.6;
+  max-width: 650px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 24px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   LAYOUT — CONTENT + TOC SIDEBAR
+   ============================================================ */
+.content-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  display: flex;
+  gap: 48px;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--content-max);
+}
+
+.toc-sidebar {
+  width: var(--toc-width);
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  align-self: flex-start;
+}
+
+.toc-sidebar h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list li { margin-bottom: 6px; }
+
+.toc-list a {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: block;
+  padding: 4px 0 4px 12px;
+  border-left: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.toc-list a:hover,
+.toc-list a.active {
+  color: var(--ms-blue);
+  border-left-color: var(--ms-blue);
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.main-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 48px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.main-content h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 36px 0 12px;
+  color: var(--text-primary);
+}
+
+.main-content h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 24px 0 8px;
+  color: var(--text-secondary);
+}
+
+.main-content p {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.main-content ul, .main-content ol {
+  margin: 0 0 16px 24px;
+  color: var(--text-secondary);
+}
+
+.main-content li { margin-bottom: 6px; line-height: 1.7; }
+
+.main-content a {
+  color: var(--text-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.main-content a:hover { border-bottom-color: var(--text-link); }
+
+.main-content code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--bg-tertiary);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--ms-dark-blue);
+}
+
+/* ============================================================
+   CODE BLOCKS
+   ============================================================ */
+.code-block {
+  background: var(--bg-code);
+  border-radius: var(--radius-md);
+  margin: 20px 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #2d2d2d;
+  font-size: 0.78rem;
+  color: #9d9d9d;
+}
+
+.code-header .lang-tag {
+  color: var(--ms-light-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.code-block pre {
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #d4d4d4;
+}
+
+.code-block pre .keyword { color: #569cd6; }
+.code-block pre .string { color: #ce9178; }
+.code-block pre .comment { color: #6a9955; font-style: italic; }
+.code-block pre .function { color: #dcdcaa; }
+.code-block pre .type { color: #4ec9b0; }
+.code-block pre .number { color: #b5cea8; }
+.code-block pre .param { color: #9cdcfe; }
+
+/* ============================================================
+   INFO BOXES / CALLOUTS
+   ============================================================ */
+.callout {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+  border-left: 4px solid;
+  font-size: 0.92rem;
+}
+
+.callout-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout.tip        { background: #e6f9ee; border-color: var(--ms-green);  }
+.callout.tip .callout-title { color: var(--ms-green); }
+.callout.warning    { background: #fff8e6; border-color: var(--ms-yellow); }
+.callout.warning .callout-title { color: #986f0b; }
+.callout.important  { background: #fde7e9; border-color: var(--ms-red);    }
+.callout.important .callout-title { color: var(--ms-red); }
+.callout.info       { background: #e6f2fb; border-color: var(--ms-blue);   }
+.callout.info .callout-title { color: var(--ms-blue); }
+.callout.capstone   { background: #f3e8ff; border-color: var(--ms-purple); }
+.callout.capstone .callout-title { color: var(--ms-purple); }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.styled-table thead { background: var(--ms-blue); color: #fff; }
+.styled-table th { padding: 12px 16px; text-align: left; font-weight: 600; }
+.styled-table td { padding: 11px 16px; border-bottom: 1px solid var(--border-light); }
+.styled-table tbody tr:hover { background: var(--bg-secondary); }
+
+/* ============================================================
+   VIDEO EMBED
+   ============================================================ */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  margin: 24px 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ============================================================
+   PROJECT CARDS
+   ============================================================ */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.project-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 28px 24px;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: var(--ms-blue);
+}
+
+.project-card .card-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+}
+
+.project-card h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.project-card p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.project-card .difficulty {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.difficulty.intermediate { background: #fff3cd; color: #856404; }
+.difficulty.advanced     { background: #f8d7da; color: #842029; }
+.difficulty.expert       { background: #e2d0f8; color: #4a1d8e; }
+
+/* ============================================================
+   ARCHITECTURE DIAGRAM PLACEHOLDER
+   ============================================================ */
+.arch-diagram {
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 40px;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.arch-diagram .diagram-box {
+  display: inline-block;
+  padding: 12px 20px;
+  margin: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.arch-diagram .arrow {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+/* ============================================================
+   CHECKLIST STYLE
+   ============================================================ */
+.checklist {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+}
+
+.checklist li {
+  padding: 10px 0 10px 32px;
+  position: relative;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.92rem;
+}
+
+.checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  font-size: 1.1rem;
+  color: var(--ms-blue);
+}
+
+/* ============================================================
+   MINI HACK SECTION
+   ============================================================ */
+.mini-hack {
+  background: linear-gradient(135deg, #1b1b2f, #162447);
+  color: #e0e0e0;
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  margin: 36px 0;
+  border: 1px solid rgba(92, 45, 145, 0.4);
+}
+
+.mini-hack h3 {
+  color: var(--ms-light-blue);
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+}
+
+.mini-hack .hack-step {
+  background: rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 12px 0;
+  border-left: 3px solid var(--ms-purple);
+}
+
+.mini-hack .hack-step h4 {
+  color: var(--ms-light-blue);
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.mini-hack .hack-step p,
+.mini-hack .hack-step li {
+  color: #c0c0c0;
+  font-size: 0.88rem;
+}
+
+/* ============================================================
+   MODULE NAVIGATION
+   ============================================================ */
+.module-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 2px solid var(--border-light);
+}
+
+.module-nav a {
+  display: block;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: all var(--transition-normal);
+  flex: 1;
+  max-width: 48%;
+}
+
+.module-nav a:hover {
+  border-color: var(--ms-blue);
+  box-shadow: var(--shadow-md);
+}
+
+.module-nav .nav-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.module-nav .nav-title {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--ms-blue);
+  font-weight: 600;
+}
+
+.module-nav .next { text-align: right; margin-left: auto; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  background: var(--bg-dark);
+  color: rgba(255,255,255,0.7);
+  padding: 28px 24px;
+  margin-top: 40px;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.82rem;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover { color: #ffffff; }
+
+/* ============================================================
+   BACK TO TOP
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ms-blue);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all var(--transition-normal);
+  z-index: 5000;
+}
+
+.back-to-top.visible { opacity: 1; transform: translateY(0); }
+.back-to-top:hover { background: var(--ms-dark-blue); }
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+.timeline {
+  position: relative;
+  padding-left: 32px;
+  margin: 24px 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--ms-blue), var(--ms-purple));
+  border-radius: 2px;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 16px 0 24px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  background: var(--ms-blue);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.timeline-item h4 {
+  color: var(--ms-blue);
+  margin-bottom: 4px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .toc-sidebar { display: none; }
+  .hero h1 { font-size: 2rem; }
+  .project-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .hero { padding: 50px 16px 45px; }
+  .hero h1 { font-size: 1.6rem; }
+  .content-wrapper { padding: 24px 16px; }
+  .module-nav { flex-direction: column; }
+  .module-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ============================================================
+     TOP NAVIGATION
+     ============================================================ -->
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="#" class="nav-brand">
+      <svg class="ms-logo" viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+      Azure AI Foundry: Zero to Hero
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Curriculum</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+      <li><a href="#">Resources</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO SECTION
+     ============================================================ -->
+<header class="hero">
+  <div class="hero-inner">
+    <span class="hero-badge">ARC 9 · CAPSTONE &amp; MASTERY</span>
+    <h1>Module 41: Choose Your Capstone Project</h1>
+    <p class="hero-subtitle">
+      Define, scope, and architect your capstone project — the culminating experience that brings together every AI Foundry skill you've built across 40 modules. From idea to proposal, set yourself up for a masterful build.
+    </p>
+    <div class="hero-meta">
+      <span>📅 April 2026</span>
+      <span>⏱ 90 min read</span>
+      <span>🧩 Module 41 of 45</span>
+      <span>🎓 Capstone Phase</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<div class="content-wrapper">
+  <article class="main-content">
+
+    <!-- ===================== INTRODUCTION ===================== -->
+    <section id="introduction">
+      <h2>Introduction</h2>
+      <p>
+        You've spent 40 modules mastering every layer of Azure AI Foundry — from model deployments and prompt engineering to multi-agent orchestration, responsible AI, and enterprise-grade operations. Now it's time to bring it all together in a <strong>capstone project</strong> that demonstrates your end-to-end mastery.
+      </p>
+      <p>
+        This module guides you through choosing, scoping, and planning your capstone. You'll select a project that aligns with real-world needs, define success criteria, plan your architecture using AI Foundry services, and produce a formal proposal that will drive your implementation in Modules 42–44.
+      </p>
+
+      <div class="callout capstone">
+        <div class="callout-title">🎓 Capstone Philosophy</div>
+        <p>Your capstone should demonstrate breadth across the curriculum — touching at minimum model deployment, prompt engineering, agent orchestration, data integration, responsible AI, and operational monitoring. Projects that tackle a genuine business or community problem will stand out.</p>
+      </div>
+    </section>
+
+    <!-- ===================== VIDEO ===================== -->
+    <section id="video">
+      <h2>Featured Video</h2>
+      <p>
+        Watch <em>"Microsoft Foundry – AI app &amp; agent factory"</em> from MS Mechanics to see how the AI Foundry platform powers production-grade AI applications and agent workflows — the exact capabilities your capstone will leverage:
+      </p>
+      <div class="video-container">
+        <iframe
+          src="https://www.youtube.com/embed/C6rxEGJay70"
+          title="Microsoft Foundry – AI app & agent factory (MS Mechanics)"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </section>
+
+    <!-- ===================== PROJECT IDEAS ===================== -->
+    <section id="project-ideas">
+      <h2>1. Project Ideas &amp; Scope Definition</h2>
+      <p>
+        Choosing the right project is critical. Your capstone should be ambitious enough to showcase mastery, yet scoped tightly enough to complete within 3 modules (42–44). Below are curated project ideas spanning different domains and complexity tiers.
+      </p>
+
+      <h3>Curated Project Ideas</h3>
+      <div class="project-grid">
+
+        <div class="project-card">
+          <div class="card-icon">🏥</div>
+          <h4>Healthcare Triage Agent</h4>
+          <p>Build a multi-agent system that triages patient inquiries, retrieves medical knowledge from a RAG pipeline, schedules appointments, and escalates critical cases — with full responsible AI safeguards.</p>
+          <span class="difficulty advanced">Advanced</span>
+        </div>
+
+        <div class="project-card">
+          <div class="card-icon">📊</div>
+          <h4>Enterprise BI Copilot</h4>
+          <p>Create an AI copilot that connects to Azure SQL and Cosmos DB, generates natural-language analytics, produces interactive charts, and supports multi-turn Q&amp;A over business data using AI Foundry agents.</p>
+          <span class="difficulty advanced">Advanced</span>
+        </div>
+
+        <div class="project-card">
+          <div class="card-icon">📝</div>
+          <h4>Intelligent Document Pipeline</h4>
+          <p>Design an end-to-end document processing pipeline: OCR ingestion, classification, entity extraction, summarization, and audit trail — orchestrated through AI Foundry with Azure AI Search integration.</p>
+          <span class="difficulty intermediate">Intermediate</span>
+        </div>
+
+        <div class="project-card">
+          <div class="card-icon">🛒</div>
+          <h4>E-Commerce Shopping Agent</h4>
+          <p>Build a conversational shopping assistant that uses product catalogs (Azure AI Search), personalizes recommendations, handles cart operations via tool-calling agents, and tracks user satisfaction.</p>
+          <span class="difficulty intermediate">Intermediate</span>
+        </div>
+
+        <div class="project-card">
+          <div class="card-icon">🔐</div>
+          <h4>Security Operations Center (SOC) Agent</h4>
+          <p>Develop an autonomous security agent that monitors log streams, detects anomalies, generates incident reports, initiates remediation playbooks, and escalates critical alerts to human analysts.</p>
+          <span class="difficulty expert">Expert</span>
+        </div>
+
+        <div class="project-card">
+          <div class="card-icon">🌍</div>
+          <h4>Multilingual Customer Support Hub</h4>
+          <p>Create a multi-language support system with automatic translation, sentiment analysis, context-aware routing, knowledge-base retrieval, and CSAT scoring — powered by AI Foundry agents and Azure AI Services.</p>
+          <span class="difficulty advanced">Advanced</span>
+        </div>
+
+      </div>
+
+      <h3>Defining Your Scope</h3>
+      <p>
+        Regardless of which idea you choose (or if you bring your own), every capstone must pass the <strong>Scope Fitness Test</strong>:
+      </p>
+
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th>Minimum Requirement</th>
+            <th>Stretch Goal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Foundry Services Used</td>
+            <td>≥ 3 core services</td>
+            <td>5+ with custom connectors</td>
+          </tr>
+          <tr>
+            <td>Agent Complexity</td>
+            <td>Single agent with tools</td>
+            <td>Multi-agent orchestration</td>
+          </tr>
+          <tr>
+            <td>Data Integration</td>
+            <td>1 data source + search</td>
+            <td>Multi-modal data pipeline</td>
+          </tr>
+          <tr>
+            <td>Responsible AI</td>
+            <td>Content safety + evaluation</td>
+            <td>Full RAI dashboard + red-teaming</td>
+          </tr>
+          <tr>
+            <td>Operations</td>
+            <td>Basic monitoring + logging</td>
+            <td>CI/CD, auto-scaling, tracing</td>
+          </tr>
+          <tr>
+            <td>Completable in 3 Modules</td>
+            <td>Core flow functional</td>
+            <td>Production-ready with tests</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Pro Tip: Start Small, Iterate</div>
+        <p>Identify your <strong>Minimum Viable Capstone (MVC)</strong> — the smallest end-to-end slice that demonstrates value. You can always expand in Module 44 (Polish &amp; Present).</p>
+      </div>
+    </section>
+
+    <!-- ===================== REQUIREMENTS ===================== -->
+    <section id="requirements">
+      <h2>2. Requirements Gathering &amp; Architecture Planning</h2>
+      <p>
+        A strong capstone begins with rigorous requirements. Use the structured approach below to capture functional needs, non-functional constraints, and architectural decisions.
+      </p>
+
+      <h3>Requirements Gathering Framework</h3>
+      <h4>Functional Requirements</h4>
+      <ul>
+        <li><strong>User stories:</strong> Who is the user? What do they need to accomplish? What outcome do they expect?</li>
+        <li><strong>Core interactions:</strong> What conversations, queries, or workflows does the system support?</li>
+        <li><strong>Tool integrations:</strong> What external systems, APIs, or data sources must the agent access?</li>
+        <li><strong>Multi-turn capabilities:</strong> Does the system need session memory, context carryover, or thread management?</li>
+        <li><strong>Output formats:</strong> Text responses, structured JSON, charts, documents, or actions?</li>
+      </ul>
+
+      <h4>Non-Functional Requirements</h4>
+      <ul>
+        <li><strong>Latency:</strong> Expected response time for user-facing interactions (e.g., &lt;3 seconds)</li>
+        <li><strong>Throughput:</strong> Concurrent users or requests the system must handle</li>
+        <li><strong>Security:</strong> Authentication, authorization, data encryption requirements</li>
+        <li><strong>Compliance:</strong> Data residency, PII handling, industry regulations</li>
+        <li><strong>Cost budget:</strong> Target monthly Azure spend for the capstone workload</li>
+      </ul>
+
+      <h3>Architecture Planning with AI Foundry</h3>
+      <p>
+        Map your requirements to AI Foundry components. The reference architecture below shows a typical capstone topology:
+      </p>
+
+      <div class="arch-diagram">
+        <p style="font-weight:600; color:var(--text-muted); margin-bottom:20px;">Reference Capstone Architecture</p>
+        <div>
+          <span class="diagram-box" style="background:var(--ms-blue);">User Interface</span>
+          <span class="arrow">→</span>
+          <span class="diagram-box" style="background:var(--ms-purple);">AI Foundry Agent</span>
+          <span class="arrow">→</span>
+          <span class="diagram-box" style="background:var(--ms-teal);">Tools &amp; Functions</span>
+        </div>
+        <div style="margin-top:16px;">
+          <span class="diagram-box" style="background:var(--ms-green);">Azure AI Search</span>
+          <span class="arrow">⟷</span>
+          <span class="diagram-box" style="background:var(--ms-purple);">Model Deployments</span>
+          <span class="arrow">⟷</span>
+          <span class="diagram-box" style="background:var(--ms-orange);">Content Safety</span>
+        </div>
+        <div style="margin-top:16px;">
+          <span class="diagram-box" style="background:#555;">Monitoring &amp; Tracing</span>
+          <span class="arrow">⟷</span>
+          <span class="diagram-box" style="background:#555;">Evaluation Pipeline</span>
+          <span class="arrow">⟷</span>
+          <span class="diagram-box" style="background:#555;">CI / CD</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">YAML</span>
+          <span>agent-config.yaml — Starter agent definition</span>
+        </div>
+<pre><span class="comment"># AI Foundry Capstone Agent Configuration</span>
+<span class="keyword">name</span>: <span class="string">"capstone-agent"</span>
+<span class="keyword">model</span>: <span class="string">"gpt-4o"</span>
+<span class="keyword">description</span>: <span class="string">"Your capstone project agent"</span>
+
+<span class="keyword">instructions</span>: |
+  You are an AI assistant for [YOUR DOMAIN].
+  Your role is to help users [PRIMARY TASK].
+  Always verify information against the knowledge base.
+  Escalate to a human when confidence is below 0.7.
+
+<span class="keyword">tools</span>:
+  - <span class="keyword">type</span>: <span class="string">"azure_ai_search"</span>
+    <span class="keyword">index_name</span>: <span class="string">"capstone-knowledge-index"</span>
+  - <span class="keyword">type</span>: <span class="string">"function"</span>
+    <span class="keyword">name</span>: <span class="string">"get_user_context"</span>
+  - <span class="keyword">type</span>: <span class="string">"code_interpreter"</span>
+
+<span class="keyword">evaluation</span>:
+  <span class="keyword">metrics</span>:
+    - <span class="string">"groundedness"</span>
+    - <span class="string">"relevance"</span>
+    - <span class="string">"coherence"</span>
+    - <span class="string">"fluency"</span>
+  <span class="keyword">frequency</span>: <span class="string">"per_run"</span></pre>
+      </div>
+
+      <h3>Key Architectural Decisions</h3>
+      <p>Document these decisions in your proposal — they'll guide your implementation:</p>
+      <ol>
+        <li><strong>Agent topology:</strong> Single agent, multi-agent pipeline, or hierarchical agent swarm?</li>
+        <li><strong>Knowledge strategy:</strong> RAG with Azure AI Search, fine-tuned model, or hybrid?</li>
+        <li><strong>Orchestration pattern:</strong> Sequential chain, parallel fan-out, or event-driven?</li>
+        <li><strong>Deployment model:</strong> Serverless (AI Foundry hosted), containerized, or hybrid?</li>
+        <li><strong>Evaluation approach:</strong> Online metrics, batch evaluation, human-in-the-loop, or all three?</li>
+      </ol>
+    </section>
+
+    <!-- ===================== SUCCESS CRITERIA ===================== -->
+    <section id="success-criteria">
+      <h2>3. Success Criteria &amp; Evaluation Plan</h2>
+      <p>
+        Define how you'll know your capstone succeeded. Strong success criteria are <strong>measurable</strong>, <strong>time-bound</strong>, and <strong>tied to user outcomes</strong>.
+      </p>
+
+      <h3>The SMART Criteria Framework</h3>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Example for Capstone</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>S</strong>pecific</td>
+            <td>"The agent correctly answers 90% of test queries from the evaluation dataset"</td>
+          </tr>
+          <tr>
+            <td><strong>M</strong>easurable</td>
+            <td>"Groundedness score ≥ 4.0/5.0 on the AI Foundry evaluation pipeline"</td>
+          </tr>
+          <tr>
+            <td><strong>A</strong>chievable</td>
+            <td>"Achievable within 3 module build sprints with available Azure credits"</td>
+          </tr>
+          <tr>
+            <td><strong>R</strong>elevant</td>
+            <td>"Solves a real workflow bottleneck for the target user persona"</td>
+          </tr>
+          <tr>
+            <td><strong>T</strong>ime-bound</td>
+            <td>"MVP functional by end of Module 43, polished by Module 44"</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Evaluation Plan Components</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>Phase 1 — Baseline Metrics (Module 42)</h4>
+          <p>Establish baseline performance using a curated test dataset of 50+ test cases. Run AI Foundry batch evaluation to capture groundedness, relevance, coherence, and fluency scores.</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Phase 2 — Iterative Improvement (Module 43)</h4>
+          <p>Optimize prompts, tune retrieval parameters, and refine agent tools. Track metric improvements per iteration. Target: ≥15% improvement over baseline.</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Phase 3 — Final Evaluation (Module 44)</h4>
+          <p>Run comprehensive evaluation including edge cases, adversarial inputs, and responsible AI red-teaming. Produce final evaluation report with comparison to baseline.</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Phase 4 — Presentation &amp; Demo</h4>
+          <p>Live demo to peers with Q&amp;A. Evaluation rubric covers technical depth, user experience, responsible AI practices, and presentation quality.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">Python</span>
+          <span>evaluation_plan.py — Automated evaluation scaffold</span>
+        </div>
+<pre><span class="keyword">from</span> azure.ai.evaluation <span class="keyword">import</span> <span class="type">EvaluatorConfig</span>, <span class="type">BatchEvaluator</span>
+<span class="keyword">from</span> azure.ai.projects <span class="keyword">import</span> <span class="type">AIProjectClient</span>
+
+<span class="comment"># Configure the evaluation pipeline for your capstone</span>
+<span class="keyword">def</span> <span class="function">create_evaluation_plan</span>(<span class="param">project_client</span>, <span class="param">agent_id</span>, <span class="param">dataset_path</span>):
+    <span class="string">"""Create a structured evaluation plan for capstone assessment."""</span>
+
+    evaluators = {
+        <span class="string">"groundedness"</span>: <span class="type">EvaluatorConfig</span>(
+            id=<span class="string">"azureai://groundedness"</span>,
+            init_params={<span class="string">"threshold"</span>: <span class="number">4.0</span>}
+        ),
+        <span class="string">"relevance"</span>: <span class="type">EvaluatorConfig</span>(
+            id=<span class="string">"azureai://relevance"</span>,
+            init_params={<span class="string">"threshold"</span>: <span class="number">4.0</span>}
+        ),
+        <span class="string">"coherence"</span>: <span class="type">EvaluatorConfig</span>(
+            id=<span class="string">"azureai://coherence"</span>,
+            init_params={<span class="string">"threshold"</span>: <span class="number">3.5</span>}
+        ),
+        <span class="string">"content_safety"</span>: <span class="type">EvaluatorConfig</span>(
+            id=<span class="string">"azureai://content-safety"</span>,
+            init_params={<span class="string">"severity_threshold"</span>: <span class="string">"medium"</span>}
+        ),
+    }
+
+    <span class="comment"># Run batch evaluation</span>
+    batch_eval = <span class="type">BatchEvaluator</span>(
+        project_client=<span class="param">project_client</span>,
+        evaluators=evaluators,
+        agent_id=<span class="param">agent_id</span>,
+        dataset_path=<span class="param">dataset_path</span>,
+        output_path=<span class="string">"./eval-results/"</span>,
+    )
+
+    results = batch_eval.run()
+
+    <span class="comment"># Print summary</span>
+    <span class="keyword">print</span>(<span class="string">"=== Capstone Evaluation Results ==="</span>)
+    <span class="keyword">for</span> metric, score <span class="keyword">in</span> results.metrics.items():
+        status = <span class="string">"✅ PASS"</span> <span class="keyword">if</span> score >= <span class="number">4.0</span> <span class="keyword">else</span> <span class="string">"⚠️ NEEDS WORK"</span>
+        <span class="keyword">print</span>(<span class="string">f"  {metric}: {score:.2f} {status}"</span>)
+
+    <span class="keyword">return</span> results</pre>
+      </div>
+    </section>
+
+    <!-- ===================== TEMPLATES ===================== -->
+    <section id="templates">
+      <h2>4. Project Templates &amp; Starter Code</h2>
+      <p>
+        Use these templates to accelerate your start. Each template is pre-configured with AI Foundry best practices, evaluation hooks, and responsible AI guardrails.
+      </p>
+
+      <h3>Project Structure Template</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">Folder Structure</span>
+          <span>Recommended capstone layout</span>
+        </div>
+<pre>capstone-project/
+├── <span class="keyword">README.md</span>                  <span class="comment"># Project overview &amp; setup</span>
+├── <span class="keyword">PROPOSAL.md</span>                <span class="comment"># Your capstone proposal</span>
+├── <span class="keyword">agent.yaml</span>                 <span class="comment"># AI Foundry agent definition</span>
+├── <span class="keyword">requirements.txt</span>           <span class="comment"># Python dependencies</span>
+├── src/
+│   ├── <span class="keyword">agent.py</span>               <span class="comment"># Agent creation &amp; configuration</span>
+│   ├── <span class="keyword">tools.py</span>               <span class="comment"># Custom tool functions</span>
+│   ├── <span class="keyword">prompts.py</span>             <span class="comment"># Prompt templates &amp; system messages</span>
+│   └── <span class="keyword">utils.py</span>               <span class="comment"># Helper utilities</span>
+├── data/
+│   ├── <span class="keyword">knowledge-base/</span>        <span class="comment"># Documents for RAG indexing</span>
+│   ├── <span class="keyword">eval-datasets/</span>         <span class="comment"># Evaluation test cases</span>
+│   └── <span class="keyword">sample-inputs/</span>         <span class="comment"># Demo inputs for testing</span>
+├── eval/
+│   ├── <span class="keyword">evaluators.py</span>          <span class="comment"># Custom evaluator definitions</span>
+│   ├── <span class="keyword">run_eval.py</span>            <span class="comment"># Batch evaluation script</span>
+│   └── <span class="keyword">results/</span>               <span class="comment"># Evaluation output</span>
+├── infra/
+│   ├── <span class="keyword">main.bicep</span>             <span class="comment"># Azure infrastructure as code</span>
+│   └── <span class="keyword">parameters.json</span>        <span class="comment"># Environment parameters</span>
+├── tests/
+│   ├── <span class="keyword">test_agent.py</span>          <span class="comment"># Agent integration tests</span>
+│   └── <span class="keyword">test_tools.py</span>          <span class="comment"># Tool function unit tests</span>
+└── docs/
+    ├── <span class="keyword">architecture.md</span>        <span class="comment"># Architecture diagram &amp; decisions</span>
+    └── <span class="keyword">evaluation-report.md</span>   <span class="comment"># Final evaluation results</span></pre>
+      </div>
+
+      <h3>Starter Agent Code</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">Python</span>
+          <span>src/agent.py — Capstone agent starter</span>
+        </div>
+<pre><span class="keyword">import</span> os
+<span class="keyword">from</span> azure.identity <span class="keyword">import</span> <span class="type">DefaultAzureCredential</span>
+<span class="keyword">from</span> azure.ai.projects <span class="keyword">import</span> <span class="type">AIProjectClient</span>
+<span class="keyword">from</span> azure.ai.agents.models <span class="keyword">import</span> (
+    <span class="type">AzureAISearchTool</span>,
+    <span class="type">FunctionTool</span>,
+    <span class="type">CodeInterpreterTool</span>,
+)
+<span class="keyword">from</span> src.tools <span class="keyword">import</span> <span class="param">tool_functions</span>
+
+<span class="keyword">def</span> <span class="function">create_capstone_agent</span>():
+    <span class="string">"""Initialize and configure the capstone AI Foundry agent."""</span>
+
+    <span class="comment"># Connect to your AI Foundry project</span>
+    client = <span class="type">AIProjectClient</span>(
+        credential=<span class="type">DefaultAzureCredential</span>(),
+        endpoint=os.environ[<span class="string">"AZURE_AI_FOUNDRY_ENDPOINT"</span>],
+    )
+
+    <span class="comment"># Configure tools</span>
+    search_tool = <span class="type">AzureAISearchTool</span>(
+        index_connection_id=os.environ[<span class="string">"SEARCH_CONNECTION_ID"</span>],
+        index_name=<span class="string">"capstone-index"</span>,
+    )
+    code_tool = <span class="type">CodeInterpreterTool</span>()
+    custom_tools = <span class="type">FunctionTool</span>(functions=<span class="param">tool_functions</span>)
+
+    <span class="comment"># Create the agent</span>
+    agent = client.agents.create_agent(
+        model=<span class="string">"gpt-4o"</span>,
+        name=<span class="string">"capstone-agent"</span>,
+        instructions=<span class="function">load_system_prompt</span>(),
+        tools=[search_tool, code_tool, custom_tools],
+    )
+
+    <span class="keyword">print</span>(<span class="string">f"✅ Agent created: {agent.id}"</span>)
+    <span class="keyword">return</span> client, agent
+
+
+<span class="keyword">def</span> <span class="function">load_system_prompt</span>():
+    <span class="string">"""Load the system prompt from prompts.py or a file."""</span>
+    <span class="keyword">return</span> <span class="string">"""
+You are an AI assistant for [YOUR DOMAIN].
+
+## Core Responsibilities
+- Answer user questions accurately using the knowledge base
+- Perform actions through available tools when requested
+- Maintain conversation context across multi-turn dialogues
+- Flag uncertain or out-of-scope queries for human review
+
+## Guardrails
+- Never fabricate information not in the knowledge base
+- Always cite sources when providing factual answers
+- Decline requests that violate content safety policies
+- Escalate sensitive topics to human operators
+"""</span>
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    client, agent = <span class="function">create_capstone_agent</span>()</pre>
+      </div>
+
+      <h3>Proposal Template</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">Markdown</span>
+          <span>PROPOSAL.md — Capstone proposal template</span>
+        </div>
+<pre><span class="comment"># Capstone Project Proposal</span>
+
+<span class="keyword">## Project Title</span>
+[Your project name]
+
+<span class="keyword">## Problem Statement</span>
+[What problem does this project solve? Who are the users?]
+
+<span class="keyword">## Proposed Solution</span>
+[How does your AI Foundry-based solution address the problem?]
+
+<span class="keyword">## Architecture Overview</span>
+[Diagram + description of components, data flow, integrations]
+
+<span class="keyword">## AI Foundry Services Used</span>
+| Service              | Purpose                          |
+|----------------------|----------------------------------|
+| Agent Service        | Core conversational agent        |
+| Azure AI Search      | Knowledge retrieval (RAG)        |
+| Model Deployments    | GPT-4o / custom model            |
+| Content Safety       | Input/output filtering           |
+| Evaluation           | Quality &amp; safety metrics         |
+
+<span class="keyword">## Success Criteria</span>
+1. [Measurable criterion 1]
+2. [Measurable criterion 2]
+3. [Measurable criterion 3]
+
+<span class="keyword">## Timeline</span>
+- Module 42: [Build milestone]
+- Module 43: [Integration milestone]
+- Module 44: [Polish &amp; present milestone]
+
+<span class="keyword">## Risk Mitigation</span>
+| Risk                 | Mitigation Strategy              |
+|----------------------|----------------------------------|
+| [Risk 1]             | [Strategy]                       |
+| [Risk 2]             | [Strategy]                       |</pre>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-title">📘 Template Repository</div>
+        <p>All templates are available in the companion repository. Clone the <code>capstone-starter</code> branch to get the full project scaffold with pre-configured GitHub Actions, Bicep templates, and evaluation pipelines.</p>
+      </div>
+    </section>
+
+    <!-- ===================== ARCHITECTURE PATTERNS ===================== -->
+    <section id="architecture-patterns">
+      <h2>5. Capstone Architecture Patterns</h2>
+      <p>
+        Choose the architecture pattern that best matches your project's complexity and requirements. Each pattern builds on skills you've developed throughout the curriculum.
+      </p>
+
+      <h3>Pattern A: Single-Agent RAG Application</h3>
+      <p><strong>Best for:</strong> Knowledge-intensive Q&amp;A, document search, customer support</p>
+      <ul>
+        <li>One AI Foundry agent with Azure AI Search tool</li>
+        <li>Grounded responses from indexed documents</li>
+        <li>Content safety layer for input/output filtering</li>
+        <li>Batch evaluation for quality assurance</li>
+      </ul>
+
+      <h3>Pattern B: Multi-Agent Orchestration</h3>
+      <p><strong>Best for:</strong> Complex workflows, task decomposition, domain-specific expertise</p>
+      <ul>
+        <li>Orchestrator agent that delegates to specialist agents</li>
+        <li>Each specialist handles a specific domain or capability</li>
+        <li>Shared context through thread management</li>
+        <li>Inter-agent evaluation and handoff protocols</li>
+      </ul>
+
+      <h3>Pattern C: Event-Driven AI Pipeline</h3>
+      <p><strong>Best for:</strong> Document processing, monitoring, automated workflows</p>
+      <ul>
+        <li>Event triggers (file upload, schedule, API call) initiate agent workflows</li>
+        <li>Azure Functions or Container Apps as compute substrate</li>
+        <li>Asynchronous processing with status tracking</li>
+        <li>End-to-end tracing with Azure Monitor</li>
+      </ul>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">Python</span>
+          <span>Multi-agent orchestration pattern</span>
+        </div>
+<pre><span class="keyword">async def</span> <span class="function">orchestrate_capstone</span>(<span class="param">user_query</span>: str, <span class="param">client</span>):
+    <span class="string">"""Route queries to specialized agents based on intent."""</span>
+
+    <span class="comment"># Step 1: Classify intent</span>
+    intent = <span class="keyword">await</span> <span class="function">classify_intent</span>(<span class="param">user_query</span>, <span class="param">client</span>)
+
+    <span class="comment"># Step 2: Route to specialist agent</span>
+    agent_map = {
+        <span class="string">"knowledge_query"</span>: rag_agent_id,
+        <span class="string">"data_analysis"</span>:   analytics_agent_id,
+        <span class="string">"action_request"</span>:  action_agent_id,
+    }
+
+    target_agent = agent_map.get(intent, rag_agent_id)
+
+    <span class="comment"># Step 3: Execute with target agent</span>
+    thread = client.agents.threads.create()
+    client.agents.messages.create(
+        thread_id=thread.id,
+        role=<span class="string">"user"</span>,
+        content=<span class="param">user_query</span>,
+    )
+
+    run = client.agents.runs.create_and_process(
+        agent_id=target_agent,
+        thread_id=thread.id,
+    )
+
+    <span class="comment"># Step 4: Return result with metadata</span>
+    messages = client.agents.messages.list(thread_id=thread.id)
+    <span class="keyword">return</span> {
+        <span class="string">"response"</span>: messages.data[<span class="number">0</span>].content[<span class="number">0</span>].text.value,
+        <span class="string">"agent_used"</span>: target_agent,
+        <span class="string">"intent"</span>: intent,
+    }</pre>
+      </div>
+    </section>
+
+    <!-- ===================== RUBRIC ===================== -->
+    <section id="rubric">
+      <h2>6. Capstone Evaluation Rubric</h2>
+      <p>
+        Your final capstone will be assessed against this rubric. Use it as a guide while planning and building:
+      </p>
+
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Weight</th>
+            <th>Excellent (5)</th>
+            <th>Needs Work (2-3)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Technical Depth</strong></td>
+            <td>30%</td>
+            <td>Uses 5+ AI Foundry services with custom integrations and optimized configurations</td>
+            <td>Uses minimum required services with default settings</td>
+          </tr>
+          <tr>
+            <td><strong>Agent Design</strong></td>
+            <td>20%</td>
+            <td>Multi-agent with clear roles, robust error handling, graceful degradation</td>
+            <td>Single agent with basic tool usage</td>
+          </tr>
+          <tr>
+            <td><strong>Evaluation Quality</strong></td>
+            <td>20%</td>
+            <td>Comprehensive evaluation with custom metrics, trend analysis, and red-teaming</td>
+            <td>Basic built-in evaluator run with minimal test data</td>
+          </tr>
+          <tr>
+            <td><strong>Responsible AI</strong></td>
+            <td>15%</td>
+            <td>Content safety, bias testing, transparency, human oversight, documented RAI analysis</td>
+            <td>Basic content filter enabled, minimal RAI documentation</td>
+          </tr>
+          <tr>
+            <td><strong>Presentation</strong></td>
+            <td>15%</td>
+            <td>Clear demo, strong narrative, handles Q&amp;A, shows iteration journey</td>
+            <td>Basic walkthrough with limited context</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===================== MINI HACK ===================== -->
+    <section id="mini-hack">
+      <h2>7. Mini Hack: Write Your Project Proposal &amp; Architecture Diagram</h2>
+
+      <div class="mini-hack">
+        <h3>🧪 Mini Hack Challenge</h3>
+        <p style="margin-bottom:16px;">
+          In this hands-on challenge, you'll produce the two foundational artifacts for your capstone: a written proposal and an architecture diagram. These will be reviewed and refined before you begin building in Module 42.
+        </p>
+
+        <div class="hack-step">
+          <h4>Step 1: Choose Your Project (15 min)</h4>
+          <p>Select from the curated ideas above or define your own. Validate it against the Scope Fitness Test table. Document your choice and rationale.</p>
+        </div>
+
+        <div class="hack-step">
+          <h4>Step 2: Gather Requirements (20 min)</h4>
+          <ul style="margin:8px 0 0 20px;">
+            <li>Write 5–8 user stories in "As a [role], I want [goal], so that [benefit]" format</li>
+            <li>List 3+ non-functional requirements (latency, security, cost)</li>
+            <li>Identify 2+ external data sources or APIs your agent will use</li>
+          </ul>
+        </div>
+
+        <div class="hack-step">
+          <h4>Step 3: Design Your Architecture (25 min)</h4>
+          <ul style="margin:8px 0 0 20px;">
+            <li>Draw an architecture diagram showing all AI Foundry components</li>
+            <li>Label data flows between components with arrows</li>
+            <li>Identify which architecture pattern (A, B, or C) you're following</li>
+            <li>Document 3 key architectural decisions and their rationale</li>
+          </ul>
+        </div>
+
+        <div class="hack-step">
+          <h4>Step 4: Define Success Criteria (15 min)</h4>
+          <ul style="margin:8px 0 0 20px;">
+            <li>Write 3–5 SMART success criteria for your capstone</li>
+            <li>Define your evaluation dataset strategy (how many test cases, categories)</li>
+            <li>Set target scores for at least 3 AI Foundry evaluation metrics</li>
+          </ul>
+        </div>
+
+        <div class="hack-step">
+          <h4>Step 5: Write the Proposal (15 min)</h4>
+          <ul style="margin:8px 0 0 20px;">
+            <li>Use the PROPOSAL.md template provided in Section 4</li>
+            <li>Fill in every section — leave no placeholders</li>
+            <li>Include your architecture diagram (embedded or as a link)</li>
+            <li>Add a risk mitigation table with at least 3 identified risks</li>
+          </ul>
+        </div>
+
+        <div class="callout tip" style="margin-top:20px; background:rgba(16,124,16,0.15); border-color:var(--ms-green);">
+          <div class="callout-title" style="color:#4caf50;">✅ Completion Checklist</div>
+          <ul class="checklist" style="border:none;">
+            <li>Project idea selected and validated against scope criteria</li>
+            <li>5+ user stories documented</li>
+            <li>Architecture diagram with all AI Foundry components labeled</li>
+            <li>3+ SMART success criteria defined</li>
+            <li>PROPOSAL.md completed with all sections filled</li>
+            <li>Risk mitigation table with 3+ risks</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== BEST PRACTICES ===================== -->
+    <section id="best-practices">
+      <h2>8. Best Practices for Capstone Success</h2>
+
+      <h3>Do's</h3>
+      <ul>
+        <li><strong>Start with the evaluation dataset</strong> — building test cases first clarifies requirements and prevents scope creep</li>
+        <li><strong>Use AI Foundry's built-in evaluators</strong> — they provide standardized metrics that demonstrate proficiency</li>
+        <li><strong>Version everything</strong> — prompts, agent configs, evaluation results, and infrastructure code belong in source control</li>
+        <li><strong>Build incrementally</strong> — get a single end-to-end flow working before adding complexity</li>
+        <li><strong>Document decisions</strong> — your architecture decision records (ADRs) are as valuable as the code</li>
+      </ul>
+
+      <h3>Don'ts</h3>
+      <ul>
+        <li><strong>Don't boil the ocean</strong> — scope to what's achievable in 3 modules, not a production startup</li>
+        <li><strong>Don't skip responsible AI</strong> — content safety and bias evaluation are required, not optional</li>
+        <li><strong>Don't hardcode secrets</strong> — use Azure Key Vault and managed identities from day one</li>
+        <li><strong>Don't ignore costs</strong> — set Azure budget alerts and choose model deployments wisely</li>
+        <li><strong>Don't work in isolation</strong> — peer feedback during the proposal phase saves rework later</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">⚠️ Common Pitfall</div>
+        <p>The #1 reason capstones stall is <strong>scope creep</strong>. Lock your MVC scope before Module 42 begins. Any feature not in your approved proposal goes to a "future work" backlog — no exceptions.</p>
+      </div>
+    </section>
+
+    <!-- ===================== KEY TAKEAWAYS ===================== -->
+    <section id="key-takeaways">
+      <h2>9. Key Takeaways</h2>
+      <ul>
+        <li>Your capstone is the <strong>culminating demonstration</strong> of all 40 modules of AI Foundry mastery</li>
+        <li>Choose a project that demonstrates <strong>breadth</strong> (multiple services) and <strong>depth</strong> (real-world complexity)</li>
+        <li>Rigorous <strong>requirements gathering</strong> and <strong>architecture planning</strong> prevent costly rework during build sprints</li>
+        <li><strong>SMART success criteria</strong> with measurable evaluation metrics ensure objective quality assessment</li>
+        <li>Use the provided <strong>templates and starter code</strong> to accelerate your start — don't build scaffolding from scratch</li>
+        <li>The <strong>evaluation rubric</strong> is your guide: technical depth, agent design, evaluation quality, responsible AI, and presentation</li>
+        <li>Start with your <strong>Minimum Viable Capstone</strong> (MVC) and iterate — perfection is the enemy of completion</li>
+      </ul>
+    </section>
+
+    <!-- ===================== NEXT STEPS ===================== -->
+    <section id="next-steps">
+      <h2>10. What's Next</h2>
+      <p>
+        With your proposal approved and architecture designed, you're ready to build. In <strong>Module 42: Build Your Capstone — Part 1</strong>, you'll:
+      </p>
+      <ul>
+        <li>Set up your AI Foundry project and deploy infrastructure</li>
+        <li>Create your agent with the configuration defined in your proposal</li>
+        <li>Build the first end-to-end interaction flow</li>
+        <li>Establish your baseline evaluation metrics</li>
+      </ul>
+
+      <div class="callout capstone">
+        <div class="callout-title">🎓 Capstone Journey Ahead</div>
+        <p><strong>Module 42:</strong> Build Part 1 (core agent + data pipeline) → <strong>Module 43:</strong> Build Part 2 (integration + optimization) → <strong>Module 44:</strong> Polish &amp; Present → <strong>Module 45:</strong> Graduation &amp; Next Steps</p>
+      </div>
+    </section>
+
+    <!-- ===================== RELATED MATERIALS ===================== -->
+    <h3>Related Module Materials</h3>
+    <ul>
+      <li><strong>Training Guide:</strong> <code>training-guide.md</code></li>
+      <li><strong>Presentation:</strong> <code>slides/presentation.html</code></li>
+      <li><strong>Hands-On Lab:</strong> <code>lab/hands-on-lab.md</code></li>
+      <li><strong>Assessment Quiz:</strong> <code>quiz/assessment.md</code></li>
+    </ul>
+
+    <!-- ============================================================
+         MODULE NAVIGATION
+         ============================================================ -->
+    <nav class="module-nav">
+      <a href="../module-40/blog.html" class="prev">
+        <span class="nav-label">← Previous</span>
+        <span class="nav-title">Module 40: Capstone Readiness Review</span>
+      </a>
+      <a href="../module-42/blog.html" class="next">
+        <span class="nav-label">Next →</span>
+        <span class="nav-title">Module 42: Build Your Capstone — Part 1</span>
+      </a>
+    </nav>
+
+  </article>
+
+  <!-- ============================================================
+       TABLE OF CONTENTS SIDEBAR
+       ============================================================ -->
+  <aside class="toc-sidebar">
+    <h4>On This Page</h4>
+    <ul class="toc-list">
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#video">Featured Video</a></li>
+      <li><a href="#project-ideas">1. Project Ideas &amp; Scope</a></li>
+      <li><a href="#requirements">2. Requirements &amp; Architecture</a></li>
+      <li><a href="#success-criteria">3. Success Criteria</a></li>
+      <li><a href="#templates">4. Templates &amp; Starter Code</a></li>
+      <li><a href="#architecture-patterns">5. Architecture Patterns</a></li>
+      <li><a href="#rubric">6. Evaluation Rubric</a></li>
+      <li><a href="#mini-hack">7. Mini Hack</a></li>
+      <li><a href="#best-practices">8. Best Practices</a></li>
+      <li><a href="#key-takeaways">9. Key Takeaways</a></li>
+      <li><a href="#next-steps">10. What's Next</a></li>
+    </ul>
+  </aside>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. Module 41 of 45.</p>
+    <ul class="footer-links">
+      <li><a href="#">Curriculum</a></li>
+      <li><a href="#">Resources</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+      <li><a href="#">Privacy</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Scroll Progress Bar ----
+  const progressBar = document.getElementById('scrollProgress');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+
+  // ---- Back to Top Button ----
+  const backToTop = document.getElementById('backToTop');
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---- Sticky TOC Active State with IntersectionObserver ----
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = [];
+
+  tocLinks.forEach(function(link) {
+    const id = link.getAttribute('href').substring(1);
+    const section = document.getElementById(id);
+    if (section) sections.push({ id: id, element: section, link: link });
+  });
+
+  function setActiveLink(id) {
+    tocLinks.forEach(function(link) { link.classList.remove('active'); });
+    const activeLink = document.querySelector('.toc-list a[href="#' + id + '"]');
+    if (activeLink) activeLink.classList.add('active');
+  }
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) setActiveLink(entry.target.id);
+      });
+    }, { root: null, rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+
+    sections.forEach(function(section) { observer.observe(section.element); });
+  }
+
+  // ---- Smooth scroll for TOC links ----
+  tocLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.getElementById(this.getAttribute('href').substring(1));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ---- Combined scroll listener ----
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        updateProgress();
+        updateBackToTop();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // ---- Initial state ----
+  updateProgress();
+  updateBackToTop();
+  if (sections.length > 0) setActiveLink(sections[0].id);
+})();
+</script>
+</body>
+</html>

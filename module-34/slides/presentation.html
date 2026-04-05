@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 34 — Responsible AI Dashboards &amp; Content Safety at Scale | Presentation</title>
+<style>
+    :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-tertiary: #1c2333;
+        --bg-card: #21262d;
+        --text-primary: #f0f6fc;
+        --text-secondary: #c9d1d9;
+        --text-muted: #8b949e;
+        --accent-purple: #8b5cf6;
+        --accent-purple-dim: rgba(139,92,246,0.15);
+        --accent-blue: #58a6ff;
+        --accent-green: #3fb950;
+        --accent-yellow: #d29922;
+        --accent-red: #f85149;
+        --accent-orange: #d18616;
+        --border: #30363d;
+        --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: var(--font-sans);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .slide-deck {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+    }
+
+    .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        padding: 4rem 6rem;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .slide.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 2rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        z-index: 100;
+    }
+
+    .slide-progress {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+        transition: width 0.4s ease;
+        z-index: 100;
+    }
+
+    .controls-hint {
+        position: fixed;
+        bottom: 1.5rem;
+        left: 2rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        z-index: 100;
+    }
+
+    /* Common elements */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--accent-purple-dim);
+        border: 1px solid rgba(139,92,246,0.3);
+        border-radius: 20px;
+        padding: 0.3rem 1rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--accent-purple);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1.2rem;
+    }
+
+    .slide h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
+    }
+
+    .slide h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    .slide h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--accent-blue);
+    }
+
+    .slide p {
+        font-size: 1.15rem;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        max-width: 800px;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .gold-text {
+        background: linear-gradient(135deg, #d29922, #f0883e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Lists */
+    .slide ul, .slide ol {
+        margin: 0.5rem 0 1rem 1.5rem;
+    }
+
+    .slide li {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.6rem;
+        line-height: 1.5;
+    }
+
+    .slide li strong {
+        color: var(--text-primary);
+    }
+
+    /* Icon list */
+    .icon-list {
+        list-style: none;
+        margin-left: 0;
+    }
+
+    .icon-list li {
+        padding-left: 2.2rem;
+        position: relative;
+        margin-bottom: 0.8rem;
+    }
+
+    .icon-list li .icon {
+        position: absolute;
+        left: 0;
+        top: 0.1rem;
+        font-size: 1.2rem;
+    }
+
+    /* Cards */
+    .cards-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.2rem;
+        margin-top: 1.5rem;
+    }
+
+    .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .card-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
+
+    .card h4 {
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin-bottom: 0.4rem;
+    }
+
+    .card p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    /* Code */
+    .code-block {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.2rem 1.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        overflow-x: auto;
+        margin-top: 1rem;
+    }
+
+    .code-block .kw { color: #ff7b72; }
+    .code-block .str { color: #a5d6ff; }
+    .code-block .fn { color: #d2a8ff; }
+    .code-block .cm { color: #8b949e; }
+    .code-block .num { color: #79c0ff; }
+    .code-block .type { color: #7ee787; }
+
+    /* Tables */
+    .slide-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .slide-table th {
+        background: var(--bg-card);
+        color: var(--accent-purple);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: left;
+        padding: 0.7rem 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--accent-purple);
+    }
+
+    .slide-table td {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .slide-table tr:hover td {
+        background: var(--bg-secondary);
+    }
+
+    /* Pipeline */
+    .pipeline {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .pipeline-node {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .pipeline-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    .pipeline-label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .pipeline-arrow {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+    }
+
+    /* Timeline */
+    .timeline {
+        margin: 1rem 0;
+        padding-left: 1.5rem;
+        border-left: 2px solid var(--accent-red);
+    }
+
+    .timeline-item {
+        margin-bottom: 1rem;
+        padding-left: 1rem;
+        position: relative;
+    }
+
+    .timeline-item::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        background: var(--accent-red);
+        border-radius: 50%;
+        position: absolute;
+        left: -1.85rem;
+        top: 0.35rem;
+    }
+
+    .timeline-phase {
+        font-size: 0.7rem;
+        color: var(--accent-red);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline-item h4 {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        margin: 0.1rem 0 0.2rem;
+    }
+
+    .timeline-item p {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+
+    /* Two column layout */
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Severity badges */
+    .sev { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 700; }
+    .sev-critical { background: rgba(248,81,73,0.15); color: var(--accent-red); }
+    .sev-high { background: rgba(210,134,22,0.15); color: var(--accent-orange); }
+    .sev-medium { background: rgba(210,153,34,0.15); color: var(--accent-yellow); }
+    .sev-low { background: rgba(63,185,80,0.15); color: var(--accent-green); }
+
+    /* Arch diagram */
+    .arch-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        max-width: 650px;
+        margin: 1.5rem auto;
+    }
+
+    .arch-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.9rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        border: 1px solid var(--border);
+    }
+
+    .arch-conn {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+        .slide { padding: 2rem 2.5rem; }
+        .slide h1 { font-size: 2rem; }
+        .slide h2 { font-size: 1.5rem; }
+        .two-col { grid-template-columns: 1fr; }
+        .cards-row { grid-template-columns: 1fr 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<div class="slide-deck" id="deck">
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide active" data-slide="1">
+        <div class="badge">🛡️ ARC 7 · SECURITY &amp; GOVERNANCE</div>
+        <h1>Responsible AI Dashboards &amp;<br><span class="gradient-text">Content Safety at Scale</span></h1>
+        <p style="margin-bottom:2rem;">Module 34 of 45 — Azure AI Foundry: Zero to Hero</p>
+        <p style="font-size:0.9rem;color:var(--text-muted);">April 2026 · Advanced · 90 minutes</p>
+    </div>
+
+    <!-- SLIDE 2: Agenda -->
+    <div class="slide" data-slide="2">
+        <div class="badge">📋 AGENDA</div>
+        <h2>What We'll Cover Today</h2>
+        <ul class="icon-list">
+            <li><span class="icon">📊</span><strong>Responsible AI Dashboards</strong> — Configuration, components, and dashboard-as-code</li>
+            <li><span class="icon">🛡️</span><strong>Content Safety at Enterprise Scale</strong> — Custom blocklists, severity policies, multi-layer pipelines</li>
+            <li><span class="icon">📈</span><strong>Bias &amp; Fairness Monitoring</strong> — Continuous evaluation, fairness metrics, Azure Monitor integration</li>
+            <li><span class="icon">🚨</span><strong>Incident Response</strong> — AI safety playbooks, severity classification, emergency containment</li>
+            <li><span class="icon">⚡</span><strong>Mini Hack</strong> — Build an enterprise content safety policy from scratch</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 3: Why RAI Matters -->
+    <div class="slide" data-slide="3">
+        <div class="badge">🏛️ CONTEXT</div>
+        <h2>Why Responsible AI at Enterprise Scale</h2>
+        <div class="two-col">
+            <div>
+                <h3>Business Imperatives</h3>
+                <ul class="icon-list">
+                    <li><span class="icon">⚖️</span><strong>Regulatory Compliance:</strong> EU AI Act mandates risk assessment, transparency, and bias testing</li>
+                    <li><span class="icon">🤝</span><strong>Customer Trust:</strong> 78% of users stop using AI products after a single harmful experience</li>
+                    <li><span class="icon">💰</span><strong>Financial Risk:</strong> AI safety failures cost enterprises $5–50M per incident in remediation and reputation</li>
+                    <li><span class="icon">📜</span><strong>Legal Liability:</strong> Growing precedent for AI-caused harm litigation</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Key Regulations</h3>
+                <table class="slide-table">
+                    <tr><th>Framework</th><th>Scope</th></tr>
+                    <tr><td><strong>EU AI Act</strong></td><td>Risk classification, transparency</td></tr>
+                    <tr><td><strong>NIST AI RMF</strong></td><td>Govern, Map, Measure, Manage</td></tr>
+                    <tr><td><strong>ISO 42001</strong></td><td>AI Management Systems</td></tr>
+                    <tr><td><strong>EO 14110</strong></td><td>Safety testing, red-teaming</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: RAI Dashboard Overview -->
+    <div class="slide" data-slide="4">
+        <div class="badge">📊 DASHBOARDS</div>
+        <h2>Responsible AI Dashboard in Azure AI Foundry</h2>
+        <p style="margin-bottom:1.5rem;">Centralized, interactive views of how your AI systems perform across Microsoft's Responsible AI principles.</p>
+        <div class="cards-row">
+            <div class="card">
+                <div class="card-icon">🎯</div>
+                <h4>Error Analysis</h4>
+                <p>Tree maps and heat maps revealing cohorts where models underperform</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚖️</div>
+                <h4>Fairness Assessment</h4>
+                <p>Compare behavior across demographic groups for disparities</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🔍</div>
+                <h4>Data Explorer</h4>
+                <p>Interactive drill-into of specific failures and safety violations</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📝</div>
+                <h4>Explanation Cards</h4>
+                <p>Human-readable audit trails for flagged and blocked outputs</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: Dashboard Configuration Code -->
+    <div class="slide" data-slide="5">
+        <div class="badge">💻 CODE</div>
+        <h2>Dashboard-as-Code Configuration</h2>
+        <p>Programmatically create and version-control your RAI dashboard setup:</p>
+        <div class="code-block">
+<span class="cm"># Configure RAI Dashboard in Azure AI Foundry</span>
+<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> <span class="type">RAIDashboardConfig</span>, <span class="type">EvaluatorConfig</span>
+
+dashboard_config = <span class="type">RAIDashboardConfig</span>(
+    display_name=<span class="str">"Enterprise RAI Dashboard"</span>,
+    evaluators=[
+        <span class="type">EvaluatorConfig</span>(name=<span class="str">"content_safety"</span>,
+            severity_threshold=<span class="num">2</span>,
+            categories=[<span class="str">"hate"</span>, <span class="str">"sexual"</span>, <span class="str">"violence"</span>, <span class="str">"self_harm"</span>],
+            custom_blocklist_ids=[<span class="str">"financial-compliance"</span>]),
+        <span class="type">EvaluatorConfig</span>(name=<span class="str">"fairness"</span>,
+            protected_attributes=[<span class="str">"gender"</span>, <span class="str">"age_group"</span>],
+            disparity_threshold=<span class="num">0.1</span>),
+    ],
+    schedule=<span class="str">"0 */4 * * *"</span>,  <span class="cm"># Every 4 hours</span>
+    alert_recipients=[<span class="str">"rai-team@contoso.com"</span>]
+)
+dashboard = project_client.rai_dashboards.<span class="fn">create</span>(config=dashboard_config)
+        </div>
+    </div>
+
+    <!-- SLIDE 6: Content Safety Overview -->
+    <div class="slide" data-slide="6">
+        <div class="badge">🛡️ CONTENT SAFETY</div>
+        <h2>Azure AI Content Safety — Enterprise Architecture</h2>
+        <p style="margin-bottom:1rem;">Multi-layer content moderation pipeline for production generative AI applications:</p>
+        <div class="pipeline">
+            <div class="pipeline-node">
+                <div class="pipeline-icon" style="background:var(--accent-blue);">📥</div>
+                <div class="pipeline-label">User Input</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node">
+                <div class="pipeline-icon" style="background:var(--accent-red);">🛡️</div>
+                <div class="pipeline-label">Input Filter</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node">
+                <div class="pipeline-icon" style="background:var(--accent-purple);">📋</div>
+                <div class="pipeline-label">Blocklists</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node">
+                <div class="pipeline-icon" style="background:var(--accent-orange);">🤖</div>
+                <div class="pipeline-label">Model</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node">
+                <div class="pipeline-icon" style="background:var(--accent-red);">🛡️</div>
+                <div class="pipeline-label">Output Filter</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node">
+                <div class="pipeline-icon" style="background:var(--accent-green);">✅</div>
+                <div class="pipeline-label">Safe Output</div>
+            </div>
+        </div>
+        <p style="font-size:0.9rem;text-align:center;color:var(--text-muted);">Each layer adds defense-in-depth: built-in categories + custom blocklists + jailbreak detection</p>
+    </div>
+
+    <!-- SLIDE 7: Safety Categories -->
+    <div class="slide" data-slide="7">
+        <div class="badge">📋 CATEGORIES</div>
+        <h2>Content Safety Categories &amp; Severity</h2>
+        <table class="slide-table">
+            <thead>
+                <tr><th>Category</th><th>Severity Range</th><th>Recommended Threshold</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Hate &amp; Fairness</strong></td><td>0 → 2 → 4 → 6</td><td>Block at ≥ 4</td></tr>
+                <tr><td><strong>Sexual Content</strong></td><td>0 → 2 → 4 → 6</td><td>Block at ≥ 4</td></tr>
+                <tr><td><strong>Violence</strong></td><td>0 → 2 → 4 → 6</td><td>Block at ≥ 2</td></tr>
+                <tr><td><strong>Self-Harm</strong></td><td>0 → 2 → 4 → 6</td><td>Block at ≥ 0 (zero tolerance)</td></tr>
+                <tr><td><strong>Jailbreak Attacks</strong></td><td>Detected / Not</td><td>Always block</td></tr>
+                <tr><td><strong>Protected Material</strong></td><td>Detected / Not</td><td>Always block</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top:1rem;font-size:0.9rem;">Eight severity levels (0–7) available for granular enterprise configurations</p>
+    </div>
+
+    <!-- SLIDE 8: Custom Blocklists -->
+    <div class="slide" data-slide="8">
+        <div class="badge">📋 BLOCKLISTS</div>
+        <h2>Custom Blocklists — Enterprise Deep Dive</h2>
+        <div class="two-col">
+            <div>
+                <h3>Capabilities</h3>
+                <ul class="icon-list">
+                    <li><span class="icon">📦</span><strong>100 blocklists</strong> per Content Safety resource</li>
+                    <li><span class="icon">📝</span><strong>10,000 items</strong> per blocklist</li>
+                    <li><span class="icon">⚡</span><strong>&lt; 5ms latency</strong> per blocklist check</li>
+                    <li><span class="icon">🔄</span><strong>Real-time updates</strong> — no deployment needed</li>
+                    <li><span class="icon">🎯</span><strong>Exact + substring</strong> matching</li>
+                </ul>
+                <h3 style="margin-top:1.5rem;">Common Enterprise Blocklists</h3>
+                <ul>
+                    <li>Financial compliance terms</li>
+                    <li>PII pattern protection</li>
+                    <li>Competitor brand names</li>
+                    <li>Regulatory restricted phrases</li>
+                    <li>Industry-specific harmful terms</li>
+                </ul>
+            </div>
+            <div>
+                <div class="code-block">
+<span class="cm"># Create a custom blocklist</span>
+client.<span class="fn">create_or_update_text_blocklist</span>(
+    blocklist_name=<span class="str">"financial-compliance"</span>,
+    options=<span class="type">TextBlocklist</span>(
+        blocklist_name=<span class="str">"financial-compliance"</span>,
+        description=<span class="str">"Block unauthorized claims"</span>
+    )
+)
+
+<span class="cm"># Add items</span>
+items = [
+    <span class="type">TextBlocklistItem</span>(
+        text=<span class="str">"guaranteed returns"</span>),
+    <span class="type">TextBlocklistItem</span>(
+        text=<span class="str">"risk-free investment"</span>),
+    <span class="type">TextBlocklistItem</span>(
+        text=<span class="str">"insider trading tip"</span>),
+]
+client.<span class="fn">add_or_update_blocklist_items</span>(
+    blocklist_name=<span class="str">"financial-compliance"</span>,
+    options={<span class="str">"blocklistItems"</span>: items}
+)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: Fairness Monitoring -->
+    <div class="slide" data-slide="9">
+        <div class="badge">📈 MONITORING</div>
+        <h2>Bias &amp; Fairness Monitoring</h2>
+        <table class="slide-table">
+            <thead>
+                <tr><th>Metric</th><th>What It Measures</th><th>Threshold</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Demographic Parity</strong></td><td>Equal positive outcome probability</td><td>Ratio ≥ 0.8</td></tr>
+                <tr><td><strong>Equalized Odds</strong></td><td>Equal TPR &amp; FPR across groups</td><td>Diff ≤ 0.1</td></tr>
+                <tr><td><strong>Quality Disparity</strong></td><td>Output quality gap by demographics</td><td>Gap ≤ 0.15</td></tr>
+                <tr><td><strong>Refusal Rate Disparity</strong></td><td>Refusal differences by group</td><td>Ratio ≥ 0.9</td></tr>
+                <tr><td><strong>Stereotyping Score</strong></td><td>Stereotypical associations in outputs</td><td>Score ≤ 0.05</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top:1.2rem;font-size:0.9rem;">
+            ⚠️ <strong>Key principle:</strong> Never collect demographic data from end users. Use controlled evaluation datasets with known attributes. Monitor production via aggregate statistical tests.
+        </p>
+    </div>
+
+    <!-- SLIDE 10: Azure Monitor Integration -->
+    <div class="slide" data-slide="10">
+        <div class="badge">🔔 ALERTING</div>
+        <h2>Azure Monitor Integration for RAI</h2>
+        <div class="two-col">
+            <div>
+                <h3>Alert Pipeline</h3>
+                <ul class="icon-list">
+                    <li><span class="icon">1️⃣</span>AI Foundry evaluations emit OpenTelemetry metrics</li>
+                    <li><span class="icon">2️⃣</span>Metrics flow to Azure Monitor / App Insights</li>
+                    <li><span class="icon">3️⃣</span>KQL alert rules detect threshold breaches</li>
+                    <li><span class="icon">4️⃣</span>Action Groups notify teams via email, SMS, webhook</li>
+                    <li><span class="icon">5️⃣</span>Incident response playbook activates</li>
+                </ul>
+            </div>
+            <div>
+                <div class="code-block">
+<span class="cm">// KQL: Fairness threshold breach</span>
+<span class="kw">customMetrics</span>
+| <span class="kw">where</span> name == <span class="str">"ai.foundry.fairness
+    .quality_disparity"</span>
+| <span class="kw">where</span> timestamp > <span class="fn">ago</span>(<span class="num">1h</span>)
+| <span class="kw">summarize</span>
+    avg_disp = <span class="fn">avg</span>(value),
+    breaches = <span class="fn">countif</span>(value > <span class="num">0.15</span>)
+    <span class="kw">by</span> <span class="fn">bin</span>(timestamp, <span class="num">5m</span>)
+| <span class="kw">where</span> breaches > <span class="num">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: Incident Classification -->
+    <div class="slide" data-slide="11">
+        <div class="badge">🚨 INCIDENT RESPONSE</div>
+        <h2>AI Safety Incident Classification</h2>
+        <table class="slide-table">
+            <thead>
+                <tr><th>Severity</th><th>SLA</th><th>Examples</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="sev sev-critical">CRITICAL</span></td>
+                    <td><strong>15 min</strong></td>
+                    <td>Self-harm instructions, PII at scale</td>
+                    <td>Emergency blocklist, kill switch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev sev-high">HIGH</span></td>
+                    <td><strong>1 hour</strong></td>
+                    <td>Jailbreak success, systematic bias</td>
+                    <td>Hotfix blocklist, restrict access</td>
+                </tr>
+                <tr>
+                    <td><span class="sev sev-medium">MEDIUM</span></td>
+                    <td><strong>4 hours</strong></td>
+                    <td>False negative spikes, edge cases</td>
+                    <td>Adjust thresholds, add patterns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev sev-low">LOW</span></td>
+                    <td><strong>24 hours</strong></td>
+                    <td>Minor metric drift, cosmetic issues</td>
+                    <td>Monitor, review at next sprint</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SLIDE 12: Incident Response Playbook -->
+    <div class="slide" data-slide="12">
+        <div class="badge">📋 PLAYBOOK</div>
+        <h2>Incident Response Playbook</h2>
+        <div class="two-col">
+            <div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-phase">Phase 1 — 0–15 min</div>
+                        <h4>🔍 Detect &amp; Triage</h4>
+                        <p>Validate alert, assign severity, designate incident commander</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-phase">Phase 2 — 15–60 min</div>
+                        <h4>🛑 Contain</h4>
+                        <p>Emergency blocklist, reduce temperature, notify stakeholders</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-phase">Phase 3 — 1–24 hrs</div>
+                        <h4>🔬 Investigate</h4>
+                        <p>Root cause analysis via tracing, reproduce in sandbox</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-phase">Phase 4 — 1–7 days</div>
+                        <h4>🔧 Remediate</h4>
+                        <p>Permanent fix, add to red-team regression dataset</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-phase">Phase 5 — Post-Incident</div>
+                        <h4>📋 Learn</h4>
+                        <p>Blameless retro, update playbooks, share learnings</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3>Critical: Test Your Response</h3>
+                <ul class="icon-list">
+                    <li><span class="icon">📅</span>Quarterly tabletop exercises</li>
+                    <li><span class="icon">🎭</span>Simulate jailbreak scenarios</li>
+                    <li><span class="icon">⏱️</span>Measure response time vs SLAs</li>
+                    <li><span class="icon">📝</span>Document &amp; update playbooks</li>
+                    <li><span class="icon">🔄</span>Iterate on containment strategies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: Architecture -->
+    <div class="slide" data-slide="13">
+        <div class="badge">🏗️ ARCHITECTURE</div>
+        <h2>Enterprise RAI Architecture — Azure AI Foundry</h2>
+        <div class="arch-stack">
+            <div class="arch-row" style="background:rgba(88,166,255,0.1);border-color:var(--accent-blue);">
+                🌐 &nbsp; <strong>Application Layer</strong> &nbsp;— Chat · Copilots · Agents · APIs
+            </div>
+            <div class="arch-conn">↕</div>
+            <div class="arch-row" style="background:rgba(248,81,73,0.1);border-color:var(--accent-red);">
+                🛡️ &nbsp; <strong>Content Safety</strong> &nbsp;— Filters · Blocklists · Jailbreak Detection
+            </div>
+            <div class="arch-conn">↕</div>
+            <div class="arch-row" style="background:rgba(210,153,34,0.1);border-color:var(--accent-yellow);">
+                📈 &nbsp; <strong>Monitoring</strong> &nbsp;— Fairness · Bias · Quality · Alerts
+            </div>
+            <div class="arch-conn">↕</div>
+            <div class="arch-row" style="background:rgba(139,92,246,0.1);border-color:var(--accent-purple);">
+                📊 &nbsp; <strong>RAI Dashboard</strong> &nbsp;— Analysis · Assessment · Explanations · Audit
+            </div>
+            <div class="arch-conn">↕</div>
+            <div class="arch-row" style="background:rgba(63,185,80,0.1);border-color:var(--accent-green);">
+                💾 &nbsp; <strong>Data &amp; Governance</strong> &nbsp;— Eval Datasets · Incident Registry · Policies
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 14: Mini Hack -->
+    <div class="slide" data-slide="14">
+        <div class="badge">⚡ MINI HACK</div>
+        <h2>Build an Enterprise Content Safety Policy</h2>
+        <div class="cards-row" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="card">
+                <div class="card-icon">1️⃣</div>
+                <h4>Provision</h4>
+                <p>Create Content Safety resource + Foundry project with RBAC</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">2️⃣</div>
+                <h4>Blocklists</h4>
+                <p>Build 3 blocklists: financial, PII, brand — 10+ items each</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">3️⃣</div>
+                <h4>Pipeline</h4>
+                <p>Multi-layer safety: input filter → blocklists → model → output filter</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">4️⃣</div>
+                <h4>Test &amp; Alert</h4>
+                <p>20 adversarial tests + RAI dashboard + Monitor alerts</p>
+            </div>
+        </div>
+        <p style="margin-top:2rem;font-size:0.95rem;">
+            ⏱ <strong>60–90 minutes</strong> &nbsp;|&nbsp; 💰 <strong>~$2–5 USD</strong> &nbsp;|&nbsp;
+            📋 See <code style="color:var(--accent-blue);background:var(--bg-card);padding:0.2rem 0.5rem;border-radius:4px;">lab/hands-on-lab.md</code> for full instructions
+        </p>
+    </div>
+
+    <!-- SLIDE 15: Key Takeaways -->
+    <div class="slide" data-slide="15">
+        <div class="badge">🎯 TAKEAWAYS</div>
+        <h2>Key Takeaways</h2>
+        <ul class="icon-list">
+            <li><span class="icon">📊</span><strong>Dashboard-as-Code</strong> — Version-controlled RAI governance that evolves with your models</li>
+            <li><span class="icon">🛡️</span><strong>Multi-Layer Safety</strong> — Custom blocklists on input + output paths with built-in category filters</li>
+            <li><span class="icon">📈</span><strong>Continuous Monitoring</strong> — Fairness metrics via Azure Monitor, not just at evaluation time</li>
+            <li><span class="icon">🚨</span><strong>Structured Response</strong> — AI safety incidents need dedicated playbooks with severity SLAs</li>
+            <li><span class="icon">🏛️</span><strong>Regulatory Ready</strong> — Maps to EU AI Act, NIST AI RMF, and ISO 42001 requirements</li>
+        </ul>
+        <p style="margin-top:2rem;font-size:1.1rem;">
+            <strong>Next →</strong> <span class="gradient-text">Module 35</span>
+        </p>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1rem;">
+            🎥 Featured Video: <em>"Building Trustworthy AI: Ensuring Responsible AI With Content Safety"</em> — MS Azure
+        </p>
+    </div>
+
+</div>
+
+<!-- Slide counter & progress -->
+<div class="slide-counter" id="counter">1 / 15</div>
+<div class="slide-progress" id="progress" style="width:6.67%"></div>
+<div class="controls-hint">← → Arrow keys to navigate &nbsp;|&nbsp; F for fullscreen</div>
+
+<script>
+(function() {
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    let current = 0;
+
+    function showSlide(index) {
+        slides.forEach(s => s.classList.remove('active'));
+        slides[index].classList.add('active');
+        document.getElementById('counter').textContent = (index + 1) + ' / ' + total;
+        document.getElementById('progress').style.width = ((index + 1) / total * 100) + '%';
+    }
+
+    function next() {
+        if (current < total - 1) { current++; showSlide(current); }
+    }
+
+    function prev() {
+        if (current > 0) { current--; showSlide(current); }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+        else if (e.key === 'Home') { current = 0; showSlide(current); }
+        else if (e.key === 'End') { current = total - 1; showSlide(current); }
+        else if (e.key === 'f' || e.key === 'F') {
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); }
+            else { document.exitFullscreen(); }
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.clientX > window.innerWidth / 2) next();
+        else prev();
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', function(e) {
+        const diff = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(diff) > 50) { diff < 0 ? next() : prev(); }
+    });
+
+    showSlide(0);
+})();
+</script>
+</body>
+</html>

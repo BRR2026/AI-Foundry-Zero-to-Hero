@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 25: Real-World Integration Patterns — Slide Deck</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-raised: #1c2333;
+    --primary: #58a6ff;
+    --primary-bright: #79c0ff;
+    --accent: #f78166;
+    --accent-purple: #bc8cff;
+    --accent-green: #56d364;
+    --accent-yellow: #e3b341;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --border: #30363d;
+    --font: 'Segoe UI', -apple-system, system-ui, sans-serif;
+    --mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── Slide Container ── */
+  .deck {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .slide.active {
+    display: flex;
+    opacity: 1;
+  }
+
+  /* ── Slide Header ── */
+  .slide-header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .slide-header .badge {
+    background: rgba(88,166,255,0.15);
+    color: var(--primary);
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Typography ── */
+  h1 {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+  }
+  h1 .hl { color: var(--primary); }
+  h1 .hl-accent { color: var(--accent); }
+  h1 .hl-purple { color: var(--accent-purple); }
+  h1 .hl-green { color: var(--accent-green); }
+
+  h2 {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--primary-bright);
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-purple);
+    margin-bottom: 12px;
+  }
+
+  p, li {
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    color: var(--text-muted);
+    max-width: 700px;
+    line-height: 1.6;
+  }
+
+  ul {
+    list-style: none;
+    margin: 16px 0;
+  }
+  ul li {
+    padding: 8px 0 8px 28px;
+    position: relative;
+  }
+  ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  strong { color: var(--primary-bright); }
+
+  /* ── Code ── */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: var(--mono);
+    font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--surface);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; }
+
+  .kw { color: #ff7b72; }
+  .str { color: #a5d6ff; }
+  .cm { color: #8b949e; }
+  .fn { color: #d2a8ff; }
+  .type { color: #79c0ff; }
+  .num { color: #56d364; }
+
+  /* ── Flow Diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .flow-node {
+    background: var(--surface-raised);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 22px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 120px;
+  }
+  .flow-node.active-node {
+    border-color: var(--primary);
+    background: rgba(88,166,255,0.1);
+    color: var(--primary-bright);
+    box-shadow: 0 0 20px rgba(88,166,255,0.15);
+  }
+  .flow-node small { display: block; color: var(--text-muted); font-weight: 400; font-size: 0.75rem; }
+  .flow-arrow { color: var(--primary); font-size: 1.5rem; font-weight: 700; }
+
+  /* ── Grid ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 16px 0;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .grid-card {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .grid-card .icon { font-size: 2rem; margin-bottom: 12px; }
+  .grid-card h3 { margin-top: 0; }
+  .grid-card p { font-size: 0.9rem; color: var(--text-muted); }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--primary); font-weight: 600; }
+  tr:hover td { background: rgba(88,166,255,0.05); }
+
+  /* ── Callout ── */
+  .callout {
+    background: rgba(88,166,255,0.08);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.95rem;
+  }
+  .callout.warn {
+    background: rgba(227,179,65,0.08);
+    border-color: var(--accent-yellow);
+  }
+
+  /* ── Controls ── */
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+  }
+  .controls button {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .controls button:hover {
+    background: var(--primary);
+    color: var(--bg);
+    border-color: var(--primary);
+  }
+
+  .slide-counter {
+    position: fixed;
+    bottom: 28px;
+    left: 30px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 100;
+  }
+
+  /* ── Title Slide Special ── */
+  .title-slide {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 50%, rgba(88,166,255,0.08) 0%, transparent 70%);
+  }
+  .title-slide .module-num {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+  .title-slide h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+  .title-slide .arc-badge {
+    display: inline-block;
+    background: rgba(188,140,255,0.15);
+    color: var(--accent-purple);
+    padding: 8px 24px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* ── End Slide ── */
+  .end-slide {
+    text-align: center;
+    align-items: center;
+    background: radial-gradient(ellipse at 50% 50%, rgba(86,211,100,0.06) 0%, transparent 70%);
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide title-slide active" data-slide="1">
+  <div class="module-num">Module 25 of 45</div>
+  <h1><span class="hl">Real-World</span> Integration Patterns</h1>
+  <p class="subtitle">Teams Bots · Power Platform · REST APIs · Event-Driven Architectures</p>
+  <div class="arc-badge">ARC 5 · ORCHESTRATION & INTEGRATION</div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 2: AGENDA -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">ARC 5 · ORCHESTRATION & INTEGRATION</span>
+  </div>
+  <h2>Today's Agenda</h2>
+  <div class="grid-2">
+    <div>
+      <ul>
+        <li><strong>Teams Bot Integration</strong> — bring AI into conversations</li>
+        <li><strong>Power Platform Connectors</strong> — no-code AI automation</li>
+        <li><strong>REST API Patterns</strong> — sync, async, streaming</li>
+        <li><strong>Webhooks &amp; Events</strong> — reactive agent invocations</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li><strong>Security &amp; Auth</strong> — managed identity, APIM, rate limiting</li>
+        <li><strong>Pattern Selection</strong> — choosing the right approach</li>
+        <li><strong>Mini Hack</strong> — build a Teams bot with AI Foundry</li>
+      </ul>
+      <div class="callout">⏱️ Total session: ~3 hours (lecture + lab)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 3: THE INTEGRATION CHALLENGE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">ARC 5</span>
+  </div>
+  <h2>The Integration Challenge</h2>
+  <p class="subtitle" style="margin-bottom: 30px;">Your agent is smart — but it's trapped in a playground. Let's set it free.</p>
+  <div class="flow">
+    <div class="flow-node">🧠 AI Agent<br><small>Intelligent but isolated</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node active-node">🔌 Integration Layer<br><small>Auth + Transform + Route</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">🌍 Real World<br><small>Teams · Apps · Pipelines</small></div>
+  </div>
+  <div class="callout">
+    <strong>Key principle:</strong> The agent is the brain. The integration layer is the nervous system.
+    Keep business logic in the agent, not in the integration code.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 4: CORE ARCHITECTURE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">ARCHITECTURE</span>
+  </div>
+  <h2>Universal Integration Architecture</h2>
+  <div class="flow">
+    <div class="flow-node">External Client<br><small>Teams · Power Apps · SaaS</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">API Gateway<br><small>Azure Functions / APIM</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node active-node">Azure AI Foundry<br><small>Agent Runtime</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Downstream<br><small>DBs · APIs · Storage</small></div>
+  </div>
+  <div class="grid-3" style="margin-top:24px;">
+    <div class="grid-card">
+      <h3>Auth</h3>
+      <p>Managed Identity between Azure services. OAuth 2.0 for external clients.</p>
+    </div>
+    <div class="grid-card">
+      <h3>Transform</h3>
+      <p>Map client requests to AI Foundry thread/message API format.</p>
+    </div>
+    <div class="grid-card">
+      <h3>Observe</h3>
+      <p>Application Insights traces every invocation — latency, tokens, errors.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 5: TEAMS BOT ARCHITECTURE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">TEAMS BOT</span>
+  </div>
+  <h2>Teams Bot Integration</h2>
+  <div class="flow" style="margin-bottom: 24px;">
+    <div class="flow-node">Microsoft<br>Teams</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Azure Bot<br>Service</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Azure Function<br><small>Bot Handler</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node active-node">AI Foundry<br>Agent</div>
+  </div>
+  <div class="grid-2">
+    <div>
+      <h3>Setup Steps</h3>
+      <ul>
+        <li>Register Azure Bot resource</li>
+        <li>Configure messaging endpoint</li>
+        <li>Enable Teams channel</li>
+        <li>Side-load or publish app manifest</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Key Concepts</h3>
+      <ul>
+        <li><strong>Activity Handler</strong> — intercepts messages</li>
+        <li><strong>Thread Mapping</strong> — conversation ID → thread ID</li>
+        <li><strong>Adaptive Cards</strong> — rich, interactive responses</li>
+        <li><strong>Typing Indicator</strong> — UX while agent thinks</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 6: TEAMS BOT CODE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">TEAMS BOT — CODE</span>
+  </div>
+  <h2>Bot Handler → AI Foundry Agent</h2>
+<pre><code><span class="kw">class</span> <span class="type">FoundryBot</span>(ActivityHandler):
+    <span class="kw">async def</span> <span class="fn">on_message_activity</span>(self, ctx: TurnContext):
+        <span class="cm"># 1. Create or retrieve thread</span>
+        thread = client.agents.<span class="fn">create_thread</span>()
+
+        <span class="cm"># 2. Send user message</span>
+        client.agents.<span class="fn">create_message</span>(
+            thread_id=thread.id,
+            role=<span class="str">"user"</span>,
+            content=ctx.activity.text
+        )
+
+        <span class="cm"># 3. Run the agent</span>
+        run = client.agents.<span class="fn">create_and_process_run</span>(
+            thread_id=thread.id,
+            agent_id=AGENT_ID
+        )
+
+        <span class="cm"># 4. Return response</span>
+        msgs = client.agents.<span class="fn">list_messages</span>(thread_id=thread.id)
+        <span class="kw">await</span> ctx.<span class="fn">send_activity</span>(msgs.data[<span class="num">0</span>].content[<span class="num">0</span>].text.value)
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 7: POWER PLATFORM -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">POWER PLATFORM</span>
+  </div>
+  <h2>Power Platform Connectors</h2>
+  <p style="margin-bottom: 20px;">Expose AI Foundry agents as <strong>drag-and-drop actions</strong> for citizen developers.</p>
+  <div class="flow">
+    <div class="flow-node">Power Automate /<br>Power Apps</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Custom<br>Connector</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Azure Function<br><small>(proxy)</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node active-node">AI Foundry<br>Agent</div>
+  </div>
+  <div class="grid-2" style="margin-top: 24px;">
+    <div class="grid-card">
+      <div class="icon">⚡</div>
+      <h3>Power Automate</h3>
+      <p>Email triggers → AI summarization → Teams notification. Fully automated, zero code.</p>
+    </div>
+    <div class="grid-card">
+      <div class="icon">📱</div>
+      <h3>Power Apps</h3>
+      <p>Canvas app with text input + button + AI response label. Built in minutes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 8: REST API PATTERNS -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">REST APIs</span>
+  </div>
+  <h2>REST API Patterns</h2>
+  <table>
+    <thead>
+      <tr><th>Pattern</th><th>Response Time</th><th>Client UX</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Synchronous</strong></td>
+        <td>&lt; 30 seconds</td>
+        <td>Wait for full response</td>
+        <td>Simple Q&A, quick lookups</td>
+      </tr>
+      <tr>
+        <td><strong>Async Polling</strong></td>
+        <td>Minutes to hours</td>
+        <td>Submit → Poll → Complete</td>
+        <td>Batch analysis, document processing</td>
+      </tr>
+      <tr>
+        <td><strong>SSE Streaming</strong></td>
+        <td>First token &lt; 1s</td>
+        <td>Progressive rendering</td>
+        <td>Chat UIs, real-time assistants</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    💡 <strong>Rule of thumb:</strong> Start with synchronous. Add streaming when UX demands it.
+    Use async polling for workloads that exceed HTTP timeout limits.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 9: AUTHENTICATION MATRIX -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">SECURITY</span>
+  </div>
+  <h2>Authentication &amp; Security Matrix</h2>
+  <table>
+    <thead>
+      <tr><th>Method</th><th>Scenario</th><th>Secrets in Config?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Managed Identity</strong></td><td>Azure service ↔ Azure service</td><td>❌ None</td></tr>
+      <tr><td><strong>OAuth 2.0 / Entra ID</strong></td><td>Multi-tenant production apps</td><td>❌ Tokens only</td></tr>
+      <tr><td><strong>API Key</strong></td><td>Internal services, prototyping</td><td>⚠️ Key rotation needed</td></tr>
+      <tr><td><strong>APIM + Subscription</strong></td><td>External partners, metered access</td><td>❌ Managed by APIM</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    ⚠️ <strong>Never</strong> expose AI Foundry connection strings or agent IDs to client-side code.
+    Always proxy through a server-side API layer.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 10: WEBHOOKS & EVENTS -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="10">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">EVENTS</span>
+  </div>
+  <h2>Webhook &amp; Event-Driven Architectures</h2>
+  <div class="flow">
+    <div class="flow-node">Event Source<br><small>Blob · DB · Webhook</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Event Grid /<br>Service Bus</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Azure Function</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node active-node">AI Foundry<br>Agent</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Action<br><small>Notify · Store</small></div>
+  </div>
+  <div class="grid-2" style="margin-top: 20px;">
+    <div>
+      <h3>Incoming Events</h3>
+      <ul>
+        <li>Blob uploaded → summarize document</li>
+        <li>GitHub webhook → analyze PR</li>
+        <li>IoT telemetry → anomaly detection</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Outgoing Actions</h3>
+      <ul>
+        <li>Agent tool calls external APIs</li>
+        <li>Create Jira ticket from analysis</li>
+        <li>Post Teams notification on critical events</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 11: EVENT GRID DEEP DIVE -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="11">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">EVENT GRID</span>
+  </div>
+  <h2>Event Grid Integration</h2>
+  <div class="grid-2">
+    <div>
+      <h3>Why Event Grid?</h3>
+      <ul>
+        <li><strong>At-scale routing</strong> — millions of events/sec</li>
+        <li><strong>Built-in retry</strong> with dead-letter support</li>
+        <li><strong>Native Azure triggers</strong> — Blob, Resource, IoT Hub</li>
+        <li><strong>Custom topics</strong> — your own event schemas</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Production Patterns</h3>
+      <ul>
+        <li>Idempotent handlers (same event processed twice safely)</li>
+        <li>Dead-letter queue monitoring and alerts</li>
+        <li>Exponential backoff for agent call retries</li>
+        <li>Circuit breaker when AI Foundry is throttled</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">
+    📋 <strong>Pattern:</strong> Event Grid → Azure Function → AI Foundry Agent → Teams notification.
+    This is the backbone of most automated AI workflows.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 12: PATTERN SELECTION -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="12">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">DECISION GUIDE</span>
+  </div>
+  <h2>Choosing the Right Pattern</h2>
+  <table>
+    <thead>
+      <tr><th>Pattern</th><th>Best For</th><th>Audience</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🤖 <strong>Teams Bot</strong></td><td>Internal copilots</td><td>End users</td><td>Medium</td></tr>
+      <tr><td>⚡ <strong>Power Platform</strong></td><td>No-code automation</td><td>Citizen devs</td><td>Low</td></tr>
+      <tr><td>🌐 <strong>REST API</strong></td><td>Custom apps, SaaS</td><td>Developers</td><td>Medium–High</td></tr>
+      <tr><td>🔔 <strong>Webhooks/Events</strong></td><td>Automated pipelines</td><td>Systems</td><td>Medium</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    💡 These patterns are <strong>composable</strong>. A single agent can serve Teams users, Power Automate flows,
+    REST clients, and event triggers simultaneously through different integration endpoints.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 13: MINI HACK -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="13">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">MINI HACK</span>
+  </div>
+  <h2>🏗️ Mini Hack: Teams Bot + AI Foundry</h2>
+  <div class="grid-2">
+    <div>
+      <h3>Build This</h3>
+      <ul>
+        <li>Azure Function with Bot Framework SDK</li>
+        <li>AI Foundry agent as the brain</li>
+        <li>Azure Table Storage for thread mapping</li>
+        <li>Adaptive Cards for formatted responses</li>
+        <li>Deployed and tested in Microsoft Teams</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Steps</h3>
+      <ul>
+        <li><span style="color:var(--accent-green);">Step 1:</span> Create AI Foundry agent</li>
+        <li><span style="color:var(--accent-green);">Step 2:</span> Build Azure Function bot backend</li>
+        <li><span style="color:var(--accent-green);">Step 3:</span> Register Azure Bot resource</li>
+        <li><span style="color:var(--accent-green);">Step 4:</span> Implement thread persistence</li>
+        <li><span style="color:var(--accent-green);">Step 5:</span> Format with Adaptive Cards</li>
+        <li><span style="color:var(--accent-green);">Step 6:</span> Test in Teams</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">⏱️ Estimated time: 45 minutes | See <code>lab/hands-on-lab.md</code></div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 14: KEY TAKEAWAYS -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide" data-slide="14">
+  <div class="slide-header">
+    <span>Module 25</span>
+    <span class="badge">TAKEAWAYS</span>
+  </div>
+  <h2>Key Takeaways</h2>
+  <div class="grid-2">
+    <div class="grid-card">
+      <div class="icon">🛡️</div>
+      <h3>Proxy Pattern</h3>
+      <p>Always place a server-side layer between clients and AI Foundry. Never expose secrets to clients.</p>
+    </div>
+    <div class="grid-card">
+      <div class="icon">🔄</div>
+      <h3>Thread Persistence</h3>
+      <p>Map external conversation IDs to AI Foundry thread IDs for multi-turn context.</p>
+    </div>
+    <div class="grid-card">
+      <div class="icon">🔐</div>
+      <h3>Managed Identity</h3>
+      <p>DefaultAzureCredential for Azure-to-Azure. Zero secrets in configuration.</p>
+    </div>
+    <div class="grid-card">
+      <div class="icon">📊</div>
+      <h3>Observability</h3>
+      <p>Application Insights on every endpoint. Track latency, tokens, and errors.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 15: END -->
+<!-- ═══════════════════════════════════════ -->
+<div class="slide end-slide" data-slide="15">
+  <div class="slide-header">
+    <span>Module 25 Complete</span>
+    <span class="badge">ARC 5</span>
+  </div>
+  <h1>Module <span class="hl-green">25</span> Complete ✓</h1>
+  <p class="subtitle" style="text-align:center;">
+    Next up: <strong>Module 26 — CI/CD for AI Agents</strong>
+  </p>
+  <div style="margin-top: 32px;">
+    <table style="max-width: 500px; margin: 0 auto;">
+      <tr><td>📝</td><td><strong>Quiz:</strong> <code>quiz/assessment.md</code> (10 MCQs)</td></tr>
+      <tr><td>🔬</td><td><strong>Lab:</strong> <code>lab/hands-on-lab.md</code></td></tr>
+      <tr><td>📺</td><td><strong>Video:</strong> MS Mechanics — AI Foundry</td></tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- end .deck -->
+
+<!-- ═══ Controls ═══ -->
+<div class="slide-counter"><span id="current">1</span> / <span id="total">15</span></div>
+<div class="controls">
+  <button onclick="navigate(-1)" aria-label="Previous slide">◀</button>
+  <button onclick="navigate(1)" aria-label="Next slide">▶</button>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  document.getElementById('total').textContent = total;
+
+  function show(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    current = (index + total) % total;
+    slides[current].classList.add('active');
+    document.getElementById('current').textContent = current + 1;
+  }
+
+  window.navigate = function(dir) { show(current + dir); };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') { e.preventDefault(); show(0); }
+    if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) navigate(diff < 0 ? 1 : -1);
+  });
+})();
+</script>
+</body>
+</html>

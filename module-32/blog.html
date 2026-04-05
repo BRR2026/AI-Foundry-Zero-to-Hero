@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 32: Data Governance & Purview Integration — Azure AI Foundry Zero to Hero Training Series. Learn Microsoft Purview for AI data governance, data classification, sensitivity labels, lineage tracking, and compliance.">
+    <meta name="keywords" content="Azure AI Foundry, Microsoft Purview, Data Governance, Data Classification, Sensitivity Labels, Data Lineage, GDPR, HIPAA, SOC 2, AI Compliance">
+    <meta name="author" content="Azure AI Foundry Training Series">
+    <title>Module 32: Data Governance & Purview Integration | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ============================================================
+           DESIGN SYSTEM — Microsoft Dev Blog Style (Self-Contained)
+           Module 32 · Data Governance & Purview Integration
+           ============================================================ */
+
+        :root {
+            --color-primary: #0078d4;
+            --color-primary-dark: #005a9e;
+            --color-primary-light: #deecf9;
+            --color-accent: #8661c5;
+            --color-accent-dark: #6b4fad;
+            --color-accent-light: #f3f0fa;
+            --color-governance: #107c10;
+            --color-governance-dark: #0b5e0b;
+            --color-governance-light: #dff6dd;
+            --color-compliance: #d83b01;
+            --color-compliance-light: #fed9cc;
+            --color-warning: #ffb900;
+            --color-warning-light: #fff4ce;
+            --color-surface: #ffffff;
+            --color-surface-alt: #faf9f8;
+            --color-surface-dark: #f3f2f1;
+            --color-text: #323130;
+            --color-text-secondary: #605e5c;
+            --color-text-tertiary: #a19f9d;
+            --color-border: #edebe9;
+            --color-border-dark: #d2d0ce;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-xl: 0 8px 32px rgba(0,0,0,0.16);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --max-width: 860px;
+            --transition: 0.2s ease;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-text);
+            background: var(--color-surface-alt);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ---- Top Progress Bar ---- */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-governance));
+            z-index: 9999;
+            transition: width 0.15s linear;
+        }
+
+        /* ---- Skip Navigation ---- */
+        .skip-link {
+            position: absolute;
+            top: -100%;
+            left: 16px;
+            background: var(--color-primary);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            z-index: 10000;
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+        .skip-link:focus { top: 8px; }
+
+        /* ---- Header / Hero ---- */
+        .hero {
+            background: linear-gradient(135deg, #1b1032 0%, #2b1a4e 25%, #0e3b6d 55%, #0a4a2e 100%);
+            color: #fff;
+            padding: 3rem 2rem 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0; right: 0;
+            height: 60px;
+            background: linear-gradient(to top, var(--color-surface-alt), transparent);
+            pointer-events: none;
+        }
+        .hero-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+            color: #e8d5ff;
+        }
+        .hero-badge .badge-icon {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, var(--color-governance), var(--color-accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 4.5vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        .hero h1 .gradient-text {
+            background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: rgba(255,255,255,0.78);
+            max-width: 640px;
+            line-height: 1.6;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.65);
+        }
+        .hero-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ---- Main Layout ---- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: -1.5rem auto 0;
+            padding: 0 1.5rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ---- Table of Contents ---- */
+        .toc {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        .toc-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem 2rem;
+        }
+        .toc li { counter-increment: toc-counter; }
+        .toc a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 4px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            transition: color var(--transition);
+        }
+        .toc a::before {
+            content: counter(toc-counter, decimal-leading-zero);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-text-tertiary);
+            min-width: 20px;
+        }
+        .toc a:hover { color: var(--color-accent); }
+
+        @media (max-width: 600px) {
+            .toc ol { grid-template-columns: 1fr; }
+        }
+
+        /* ---- Article Sections ---- */
+        article {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        article h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: 2.5rem 0 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-border);
+            letter-spacing: -0.01em;
+        }
+        article h2:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+        article h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin: 1.75rem 0 0.75rem;
+        }
+        article h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin: 1.25rem 0 0.5rem;
+        }
+        article p {
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+        article ul, article ol {
+            margin: 0.75rem 0 1.25rem 1.5rem;
+        }
+        article li {
+            margin-bottom: 0.4rem;
+            line-height: 1.6;
+        }
+
+        /* ---- Info / Warning / Tip Cards ---- */
+        .info-card {
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        .info-card.governance {
+            background: var(--color-governance-light);
+            border-color: var(--color-governance);
+        }
+        .info-card.compliance {
+            background: var(--color-compliance-light);
+            border-color: var(--color-compliance);
+        }
+        .info-card.tip {
+            background: var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+        .info-card.warning {
+            background: var(--color-warning-light);
+            border-color: var(--color-warning);
+        }
+        .info-card.purple {
+            background: var(--color-accent-light);
+            border-color: var(--color-accent);
+        }
+        .info-card-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-card p { margin-bottom: 0.5rem; }
+        .info-card p:last-child { margin-bottom: 0; }
+
+        /* ---- Code Blocks ---- */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.65;
+            margin: 1rem 0 1.5rem;
+            position: relative;
+            border: 1px solid #333;
+        }
+        pre .code-label {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255,255,255,0.08);
+            color: #999;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 0 var(--radius-md) 0 var(--radius-sm);
+            font-family: var(--font-sans);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            background: var(--color-surface-dark);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            color: #d63384;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* ---- Syntax Highlighting (VS Code Dark+) ---- */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .op { color: #d4d4d4; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+        .prop { color: #9cdcfe; }
+        .const { color: #4fc1ff; }
+        .decorator { color: #dcdcaa; }
+
+        /* ---- Tables ---- */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.25rem 0 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        thead {
+            background: var(--color-surface-dark);
+        }
+        th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-text-secondary);
+            border-bottom: 2px solid var(--color-border);
+        }
+        td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--color-border);
+            vertical-align: top;
+        }
+        tbody tr:hover { background: var(--color-surface-alt); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ---- Video Section ---- */
+        .video-section {
+            background: linear-gradient(135deg, #1b1032, #0e3b6d);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .video-section h3 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .video-section p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+
+        /* ---- Diagram / Architecture ---- */
+        .architecture-diagram {
+            background: var(--color-surface-dark);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .arch-node {
+            background: var(--color-surface);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+            min-width: 120px;
+        }
+        .arch-node.purview { border-color: var(--color-accent); background: var(--color-accent-light); }
+        .arch-node.governance { border-color: var(--color-governance); background: var(--color-governance-light); }
+        .arch-node.compliance { border-color: var(--color-compliance); background: var(--color-compliance-light); }
+        .arch-arrow {
+            font-size: 1.25rem;
+            color: var(--color-text-tertiary);
+            font-weight: 700;
+        }
+
+        /* ---- Mini Hack Section ---- */
+        .mini-hack {
+            background: linear-gradient(135deg, #1a0a2e, #16213e);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin: 2.5rem 0;
+            color: #fff;
+            border: 1px solid rgba(134, 97, 197, 0.3);
+        }
+        .mini-hack-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(134, 97, 197, 0.2);
+            border: 1px solid rgba(134, 97, 197, 0.4);
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #c4b5fd;
+            margin-bottom: 1rem;
+        }
+        .mini-hack h2 {
+            color: #fff;
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+        .mini-hack h3 { color: #e2e8f0; }
+        .mini-hack p { color: rgba(255,255,255,0.85); }
+        .mini-hack ul, .mini-hack ol { color: rgba(255,255,255,0.85); }
+        .mini-hack .step-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .mini-hack .step-card h4 {
+            color: #a78bfa;
+            margin-top: 0;
+        }
+        .mini-hack pre {
+            background: #0d1117;
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* ---- Checklist ---- */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+            padding: 0;
+        }
+        .checklist li {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 0.6rem;
+        }
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+            color: var(--color-governance);
+        }
+
+        /* ---- Key Takeaways ---- */
+        .takeaways {
+            background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent-light));
+            border-radius: var(--radius-lg);
+            padding: 2rem 2.5rem;
+            margin: 2rem 0;
+        }
+        .takeaways h3 {
+            color: var(--color-primary-dark);
+            margin-top: 0;
+        }
+        .takeaways ol {
+            counter-reset: takeaway;
+            list-style: none;
+            margin-left: 0;
+        }
+        .takeaways li {
+            counter-increment: takeaway;
+            padding-left: 2.5rem;
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+        .takeaways li::before {
+            content: counter(takeaway);
+            position: absolute;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ---- Bottom Navigation ---- */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1.5rem 0;
+            border-top: 2px solid var(--color-border);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            transition: all var(--transition);
+        }
+        .nav-link:hover {
+            background: var(--color-primary-light);
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-link.next { margin-left: auto; }
+
+        /* ---- Footer ---- */
+        .site-footer {
+            background: #1b1b1f;
+            color: rgba(255,255,255,0.6);
+            padding: 3rem 2rem;
+            margin-top: 2rem;
+        }
+        .footer-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+        .footer-brand {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .footer-links a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color var(--transition);
+        }
+        .footer-links a:hover { color: #fff; }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .hero { padding: 2rem 1.25rem 2.5rem; }
+            article { padding: 1.5rem; }
+            .mini-hack { padding: 1.5rem; }
+            .hero-meta { gap: 1rem; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+
+        /* ---- Print ---- */
+        @media print {
+            .hero { background: #f0f0f0 !important; color: #000 !important; }
+            .video-section, .progress-bar { display: none !important; }
+            article { box-shadow: none; border: 1px solid #ccc; }
+        }
+
+        /* ---- Animations ---- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        /* ---- Pillar Grid ---- */
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .pillar-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            text-align: center;
+            transition: all var(--transition);
+        }
+        .pillar-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .pillar-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .pillar-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.35rem;
+        }
+        .pillar-card p {
+            font-size: 0.82rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* ---- Compliance Badge Row ---- */
+        .compliance-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+        }
+        .compliance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .compliance-badge .badge-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+        }
+        .badge-dot.gdpr { background: #0078d4; }
+        .badge-dot.hipaa { background: #d83b01; }
+        .badge-dot.soc2 { background: #107c10; }
+        .badge-dot.ccpa { background: #8661c5; }
+        .badge-dot.iso { background: #ffb900; }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ============================================================
+     HERO SECTION
+     ============================================================ -->
+<header class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <span class="badge-icon">🛡️</span>
+            ARC 7 · SECURITY &amp; GOVERNANCE
+        </div>
+        <h1>Data Governance &amp;<br><span class="gradient-text">Purview Integration</span></h1>
+        <p class="hero-subtitle">
+            Master Microsoft Purview for AI data governance — classify sensitive data, track lineage across AI pipelines, and ensure regulatory compliance with GDPR, HIPAA, and SOC 2 in Azure AI Foundry.
+        </p>
+        <div class="hero-meta">
+            <span>📘 Module 32 of 45</span>
+            <span>⏱️ 55 min read</span>
+            <span>🎯 Intermediate–Advanced</span>
+            <span>📅 April 2026</span>
+        </div>
+    </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="main-container" id="main-content">
+
+    <!-- Table of Contents -->
+    <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-title">📑 In This Module</div>
+        <ol>
+            <li><a href="#introduction">Introduction to AI Data Governance</a></li>
+            <li><a href="#purview-overview">Microsoft Purview Overview</a></li>
+            <li><a href="#classification">Data Classification &amp; Sensitivity Labels</a></li>
+            <li><a href="#lineage">Data Lineage for AI Pipelines</a></li>
+            <li><a href="#compliance">GDPR, HIPAA &amp; SOC 2 Compliance</a></li>
+            <li><a href="#foundry-integration">Purview × Azure AI Foundry</a></li>
+            <li><a href="#policies">Data Access Policies &amp; Controls</a></li>
+            <li><a href="#architecture">Reference Architecture</a></li>
+            <li><a href="#video">Deep Dive Video</a></li>
+            <li><a href="#mini-hack">Mini Hack: Data Classification Lab</a></li>
+            <li><a href="#takeaways">Key Takeaways</a></li>
+            <li><a href="#resources">Additional Resources</a></li>
+        </ol>
+    </nav>
+
+    <article>
+        <!-- =====================================================
+             SECTION 1: Introduction
+             ===================================================== -->
+        <h2 id="introduction">1. Why AI Data Governance Matters</h2>
+
+        <p>
+            As AI systems consume vast volumes of data — from training datasets to real-time inference inputs — the need for comprehensive data governance has never been greater. Organizations deploying AI through <strong>Azure AI Foundry</strong> must ensure that their data practices meet regulatory requirements, protect sensitive information, and maintain transparent provenance of every data asset flowing through their AI pipelines.
+        </p>
+
+        <p>
+            Data governance for AI extends beyond traditional data management. It encompasses:
+        </p>
+
+        <ul>
+            <li><strong>Data discovery and classification</strong> — automatically identifying sensitive data across all AI data sources</li>
+            <li><strong>Lineage tracking</strong> — tracing data from source through transformation to model training and inference</li>
+            <li><strong>Access controls</strong> — enforcing least-privilege access to training data and model artifacts</li>
+            <li><strong>Regulatory compliance</strong> — meeting GDPR, HIPAA, SOC 2, and industry-specific requirements</li>
+            <li><strong>Data quality assurance</strong> — ensuring training data meets accuracy, completeness, and freshness standards</li>
+        </ul>
+
+        <div class="info-card governance">
+            <div class="info-card-title">🛡️ Governance Imperative</div>
+            <p>
+                According to Gartner, by 2026, organizations that operationalize AI governance frameworks will experience <strong>40% fewer AI-related compliance incidents</strong>. Microsoft Purview provides the unified platform to achieve this in Azure AI Foundry.
+            </p>
+        </div>
+
+        <div class="pillar-grid">
+            <div class="pillar-card">
+                <div class="pillar-icon">🔍</div>
+                <h4>Discover</h4>
+                <p>Auto-scan and catalog all data assets used in AI workflows</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🏷️</div>
+                <h4>Classify</h4>
+                <p>Apply sensitivity labels and data classifications automatically</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🔗</div>
+                <h4>Track</h4>
+                <p>Map data lineage from source to model prediction</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">✅</div>
+                <h4>Comply</h4>
+                <p>Enforce regulatory policies across all AI data pipelines</p>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             SECTION 2: Microsoft Purview Overview
+             ===================================================== -->
+        <h2 id="purview-overview">2. Microsoft Purview: The Unified Governance Platform</h2>
+
+        <p>
+            <strong>Microsoft Purview</strong> is a comprehensive data governance, risk, and compliance solution that brings together the former Azure Purview (data governance) and Microsoft 365 Compliance (information protection) under a single umbrella. For AI workloads in Azure AI Foundry, Purview provides the governance backbone.
+        </p>
+
+        <h3>2.1 Core Purview Capabilities for AI</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Capability</th>
+                        <th>AI Governance Use Case</th>
+                        <th>Purview Feature</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Data Map</strong></td>
+                        <td>Discover and catalog AI training data sources</td>
+                        <td>Automated scanning, metadata extraction</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Catalog</strong></td>
+                        <td>Search and understand AI data assets</td>
+                        <td>Business glossary, asset curation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Classification</strong></td>
+                        <td>Identify PII, PHI, financial data in training sets</td>
+                        <td>300+ built-in classifiers, custom classifiers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sensitivity Labels</strong></td>
+                        <td>Mark and protect sensitive AI data assets</td>
+                        <td>Auto-labeling, encryption, access policies</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Lineage</strong></td>
+                        <td>Trace data flow through AI pipelines</td>
+                        <td>Automated lineage capture, visual explorer</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Estate Insights</strong></td>
+                        <td>Monitor governance health of AI data</td>
+                        <td>Dashboards, sensitivity distribution reports</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Access Policies</strong></td>
+                        <td>Enforce data access controls for AI services</td>
+                        <td>Policy-based access, self-service discovery</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>2.2 Setting Up Purview for AI Governance</h3>
+
+        <pre><code><span class="cm"># Create a Microsoft Purview account for AI data governance</span>
+<span class="kw">az</span> purview account create \
+    --name <span class="str">"purview-ai-governance"</span> \
+    --resource-group <span class="str">"rg-ai-foundry-governance"</span> \
+    --location <span class="str">"eastus"</span> \
+    --managed-group-name <span class="str">"purview-managed-rg"</span>
+
+<span class="cm"># Assign Data Curator role for AI data management</span>
+<span class="kw">az</span> role assignment create \
+    --role <span class="str">"Purview Data Curator"</span> \
+    --assignee <span class="str">"ai-team@contoso.com"</span> \
+    --scope <span class="str">"/subscriptions/{sub-id}/resourceGroups/rg-ai-foundry-governance/providers/Microsoft.Purview/accounts/purview-ai-governance"</span>
+
+<span class="cm"># Register Azure AI Foundry data sources</span>
+<span class="kw">az</span> purview data-source create \
+    --account-name <span class="str">"purview-ai-governance"</span> \
+    --name <span class="str">"ai-training-storage"</span> \
+    --kind <span class="str">"AzureStorage"</span> \
+    --endpoint <span class="str">"https://aitrainingdata.blob.core.windows.net"</span><span class="code-label">Azure CLI</span></code></pre>
+
+        <div class="info-card tip">
+            <div class="info-card-title">💡 Azure AI Foundry Tip</div>
+            <p>
+                Unlike Azure ML which required separate governance tooling, <strong>Azure AI Foundry natively integrates with Microsoft Purview</strong> through the unified data governance plane. Register your AI Foundry project data stores directly in Purview to gain immediate visibility into your AI data estate.
+            </p>
+        </div>
+
+        <!-- =====================================================
+             SECTION 3: Data Classification
+             ===================================================== -->
+        <h2 id="classification">3. Data Classification &amp; Sensitivity Labels</h2>
+
+        <p>
+            Data classification is the foundation of AI governance. Before you can protect data, you must understand what data you have, where it lives, and how sensitive it is. Microsoft Purview provides automated classification with over <strong>300 built-in sensitive information types</strong> and the ability to create custom classifiers tailored to your AI data.
+        </p>
+
+        <h3>3.1 Built-in Classifiers for AI Data</h3>
+
+        <p>
+            Purview's classification engine automatically scans data assets and applies classifications based on pattern matching, machine learning, and exact data matching:
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Examples</th>
+                        <th>AI Risk Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Personal Identifiable Info (PII)</strong></td>
+                        <td>SSN, passport numbers, email addresses, phone numbers</td>
+                        <td>🔴 Critical</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Protected Health Info (PHI)</strong></td>
+                        <td>Medical record numbers, diagnosis codes, patient names</td>
+                        <td>🔴 Critical</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Financial Data</strong></td>
+                        <td>Credit card numbers, bank accounts, tax IDs</td>
+                        <td>🔴 Critical</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Credentials &amp; Secrets</strong></td>
+                        <td>API keys, connection strings, passwords</td>
+                        <td>🟡 High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Intellectual Property</strong></td>
+                        <td>Source code, proprietary algorithms, trade secrets</td>
+                        <td>🟡 High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Location Data</strong></td>
+                        <td>GPS coordinates, IP addresses, home addresses</td>
+                        <td>🟠 Medium</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>3.2 Creating Custom Classifiers for AI Training Data</h3>
+
+        <pre><code><span class="cm"># Python SDK: Create a custom classifier for AI-specific data patterns</span>
+<span class="kw">from</span> azure.purview.administration <span class="kw">import</span> PurviewAccountClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+credential = <span class="fn">DefaultAzureCredential</span>()
+
+<span class="cm"># Define custom classification for model training metadata</span>
+custom_classification = {
+    <span class="str">"name"</span>: <span class="str">"AI_Training_Dataset"</span>,
+    <span class="str">"description"</span>: <span class="str">"Data used for AI model training in Foundry"</span>,
+    <span class="str">"classificationRuleType"</span>: <span class="str">"Custom"</span>,
+    <span class="str">"classificationRules"</span>: [
+        {
+            <span class="str">"kind"</span>: <span class="str">"RegexClassificationRule"</span>,
+            <span class="str">"pattern"</span>: <span class="str">r"training[_-]data[_-]\d{8}"</span>,
+            <span class="str">"minimumPercentageMatch"</span>: <span class="num">60</span>
+        }
+    ]
+}
+
+<span class="cm"># Define sensitivity label mapping</span>
+sensitivity_labels = {
+    <span class="str">"Confidential - AI Training"</span>: {
+        <span class="str">"scope"</span>: <span class="str">"ai-foundry-project"</span>,
+        <span class="str">"protection"</span>: {
+            <span class="str">"encryption"</span>: <span class="kw">True</span>,
+            <span class="str">"contentMarking"</span>: <span class="kw">True</span>,
+            <span class="str">"accessRestriction"</span>: <span class="str">"ai-team-only"</span>
+        },
+        <span class="str">"autoLabeling"</span>: {
+            <span class="str">"sensitiveInfoTypes"</span>: [
+                <span class="str">"AI_Training_Dataset"</span>,
+                <span class="str">"Credentials"</span>,
+                <span class="str">"PersonalData"</span>
+            ],
+            <span class="str">"confidenceLevel"</span>: <span class="num">85</span>
+        }
+    }
+}<span class="code-label">Python</span></code></pre>
+
+        <h3>3.3 Sensitivity Label Hierarchy for AI</h3>
+
+        <p>Design a label taxonomy that reflects your AI data lifecycle:</p>
+
+        <div class="architecture-diagram">
+            <h4 style="margin-top:0; color: var(--color-text-secondary);">Sensitivity Label Hierarchy</h4>
+            <div class="arch-flow">
+                <div class="arch-node governance">🟢 Public<br><small>Open datasets, documentation</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node">🔵 General<br><small>Internal training data</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node purview">🟣 Confidential<br><small>Customer data, PII</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node compliance">🔴 Highly Confidential<br><small>PHI, financial, regulated</small></div>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             SECTION 4: Data Lineage
+             ===================================================== -->
+        <h2 id="lineage">4. Data Lineage Tracking for AI Pipelines</h2>
+
+        <p>
+            Data lineage in AI contexts answers the critical question: <em>"Where did this model's training data come from, and how was it transformed?"</em> This traceability is essential for model explainability, regulatory audits, and debugging data quality issues.
+        </p>
+
+        <h3>4.1 AI Pipeline Lineage Architecture</h3>
+
+        <div class="architecture-diagram">
+            <h4 style="margin-top:0; color: var(--color-text-secondary);">End-to-End AI Data Lineage</h4>
+            <div class="arch-flow">
+                <div class="arch-node">📦 Raw Data<br><small>Blob, SQL, Cosmos DB</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node purview">⚙️ Data Prep<br><small>Cleaning, transforms</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node">🧪 Feature Store<br><small>Engineered features</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node governance">🤖 Model Training<br><small>AI Foundry compute</small></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node compliance">🚀 Deployment<br><small>Endpoints, inference</small></div>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-top: 1rem;">
+                ↕ Microsoft Purview captures lineage at each stage automatically via connector integrations
+            </p>
+        </div>
+
+        <h3>4.2 Capturing Lineage in Azure AI Foundry</h3>
+
+        <pre><code><span class="cm"># Integrate Purview lineage with Azure AI Foundry pipelines</span>
+<span class="kw">from</span> azure.purview.catalog <span class="kw">import</span> PurviewCatalogClient
+<span class="kw">from</span> azure.ai.ml <span class="kw">import</span> MLClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+credential = <span class="fn">DefaultAzureCredential</span>()
+
+<span class="cm"># Initialize Purview catalog client</span>
+purview_client = <span class="fn">PurviewCatalogClient</span>(
+    endpoint=<span class="str">"https://purview-ai-governance.purview.azure.com"</span>,
+    credential=credential
+)
+
+<span class="cm"># Define lineage entity for AI training pipeline</span>
+lineage_payload = {
+    <span class="str">"typeName"</span>: <span class="str">"azure_ai_foundry_pipeline"</span>,
+    <span class="str">"attributes"</span>: {
+        <span class="str">"name"</span>: <span class="str">"customer-churn-training-pipeline"</span>,
+        <span class="str">"qualifiedName"</span>: <span class="str">"foundry://project/churn/pipeline/v2"</span>,
+        <span class="str">"description"</span>: <span class="str">"End-to-end training pipeline for churn model"</span>
+    },
+    <span class="str">"inputs"</span>: [
+        {
+            <span class="str">"typeName"</span>: <span class="str">"azure_blob_path"</span>,
+            <span class="str">"uniqueAttributes"</span>: {
+                <span class="str">"qualifiedName"</span>: <span class="str">"https://aidata.blob.core.windows.net/training/customers"</span>
+            }
+        },
+        {
+            <span class="str">"typeName"</span>: <span class="str">"azure_sql_table"</span>,
+            <span class="str">"uniqueAttributes"</span>: {
+                <span class="str">"qualifiedName"</span>: <span class="str">"mssql://sqlserver/db/dbo/transactions"</span>
+            }
+        }
+    ],
+    <span class="str">"outputs"</span>: [
+        {
+            <span class="str">"typeName"</span>: <span class="str">"azure_ai_foundry_model"</span>,
+            <span class="str">"uniqueAttributes"</span>: {
+                <span class="str">"qualifiedName"</span>: <span class="str">"foundry://project/churn/model/v2.1"</span>
+            }
+        }
+    ]
+}
+
+<span class="cm"># Register lineage in Purview</span>
+result = purview_client.lineage.<span class="fn">create_or_update_entity</span>(
+    body=lineage_payload
+)
+<span class="kw">print</span>(<span class="str">f"Lineage entity created: </span>{result[<span class="str">'guid'</span>]}<span class="str">"</span>)<span class="code-label">Python</span></code></pre>
+
+        <h3>4.3 Lineage Visualization</h3>
+
+        <p>Purview provides a visual lineage explorer that maps the entire data journey. For AI pipelines, this includes:</p>
+
+        <ul>
+            <li><strong>Source-to-model tracing</strong> — follow data from raw storage through transformations to the trained model</li>
+            <li><strong>Impact analysis</strong> — understand which models are affected when a data source changes</li>
+            <li><strong>Cross-system lineage</strong> — track data flowing between Azure services (Blob → Data Factory → AI Foundry)</li>
+            <li><strong>Version lineage</strong> — see how dataset versions map to model versions</li>
+        </ul>
+
+        <div class="info-card purple">
+            <div class="info-card-title">🔗 Lineage Best Practice</div>
+            <p>
+                Enable automated lineage capture by registering your Azure Data Factory, Synapse Analytics, and Azure AI Foundry pipelines as Purview data sources. This eliminates manual lineage tagging and ensures complete audit trails.
+            </p>
+        </div>
+
+        <!-- =====================================================
+             SECTION 5: Compliance
+             ===================================================== -->
+        <h2 id="compliance">5. Compliance: GDPR, HIPAA &amp; SOC 2</h2>
+
+        <p>
+            AI systems that process personal, health, or financial data must comply with multiple regulatory frameworks. Microsoft Purview's compliance features help you meet these requirements within your Azure AI Foundry projects.
+        </p>
+
+        <div class="compliance-badges">
+            <span class="compliance-badge"><span class="badge-dot gdpr"></span> GDPR</span>
+            <span class="compliance-badge"><span class="badge-dot hipaa"></span> HIPAA</span>
+            <span class="compliance-badge"><span class="badge-dot soc2"></span> SOC 2</span>
+            <span class="compliance-badge"><span class="badge-dot ccpa"></span> CCPA</span>
+            <span class="compliance-badge"><span class="badge-dot iso"></span> ISO 27001</span>
+        </div>
+
+        <h3>5.1 GDPR Compliance for AI</h3>
+
+        <p>The General Data Protection Regulation requires organizations to:</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>GDPR Article</th>
+                        <th>AI Requirement</th>
+                        <th>Purview Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Art. 13-14</strong> — Transparency</td>
+                        <td>Inform users about AI-driven decisions</td>
+                        <td>Data catalog + lineage documentation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Art. 15</strong> — Right of Access</td>
+                        <td>Provide data subjects with their data</td>
+                        <td>Data map + subject rights requests</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Art. 17</strong> — Right to Erasure</td>
+                        <td>Delete personal data from training sets</td>
+                        <td>Data discovery + classification scans</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Art. 22</strong> — Automated Decisions</td>
+                        <td>Allow human review of AI decisions</td>
+                        <td>Lineage tracking + audit logs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Art. 25</strong> — Data Protection by Design</td>
+                        <td>Build privacy into AI systems</td>
+                        <td>Sensitivity labels + access policies</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Art. 35</strong> — DPIA</td>
+                        <td>Assess AI processing impact on privacy</td>
+                        <td>Data estate insights + risk reports</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>5.2 HIPAA Compliance for Healthcare AI</h3>
+
+        <pre><code><span class="cm"># Configure HIPAA-compliant data governance for healthcare AI</span>
+<span class="cm"># Purview policy for PHI data in AI Foundry</span>
+
+hipaa_policy = {
+    <span class="str">"name"</span>: <span class="str">"HIPAA-AI-Training-Data-Policy"</span>,
+    <span class="str">"description"</span>: <span class="str">"Enforce HIPAA controls on healthcare AI data"</span>,
+    <span class="str">"decisionRules"</span>: [
+        {
+            <span class="str">"effect"</span>: <span class="str">"Deny"</span>,
+            <span class="str">"condition"</span>: {
+                <span class="str">"attributeName"</span>: <span class="str">"classification"</span>,
+                <span class="str">"attributeValueIncludes"</span>: <span class="str">"PHI"</span>,
+                <span class="str">"fromRule"</span>: <span class="str">"NOT_IN_BAA_GROUP"</span>
+            },
+            <span class="str">"description"</span>: <span class="str">"Block PHI access without BAA agreement"</span>
+        },
+        {
+            <span class="str">"effect"</span>: <span class="str">"Permit"</span>,
+            <span class="str">"condition"</span>: {
+                <span class="str">"attributeName"</span>: <span class="str">"classification"</span>,
+                <span class="str">"attributeValueIncludes"</span>: <span class="str">"PHI"</span>,
+                <span class="str">"fromRule"</span>: <span class="str">"IN_BAA_GROUP"</span>,
+                <span class="str">"auditLog"</span>: <span class="kw">True</span>
+            },
+            <span class="str">"description"</span>: <span class="str">"Allow PHI access with full audit logging"</span>
+        }
+    ],
+    <span class="str">"scope"</span>: {
+        <span class="str">"collections"</span>: [<span class="str">"healthcare-ai-project"</span>],
+        <span class="str">"dataSources"</span>: [<span class="str">"patient-records-store"</span>]
+    }
+}<span class="code-label">Python</span></code></pre>
+
+        <h3>5.3 SOC 2 Trust Service Criteria</h3>
+
+        <div class="pillar-grid">
+            <div class="pillar-card">
+                <div class="pillar-icon">🔒</div>
+                <h4>Security</h4>
+                <p>Access controls, encryption, network security for AI data</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">⚡</div>
+                <h4>Availability</h4>
+                <p>AI system uptime, disaster recovery for governance data</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🔄</div>
+                <h4>Processing Integrity</h4>
+                <p>Accurate, complete AI data processing with lineage</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🔐</div>
+                <h4>Confidentiality</h4>
+                <p>Sensitivity labels, DLP policies for confidential data</p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">👤</div>
+                <h4>Privacy</h4>
+                <p>Personal data handling, consent management, data minimization</p>
+            </div>
+        </div>
+
+        <div class="info-card compliance">
+            <div class="info-card-title">⚠️ Compliance Alert</div>
+            <p>
+                When using AI models in regulated industries, <strong>every data transformation must be auditable</strong>. Configure Purview to capture lineage at each pipeline stage and retain audit logs for the required retention period (typically 6–7 years for financial data, indefinite for some healthcare records).
+            </p>
+        </div>
+
+        <!-- =====================================================
+             SECTION 6: Purview × AI Foundry Integration
+             ===================================================== -->
+        <h2 id="foundry-integration">6. Purview × Azure AI Foundry Integration</h2>
+
+        <p>
+            Azure AI Foundry provides native integration points with Microsoft Purview that enable seamless governance of your AI workloads. This section covers the technical integration patterns.
+        </p>
+
+        <h3>6.1 Registering AI Foundry Assets in Purview</h3>
+
+        <pre><code><span class="cm"># Register Azure AI Foundry project as a Purview data source</span>
+<span class="kw">from</span> azure.purview.scanning <span class="kw">import</span> PurviewScanningClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+credential = <span class="fn">DefaultAzureCredential</span>()
+scanning_client = <span class="fn">PurviewScanningClient</span>(
+    endpoint=<span class="str">"https://purview-ai-governance.purview.azure.com"</span>,
+    credential=credential
+)
+
+<span class="cm"># Register AI Foundry's underlying storage</span>
+data_source = {
+    <span class="str">"kind"</span>: <span class="str">"AzureStorage"</span>,
+    <span class="str">"properties"</span>: {
+        <span class="str">"endpoint"</span>: <span class="str">"https://aifoundryprojectdata.blob.core.windows.net"</span>,
+        <span class="str">"resourceGroup"</span>: <span class="str">"rg-ai-foundry"</span>,
+        <span class="str">"subscriptionId"</span>: <span class="str">"your-subscription-id"</span>,
+        <span class="str">"collection"</span>: {
+            <span class="str">"referenceName"</span>: <span class="str">"ai-foundry-assets"</span>,
+            <span class="str">"type"</span>: <span class="str">"CollectionReference"</span>
+        }
+    }
+}
+
+result = scanning_client.data_sources.<span class="fn">create_or_update</span>(
+    data_source_name=<span class="str">"ai-foundry-storage"</span>,
+    body=data_source
+)
+
+<span class="cm"># Configure scan rule for AI data patterns</span>
+scan_rule = {
+    <span class="str">"kind"</span>: <span class="str">"AzureStorageCredentialScan"</span>,
+    <span class="str">"properties"</span>: {
+        <span class="str">"scanRulesetName"</span>: <span class="str">"AI-Data-ScanRuleSet"</span>,
+        <span class="str">"credential"</span>: {
+            <span class="str">"referenceName"</span>: <span class="str">"managed-identity"</span>,
+            <span class="str">"credentialType"</span>: <span class="str">"ManagedIdentity"</span>
+        },
+        <span class="str">"collection"</span>: {
+            <span class="str">"referenceName"</span>: <span class="str">"ai-foundry-assets"</span>,
+            <span class="str">"type"</span>: <span class="str">"CollectionReference"</span>
+        }
+    }
+}
+
+scan_result = scanning_client.scans.<span class="fn">create_or_update</span>(
+    data_source_name=<span class="str">"ai-foundry-storage"</span>,
+    scan_name=<span class="str">"weekly-ai-data-scan"</span>,
+    body=scan_rule
+)
+<span class="kw">print</span>(<span class="str">f"Scan configured: </span>{scan_result[<span class="str">'name'</span>]}<span class="str">"</span>)<span class="code-label">Python</span></code></pre>
+
+        <h3>6.2 Data Governance Dashboard Metrics</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Description</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Classification Coverage</strong></td>
+                        <td>% of AI data assets with classification applied</td>
+                        <td>≥ 95%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Label Coverage</strong></td>
+                        <td>% of sensitive assets with sensitivity labels</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lineage Completeness</strong></td>
+                        <td>% of AI pipelines with end-to-end lineage</td>
+                        <td>≥ 90%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Policy Violations</strong></td>
+                        <td>Number of data access policy violations per month</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scan Freshness</strong></td>
+                        <td>Days since last successful governance scan</td>
+                        <td>≤ 7 days</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Glossary Adoption</strong></td>
+                        <td>% of AI assets linked to business glossary terms</td>
+                        <td>≥ 80%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- =====================================================
+             SECTION 7: Data Access Policies
+             ===================================================== -->
+        <h2 id="policies">7. Data Access Policies &amp; Controls</h2>
+
+        <p>
+            Purview's data access policies enable you to manage access to data assets directly from the governance plane, without modifying individual resource permissions. This is particularly powerful for AI workloads where multiple teams need controlled access to shared data.
+        </p>
+
+        <h3>7.1 Policy Types for AI Data</h3>
+
+        <ul>
+            <li><strong>Self-Service Access Policies</strong> — allow data consumers to request access through Purview's data catalog</li>
+            <li><strong>DevOps Policies</strong> — grant DevOps teams metadata read access for pipeline automation</li>
+            <li><strong>Data Owner Policies</strong> — enable data stewards to manage access at the collection level</li>
+            <li><strong>Resource Set Policies</strong> — apply governance rules to groups of related data assets</li>
+        </ul>
+
+        <pre><code><span class="cm"># Terraform: Configure Purview data access policy for AI Foundry</span>
+<span class="kw">resource</span> <span class="str">"azurerm_purview_account"</span> <span class="str">"ai_governance"</span> {
+  name                = <span class="str">"purview-ai-governance"</span>
+  resource_group_name = azurerm_resource_group.governance.name
+  location            = azurerm_resource_group.governance.location
+
+  identity {
+    type = <span class="str">"SystemAssigned"</span>
+  }
+
+  managed_resource_group_name = <span class="str">"purview-managed-rg"</span>
+}
+
+<span class="cm"># Grant Purview managed identity access to AI Foundry storage</span>
+<span class="kw">resource</span> <span class="str">"azurerm_role_assignment"</span> <span class="str">"purview_storage_reader"</span> {
+  scope                = azurerm_storage_account.ai_data.id
+  role_definition_name = <span class="str">"Storage Blob Data Reader"</span>
+  principal_id         = azurerm_purview_account.ai_governance.identity[<span class="num">0</span>].principal_id
+}
+
+<span class="cm"># Grant Purview access to AI Foundry project's Key Vault</span>
+<span class="kw">resource</span> <span class="str">"azurerm_role_assignment"</span> <span class="str">"purview_kv_reader"</span> {
+  scope                = azurerm_key_vault.ai_foundry.id
+  role_definition_name = <span class="str">"Key Vault Secrets User"</span>
+  principal_id         = azurerm_purview_account.ai_governance.identity[<span class="num">0</span>].principal_id
+}<span class="code-label">Terraform</span></code></pre>
+
+        <div class="info-card warning">
+            <div class="info-card-title">⚠️ Security Warning</div>
+            <p>
+                Never grant Purview's managed identity <strong>write</strong> access to your AI data stores. Purview requires <em>read-only</em> access for scanning and classification. Write access should be limited to the AI Foundry pipeline identities only.
+            </p>
+        </div>
+
+        <!-- =====================================================
+             SECTION 8: Reference Architecture
+             ===================================================== -->
+        <h2 id="architecture">8. Reference Architecture</h2>
+
+        <h3>8.1 Enterprise AI Data Governance Architecture</h3>
+
+        <div class="architecture-diagram">
+            <h4 style="margin-top:0; color: var(--color-text-secondary);">Azure AI Foundry + Purview Governance Architecture</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 1.5rem 0; text-align: center;">
+                <div>
+                    <div style="font-weight: 700; font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.75rem;">DATA SOURCES</div>
+                    <div class="arch-node" style="margin: 0.5rem auto;">Azure Blob Storage</div>
+                    <div class="arch-node" style="margin: 0.5rem auto;">Azure SQL Database</div>
+                    <div class="arch-node" style="margin: 0.5rem auto;">Cosmos DB</div>
+                    <div class="arch-node" style="margin: 0.5rem auto;">Azure Data Lake</div>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.75rem;">GOVERNANCE LAYER</div>
+                    <div class="arch-node purview" style="margin: 0.5rem auto;">🔍 Purview Data Map</div>
+                    <div class="arch-node purview" style="margin: 0.5rem auto;">🏷️ Classification Engine</div>
+                    <div class="arch-node purview" style="margin: 0.5rem auto;">🔗 Lineage Tracker</div>
+                    <div class="arch-node purview" style="margin: 0.5rem auto;">📊 Compliance Reports</div>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.75rem;">AI FOUNDRY</div>
+                    <div class="arch-node governance" style="margin: 0.5rem auto;">⚙️ AI Foundry Project</div>
+                    <div class="arch-node governance" style="margin: 0.5rem auto;">🤖 Model Training</div>
+                    <div class="arch-node governance" style="margin: 0.5rem auto;">🚀 Managed Endpoints</div>
+                    <div class="arch-node governance" style="margin: 0.5rem auto;">📈 Monitoring</div>
+                </div>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-top: 0.5rem;">
+                ← Purview scans and classifies data | Policies flow to AI Foundry | Lineage captured bidirectionally →
+            </p>
+        </div>
+
+        <h3>8.2 Implementation Checklist</h3>
+
+        <ul class="checklist">
+            <li>Create Microsoft Purview account in the same region as AI Foundry</li>
+            <li>Register all AI data sources (Blob, SQL, Cosmos DB, Data Lake)</li>
+            <li>Configure automated classification scans (weekly minimum)</li>
+            <li>Design and publish sensitivity label hierarchy</li>
+            <li>Enable auto-labeling policies for PII, PHI, and financial data</li>
+            <li>Set up data lineage capture for AI Foundry pipelines</li>
+            <li>Configure data access policies for AI teams</li>
+            <li>Create compliance dashboard with governance KPIs</li>
+            <li>Establish data stewardship roles and responsibilities</li>
+            <li>Schedule quarterly governance reviews and audit readiness checks</li>
+        </ul>
+
+        <!-- =====================================================
+             VIDEO SECTION
+             ===================================================== -->
+        <div class="video-section" id="video">
+            <h3>📺 Deep Dive: AI Foundry Networking and Security</h3>
+            <p>Watch the comprehensive walkthrough of security and governance patterns in Azure AI Foundry</p>
+            <div class="video-wrapper">
+                <iframe
+                    src="https://www.youtube.com/embed/bL9n83uPV84"
+                    title="AI Foundry Networking and Security: Deep Dive"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             MINI HACK
+             ===================================================== -->
+        <div class="mini-hack" id="mini-hack">
+            <div class="mini-hack-badge">🧪 Mini Hack</div>
+            <h2>Set Up Data Classification for Your AI Data Sources</h2>
+            <p>
+                In this hands-on exercise, you'll configure Microsoft Purview to automatically discover and classify sensitive data across your Azure AI Foundry project's data sources.
+            </p>
+
+            <div class="step-card">
+                <h4>Step 1: Provision Purview Account</h4>
+                <pre><code><span class="cm"># Create resource group and Purview account</span>
+<span class="kw">az</span> group create --name rg-purview-lab --location eastus
+
+<span class="kw">az</span> purview account create \
+    --account-name purview-ai-lab \
+    --resource-group rg-purview-lab \
+    --location eastus
+
+<span class="cm"># Wait for provisioning (~5 minutes)</span>
+<span class="kw">az</span> purview account show \
+    --account-name purview-ai-lab \
+    --resource-group rg-purview-lab \
+    --query <span class="str">"provisioningState"</span></code></pre>
+            </div>
+
+            <div class="step-card">
+                <h4>Step 2: Register AI Data Sources</h4>
+                <pre><code><span class="cm"># Create sample storage with AI training data</span>
+<span class="kw">az</span> storage account create \
+    --name aitrainingdatalab \
+    --resource-group rg-purview-lab \
+    --sku Standard_LRS \
+    --location eastus
+
+<span class="cm"># Create containers for AI data</span>
+<span class="kw">az</span> storage container create \
+    --name training-data \
+    --account-name aitrainingdatalab
+
+<span class="kw">az</span> storage container create \
+    --name model-artifacts \
+    --account-name aitrainingdatalab
+
+<span class="cm"># Upload sample CSV with PII data for classification testing</span>
+<span class="kw">cat</span> &lt;&lt;<span class="str">EOF</span> &gt; sample-customers.csv
+name,email,ssn,phone,diagnosis
+John Smith,john@example.com,123-45-6789,555-0101,Type 2 Diabetes
+Jane Doe,jane@example.com,987-65-4321,555-0102,Hypertension
+<span class="str">EOF</span>
+
+<span class="kw">az</span> storage blob upload \
+    --account-name aitrainingdatalab \
+    --container-name training-data \
+    --file sample-customers.csv \
+    --name datasets/customers/sample-customers.csv</code></pre>
+            </div>
+
+            <div class="step-card">
+                <h4>Step 3: Configure Classification Scan</h4>
+                <pre><code><span class="cm"># Grant Purview managed identity access to storage</span>
+<span class="kw">PURVIEW_ID</span>=$(<span class="kw">az</span> purview account show \
+    --account-name purview-ai-lab \
+    --resource-group rg-purview-lab \
+    --query <span class="str">"identity.principalId"</span> -o tsv)
+
+<span class="kw">STORAGE_ID</span>=$(<span class="kw">az</span> storage account show \
+    --name aitrainingdatalab \
+    --query <span class="str">"id"</span> -o tsv)
+
+<span class="kw">az</span> role assignment create \
+    --role <span class="str">"Storage Blob Data Reader"</span> \
+    --assignee-object-id $PURVIEW_ID \
+    --scope $STORAGE_ID
+
+<span class="cm"># Register and scan via Purview portal or REST API</span>
+<span class="cm"># Navigate to: Purview Studio → Data Map → Register</span>
+<span class="cm"># Select: Azure Blob Storage → aitrainingdatalab</span>
+<span class="cm"># Run: Full scan with default classification rules</span></code></pre>
+            </div>
+
+            <div class="step-card">
+                <h4>Step 4: Verify Classifications</h4>
+                <pre><code><span class="cm"># After scan completes, query discovered classifications</span>
+<span class="kw">from</span> azure.purview.catalog <span class="kw">import</span> PurviewCatalogClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+client = <span class="fn">PurviewCatalogClient</span>(
+    endpoint=<span class="str">"https://purview-ai-lab.purview.azure.com"</span>,
+    credential=<span class="fn">DefaultAzureCredential</span>()
+)
+
+<span class="cm"># Search for classified assets</span>
+results = client.discovery.<span class="fn">query</span>(
+    search_request={
+        <span class="str">"keywords"</span>: <span class="str">"*"</span>,
+        <span class="str">"filter"</span>: {
+            <span class="str">"classification"</span>: <span class="str">"MICROSOFT.PERSONAL.US.SOCIAL_SECURITY_NUMBER"</span>
+        }
+    }
+)
+
+<span class="kw">for</span> asset <span class="kw">in</span> results[<span class="str">"value"</span>]:
+    <span class="kw">print</span>(<span class="str">f"Asset: </span>{asset[<span class="str">'name'</span>]}<span class="str">"</span>)
+    <span class="kw">print</span>(<span class="str">f"  Classifications: </span>{asset.get(<span class="str">'classification'</span>, [])}<span class="str">"</span>)
+    <span class="kw">print</span>(<span class="str">f"  Sensitivity: </span>{asset.get(<span class="str">'sensitivityLabel'</span>, <span class="str">'Not labeled'</span>)}<span class="str">"</span>)<span class="code-label">Python</span></code></pre>
+            </div>
+
+            <div class="step-card">
+                <h4>Step 5: Apply Sensitivity Labels</h4>
+                <p style="color: rgba(255,255,255,0.85); margin-bottom: 0.5rem;">
+                    In the Purview Compliance Portal:
+                </p>
+                <ol style="color: rgba(255,255,255,0.85);">
+                    <li>Navigate to <strong>Information Protection → Labels</strong></li>
+                    <li>Create label: <strong>"Confidential - AI Training Data"</strong></li>
+                    <li>Configure auto-labeling for SSN, email, and PHI classifiers</li>
+                    <li>Set protection: Encrypt + restrict to AI team group</li>
+                    <li>Publish label policy to AI Foundry data sources</li>
+                </ol>
+            </div>
+
+            <div class="info-card tip" style="background: rgba(0,120,212,0.15); border-color: #60a5fa;">
+                <div class="info-card-title" style="color: #93c5fd;">✅ Success Criteria</div>
+                <p style="color: rgba(255,255,255,0.85);">
+                    Your Purview dashboard should show: classified assets with PII/PHI tags, sensitivity labels applied, and the sample dataset flagged with SSN, email, and health data classifications.
+                </p>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             KEY TAKEAWAYS
+             ===================================================== -->
+        <div class="takeaways" id="takeaways">
+            <h3>🎯 Key Takeaways</h3>
+            <ol>
+                <li><strong>Microsoft Purview is the governance backbone</strong> for Azure AI Foundry — providing data discovery, classification, lineage, and compliance in a unified platform.</li>
+                <li><strong>Data classification is foundational</strong> — use 300+ built-in classifiers and create custom ones for AI-specific data patterns to identify sensitive data before it enters training pipelines.</li>
+                <li><strong>End-to-end lineage is non-negotiable</strong> — trace data from source through transformation to model output for explainability, auditing, and regulatory compliance.</li>
+                <li><strong>Sensitivity labels enforce protection automatically</strong> — combine auto-labeling with encryption and access controls to protect data throughout the AI lifecycle.</li>
+                <li><strong>Regulatory compliance requires proactive governance</strong> — GDPR, HIPAA, and SOC 2 each demand specific controls that Purview + AI Foundry can address together.</li>
+                <li><strong>Data access policies centralize control</strong> — manage who can access AI training data directly from Purview without modifying individual resource permissions.</li>
+            </ol>
+        </div>
+
+        <!-- =====================================================
+             ADDITIONAL RESOURCES
+             ===================================================== -->
+        <h2 id="resources">12. Additional Resources</h2>
+
+        <ul>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/purview/purview" target="_blank" rel="noopener">Microsoft Purview Documentation</a></li>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/azure/ai-studio/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a></li>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/purview/concept-best-practices-classification" target="_blank" rel="noopener">Data Classification Best Practices</a></li>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/purview/concept-best-practices-lineage-azure-data-factory" target="_blank" rel="noopener">Data Lineage in Azure Data Factory</a></li>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/compliance/regulatory/offering-gdpr" target="_blank" rel="noopener">GDPR Compliance with Microsoft Services</a></li>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/compliance/regulatory/offering-hipaa-hitech" target="_blank" rel="noopener">HIPAA/HITECH Compliance</a></li>
+            <li>📖 <a href="https://learn.microsoft.com/en-us/compliance/regulatory/offering-soc-2" target="_blank" rel="noopener">SOC 2 Type II Reports</a></li>
+        </ul>
+
+        <!-- =====================================================
+             BOTTOM NAVIGATION
+             ===================================================== -->
+        <nav class="bottom-nav" aria-label="Module navigation">
+            <a href="../module-31/blog.html" class="nav-link prev" aria-label="Previous module">
+                ← Module 31: Network Security
+            </a>
+            <a href="../module-33/blog.html" class="nav-link next" aria-label="Next module">
+                Module 33: Threat Protection →
+            </a>
+        </nav>
+    </article>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div>
+            <div class="footer-brand">Azure AI Foundry: Zero to Hero</div>
+            <p style="font-size: 0.82rem;">Module 32 of 45 · ARC 7: Security, Governance &amp; Compliance</p>
+        </div>
+        <div class="footer-links">
+            <a href="https://learn.microsoft.com/en-us/azure/ai-studio/" target="_blank" rel="noopener">AI Foundry Docs</a>
+            <a href="https://learn.microsoft.com/en-us/purview/" target="_blank" rel="noopener">Purview Docs</a>
+            <a href="https://github.com/Azure-Samples" target="_blank" rel="noopener">Azure Samples</a>
+            <a href="https://techcommunity.microsoft.com" target="_blank" rel="noopener">Tech Community</a>
+        </div>
+    </div>
+</footer>
+
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<script>
+    // Reading progress bar
+    window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        document.getElementById('progressBar').style.width = scrolled + '%';
+    });
+
+    // Smooth scroll for TOC links
+    document.querySelectorAll('.toc a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // Animate elements on scroll
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.pillar-card, .arch-node, .step-card').forEach(el => {
+        observer.observe(el);
+    });
+</script>
+
+</body>
+</html>

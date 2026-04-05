@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 36: Multi-Agent Systems & Orchestration — Azure AI Foundry: Zero to Hero</title>
+    <meta name="description" content="Design and build multi-agent architectures with Azure AI Foundry. Learn supervisor, router, and swarm patterns for agent-to-agent communication and orchestration.">
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-bg: #ffffff;
+            --ms-text: #1a1a1a;
+            --ms-text-secondary: #505050;
+            --ms-border: #e1e1e1;
+            --ms-code-bg: #1e1e1e;
+            --ms-callout-blue: #f0f8ff;
+            --ms-callout-yellow: #fffbeb;
+            --ms-callout-green: #f0fdf4;
+            --ms-callout-red: #fef2f2;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --content-width: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 48px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ms-text);
+            background: var(--ms-bg);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 1000;
+            transition: width 0.15s ease-out;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: #1a1a1a;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            border-bottom: 1px solid #333;
+        }
+
+        .top-nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            height: var(--nav-height);
+        }
+
+        .ms-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .ms-logo svg { width: 16px; height: 16px; }
+
+        .blog-title {
+            color: #ccc;
+            font-size: 13px;
+            margin-left: 16px;
+            padding-left: 16px;
+            border-left: 1px solid #444;
+        }
+
+        .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #b3b3b3;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: #fff; }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--ms-blue) 0%, var(--ms-purple) 100%);
+            color: #fff;
+            padding: 60px 24px 52px;
+        }
+
+        .hero-inner {
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+        .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .hero .subtitle {
+            font-size: 18px;
+            opacity: 0.92;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .author-info .name { font-weight: 600; }
+        .meta .divider { opacity: 0.5; }
+
+        /* Main Layout */
+        .main-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+        }
+
+        /* TOC Sidebar */
+        .toc {
+            position: sticky;
+            top: 60px;
+            align-self: start;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .toc h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .toc ul { list-style: none; }
+
+        .toc li { margin-bottom: 4px; }
+
+        .toc a {
+            display: block;
+            padding: 4px 12px;
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .toc a:hover { color: var(--ms-blue); }
+        .toc a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            font-weight: 600;
+        }
+
+        /* Article Content */
+        .article { max-width: var(--content-width); }
+
+        .article h2 {
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-light-blue);
+            line-height: 1.2;
+        }
+
+        .article h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 32px 0 12px;
+        }
+
+        .article h4 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 24px 0 8px;
+        }
+
+        .article p {
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+
+        .article ul, .article ol {
+            margin: 0 0 16px 24px;
+        }
+
+        .article li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .article strong { font-weight: 600; }
+
+        .article a {
+            color: var(--ms-blue);
+            text-decoration: none;
+        }
+
+        .article a:hover { text-decoration: underline; }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--ms-code-bg);
+            color: #d4d4d4;
+            padding: 20px 24px;
+            border-radius: 6px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+            position: relative;
+            white-space: pre;
+        }
+
+        .code-block code {
+            background: none;
+            padding: 0;
+            font-size: inherit;
+            color: inherit;
+        }
+
+        .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kw { color: #569cd6; }
+        .fn { color: #dcdcaa; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .num { color: #b5cea8; }
+        .op { color: #d4d4d4; }
+        .builtin { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+        .decorator { color: #d7ba7d; }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .callout-blue { background: var(--ms-callout-blue); border-left: 4px solid var(--ms-blue); }
+        .callout-yellow { background: var(--ms-callout-yellow); border-left: 4px solid var(--ms-warning); }
+        .callout-green { background: var(--ms-callout-green); border-left: 4px solid var(--ms-success); }
+        .callout-red { background: var(--ms-callout-red); border-left: 4px solid var(--ms-error); }
+
+        /* Video Container */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            margin: 24px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Tables */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+
+        .styled-table thead th {
+            background: var(--ms-blue);
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .styled-table tbody td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--ms-border);
+        }
+
+        .styled-table tbody tr:nth-child(even) { background: #f8f8f8; }
+        .styled-table tbody tr:hover { background: #f0f0f0; }
+
+        /* Cards */
+        .card {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 16px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .card-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        /* Mini Hack */
+        .mini-hack {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f0ff 100%);
+            border: 2px solid var(--ms-purple);
+            border-radius: 10px;
+            padding: 28px 28px 24px;
+            margin: 32px 0;
+        }
+
+        .mini-hack h3 {
+            color: var(--ms-purple);
+            margin-top: 20px;
+            font-size: 1.3rem;
+        }
+
+        .mini-hack h3:first-child { margin-top: 0; }
+
+        /* Diagram Boxes */
+        .diagram {
+            background: #f8f9fa;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 28px;
+            margin: 24px 0;
+            text-align: center;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* Tags */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 24px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--ms-light-blue);
+            color: var(--ms-dark-blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Author Box */
+        .author-box {
+            display: flex;
+            gap: 20px;
+            padding: 24px;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            margin: 32px 0;
+            background: #fafafa;
+        }
+
+        .author-avatar {
+            width: 64px;
+            height: 64px;
+            background: var(--ms-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        /* Related Posts */
+        .related-posts {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .related-post {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.2s;
+        }
+
+        .related-post:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .related-post .module-num {
+            font-size: 12px;
+            color: var(--ms-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .related-post h4 { margin: 6px 0 8px; font-size: 15px; }
+        .related-post p { font-size: 13px; color: var(--ms-text-secondary); }
+
+        /* Series Navigation */
+        .series-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            margin: 40px 0;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .series-nav a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .series-nav a:hover { text-decoration: underline; }
+
+        .series-nav .current {
+            color: var(--ms-text-secondary);
+            font-size: 13px;
+        }
+
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 998;
+            transition: background 0.2s;
+        }
+
+        .back-to-top:hover { background: var(--ms-dark-blue); }
+        .back-to-top.visible { display: flex; }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: #b3b3b3;
+            padding: 40px 24px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer a { color: var(--ms-blue); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* Architecture Diagram Special */
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .arch-node {
+            background: var(--ms-light-blue);
+            border: 2px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--ms-dark-blue);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .arch-node.supervisor {
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+            border-color: var(--ms-purple);
+        }
+
+        .arch-node.agent {
+            background: #e6f0ff;
+            border-color: var(--ms-blue);
+        }
+
+        .arch-arrow {
+            font-size: 20px;
+            color: var(--ms-text-secondary);
+        }
+
+        /* Print Styles */
+        @media print {
+            .top-nav, .toc, .back-to-top, .progress-bar { display: none !important; }
+            .main-wrapper { grid-template-columns: 1fr; }
+            .hero { padding: 30px 20px; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-wrapper { grid-template-columns: 1fr; }
+            .toc { display: none; }
+            .hero h1 { font-size: 28px; }
+            .hero { padding: 40px 20px 36px; }
+            .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+            .related-posts { grid-template-columns: 1fr; }
+            .series-nav { flex-direction: column; gap: 12px; text-align: center; }
+            .nav-links { display: none; }
+            .arch-flow { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <div class="ms-logo">
+                <svg viewBox="0 0 16 16" fill="none">
+                    <rect x="1" y="1" width="6.5" height="6.5" fill="#f25022"/>
+                    <rect x="8.5" y="1" width="6.5" height="6.5" fill="#7fba00"/>
+                    <rect x="1" y="8.5" width="6.5" height="6.5" fill="#00a4ef"/>
+                    <rect x="8.5" y="8.5" width="6.5" height="6.5" fill="#ffb900"/>
+                </svg>
+                Microsoft
+            </div>
+            <span class="blog-title">AI Foundry Training Blog</span>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Curriculum</a>
+                <a href="#">Resources</a>
+                <a href="#">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-inner">
+            <span class="series-badge">ARC 8 · ADVANCED PATTERNS</span>
+            <h1>Module 36: Multi-Agent Systems &amp; Orchestration</h1>
+            <p class="subtitle">Design and build multi-agent architectures with supervisor, router, and swarm patterns — coordinating specialized agents to solve complex tasks that no single agent can handle alone.</p>
+            <div class="meta">
+                <div class="avatar">🤖</div>
+                <div class="author-info">
+                    <div class="name">AI Foundry Training Team</div>
+                    <div>April 2026</div>
+                </div>
+                <span class="divider">|</span>
+                <span class="reading-time">⏱ 35 min read</span>
+                <span class="divider">|</span>
+                <span>Module 36 of 45</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Sidebar TOC -->
+        <aside class="toc">
+            <h4>Contents</h4>
+            <ul>
+                <li><a href="#introduction" class="active">Introduction</a></li>
+                <li><a href="#why-multi-agent">Why Multi-Agent?</a></li>
+                <li><a href="#architecture-patterns">Architecture Patterns</a></li>
+                <li><a href="#communication">Agent Communication</a></li>
+                <li><a href="#supervisor-pattern">Supervisor Pattern</a></li>
+                <li><a href="#router-pattern">Router Pattern</a></li>
+                <li><a href="#swarm-pattern">Swarm Pattern</a></li>
+                <li><a href="#error-handling">Error Handling</a></li>
+                <li><a href="#implementation">Implementation Guide</a></li>
+                <li><a href="#video">Video Walkthrough</a></li>
+                <li><a href="#mini-hack">Mini Hack</a></li>
+                <li><a href="#key-takeaways">Key Takeaways</a></li>
+                <li><a href="#resources">Resources</a></li>
+            </ul>
+        </aside>
+
+        <!-- Article -->
+        <article class="article">
+            <h2 id="introduction">Introduction</h2>
+            <p>Single-agent systems are powerful, but they hit a ceiling when tasks require diverse expertise, parallel processing, or iterative quality improvement. <strong>Multi-agent systems</strong> break through that ceiling by coordinating multiple specialized agents — each with its own instructions, tools, and domain focus — into a cohesive workflow.</p>
+
+            <p>In this module, you'll learn how to design, build, and orchestrate multi-agent architectures using Azure AI Foundry. We'll cover the three foundational orchestration patterns — <strong>Supervisor</strong>, <strong>Router</strong>, and <strong>Swarm</strong> — and dive deep into agent-to-agent communication, state management, and fault tolerance strategies that keep complex workflows running smoothly in production.</p>
+
+            <div class="callout callout-blue">
+                <strong>💡 What You'll Learn:</strong><br>
+                By the end of this module, you will be able to design multi-agent topologies, implement agent-to-agent handoffs, build supervisor orchestration logic, handle errors across distributed agent workflows, and construct a complete 3-agent system from scratch.
+            </div>
+
+            <div class="tags">
+                <span class="tag">multi-agent</span>
+                <span class="tag">orchestration</span>
+                <span class="tag">Python SDK</span>
+                <span class="tag">advanced</span>
+                <span class="tag">Azure AI Foundry</span>
+                <span class="tag">hands-on</span>
+            </div>
+
+            <!-- Why Multi-Agent -->
+            <h2 id="why-multi-agent">Why Multi-Agent Systems?</h2>
+            <p>Modern enterprise scenarios demand capabilities that stretch beyond what a single agent can deliver. Multi-agent systems address these challenges through <strong>specialization</strong>, <strong>parallelism</strong>, and <strong>quality control loops</strong>.</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🎯 Specialization</h4>
+                    <p>Each agent focuses on a narrow domain — research, writing, code review, data analysis — with tailored system prompts, tool access, and model configurations. Specialists outperform generalists on complex tasks.</p>
+                </div>
+                <div class="card">
+                    <h4>⚡ Parallelism</h4>
+                    <p>Independent subtasks run simultaneously across multiple agents, dramatically reducing end-to-end latency. A research agent can gather data while a planning agent outlines the approach.</p>
+                </div>
+                <div class="card">
+                    <h4>🔍 Quality Gates</h4>
+                    <p>Reviewer agents evaluate outputs from producer agents, creating iterative feedback loops that systematically improve quality before results reach the user.</p>
+                </div>
+                <div class="card">
+                    <h4>🔧 Modularity</h4>
+                    <p>Swap, upgrade, or retrain individual agents without disrupting the entire system. Each agent is an independent unit with a clean interface contract.</p>
+                </div>
+            </div>
+
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Dimension</th>
+                        <th>Single Agent</th>
+                        <th>Multi-Agent System</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Complexity Ceiling</strong></td>
+                        <td>Limited by context window &amp; prompt size</td>
+                        <td>Scales with number of specialized agents</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Latency</strong></td>
+                        <td>Sequential processing only</td>
+                        <td>Parallel execution of independent tasks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error Recovery</strong></td>
+                        <td>Retry entire workflow on failure</td>
+                        <td>Isolate and retry failed agent only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quality Assurance</strong></td>
+                        <td>Self-review (limited effectiveness)</td>
+                        <td>Independent reviewer agents</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Maintainability</strong></td>
+                        <td>Monolithic prompt engineering</td>
+                        <td>Modular agent definitions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost Optimization</strong></td>
+                        <td>One model for all tasks</td>
+                        <td>Right-size models per agent role</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-yellow">
+                <strong>⚠️ When NOT to Use Multi-Agent:</strong><br>
+                Not every problem needs multiple agents. If your task is well-defined, can be handled by a single prompt, or doesn't benefit from specialization — a single agent with good tools is simpler, cheaper, and faster to maintain. Multi-agent architectures add coordination overhead that must be justified by the complexity of the problem.
+            </div>
+
+            <!-- Architecture Patterns -->
+            <h2 id="architecture-patterns">Multi-Agent Architecture Patterns</h2>
+            <p>Azure AI Foundry supports three fundamental orchestration topologies, each suited to different coordination requirements. Understanding these patterns is the first step to designing effective multi-agent systems.</p>
+
+            <div class="card-grid-3">
+                <div class="card" style="border-top: 3px solid var(--ms-blue);">
+                    <h4>🎛️ Supervisor</h4>
+                    <p>A central orchestrator delegates tasks to worker agents, collects their results, and makes routing decisions. Best for <strong>structured workflows</strong> with predictable stages.</p>
+                </div>
+                <div class="card" style="border-top: 3px solid var(--ms-purple);">
+                    <h4>🔀 Router</h4>
+                    <p>An intelligent classifier analyzes incoming requests and routes each to the most appropriate specialist agent. Best for <strong>intent-based dispatching</strong> with diverse request types.</p>
+                </div>
+                <div class="card" style="border-top: 3px solid var(--ms-success);">
+                    <h4>🐝 Swarm</h4>
+                    <p>Agents communicate peer-to-peer, passing context and handoff signals to each other without a central controller. Best for <strong>dynamic, emergent</strong> collaboration.</p>
+                </div>
+            </div>
+
+            <!-- Communication Patterns -->
+            <h2 id="communication">Agent-to-Agent Communication</h2>
+            <p>The foundation of any multi-agent system is how agents share information. Azure AI Foundry supports several communication patterns, each with distinct tradeoffs.</p>
+
+            <h3>Message Passing</h3>
+            <p>Agents communicate by sending structured messages through a shared message bus or direct invocation. Each message carries a payload, sender identity, and optional metadata.</p>
+
+<div class="code-block"><code><span class="cm"># Structured message format for agent-to-agent communication</span>
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+<span class="kw">from</span> typing <span class="kw">import</span> Any, Optional
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="decorator">@dataclass</span>
+<span class="kw">class</span> <span class="builtin">AgentMessage</span>:
+    <span class="param">sender</span>: <span class="builtin">str</span>            <span class="cm"># Agent ID of the sender</span>
+    <span class="param">recipient</span>: <span class="builtin">str</span>         <span class="cm"># Target agent ID or "broadcast"</span>
+    <span class="param">content</span>: <span class="builtin">str</span>           <span class="cm"># The message payload</span>
+    <span class="param">msg_type</span>: <span class="builtin">str</span>          <span class="cm"># "task", "result", "feedback", "handoff"</span>
+    <span class="param">metadata</span>: <span class="builtin">dict</span> = field(default_factory=<span class="builtin">dict</span>)
+    <span class="param">timestamp</span>: <span class="builtin">str</span> = field(
+        default_factory=<span class="kw">lambda</span>: datetime.utcnow().isoformat()
+    )
+
+<span class="cm"># Example: Supervisor assigns a research task</span>
+<span class="param">task_msg</span> = <span class="builtin">AgentMessage</span>(
+    <span class="param">sender</span>=<span class="str">"supervisor"</span>,
+    <span class="param">recipient</span>=<span class="str">"researcher"</span>,
+    <span class="param">content</span>=<span class="str">"Research the latest advances in multi-modal AI agents."</span>,
+    <span class="param">msg_type</span>=<span class="str">"task"</span>,
+    <span class="param">metadata</span>={<span class="str">"priority"</span>: <span class="str">"high"</span>, <span class="str">"max_sources"</span>: <span class="num">5</span>}
+)</code></pre></div>
+
+            <h3>Shared State</h3>
+            <p>For workflows where multiple agents need to read and update the same context, a <strong>shared state store</strong> provides a centralized workspace. This is particularly useful for iterative refinement cycles.</p>
+
+<div class="code-block"><code><span class="cm"># Shared state store for multi-agent collaboration</span>
+<span class="kw">class</span> <span class="builtin">WorkflowState</span>:
+    <span class="str">"""Thread-safe shared state for multi-agent workflows."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>):
+        <span class="param">self</span>.data = {
+            <span class="str">"research_results"</span>: <span class="kw">None</span>,
+            <span class="str">"draft_content"</span>: <span class="kw">None</span>,
+            <span class="str">"review_feedback"</span>: [],
+            <span class="str">"revision_count"</span>: <span class="num">0</span>,
+            <span class="str">"status"</span>: <span class="str">"initialized"</span>,
+            <span class="str">"agent_logs"</span>: [],
+        }
+
+    <span class="kw">def</span> <span class="fn">update</span>(<span class="param">self</span>, <span class="param">key</span>: <span class="builtin">str</span>, <span class="param">value</span>: Any, <span class="param">agent_id</span>: <span class="builtin">str</span>):
+        <span class="param">self</span>.data[<span class="param">key</span>] = <span class="param">value</span>
+        <span class="param">self</span>.data[<span class="str">"agent_logs"</span>].append({
+            <span class="str">"agent"</span>: <span class="param">agent_id</span>,
+            <span class="str">"action"</span>: <span class="kw">f</span><span class="str">"updated {key}"</span>,
+            <span class="str">"timestamp"</span>: datetime.utcnow().isoformat()
+        })
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="param">self</span>, <span class="param">key</span>: <span class="builtin">str</span>) -> Any:
+        <span class="kw">return</span> <span class="param">self</span>.data.get(<span class="param">key</span>)</code></div>
+
+            <h3>Handoff Protocol</h3>
+            <p>Agent handoffs transfer control and context from one agent to another. A well-designed handoff includes the current state, the reason for the transfer, and any constraints the receiving agent should respect.</p>
+
+<div class="code-block"><code><span class="cm"># Handoff protocol between agents</span>
+<span class="decorator">@dataclass</span>
+<span class="kw">class</span> <span class="builtin">AgentHandoff</span>:
+    <span class="param">from_agent</span>: <span class="builtin">str</span>
+    <span class="param">to_agent</span>: <span class="builtin">str</span>
+    <span class="param">context</span>: <span class="builtin">dict</span>         <span class="cm"># Accumulated state to pass along</span>
+    <span class="param">reason</span>: <span class="builtin">str</span>           <span class="cm"># Why the handoff is happening</span>
+    <span class="param">constraints</span>: <span class="builtin">list</span> = field(default_factory=<span class="builtin">list</span>)
+
+<span class="cm"># Example: Researcher hands off to Writer</span>
+<span class="param">handoff</span> = <span class="builtin">AgentHandoff</span>(
+    <span class="param">from_agent</span>=<span class="str">"researcher"</span>,
+    <span class="param">to_agent</span>=<span class="str">"writer"</span>,
+    <span class="param">context</span>={
+        <span class="str">"topic"</span>: <span class="str">"Multi-modal AI agents"</span>,
+        <span class="str">"sources"</span>: [<span class="str">"arxiv:2401.1234"</span>, <span class="str">"arxiv:2402.5678"</span>],
+        <span class="str">"key_findings"</span>: [<span class="str">"Finding 1..."</span>, <span class="str">"Finding 2..."</span>],
+    },
+    <span class="param">reason</span>=<span class="str">"Research complete. Ready for content drafting."</span>,
+    <span class="param">constraints</span>=[<span class="str">"Keep under 1500 words"</span>, <span class="str">"Include citations"</span>]
+)</code></div>
+
+            <!-- Supervisor Pattern -->
+            <h2 id="supervisor-pattern">Supervisor Pattern Deep Dive</h2>
+            <p>The <strong>Supervisor pattern</strong> places a central orchestrator agent in charge of the workflow. The supervisor breaks tasks into subtasks, dispatches them to specialized worker agents, evaluates their outputs, and decides the next step. This is the most common pattern for structured, multi-step workflows.</p>
+
+            <div class="arch-flow">
+                <div class="arch-node agent">📥 User Input</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-node supervisor">🎛️ Supervisor</div>
+                <span class="arch-arrow">→</span>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="arch-node agent">🔬 Researcher</div>
+                    <div class="arch-node agent">✍️ Writer</div>
+                    <div class="arch-node agent">📝 Reviewer</div>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-node agent">📤 Final Output</div>
+            </div>
+
+<div class="code-block"><span class="code-label">Python</span><code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.ai.agents <span class="kw">import</span> Agent
+
+<span class="cm"># Initialize the Azure AI Foundry project client</span>
+<span class="param">client</span> = AIProjectClient(
+    <span class="param">credential</span>=DefaultAzureCredential(),
+    <span class="param">project_endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com/api"</span>
+)
+
+<span class="kw">class</span> <span class="builtin">SupervisorOrchestrator</span>:
+    <span class="str">"""Coordinates a team of specialized agents."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">client</span>: AIProjectClient):
+        <span class="param">self</span>.client = <span class="param">client</span>
+        <span class="param">self</span>.agents = {}
+        <span class="param">self</span>.state = WorkflowState()
+
+    <span class="kw">def</span> <span class="fn">register_agent</span>(<span class="param">self</span>, <span class="param">role</span>: <span class="builtin">str</span>, <span class="param">agent</span>: Agent):
+        <span class="str">"""Register a specialist agent under a role name."""</span>
+        <span class="param">self</span>.agents[<span class="param">role</span>] = <span class="param">agent</span>
+
+    <span class="kw">def</span> <span class="fn">dispatch</span>(<span class="param">self</span>, <span class="param">role</span>: <span class="builtin">str</span>, <span class="param">task</span>: <span class="builtin">str</span>) -> <span class="builtin">str</span>:
+        <span class="str">"""Send a task to a specific agent and get the response."""</span>
+        <span class="param">agent</span> = <span class="param">self</span>.agents[<span class="param">role</span>]
+        <span class="param">thread</span> = <span class="param">self</span>.client.agents.threads.create()
+
+        <span class="cm"># Send the task as a user message</span>
+        <span class="param">self</span>.client.agents.messages.create(
+            <span class="param">thread_id</span>=<span class="param">thread</span>.id,
+            <span class="param">role</span>=<span class="str">"user"</span>,
+            <span class="param">content</span>=<span class="param">task</span>
+        )
+
+        <span class="cm"># Run the agent and wait for completion</span>
+        <span class="param">run</span> = <span class="param">self</span>.client.agents.runs.create_and_process(
+            <span class="param">thread_id</span>=<span class="param">thread</span>.id,
+            <span class="param">agent_id</span>=<span class="param">agent</span>.id
+        )
+
+        <span class="cm"># Extract the response</span>
+        <span class="param">messages</span> = <span class="param">self</span>.client.agents.messages.list(<span class="param">thread_id</span>=<span class="param">thread</span>.id)
+        <span class="kw">return</span> <span class="param">messages</span>.data[<span class="num">0</span>].content[<span class="num">0</span>].text.value
+
+    <span class="kw">async def</span> <span class="fn">run_workflow</span>(<span class="param">self</span>, <span class="param">user_request</span>: <span class="builtin">str</span>):
+        <span class="str">"""Execute the full supervisor workflow."""</span>
+
+        <span class="cm"># Step 1: Research</span>
+        <span class="param">self</span>.state.update(<span class="str">"status"</span>, <span class="str">"researching"</span>, <span class="str">"supervisor"</span>)
+        <span class="param">research</span> = <span class="param">self</span>.dispatch(
+            <span class="str">"researcher"</span>,
+            <span class="kw">f</span><span class="str">"Research the following topic thoroughly:\n{user_request}"</span>
+        )
+        <span class="param">self</span>.state.update(<span class="str">"research_results"</span>, <span class="param">research</span>, <span class="str">"researcher"</span>)
+
+        <span class="cm"># Step 2: Write draft based on research</span>
+        <span class="param">self</span>.state.update(<span class="str">"status"</span>, <span class="str">"drafting"</span>, <span class="str">"supervisor"</span>)
+        <span class="param">draft</span> = <span class="param">self</span>.dispatch(
+            <span class="str">"writer"</span>,
+            <span class="kw">f</span><span class="str">"Write a comprehensive article based on:\n{research}"</span>
+        )
+        <span class="param">self</span>.state.update(<span class="str">"draft_content"</span>, <span class="param">draft</span>, <span class="str">"writer"</span>)
+
+        <span class="cm"># Step 3: Review and iterate</span>
+        <span class="param">self</span>.state.update(<span class="str">"status"</span>, <span class="str">"reviewing"</span>, <span class="str">"supervisor"</span>)
+        <span class="param">review</span> = <span class="param">self</span>.dispatch(
+            <span class="str">"reviewer"</span>,
+            <span class="kw">f</span><span class="str">"Review this draft for accuracy and quality:\n{draft}"</span>
+        )
+        <span class="param">self</span>.state.update(<span class="str">"review_feedback"</span>, <span class="param">review</span>, <span class="str">"reviewer"</span>)
+
+        <span class="cm"># Step 4: Revise if needed</span>
+        <span class="kw">if</span> <span class="str">"APPROVED"</span> <span class="kw">not in</span> <span class="param">review</span>:
+            <span class="param">revised</span> = <span class="param">self</span>.dispatch(
+                <span class="str">"writer"</span>,
+                <span class="kw">f</span><span class="str">"Revise this draft based on feedback:\n"</span>
+                <span class="kw">f</span><span class="str">"Draft:\n{draft}\n\nFeedback:\n{review}"</span>
+            )
+            <span class="param">self</span>.state.update(<span class="str">"draft_content"</span>, <span class="param">revised</span>, <span class="str">"writer"</span>)
+            <span class="param">self</span>.state.update(<span class="str">"revision_count"</span>,
+                <span class="param">self</span>.state.get(<span class="str">"revision_count"</span>) + <span class="num">1</span>, <span class="str">"supervisor"</span>)
+
+        <span class="param">self</span>.state.update(<span class="str">"status"</span>, <span class="str">"complete"</span>, <span class="str">"supervisor"</span>)
+        <span class="kw">return</span> <span class="param">self</span>.state.get(<span class="str">"draft_content"</span>)</code></div>
+
+            <div class="callout callout-green">
+                <strong>✅ Supervisor Pattern Best Practices:</strong><br>
+                • Keep the supervisor's system prompt focused on <em>routing and evaluation</em>, not domain tasks<br>
+                • Set a maximum revision count to avoid infinite loops<br>
+                • Log every dispatch and result for debugging and tracing<br>
+                • Use a smaller, faster model for the supervisor (e.g., GPT-4o-mini) since it primarily makes routing decisions
+            </div>
+
+            <!-- Router Pattern -->
+            <h2 id="router-pattern">Router Pattern Deep Dive</h2>
+            <p>The <strong>Router pattern</strong> uses an intelligent classifier to direct incoming requests to the most appropriate specialist agent. Unlike the Supervisor, which orchestrates a multi-step workflow, the Router performs a single-step dispatch based on intent classification.</p>
+
+            <div class="arch-flow">
+                <div class="arch-node agent">📥 User Input</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-node supervisor">🔀 Router</div>
+                <span class="arch-arrow">→</span>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="arch-node agent">💰 Billing Agent</div>
+                    <div class="arch-node agent">🔧 Tech Support</div>
+                    <div class="arch-node agent">📋 General FAQ</div>
+                </div>
+            </div>
+
+<div class="code-block"><span class="code-label">Python</span><code><span class="kw">class</span> <span class="builtin">RouterOrchestrator</span>:
+    <span class="str">"""Routes requests to the best-fit specialist agent."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">client</span>: AIProjectClient):
+        <span class="param">self</span>.client = <span class="param">client</span>
+        <span class="param">self</span>.routes = {}
+        <span class="param">self</span>.router_agent = <span class="param">self</span>._create_router()
+
+    <span class="kw">def</span> <span class="fn">_create_router</span>(<span class="param">self</span>) -> Agent:
+        <span class="str">"""Create the routing classifier agent."""</span>
+        <span class="kw">return</span> <span class="param">self</span>.client.agents.create_agent(
+            <span class="param">model</span>=<span class="str">"gpt-4o-mini"</span>,
+            <span class="param">name</span>=<span class="str">"RequestRouter"</span>,
+            <span class="param">instructions</span>=<span class="str">"""You are a request classifier.
+Analyze the user's message and respond with EXACTLY one
+of these category names:
+- BILLING: payment, invoice, subscription questions
+- TECH_SUPPORT: technical issues, errors, bugs
+- GENERAL: everything else
+
+Respond with ONLY the category name, nothing else."""</span>
+        )
+
+    <span class="kw">def</span> <span class="fn">register_route</span>(<span class="param">self</span>, <span class="param">category</span>: <span class="builtin">str</span>, <span class="param">agent</span>: Agent):
+        <span class="param">self</span>.routes[<span class="param">category</span>] = <span class="param">agent</span>
+
+    <span class="kw">def</span> <span class="fn">classify_and_route</span>(<span class="param">self</span>, <span class="param">user_message</span>: <span class="builtin">str</span>) -> <span class="builtin">str</span>:
+        <span class="str">"""Classify the request and route to the right agent."""</span>
+
+        <span class="cm"># Step 1: Classify the intent</span>
+        <span class="param">category</span> = <span class="param">self</span>._classify(<span class="param">user_message</span>).strip()
+
+        <span class="cm"># Step 2: Route to specialist (with fallback)</span>
+        <span class="kw">if</span> <span class="param">category</span> <span class="kw">in</span> <span class="param">self</span>.routes:
+            <span class="kw">return</span> <span class="param">self</span>._invoke_agent(
+                <span class="param">self</span>.routes[<span class="param">category</span>], <span class="param">user_message</span>
+            )
+        <span class="kw">else</span>:
+            <span class="cm"># Fallback to general agent</span>
+            <span class="kw">return</span> <span class="param">self</span>._invoke_agent(
+                <span class="param">self</span>.routes[<span class="str">"GENERAL"</span>], <span class="param">user_message</span>
+            )</code></div>
+
+            <div class="callout callout-blue">
+                <strong>💡 Router vs. Supervisor:</strong><br>
+                Use a <strong>Router</strong> when requests are independent and each one maps to a single specialist. Use a <strong>Supervisor</strong> when a single request requires coordination across multiple agents in sequence. In practice, many systems combine both — a Router at the entry point and Supervisors within each specialist domain.
+            </div>
+
+            <!-- Swarm Pattern -->
+            <h2 id="swarm-pattern">Swarm Pattern Deep Dive</h2>
+            <p>The <strong>Swarm pattern</strong> enables peer-to-peer agent collaboration without a central controller. Each agent decides independently when to hand off control to another agent, based on its own assessment of the task. This pattern excels in dynamic scenarios where the optimal workflow isn't known in advance.</p>
+
+            <div class="arch-flow">
+                <div class="arch-node agent">🔬 Researcher</div>
+                <span class="arch-arrow">⇄</span>
+                <div class="arch-node agent">✍️ Writer</div>
+                <span class="arch-arrow">⇄</span>
+                <div class="arch-node agent">📝 Reviewer</div>
+            </div>
+
+<div class="code-block"><span class="code-label">Python</span><code><span class="kw">class</span> <span class="builtin">SwarmAgent</span>:
+    <span class="str">"""An agent that can autonomously hand off to peers."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">name</span>: <span class="builtin">str</span>, <span class="param">agent</span>: Agent,
+                 <span class="param">handoff_targets</span>: <span class="builtin">list</span>):
+        <span class="param">self</span>.name = <span class="param">name</span>
+        <span class="param">self</span>.agent = <span class="param">agent</span>
+        <span class="param">self</span>.handoff_targets = <span class="param">handoff_targets</span>
+
+<span class="kw">class</span> <span class="builtin">SwarmOrchestrator</span>:
+    <span class="str">"""Decentralized agent swarm with handoff support."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">client</span>: AIProjectClient,
+                 <span class="param">max_handoffs</span>: <span class="builtin">int</span> = <span class="num">10</span>):
+        <span class="param">self</span>.client = <span class="param">client</span>
+        <span class="param">self</span>.swarm_agents = {}
+        <span class="param">self</span>.max_handoffs = <span class="param">max_handoffs</span>
+
+    <span class="kw">def</span> <span class="fn">register</span>(<span class="param">self</span>, <span class="param">swarm_agent</span>: <span class="builtin">SwarmAgent</span>):
+        <span class="param">self</span>.swarm_agents[<span class="param">swarm_agent</span>.name] = <span class="param">swarm_agent</span>
+
+    <span class="kw">def</span> <span class="fn">run</span>(<span class="param">self</span>, <span class="param">start_agent</span>: <span class="builtin">str</span>, <span class="param">message</span>: <span class="builtin">str</span>) -> <span class="builtin">str</span>:
+        <span class="param">current</span> = <span class="param">start_agent</span>
+        <span class="param">context</span> = <span class="param">message</span>
+        <span class="param">handoff_count</span> = <span class="num">0</span>
+
+        <span class="kw">while</span> <span class="param">handoff_count</span> < <span class="param">self</span>.max_handoffs:
+            <span class="param">agent</span> = <span class="param">self</span>.swarm_agents[<span class="param">current</span>]
+            <span class="param">response</span> = <span class="param">self</span>._invoke(<span class="param">agent</span>, <span class="param">context</span>)
+
+            <span class="cm"># Check for handoff signal in response</span>
+            <span class="param">next_agent</span> = <span class="param">self</span>._extract_handoff(<span class="param">response</span>)
+            <span class="kw">if</span> <span class="param">next_agent</span> <span class="kw">and</span> <span class="param">next_agent</span> <span class="kw">in</span> <span class="param">agent</span>.handoff_targets:
+                <span class="param">context</span> = <span class="param">response</span>
+                <span class="param">current</span> = <span class="param">next_agent</span>
+                <span class="param">handoff_count</span> += <span class="num">1</span>
+            <span class="kw">else</span>:
+                <span class="kw">return</span> <span class="param">response</span>  <span class="cm"># No handoff = final answer</span>
+
+        <span class="kw">return</span> <span class="str">"Max handoffs reached. Returning last response."</span></code></div>
+
+            <div class="callout callout-yellow">
+                <strong>⚠️ Swarm Safety:</strong><br>
+                Always set a <code>max_handoffs</code> limit to prevent infinite loops where agents keep passing tasks back and forth. Monitor handoff chains in production to detect unhealthy cycling patterns.
+            </div>
+
+            <!-- Error Handling -->
+            <h2 id="error-handling">Error Handling in Multi-Agent Workflows</h2>
+            <p>Multi-agent systems introduce failure modes that don't exist in single-agent applications. Each agent can fail independently, and a failure in one agent may cascade through the entire workflow. Robust error handling is essential for production multi-agent systems.</p>
+
+            <h3>Failure Categories</h3>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Failure Type</th>
+                        <th>Description</th>
+                        <th>Mitigation Strategy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Agent Timeout</strong></td>
+                        <td>Agent takes too long to respond</td>
+                        <td>Per-agent timeouts with fallback agent</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Model Error</strong></td>
+                        <td>API rate limit, service unavailable</td>
+                        <td>Exponential backoff with jitter, retry queue</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quality Failure</strong></td>
+                        <td>Agent produces low-quality or off-topic output</td>
+                        <td>Validation checks, reviewer agents, auto-retry</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Handoff Failure</strong></td>
+                        <td>Agent hands off to non-existent or unavailable agent</td>
+                        <td>Handoff validation, fallback routing table</td>
+                    </tr>
+                    <tr>
+                        <td><strong>State Corruption</strong></td>
+                        <td>Shared state becomes inconsistent</td>
+                        <td>Immutable state snapshots, transaction logs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cascade Failure</strong></td>
+                        <td>One agent's failure breaks downstream agents</td>
+                        <td>Circuit breakers, graceful degradation paths</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Resilient Workflow Wrapper</h3>
+
+<div class="code-block"><span class="code-label">Python</span><code><span class="kw">import</span> asyncio
+<span class="kw">import</span> logging
+<span class="kw">from</span> tenacity <span class="kw">import</span> retry, stop_after_attempt, wait_exponential
+
+<span class="param">logger</span> = logging.getLogger(<span class="str">"multi_agent"</span>)
+
+<span class="kw">class</span> <span class="builtin">ResilientOrchestrator</span>:
+    <span class="str">"""Multi-agent orchestrator with comprehensive error handling."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">client</span>, <span class="param">max_retries</span>=<span class="num">3</span>,
+                 <span class="param">timeout_seconds</span>=<span class="num">120</span>):
+        <span class="param">self</span>.client = <span class="param">client</span>
+        <span class="param">self</span>.max_retries = <span class="param">max_retries</span>
+        <span class="param">self</span>.timeout = <span class="param">timeout_seconds</span>
+        <span class="param">self</span>.circuit_breakers = {}
+
+    <span class="decorator">@retry</span>(
+        stop=stop_after_attempt(<span class="num">3</span>),
+        wait=wait_exponential(multiplier=<span class="num">1</span>, max=<span class="num">30</span>)
+    )
+    <span class="kw">async def</span> <span class="fn">safe_dispatch</span>(<span class="param">self</span>, <span class="param">agent_id</span>: <span class="builtin">str</span>,
+                             <span class="param">task</span>: <span class="builtin">str</span>) -> <span class="builtin">str</span>:
+        <span class="str">"""Dispatch with timeout, retry, and circuit breaker."""</span>
+
+        <span class="cm"># Check circuit breaker</span>
+        <span class="kw">if</span> <span class="param">self</span>._is_circuit_open(<span class="param">agent_id</span>):
+            <span class="param">logger</span>.warning(<span class="kw">f</span><span class="str">"Circuit open for {agent_id}, using fallback"</span>)
+            <span class="kw">return</span> <span class="kw">await</span> <span class="param">self</span>._fallback_response(<span class="param">agent_id</span>, <span class="param">task</span>)
+
+        <span class="kw">try</span>:
+            <span class="param">result</span> = <span class="kw">await</span> asyncio.wait_for(
+                <span class="param">self</span>._dispatch_to_agent(<span class="param">agent_id</span>, <span class="param">task</span>),
+                <span class="param">timeout</span>=<span class="param">self</span>.timeout
+            )
+
+            <span class="cm"># Validate response quality</span>
+            <span class="kw">if not</span> <span class="param">self</span>._validate_response(<span class="param">result</span>):
+                <span class="kw">raise</span> <span class="builtin">ValueError</span>(<span class="str">"Response failed quality check"</span>)
+
+            <span class="param">self</span>._record_success(<span class="param">agent_id</span>)
+            <span class="kw">return</span> <span class="param">result</span>
+
+        <span class="kw">except</span> asyncio.TimeoutError:
+            <span class="param">logger</span>.error(<span class="kw">f</span><span class="str">"Agent {agent_id} timed out"</span>)
+            <span class="param">self</span>._record_failure(<span class="param">agent_id</span>)
+            <span class="kw">raise</span>
+
+        <span class="kw">except</span> <span class="builtin">Exception</span> <span class="kw">as</span> <span class="param">e</span>:
+            <span class="param">logger</span>.error(<span class="kw">f</span><span class="str">"Agent {agent_id} failed: {e}"</span>)
+            <span class="param">self</span>._record_failure(<span class="param">agent_id</span>)
+            <span class="kw">raise</span>
+
+    <span class="kw">def</span> <span class="fn">_is_circuit_open</span>(<span class="param">self</span>, <span class="param">agent_id</span>: <span class="builtin">str</span>) -> <span class="builtin">bool</span>:
+        <span class="str">"""Check if an agent's circuit breaker is tripped."""</span>
+        <span class="param">failures</span> = <span class="param">self</span>.circuit_breakers.get(<span class="param">agent_id</span>, <span class="num">0</span>)
+        <span class="kw">return</span> <span class="param">failures</span> >= <span class="num">5</span>  <span class="cm"># Open after 5 consecutive failures</span></code></div>
+
+            <div class="callout callout-red">
+                <strong>❌ Common Anti-Patterns:</strong><br>
+                • <strong>No timeout:</strong> An agent hangs indefinitely, blocking the entire workflow<br>
+                • <strong>Silent failures:</strong> Swallowing exceptions without logging or fallback<br>
+                • <strong>Retry storms:</strong> All agents retrying simultaneously, overwhelming the API<br>
+                • <strong>Missing circuit breakers:</strong> Continuously dispatching to a failed agent
+            </div>
+
+            <!-- Implementation Guide -->
+            <h2 id="implementation">Implementation Guide: Agent Definitions</h2>
+            <p>Let's define the three specialist agents for our Researcher → Writer → Reviewer pipeline using the Azure AI Foundry Agent SDK.</p>
+
+            <h3>Creating Specialist Agents</h3>
+
+<div class="code-block"><span class="code-label">Python</span><code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="param">client</span> = AIProjectClient(
+    <span class="param">credential</span>=DefaultAzureCredential(),
+    <span class="param">project_endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com/api"</span>
+)
+
+<span class="cm"># 🔬 Researcher Agent — Gathers and synthesizes information</span>
+<span class="param">researcher</span> = <span class="param">client</span>.agents.create_agent(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"ResearchAgent"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a meticulous research analyst.
+Your job is to:
+1. Break down the research topic into key questions
+2. Gather comprehensive information from available sources
+3. Synthesize findings into a structured research brief
+4. Cite sources and flag uncertainty levels
+
+Output format:
+## Key Findings
+- Finding 1 (confidence: high/medium/low)
+- Finding 2 ...
+
+## Sources
+- Source 1: [description]
+
+## Open Questions
+- Questions that need further investigation"""</span>,
+    <span class="param">tools</span>=[{<span class="str">"type"</span>: <span class="str">"bing_grounding"</span>}]
+)
+
+<span class="cm"># ✍️ Writer Agent — Creates polished content from research</span>
+<span class="param">writer</span> = <span class="param">client</span>.agents.create_agent(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"WriterAgent"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a professional technical writer.
+Your job is to:
+1. Transform research findings into clear, engaging content
+2. Structure the article with logical flow and headings
+3. Use concrete examples and analogies
+4. Maintain accuracy — never embellish beyond the research
+
+Style guidelines:
+- Professional but accessible tone
+- Short paragraphs (3-4 sentences max)
+- Use bullet points for lists of 3+ items
+- Include a TL;DR summary at the top"""</span>
+)
+
+<span class="cm"># 📝 Reviewer Agent — Quality assurance and feedback</span>
+<span class="param">reviewer</span> = <span class="param">client</span>.agents.create_agent(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"ReviewerAgent"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a senior content reviewer.
+Evaluate the submitted draft on these criteria:
+1. **Accuracy**: Are claims supported by the research?
+2. **Clarity**: Is the writing clear and jargon-free?
+3. **Completeness**: Are key topics adequately covered?
+4. **Structure**: Is the flow logical and well-organized?
+
+Scoring: Rate each criterion 1-5.
+If ALL scores are 4+, respond with "APPROVED" at the end.
+Otherwise, provide specific, actionable revision suggestions.
+
+Format:
+## Review Scores
+- Accuracy: X/5
+- Clarity: X/5
+- Completeness: X/5
+- Structure: X/5
+
+## Feedback
+[Specific suggestions for improvement]
+
+## Verdict
+APPROVED or REVISION_NEEDED"""</span>
+)</code></div>
+
+            <h3>Wiring It All Together</h3>
+
+<div class="code-block"><span class="code-label">Python</span><code><span class="cm"># Create and run the supervisor workflow</span>
+<span class="param">orchestrator</span> = <span class="builtin">SupervisorOrchestrator</span>(<span class="param">client</span>)
+<span class="param">orchestrator</span>.register_agent(<span class="str">"researcher"</span>, <span class="param">researcher</span>)
+<span class="param">orchestrator</span>.register_agent(<span class="str">"writer"</span>, <span class="param">writer</span>)
+<span class="param">orchestrator</span>.register_agent(<span class="str">"reviewer"</span>, <span class="param">reviewer</span>)
+
+<span class="cm"># Execute the pipeline</span>
+<span class="param">result</span> = <span class="kw">await</span> <span class="param">orchestrator</span>.run_workflow(
+    <span class="str">"Write an article about the impact of multi-agent AI "</span>
+    <span class="str">"systems on enterprise software development."</span>
+)
+
+<span class="builtin">print</span>(<span class="param">result</span>)
+
+<span class="cm"># Cleanup: delete agents when done</span>
+<span class="kw">for</span> <span class="param">agent</span> <span class="kw">in</span> [<span class="param">researcher</span>, <span class="param">writer</span>, <span class="param">reviewer</span>]:
+    <span class="param">client</span>.agents.delete_agent(<span class="param">agent</span>.id)</code></div>
+
+            <!-- Video -->
+            <h2 id="video">Video Walkthrough</h2>
+            <h3>Watch: Multi-agent Orchestration in Microsoft Copilot Studio</h3>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/WKKdBC2zM3k" title="Multi-agent Orchestration in Microsoft Copilot Studio" allowfullscreen></iframe>
+            </div>
+            <p>This video demonstrates how multi-agent orchestration works in practice within the Microsoft Copilot Studio environment, covering real-world patterns for coordinating multiple AI agents to handle complex enterprise workflows.</p>
+
+            <!-- Mini Hack -->
+            <h2 id="mini-hack">Mini Hack: Build a 3-Agent System</h2>
+            <div class="mini-hack">
+                <h3>🛠️ Objective</h3>
+                <p>Build a complete <strong>Researcher → Writer → Reviewer</strong> multi-agent pipeline using Azure AI Foundry. The system should research a topic, produce a polished article, and iterate based on reviewer feedback until the article is approved.</p>
+
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Azure AI Foundry project with GPT-4o deployed</li>
+                    <li>Python 3.10+ with <code>azure-ai-projects</code> and <code>azure-identity</code> packages</li>
+                    <li>Azure CLI authenticated (<code>az login</code>)</li>
+                    <li>Bing Grounding connection configured in your project (for the researcher)</li>
+                </ul>
+
+                <h3>Steps</h3>
+                <ol>
+                    <li><strong>Set up the project:</strong> Create a new Python file and install dependencies:
+                        <br><code>pip install azure-ai-projects azure-identity</code></li>
+                    <li><strong>Define the three agents:</strong> Create Researcher (with Bing Grounding tool), Writer, and Reviewer agents with the system prompts shown in the Implementation Guide above</li>
+                    <li><strong>Build the orchestrator:</strong> Implement the <code>SupervisorOrchestrator</code> class with dispatch, state tracking, and revision loop logic</li>
+                    <li><strong>Add error handling:</strong> Wrap each dispatch call with timeout (120s), retry (3 attempts), and quality validation</li>
+                    <li><strong>Run the pipeline:</strong> Test with a topic like <em>"Impact of multi-agent systems on enterprise software development"</em></li>
+                    <li><strong>Observe the revision loop:</strong> Log each agent interaction and track how many revision cycles occur before the reviewer approves</li>
+                    <li><strong>Clean up:</strong> Delete all created agents after the run completes</li>
+                </ol>
+
+                <h3>Success Criteria</h3>
+                <ul>
+                    <li>✅ All three agents are created and registered correctly</li>
+                    <li>✅ The research agent produces structured findings with sources</li>
+                    <li>✅ The writer transforms research into a well-formatted article</li>
+                    <li>✅ The reviewer provides scored feedback and drives at least one revision</li>
+                    <li>✅ The workflow completes within 3 revision cycles</li>
+                    <li>✅ All agents are cleaned up after the run</li>
+                </ul>
+
+                <h3>Bonus Challenges</h3>
+                <ul>
+                    <li>🌟 Add a 4th agent — an Editor that polishes the final approved draft</li>
+                    <li>🌟 Implement parallel research with two researcher agents (breadth vs. depth)</li>
+                    <li>🌟 Add observability by logging all messages to Application Insights</li>
+                    <li>🌟 Convert the supervisor to a swarm pattern where agents decide handoffs autonomously</li>
+                </ul>
+            </div>
+
+            <!-- Key Takeaways -->
+            <h2 id="key-takeaways">Key Takeaways</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🏗️ Three Core Patterns</h4>
+                    <p><strong>Supervisor</strong> for structured workflows, <strong>Router</strong> for intent-based dispatch, and <strong>Swarm</strong> for dynamic peer-to-peer collaboration. Each pattern suits different coordination requirements.</p>
+                </div>
+                <div class="card">
+                    <h4>💬 Communication Matters</h4>
+                    <p>Choose between <strong>message passing</strong> (loose coupling), <strong>shared state</strong> (rich context), and <strong>handoff protocols</strong> (explicit transfers) based on your workflow's needs.</p>
+                </div>
+                <div class="card">
+                    <h4>🛡️ Design for Failure</h4>
+                    <p>Multi-agent systems need <strong>timeouts</strong>, <strong>circuit breakers</strong>, <strong>retry policies</strong>, and <strong>fallback paths</strong>. Every agent is a potential failure point — plan accordingly.</p>
+                </div>
+                <div class="card">
+                    <h4>📐 Right-Size Your Agents</h4>
+                    <p>Use <strong>smaller models</strong> for routing/classification and <strong>larger models</strong> for generation. Specialize agent prompts narrowly — each agent should do one thing exceptionally well.</p>
+                </div>
+            </div>
+
+            <!-- Resources -->
+            <h2 id="resources">Additional Resources</h2>
+            <ul>
+                <li><a href="https://learn.microsoft.com/azure/ai-services/agents/overview">Azure AI Agent Service Overview</a></li>
+                <li><a href="https://learn.microsoft.com/azure/ai-services/agents/quickstart">Azure AI Agent Service Quickstart</a></li>
+                <li><a href="https://learn.microsoft.com/azure/ai-studio/concepts/ai-services">Azure AI Foundry Services Documentation</a></li>
+                <li><a href="https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/ai/azure-ai-projects">Azure AI Projects Python SDK</a></li>
+                <li><a href="https://learn.microsoft.com/azure/ai-services/agents/concepts/agents">Agent Concepts &amp; Architecture</a></li>
+                <li><a href="https://learn.microsoft.com/semantic-kernel/overview/">Semantic Kernel Documentation</a></li>
+            </ul>
+
+            <!-- Author Box -->
+            <div class="author-box">
+                <div class="author-avatar">🤖</div>
+                <div>
+                    <h4 style="margin-top:0">AI Foundry Training Team</h4>
+                    <p style="color: var(--ms-text-secondary); font-size: 14px;">
+                        Building the definitive 45-module training program for Azure AI Foundry — from zero to production-grade AI solutions. This module is part of Arc 8: Advanced Patterns &amp; Enterprise.
+                    </p>
+                    <a href="#" style="font-size: 13px;">View all posts →</a>
+                </div>
+            </div>
+
+            <!-- Related Posts -->
+            <h3>Related Posts</h3>
+            <div class="related-posts">
+                <div class="related-post">
+                    <span class="module-num">Module 33</span>
+                    <h4>Advanced Agent Architectures</h4>
+                    <p>Deep dive into complex agent topologies and design patterns for enterprise applications.</p>
+                </div>
+                <div class="related-post">
+                    <span class="module-num">Module 35</span>
+                    <h4>Agent Memory &amp; State Management</h4>
+                    <p>Persisting context across conversations with long-term and short-term memory strategies.</p>
+                </div>
+                <div class="related-post">
+                    <span class="module-num">Module 37</span>
+                    <h4>Enterprise Guardrails &amp; Safety</h4>
+                    <p>Implementing safety layers, content filters, and governance for production AI agents.</p>
+                </div>
+            </div>
+
+            <!-- Series Navigation -->
+            <div class="series-nav">
+                <a href="../module-35/blog.html">← Module 35: Agent Memory &amp; State</a>
+                <span class="current">Module 36 of 45</span>
+                <a href="../module-37/blog.html">Module 37: Enterprise Guardrails →</a>
+            </div>
+        </article>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 Azure AI Foundry Training Course — Zero to Hero: 45-Module Mastery Program</p>
+        <p style="margin-top: 8px;">
+            <a href="#">Home</a> · <a href="#">Curriculum</a> · <a href="#">GitHub</a> · <a href="#">Resources</a>
+        </p>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+    <script>
+        // Scroll progress bar
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        });
+
+        // Back-to-top visibility
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 500) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        });
+
+        // TOC active state with IntersectionObserver
+        const sections = document.querySelectorAll('.article h2[id]');
+        const tocLinks = document.querySelectorAll('.toc a');
+
+        const observerOptions = {
+            rootMargin: '-80px 0px -70% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    tocLinks.forEach(link => link.classList.remove('active'));
+                    const activeLink = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+</html>

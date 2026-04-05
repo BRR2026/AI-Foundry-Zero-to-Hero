@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 21: Prompt Flow — Visual Orchestration | Zero to Hero: Azure AI Foundry</title>
+    <meta name="description" content="Master Prompt Flow in Azure AI Foundry — build visual orchestration pipelines with LLM nodes, Python nodes, and routing logic. Deploy flows as real-time endpoints.">
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-bg: #ffffff;
+            --ms-text: #1a1a1a;
+            --ms-text-secondary: #505050;
+            --ms-border: #e1e1e1;
+            --ms-code-bg: #1e1e1e;
+            --ms-callout-blue: #f0f8ff;
+            --ms-callout-yellow: #fffbeb;
+            --ms-callout-green: #f0fdf4;
+            --ms-callout-red: #fef2f2;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --content-width: 780px;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ms-text);
+            background: #f5f5f5;
+            font-size: 16px;
+            line-height: 1.75;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 1000;
+            transition: width 0.2s linear;
+            width: 0%;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: #1a1a1a;
+            padding: 0 24px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .top-nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .top-nav .logo svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .top-nav .nav-links {
+            display: flex;
+            gap: 24px;
+            margin-left: auto;
+            list-style: none;
+        }
+
+        .top-nav .nav-links a {
+            color: #999;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .top-nav .nav-links a:hover {
+            color: #fff;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--ms-dark-blue), var(--ms-purple));
+            color: #fff;
+            padding: 60px 24px 48px;
+            text-align: center;
+        }
+
+        .hero-inner {
+            max-width: var(--content-width);
+            margin: 0 auto;
+        }
+
+        .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .hero .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .hero-meta .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Main Layout */
+        .main-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+        }
+
+        /* Table of Contents */
+        .toc {
+            position: sticky;
+            top: 60px;
+            align-self: start;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .toc-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .toc ul {
+            list-style: none;
+        }
+
+        .toc li {
+            margin-bottom: 2px;
+        }
+
+        .toc a {
+            display: block;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .toc a:hover {
+            color: var(--ms-blue);
+            background: var(--ms-callout-blue);
+        }
+
+        .toc a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            font-weight: 600;
+            background: var(--ms-callout-blue);
+        }
+
+        /* Article */
+        .article {
+            background: var(--ms-bg);
+            border-radius: 8px;
+            padding: 48px 56px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            min-width: 0;
+        }
+
+        .article h2 {
+            font-size: 26px;
+            font-weight: 600;
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-light-blue);
+            color: var(--ms-dark-blue);
+        }
+
+        .article h2:first-child {
+            margin-top: 0;
+        }
+
+        .article h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 32px 0 12px;
+            color: var(--ms-text);
+        }
+
+        .article h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 24px 0 8px;
+            color: var(--ms-text);
+        }
+
+        .article p {
+            margin: 12px 0;
+            color: var(--ms-text);
+        }
+
+        .article ul, .article ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .article li {
+            margin: 6px 0;
+        }
+
+        .article a {
+            color: var(--ms-blue);
+            text-decoration: none;
+        }
+
+        .article a:hover {
+            text-decoration: underline;
+        }
+
+        .article img {
+            max-width: 100%;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .article code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--ms-code-bg);
+            color: #d4d4d4;
+            padding: 20px 24px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+            white-space: pre;
+        }
+
+        .code-label {
+            display: inline-block;
+            background: #333;
+            color: #999;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: -6px;
+            position: relative;
+            top: 6px;
+            font-family: 'Consolas', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .callout-blue {
+            background: var(--ms-callout-blue);
+            border-left: 4px solid var(--ms-blue);
+        }
+
+        .callout-yellow {
+            background: var(--ms-callout-yellow);
+            border-left: 4px solid var(--ms-warning);
+        }
+
+        .callout-green {
+            background: var(--ms-callout-green);
+            border-left: 4px solid var(--ms-success);
+        }
+
+        .callout-red {
+            background: var(--ms-callout-red);
+            border-left: 4px solid var(--ms-error);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th {
+            background: var(--ms-blue);
+            color: #fff;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--ms-border);
+            font-size: 14px;
+        }
+
+        table tr:nth-child(even) td {
+            background: #f9f9f9;
+        }
+
+        /* Capability Cards */
+        .capability {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-left: 4px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+
+        .capability h4 {
+            margin-top: 0;
+            color: var(--ms-dark-blue);
+        }
+
+        .capability p {
+            margin: 8px 0 0;
+            font-size: 14px;
+        }
+
+        /* Use Case Cards */
+        .usecase-card {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .usecase-card h4 {
+            margin-top: 0;
+        }
+
+        .usecase-card .problem { color: var(--ms-error); }
+        .usecase-card .solution { color: var(--ms-blue); }
+        .usecase-card .result { color: var(--ms-success); }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            background: #f8f9fa;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .flow-diagram .nodes {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .flow-diagram .node {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .flow-diagram .node.input {
+            background: var(--ms-callout-green);
+            border: 2px solid var(--ms-success);
+            color: var(--ms-success);
+        }
+
+        .flow-diagram .node.llm {
+            background: var(--ms-callout-blue);
+            border: 2px solid var(--ms-blue);
+            color: var(--ms-blue);
+        }
+
+        .flow-diagram .node.python {
+            background: #fff3e0;
+            border: 2px solid var(--ms-warning);
+            color: #e65100;
+        }
+
+        .flow-diagram .node.output {
+            background: #f3e5f5;
+            border: 2px solid var(--ms-purple);
+            color: var(--ms-purple);
+        }
+
+        .flow-diagram .arrow {
+            font-size: 20px;
+            color: #999;
+        }
+
+        /* Comparison Grid */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .compare-card {
+            background: #fff;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .compare-card h4 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+
+        .compare-card.recommended {
+            border-color: var(--ms-blue);
+            box-shadow: 0 0 0 1px var(--ms-blue);
+        }
+
+        .compare-card.recommended h4 {
+            color: var(--ms-blue);
+        }
+
+        /* Step Counter */
+        .step {
+            display: flex;
+            gap: 16px;
+            margin: 20px 0;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            min-width: 32px;
+            height: 32px;
+            background: var(--ms-blue);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h4 {
+            margin-top: 0;
+        }
+
+        /* Video Section */
+        .video-section {
+            margin: 32px 0;
+            background: #f8f9fa;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-header {
+            background: linear-gradient(135deg, var(--ms-dark-blue), var(--ms-purple));
+            color: #fff;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .video-body {
+            padding: 20px;
+        }
+
+        .video-body p {
+            font-size: 14px;
+            margin: 0 0 12px;
+        }
+
+        .video-body a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--ms-blue);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .video-body a:hover {
+            background: var(--ms-dark-blue);
+            text-decoration: none;
+        }
+
+        /* Related Posts */
+        .related-posts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .related-post {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--ms-text);
+            transition: box-shadow 0.2s;
+        }
+
+        .related-post:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+
+        .related-post .post-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-blue);
+        }
+
+        .related-post .post-title {
+            font-weight: 600;
+            margin-top: 4px;
+            font-size: 15px;
+        }
+
+        /* Module Navigation */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 48px 0 0;
+            padding: 24px 0;
+            border-top: 2px solid var(--ms-light-blue);
+        }
+
+        .module-nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .module-nav a:hover {
+            background: var(--ms-callout-blue);
+            text-decoration: none;
+        }
+
+        /* Architecture Diagram */
+        .arch-diagram {
+            background: var(--ms-code-bg);
+            color: #d4d4d4;
+            padding: 24px;
+            border-radius: 8px;
+            margin: 24px 0;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* Mini Hack Section */
+        .mini-hack {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 8px;
+            padding: 32px;
+            margin: 24px 0;
+            color: #fff;
+        }
+
+        .mini-hack h3 {
+            color: #fff;
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .mini-hack h4 {
+            color: #58a6ff;
+        }
+
+        .mini-hack p {
+            color: #c9d1d9;
+        }
+
+        .mini-hack .code-block {
+            border: 1px solid #30363d;
+        }
+
+        .mini-hack .callout {
+            background: rgba(88,166,255,0.1);
+            border-left-color: #58a6ff;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .feature-item {
+            background: #f8f9fa;
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .feature-item .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .feature-item h4 {
+            margin-top: 0;
+            font-size: 15px;
+        }
+
+        .feature-item p {
+            font-size: 13px;
+            margin: 4px 0 0;
+            color: var(--ms-text-secondary);
+        }
+
+        /* Footer */
+        .site-footer {
+            background: #1a1a1a;
+            color: #999;
+            text-align: center;
+            padding: 24px;
+            font-size: 13px;
+        }
+
+        .site-footer a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 900;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+        }
+
+        .back-to-top:hover {
+            background: var(--ms-dark-blue);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .toc {
+                position: static;
+                max-height: none;
+                border-bottom: 1px solid var(--ms-border);
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+            }
+            .article {
+                padding: 24px 20px;
+            }
+            .hero h1 {
+                font-size: 28px;
+            }
+            .compare-grid,
+            .feature-grid,
+            .related-posts {
+                grid-template-columns: 1fr;
+            }
+            .flow-diagram .nodes {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="#" class="logo">
+            <svg viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="11" height="11" fill="#f25022"/>
+                <rect x="12" width="11" height="11" fill="#7fba00"/>
+                <rect y="12" width="11" height="11" fill="#00a4ef"/>
+                <rect x="12" y="12" width="11" height="11" fill="#ffb900"/>
+            </svg>
+            Azure AI Foundry — Zero to Hero
+        </a>
+        <ul class="nav-links">
+            <li><a href="#">Curriculum</a></li>
+            <li><a href="#resources">Resources</a></li>
+            <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="series-badge">ARC 5 · ORCHESTRATION &amp; INTEGRATION</div>
+            <h1>Module 21: Prompt Flow — Visual Orchestration</h1>
+            <p class="subtitle">Build, test, debug, and deploy AI workflows using Azure AI Foundry's visual Prompt Flow designer — from simple chains to complex routing logic</p>
+            <div class="hero-meta">
+                <div class="avatar">🔀</div>
+                <span>Azure AI Foundry Team</span>
+                <span>•</span>
+                <span>April 2026</span>
+                <span>•</span>
+                <span>📖 15 min read</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Table of Contents -->
+        <aside class="toc">
+            <div class="toc-title">On This Page</div>
+            <ul>
+                <li><a href="#introduction" class="active">Introduction</a></li>
+                <li><a href="#what-is-prompt-flow">What Is Prompt Flow?</a></li>
+                <li><a href="#when-to-use">When to Use Prompt Flow</a></li>
+                <li><a href="#building-flows">Building Flows</a></li>
+                <li><a href="#node-types">Node Types Deep Dive</a></li>
+                <li><a href="#testing-debugging">Testing &amp; Debugging</a></li>
+                <li><a href="#deploying">Deploying as Endpoints</a></li>
+                <li><a href="#mini-hack">Mini Hack</a></li>
+                <li><a href="#best-practices">Best Practices</a></li>
+                <li><a href="#resources">Resources</a></li>
+            </ul>
+        </aside>
+
+        <!-- Article Content -->
+        <article class="article">
+            <!-- Section 1: Introduction -->
+            <h2 id="introduction">1. Introduction — Why Visual Orchestration Matters</h2>
+
+            <p>Building AI applications rarely involves a single model call. Real-world scenarios demand <strong>multi-step pipelines</strong> — retrieving context, calling language models, processing outputs, routing between different logic branches, and formatting results. Traditionally, this meant writing complex Python code with tangled dependencies and hard-to-debug data flows.</p>
+
+            <p><strong>Prompt Flow</strong> in Azure AI Foundry changes this paradigm entirely. It provides a visual, <em>graph-based orchestration layer</em> that lets you design, test, debug, and deploy AI workflows with a drag-and-drop interface — while maintaining full code-level control when you need it.</p>
+
+            <div class="callout callout-blue">
+                💡 <strong>Key Insight:</strong> Prompt Flow is <em>not</em> traditional ML pipelines. It is a purpose-built orchestration tool within Azure AI Foundry for composing LLM-based applications — think of it as the "visual IDE" for AI app logic.
+            </div>
+
+            <p>In this module, you'll learn to build flows from scratch, master every node type, debug execution with precision, and deploy production-ready endpoints — all within the AI Foundry experience.</p>
+
+            <!-- Section 2: What is Prompt Flow? -->
+            <h2 id="what-is-prompt-flow">2. What Is Prompt Flow?</h2>
+
+            <p>Prompt Flow is a <strong>development tool</strong> and <strong>runtime engine</strong> for building LLM-based applications using a directed acyclic graph (DAG) paradigm. Each node in the graph performs a specific task — calling a model, running Python code, processing data — and data flows from one node to the next through typed connections.</p>
+
+            <div class="flow-diagram">
+                <div style="font-weight: 600; margin-bottom: 16px; color: var(--ms-dark-blue);">Prompt Flow — DAG Architecture</div>
+                <div class="nodes">
+                    <div class="node input">📥 Inputs</div>
+                    <div class="arrow">→</div>
+                    <div class="node python">🐍 Preprocessing</div>
+                    <div class="arrow">→</div>
+                    <div class="node llm">🤖 LLM Node</div>
+                    <div class="arrow">→</div>
+                    <div class="node python">🐍 Postprocessing</div>
+                    <div class="arrow">→</div>
+                    <div class="node output">📤 Outputs</div>
+                </div>
+            </div>
+
+            <h3>Core Components</h3>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="icon">📊</div>
+                    <h4>Visual Graph Editor</h4>
+                    <p>Drag-and-drop canvas to design data flow between nodes with typed inputs and outputs.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🔗</div>
+                    <h4>Connection Management</h4>
+                    <p>Securely manage API keys and endpoints for Azure OpenAI, custom models, and external services.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🧪</div>
+                    <h4>Built-in Testing</h4>
+                    <p>Run single inputs or batch tests with side-by-side comparison of variants and metrics.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🚀</div>
+                    <h4>One-Click Deploy</h4>
+                    <p>Deploy flows directly as managed online endpoints with auto-scaling and monitoring.</p>
+                </div>
+            </div>
+
+            <h3>Flow Types</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Flow Type</th>
+                        <th>Purpose</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Standard Flow</strong></td>
+                        <td>General-purpose LLM application development</td>
+                        <td>Chatbots, Q&amp;A systems, content generation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chat Flow</strong></td>
+                        <td>Conversation-oriented with chat history support</td>
+                        <td>Multi-turn dialogue, customer support agents</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Evaluation Flow</strong></td>
+                        <td>Quality assessment of other flows</td>
+                        <td>Measuring groundedness, relevance, coherence</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Section 3: When to Use Prompt Flow -->
+            <h2 id="when-to-use">3. When to Use Prompt Flow</h2>
+
+            <p>Prompt Flow excels in specific scenarios. Understanding when it's the right tool — and when it isn't — saves time and leads to better architecture decisions.</p>
+
+            <div class="compare-grid">
+                <div class="compare-card recommended">
+                    <h4>✅ Use Prompt Flow When</h4>
+                    <ul>
+                        <li>Building <strong>multi-step LLM pipelines</strong> with branching logic</li>
+                        <li>Rapidly <strong>prototyping</strong> different prompt strategies</li>
+                        <li>Needing <strong>visual debugging</strong> of intermediate outputs</li>
+                        <li>Running <strong>batch evaluations</strong> across test datasets</li>
+                        <li><strong>Comparing prompt variants</strong> side-by-side</li>
+                        <li>Deploying LLM apps as <strong>managed endpoints</strong></li>
+                        <li>Collaborating with <strong>non-developers</strong> on AI logic</li>
+                    </ul>
+                </div>
+                <div class="compare-card">
+                    <h4>⚠️ Consider Alternatives When</h4>
+                    <ul>
+                        <li>Simple single-call LLM apps → <strong>direct SDK</strong></li>
+                        <li>Heavy data processing → <strong>data pipelines</strong></li>
+                        <li>Complex agent frameworks → <strong>Semantic Kernel / AutoGen</strong></li>
+                        <li>Real-time streaming UIs → <strong>custom WebSocket code</strong></li>
+                        <li>Training or fine-tuning models → <strong>model catalog</strong></li>
+                        <li>Non-LLM ML workloads → <strong>Azure ML pipelines</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="callout callout-yellow">
+                ⚠️ <strong>Common Misconception:</strong> Prompt Flow is not a replacement for LangChain or Semantic Kernel. It is a <em>complementary</em> tool — you can call LangChain chains <em>inside</em> Python nodes of a Prompt Flow, combining visual orchestration with framework flexibility.
+            </div>
+
+            <!-- Section 4: Building Flows -->
+            <h2 id="building-flows">4. Building Flows — Step by Step</h2>
+
+            <p>Let's walk through building a complete flow from scratch. We'll create a knowledge-grounded Q&amp;A flow that retrieves context, generates an answer, and validates the output.</p>
+
+            <h3>4.1 Creating a New Flow</h3>
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Open Azure AI Foundry Portal</h4>
+                    <p>Navigate to <a href="https://ai.azure.com" target="_blank">ai.azure.com</a>, select your project, and go to <strong>Prompt Flow</strong> in the left navigation under <strong>Build &amp; Customize</strong>.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Create from Template or Blank</h4>
+                    <p>Click <strong>+ Create</strong> and choose between starting from a blank canvas or using a gallery template. For learning, start with <strong>Standard Flow</strong> → <strong>Blank</strong>.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Configure Inputs</h4>
+                    <p>Define your flow's input schema. Every flow starts with at least one input. Click the <strong>Inputs</strong> section and add fields with their types.</p>
+                </div>
+            </div>
+
+            <div class="code-label">YAML — flow.dag.yaml</div>
+            <div class="code-block">inputs:
+  question:
+    type: string
+    default: "What are the benefits of Azure AI Foundry?"
+  context:
+    type: string
+    default: ""
+  chat_history:
+    type: list
+    default: []
+
+outputs:
+  answer:
+    type: string
+    reference: ${format_output.output}
+  confidence:
+    type: string
+    reference: ${validate_response.output}</div>
+
+            <h3>4.2 Connecting Nodes</h3>
+
+            <p>Nodes connect through <strong>typed references</strong>. Use the <code>${node_name.output}</code> syntax to pass data between nodes. The visual editor shows these connections as lines between ports.</p>
+
+            <div class="arch-diagram">┌─────────────────────────────────────────────────────────────────────┐
+│                     PROMPT FLOW — Q&amp;A PIPELINE                      │
+│                                                                     │
+│  ┌──────────┐    ┌──────────────┐    ┌──────────┐    ┌───────────┐ │
+│  │  INPUTS   │───▶│  PREPARE     │───▶│  LLM     │───▶│ VALIDATE  │ │
+│  │           │    │  PROMPT      │    │  CALL     │    │ RESPONSE  │ │
+│  │ question  │    │  (Python)    │    │ (GPT-4o) │    │ (Python)  │ │
+│  │ context   │    │              │    │          │    │           │ │
+│  │ history   │    └──────────────┘    └──────────┘    └─────┬─────┘ │
+│  └──────────┘                                              │       │
+│                                                    ┌───────▼─────┐ │
+│                                                    │   FORMAT    │ │
+│                                                    │   OUTPUT    │ │
+│                                                    │   (Python)  │ │
+│                                                    └───────┬─────┘ │
+│                                                    ┌───────▼─────┐ │
+│                                                    │   OUTPUTS   │ │
+│                                                    │  answer     │ │
+│                                                    │  confidence │ │
+│                                                    └─────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘</div>
+
+            <!-- Section 5: Node Types Deep Dive -->
+            <h2 id="node-types">5. Node Types Deep Dive</h2>
+
+            <h3>5.1 LLM Nodes</h3>
+
+            <p>LLM nodes call language models using Jinja2 prompt templates with variable substitution. They connect to your Azure OpenAI deployments or other model endpoints configured in your project.</p>
+
+            <div class="code-label">Jinja2 — LLM Prompt Template</div>
+            <div class="code-block">system:
+You are a helpful assistant that answers questions based on provided context.
+Always cite specific parts of the context in your response.
+If the context doesn't contain enough information, say so clearly.
+
+user:
+## Context
+{{context}}
+
+## Chat History
+{% for item in chat_history %}
+- {{item.role}}: {{item.content}}
+{% endfor %}
+
+## Current Question
+{{question}}
+
+Provide a detailed, accurate answer based on the context above.</div>
+
+            <div class="capability">
+                <h4>🤖 LLM Node Configuration</h4>
+                <p><strong>Connection:</strong> Select your Azure OpenAI resource<br>
+                <strong>API:</strong> Chat or Completion<br>
+                <strong>Deployment:</strong> gpt-4o, gpt-4o-mini, etc.<br>
+                <strong>Parameters:</strong> temperature, max_tokens, top_p, presence_penalty<br>
+                <strong>Inputs:</strong> Map flow variables to template placeholders</p>
+            </div>
+
+            <h3>5.2 Python Nodes</h3>
+
+            <p>Python nodes run custom code for data transformation, API calls, conditional logic, and any processing that isn't an LLM call. They must define a function decorated with <code>@tool</code>.</p>
+
+            <div class="code-label">Python — Preprocessing Node</div>
+            <div class="code-block">from promptflow import tool
+from typing import List
+
+@tool
+def prepare_prompt(question: str, context: str, chat_history: List[dict]) -> str:
+    """Prepare the prompt context by combining retrieved docs and history."""
+    
+    # Truncate context if too long
+    max_context_chars = 4000
+    if len(context) > max_context_chars:
+        context = context[:max_context_chars] + "\n... [truncated]"
+    
+    # Format chat history (keep last 5 turns)
+    recent_history = chat_history[-5:] if chat_history else []
+    
+    formatted = f"Context:\n{context}\n\nRecent History:\n"
+    for turn in recent_history:
+        formatted += f"  {turn.get('role', 'user')}: {turn.get('content', '')}\n"
+    formatted += f"\nQuestion: {question}"
+    
+    return formatted</div>
+
+            <div class="code-label">Python — Validation Node</div>
+            <div class="code-block">from promptflow import tool
+import json
+
+@tool
+def validate_response(llm_output: str, context: str) -> str:
+    """Validate the LLM response and assign confidence score."""
+    
+    if not llm_output or len(llm_output.strip()) < 10:
+        return json.dumps({"confidence": "low", "reason": "Empty or too short"})
+    
+    # Check if response references context
+    context_words = set(context.lower().split())
+    response_words = set(llm_output.lower().split())
+    overlap = len(context_words & response_words)
+    
+    if overlap > 20:
+        confidence = "high"
+    elif overlap > 10:
+        confidence = "medium"
+    else:
+        confidence = "low"
+    
+    return json.dumps({
+        "confidence": confidence,
+        "word_overlap": overlap,
+        "response_length": len(llm_output)
+    })</div>
+
+            <h3>5.3 Other Node Types</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Node Type</th>
+                        <th>Purpose</th>
+                        <th>Example Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Prompt</strong></td>
+                        <td>Render Jinja2 templates without calling an LLM</td>
+                        <td>Dynamic prompt assembly before LLM node</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Python</strong></td>
+                        <td>Custom code execution with <code>@tool</code> decorator</td>
+                        <td>Data transformation, API calls, routing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LLM</strong></td>
+                        <td>Call language models with templated prompts</td>
+                        <td>Generate answers, classify intents, summarize</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Content Safety</strong></td>
+                        <td>Check inputs/outputs for harmful content</td>
+                        <td>Pre-filter user messages, post-filter responses</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Embedding</strong></td>
+                        <td>Generate vector embeddings for text</td>
+                        <td>Semantic search, similarity matching</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Index Lookup</strong></td>
+                        <td>Retrieve from Azure AI Search indexes</td>
+                        <td>RAG pattern — fetch relevant documents</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Section 6: Testing and Debugging -->
+            <h2 id="testing-debugging">6. Testing &amp; Debugging Flows</h2>
+
+            <p>One of Prompt Flow's strongest advantages is its <strong>integrated testing and debugging experience</strong>. Unlike traditional code where you might add print statements or breakpoints, Prompt Flow gives you visual inspection of every node's input and output at every execution step.</p>
+
+            <h3>6.1 Interactive Testing</h3>
+
+            <p>The <strong>Test</strong> panel in the flow editor lets you run your flow with sample inputs and inspect results at each node. This is invaluable for iterating on prompt templates.</p>
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Single Input Test</h4>
+                    <p>Click the <strong>Run</strong> button at the top of the editor. Enter your test input values in the panel that appears. Each node's output appears in real-time as execution progresses through the graph.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Inspect Node Outputs</h4>
+                    <p>Click any node to view its input/output details. The <strong>Trace</strong> view shows execution time, token usage, and the complete data that flowed through each connection.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Variant Testing</h4>
+                    <p>Create multiple <strong>variants</strong> of LLM nodes (different prompts, parameters) and compare outputs side-by-side. This is essential for prompt optimization.</p>
+                </div>
+            </div>
+
+            <h3>6.2 Batch Testing</h3>
+
+            <p>Run your flow against an entire dataset to evaluate quality at scale. Upload a CSV or JSON file with test cases, then Prompt Flow executes against every row and collects metrics.</p>
+
+            <div class="code-label">JSON — test_dataset.jsonl</div>
+            <div class="code-block">{"question": "What is Azure AI Foundry?", "context": "Azure AI Foundry is a unified platform...", "expected": "Azure AI Foundry is..."}
+{"question": "How do I deploy a model?", "context": "Model deployment in AI Foundry...", "expected": "To deploy a model..."}
+{"question": "What are safety features?", "context": "AI Foundry provides content safety...", "expected": "Safety features include..."}</div>
+
+            <h3>6.3 Debugging Tips</h3>
+
+            <div class="callout callout-green">
+                ✅ <strong>Pro Debugging Workflow:</strong>
+                <ol>
+                    <li><strong>Check inputs first</strong> — most errors come from malformed input data or missing variables</li>
+                    <li><strong>Run nodes individually</strong> — right-click a node and select "Run from here" to isolate issues</li>
+                    <li><strong>Use the Trace view</strong> — inspect the complete execution trace including timing and token counts</li>
+                    <li><strong>Compare variants</strong> — create a variant with a simplified prompt to rule out prompt-level issues</li>
+                    <li><strong>Check connections</strong> — verify API keys and model deployments are active</li>
+                </ol>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Common Issue</th>
+                        <th>Symptom</th>
+                        <th>Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Missing connection</td>
+                        <td>Node shows red outline</td>
+                        <td>Configure the connection in project settings</td>
+                    </tr>
+                    <tr>
+                        <td>Type mismatch</td>
+                        <td>Serialization error in logs</td>
+                        <td>Ensure output types match downstream input types</td>
+                    </tr>
+                    <tr>
+                        <td>Token limit exceeded</td>
+                        <td>LLM node timeout or error</td>
+                        <td>Truncate context or increase <code>max_tokens</code></td>
+                    </tr>
+                    <tr>
+                        <td>Empty LLM response</td>
+                        <td>Blank output from LLM node</td>
+                        <td>Check prompt template variables are populated</td>
+                    </tr>
+                    <tr>
+                        <td>Python node import error</td>
+                        <td><code>ModuleNotFoundError</code></td>
+                        <td>Add dependency to <code>requirements.txt</code> in flow folder</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Section 7: Deploying Flows as Endpoints -->
+            <h2 id="deploying">7. Deploying Flows as Endpoints</h2>
+
+            <p>Once your flow is tested and validated, deploy it as a <strong>managed online endpoint</strong> that serves real-time predictions via a REST API. Azure AI Foundry handles infrastructure, scaling, and monitoring automatically.</p>
+
+            <h3>7.1 Deployment Process</h3>
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Prepare for Deployment</h4>
+                    <p>Click <strong>Deploy</strong> in the flow editor toolbar. Select your compute configuration — instance type and instance count determine latency and throughput.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Configure Endpoint Settings</h4>
+                    <p>Choose endpoint name, authentication type (key or Azure AD), and traffic allocation. For production, enable <strong>auto-scaling</strong> to handle variable load.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Monitor &amp; Iterate</h4>
+                    <p>After deployment, monitor latency, error rates, and token usage in the endpoint dashboard. Use the <strong>Test</strong> tab to validate the deployed endpoint with live requests.</p>
+                </div>
+            </div>
+
+            <h3>7.2 Calling the Endpoint</h3>
+
+            <div class="code-label">Python — Calling a Deployed Flow</div>
+            <div class="code-block">import requests
+import json
+
+endpoint_url = "https://&lt;your-endpoint&gt;.&lt;region&gt;.inference.ml.azure.com/score"
+api_key = "&lt;your-api-key&gt;"
+
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {api_key}",
+    "azureml-model-deployment": "prompt-flow-deployment"
+}
+
+payload = {
+    "question": "What are the benefits of Prompt Flow?",
+    "context": "Prompt Flow provides visual orchestration...",
+    "chat_history": []
+}
+
+response = requests.post(endpoint_url, headers=headers, json=payload)
+result = response.json()
+
+print(f"Answer: {result['answer']}")
+print(f"Confidence: {result['confidence']}")</div>
+
+            <div class="code-label">cURL — REST API Call</div>
+            <div class="code-block">curl -X POST "https://&lt;endpoint&gt;.inference.ml.azure.com/score" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer &lt;api-key&gt;" \
+  -d '{
+    "question": "What are the benefits of Prompt Flow?",
+    "context": "Prompt Flow provides visual orchestration...",
+    "chat_history": []
+  }'</div>
+
+            <h3>7.3 Deployment Best Practices</h3>
+
+            <div class="callout callout-blue">
+                💡 <strong>Production Checklist:</strong>
+                <ul>
+                    <li><strong>Authentication:</strong> Use Azure AD token-based auth for production; API keys for development only</li>
+                    <li><strong>Scaling:</strong> Start with 1 instance, enable auto-scale based on request volume</li>
+                    <li><strong>Monitoring:</strong> Set up alerts for latency spikes (>5s) and error rate (>1%)</li>
+                    <li><strong>Versioning:</strong> Deploy new versions alongside existing ones with traffic splitting</li>
+                    <li><strong>Testing:</strong> Run batch tests against the deployed endpoint before shifting production traffic</li>
+                </ul>
+            </div>
+
+            <!-- Section 8: Mini Hack -->
+            <h2 id="mini-hack">8. Mini Hack — Customer Support Flow with Routing</h2>
+
+            <div class="mini-hack">
+                <h3>🛠️ Mini Hack: Build a Customer Support Flow</h3>
+                <p>Build a flow that classifies incoming customer queries, routes them to specialized handlers, and generates contextual responses — all with visual orchestration.</p>
+
+                <h4>Architecture</h4>
+
+                <div class="arch-diagram">┌────────────────────────────────────────────────────────────────────┐
+│            CUSTOMER SUPPORT FLOW — ROUTING ARCHITECTURE            │
+│                                                                    │
+│  ┌──────────┐    ┌──────────────┐    ┌──────────────────────────┐ │
+│  │  INPUT    │───▶│  CLASSIFY    │───▶│     ROUTE BY INTENT      │ │
+│  │  message  │    │  INTENT      │    │                          │ │
+│  │  cust_id  │    │  (LLM)       │    │  billing ──▶ Billing LLM │ │
+│  └──────────┘    └──────────────┘    │  technical ─▶ Tech LLM   │ │
+│                                      │  general ───▶ General LLM │ │
+│                                      └──────────┬───────────────┘ │
+│                                                  │                 │
+│                                      ┌───────────▼──────────────┐ │
+│                                      │    FORMAT RESPONSE       │ │
+│                                      │    (Python)              │ │
+│                                      └───────────┬──────────────┘ │
+│                                      ┌───────────▼──────────────┐ │
+│                                      │    OUTPUT                │ │
+│                                      │    response + intent     │ │
+│                                      └──────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────┘</div>
+
+                <h4>Step 1 — Intent Classification Node (LLM)</h4>
+                <div class="code-block">system:
+You are an intent classifier for a customer support system.
+Classify the customer message into exactly ONE of these categories:
+- billing: Payment, invoices, charges, subscriptions, pricing
+- technical: Bugs, errors, setup, configuration, integration
+- general: Account info, feedback, general inquiries
+
+Respond with ONLY the category name, nothing else.
+
+user:
+Customer message: {{message}}</div>
+
+                <h4>Step 2 — Routing Logic (Python)</h4>
+                <div class="code-block">from promptflow import tool
+
+@tool
+def route_by_intent(intent: str, message: str, customer_id: str) -> dict:
+    """Route to specialized handler based on classified intent."""
+    
+    intent = intent.strip().lower()
+    
+    routing_config = {
+        "billing": {
+            "handler": "billing_specialist",
+            "system_prompt": "You are a billing specialist. Help with "
+                           "payment issues, invoice questions, and "
+                           "subscription management. Be precise with "
+                           "amounts and dates.",
+            "priority": "high"
+        },
+        "technical": {
+            "handler": "technical_support",
+            "system_prompt": "You are a technical support engineer. Help "
+                           "diagnose issues, provide step-by-step "
+                           "solutions, and escalate complex problems. "
+                           "Include error codes when relevant.",
+            "priority": "medium"
+        },
+        "general": {
+            "handler": "general_support",
+            "system_prompt": "You are a friendly customer support agent. "
+                           "Answer general questions, provide account "
+                           "information, and direct customers to the "
+                           "right resources.",
+            "priority": "low"
+        }
+    }
+    
+    config = routing_config.get(intent, routing_config["general"])
+    
+    return {
+        "intent": intent,
+        "system_prompt": config["system_prompt"],
+        "message": message,
+        "customer_id": customer_id,
+        "priority": config["priority"],
+        "handler": config["handler"]
+    }</div>
+
+                <h4>Step 3 — Specialized Response (LLM)</h4>
+                <div class="code-block">system:
+{{system_prompt}}
+
+Customer ID: {{customer_id}}
+Priority: {{priority}}
+
+Guidelines:
+- Be empathetic and professional
+- Provide actionable next steps
+- Include relevant reference numbers
+- Offer to escalate if the issue requires it
+
+user:
+{{message}}</div>
+
+                <h4>Step 4 — Format Output (Python)</h4>
+                <div class="code-block">from promptflow import tool
+import json
+from datetime import datetime
+
+@tool
+def format_response(
+    llm_response: str,
+    routing_info: dict
+) -> str:
+    """Format the final customer support response with metadata."""
+    
+    result = {
+        "response": llm_response,
+        "metadata": {
+            "intent": routing_info.get("intent", "unknown"),
+            "handler": routing_info.get("handler", "general"),
+            "priority": routing_info.get("priority", "low"),
+            "customer_id": routing_info.get("customer_id", ""),
+            "timestamp": datetime.utcnow().isoformat(),
+            "model": "gpt-4o"
+        }
+    }
+    
+    return json.dumps(result, indent=2)</div>
+
+                <div class="callout">
+                    💡 <strong>Challenge Extension:</strong> Add a Content Safety node before the response to filter harmful content, and add an evaluation flow that measures response relevance and empathy scores.
+                </div>
+            </div>
+
+            <!-- Section 9: Best Practices -->
+            <h2 id="best-practices">9. Best Practices</h2>
+
+            <h3>Flow Design Principles</h3>
+
+            <div class="capability">
+                <h4>📐 Keep Flows Focused</h4>
+                <p>Each flow should solve one well-defined task. If your flow exceeds 10-12 nodes, consider splitting it into sub-flows or using a Python node that calls another flow's endpoint.</p>
+            </div>
+
+            <div class="capability">
+                <h4>🔄 Use Variants for Experimentation</h4>
+                <p>Create variants of LLM nodes to test different prompts, models, or parameter settings. Run batch evaluations to compare variants quantitatively before promoting to production.</p>
+            </div>
+
+            <div class="capability">
+                <h4>🛡️ Validate at Every Stage</h4>
+                <p>Add Python validation nodes after LLM calls to check output format, length, content safety, and business rules. Fail gracefully with fallback responses rather than exposing raw errors.</p>
+            </div>
+
+            <div class="capability">
+                <h4>📊 Log Everything</h4>
+                <p>Use the built-in tracing to capture execution details. In production, enable Application Insights integration for long-term monitoring, alerting, and debugging of deployed flows.</p>
+            </div>
+
+            <h3>Common Anti-Patterns</h3>
+
+            <div class="callout callout-red">
+                🛑 <strong>Avoid These Mistakes:</strong>
+                <ul>
+                    <li><strong>Monolith flows</strong> — 20+ nodes in a single flow are hard to maintain and debug</li>
+                    <li><strong>Hardcoded secrets</strong> — always use connections, never embed API keys in Python nodes</li>
+                    <li><strong>Skipping batch testing</strong> — a flow that works for one input might fail at scale</li>
+                    <li><strong>Ignoring latency</strong> — each node adds latency; minimize sequential LLM calls</li>
+                    <li><strong>No error handling</strong> — Python nodes should catch exceptions and return structured error responses</li>
+                </ul>
+            </div>
+
+            <!-- Section 10: Resources -->
+            <h2 id="resources">10. Resources &amp; Next Steps</h2>
+
+            <h3>📺 Video Resources</h3>
+
+            <div class="video-section">
+                <div class="video-header">🎬 Getting Started with Azure AI Foundry Prompt Flow — MS Developer Playlist</div>
+                <div class="video-body">
+                    <p>This comprehensive playlist from the MS Developer channel walks through building, testing, and deploying Prompt Flow in Azure AI Foundry — from first concepts to production deployment.</p>
+                    <a href="https://www.youtube.com/playlist?list=PLC8Ke1cGWBoskdzX_Z4QBA_YP3QtiAIue" target="_blank" rel="noopener">▶ Watch the Full Playlist on YouTube</a>
+                </div>
+            </div>
+
+            <h3>📚 Documentation</h3>
+
+            <ul>
+                <li><a href="https://learn.microsoft.com/azure/ai-studio/how-to/prompt-flow" target="_blank">Prompt Flow in Azure AI Foundry — Official Docs</a></li>
+                <li><a href="https://learn.microsoft.com/azure/ai-studio/how-to/flow-deploy" target="_blank">Deploy a Flow as an Endpoint</a></li>
+                <li><a href="https://microsoft.github.io/promptflow/" target="_blank">Prompt Flow SDK — Open Source Documentation</a></li>
+                <li><a href="https://learn.microsoft.com/azure/ai-studio/how-to/flow-bulk-test-evaluation" target="_blank">Batch Testing and Evaluation</a></li>
+            </ul>
+
+            <h3>🔗 Related Modules</h3>
+
+            <div class="related-posts">
+                <a href="../module-20/blog.html" class="related-post">
+                    <div class="post-label">← Previous Module</div>
+                    <div class="post-title">Module 20: SDK & API Integration Patterns</div>
+                </a>
+                <a href="../module-22/blog.html" class="related-post">
+                    <div class="post-label">Next Module →</div>
+                    <div class="post-title">Module 22: Semantic Kernel Integration</div>
+                </a>
+            </div>
+
+            <!-- Module Navigation -->
+            <div class="module-nav">
+                <a href="../module-20/blog.html">← Module 20: SDK &amp; API Integration</a>
+                <a href="../module-22/blog.html">Module 22: Semantic Kernel →</a>
+            </div>
+        </article>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>© 2026 Zero to Hero: Azure AI Foundry Training · Module 21 of 45</p>
+        <p>Built with ❤️ for the AI community · <a href="https://ai.azure.com" target="_blank">Azure AI Foundry</a></p>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+    <script>
+        // Progress Bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+
+            // Back to Top visibility
+            const btn = document.getElementById('backToTop');
+            if (winScroll > 400) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        });
+
+        // TOC Active Highlighting with IntersectionObserver
+        const tocLinks = document.querySelectorAll('.toc a');
+        const sections = document.querySelectorAll('.article h2[id]');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-60px 0px -75% 0px',
+            threshold: 0
+        };
+
+        const observerCallback = (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    tocLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+</html>

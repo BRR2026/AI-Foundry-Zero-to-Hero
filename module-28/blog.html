@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 28: Monitoring, Observability & Drift Detection — Azure AI Foundry: Zero to Hero</title>
+    <meta name="description" content="Master Azure Monitor integration for AI workloads: track latency, token usage, error rates, detect model drift, build alerting dashboards, and maintain production AI quality.">
+    <meta name="keywords" content="Azure AI Foundry, Azure Monitor, AI Observability, Model Drift Detection, MLOps, AI Monitoring, Token Usage Metrics, Latency Monitoring">
+    <meta name="author" content="Azure AI Foundry Training">
+    <meta name="series" content="Azure AI Foundry: Zero to Hero">
+    <meta name="module" content="28 of 45">
+    <meta name="arc" content="ARC 6 — Deployment & MLOps">
+    <meta name="date" content="2026-04">
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --primary-light: #deecf9;
+            --accent: #00b7c3;
+            --accent-warm: #ff8c00;
+            --accent-green: #107c10;
+            --accent-red: #d13438;
+            --accent-purple: #8764b8;
+            --bg-body: #f5f5f5;
+            --bg-white: #ffffff;
+            --bg-code: #1e1e1e;
+            --text-primary: #1a1a1a;
+            --text-secondary: #505050;
+            --text-muted: #707070;
+            --border-light: #e1e1e1;
+            --border-medium: #d0d0d0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --max-width: 820px;
+            --arc-gradient: linear-gradient(135deg, #0078d4 0%, #00b7c3 50%, #107c10 100%);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Progress Bar ── */
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%;
+            height: 3px; background: var(--arc-gradient);
+            z-index: 9999; transition: width 0.2s ease;
+        }
+
+        /* ── Hero Section ── */
+        .hero {
+            background: linear-gradient(135deg, #001d3d 0%, #003566 30%, #005a9e 60%, #0078d4 100%);
+            padding: 3rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0,183,195,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 30%, rgba(135,100,184,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 60% 80%, rgba(16,124,16,0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        /* Grid pattern */
+        .hero::after {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0,183,195,0.15);
+            border: 1px solid rgba(0,183,195,0.3);
+            color: #5ce6ed;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-badge .badge-icon { font-size: 1rem; }
+
+        .hero-module-num {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(90deg, #5ce6ed, #a3f7bf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.75);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+        }
+
+        .hero-meta-item .icon { font-size: 1rem; }
+
+        /* ── Main Content ── */
+        .content-wrapper {
+            max-width: var(--max-width);
+            margin: -2rem auto 0;
+            padding: 0 1.5rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .content-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem;
+            border: 1px solid var(--border-light);
+        }
+
+        /* ── Table of Contents ── */
+        .toc {
+            background: var(--primary-light);
+            border-radius: var(--radius-md);
+            padding: 1.8rem 2rem;
+            margin-bottom: 3rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toc h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+            padding-left: 0;
+        }
+
+        .toc ol li {
+            counter-increment: toc-counter;
+            margin-bottom: 0.5rem;
+        }
+
+        .toc ol li::before {
+            content: counter(toc-counter, decimal-leading-zero);
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 0.6rem;
+            font-size: 0.85rem;
+        }
+
+        .toc a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover { color: var(--primary); }
+
+        /* ── Section Headers ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 3rem 0 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-header:first-of-type { margin-top: 0; }
+
+        .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            background: var(--arc-gradient);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .section-header h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 2rem 0 0.75rem;
+        }
+
+        h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-secondary); }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 0.92rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .callout .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+        .callout p { margin: 0; }
+        .callout p + p { margin-top: 0.5rem; }
+
+        .callout-info {
+            background: #e8f4fd;
+            border-left: 4px solid var(--primary);
+        }
+
+        .callout-tip {
+            background: #e6f7e6;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .callout-warning {
+            background: #fff4ce;
+            border-left: 4px solid var(--accent-warm);
+        }
+
+        .callout-danger {
+            background: #fde7e9;
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .callout-foundry {
+            background: linear-gradient(135deg, #e8f4fd 0%, #e6f7f8 100%);
+            border-left: 4px solid var(--accent);
+        }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--bg-code);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1.2rem 0;
+            position: relative;
+            border: 1px solid #333;
+        }
+
+        pre code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #d4d4d4;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            background: #f0f0f0;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.88em;
+            color: #c7254e;
+        }
+
+        pre code { background: transparent; padding: 0; color: #d4d4d4; }
+
+        .code-label {
+            position: absolute;
+            top: 0; right: 0;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0 var(--radius-md) 0 var(--radius-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Syntax colors */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .num { color: #b5cea8; }
+        .cmt { color: #6a9955; font-style: italic; }
+        .fn { color: #dcdcaa; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+        .op { color: #d4d4d4; }
+        .punct { color: #808080; }
+        .const { color: #4fc1ff; }
+
+        /* ── Metric Cards ── */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-card .metric-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .metric-card .metric-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .metric-card .metric-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── Architecture Diagram ── */
+        .arch-diagram {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 100%);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            margin: 1.5rem 0;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        /* ── Tables ── */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        /* ── Feature Panels ── */
+        .feature-panel {
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .feature-panel-header {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #e6f7f8 100%);
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .feature-panel-body { padding: 1.5rem; }
+
+        /* ── Pipeline / Flow Diagram ── */
+        .pipeline-flow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: var(--radius-md);
+        }
+
+        .pipeline-step {
+            background: var(--bg-white);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .pipeline-arrow {
+            color: var(--accent);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* ── Video Container ── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            margin: 2rem 0;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: var(--radius-md);
+        }
+
+        /* ── Check / Step Lists ── */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .checklist li {
+            padding: 0.5rem 0 0.5rem 2rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .checklist li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+            font-weight: 700;
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        .step-list {
+            list-style: none;
+            padding-left: 0;
+            counter-reset: step-counter;
+            margin: 1rem 0;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            padding: 0.6rem 0 0.6rem 2.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            width: 1.8rem; height: 1.8rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* ── Mini Hack Banner ── */
+        .mini-hack {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            margin: 2.5rem 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mini-hack::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 10% 50%, rgba(0,183,195,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 90% 20%, rgba(135,100,184,0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .mini-hack-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(0,183,195,0.2);
+            border: 1px solid rgba(0,183,195,0.4);
+            color: #5ce6ed;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.3rem 0.8rem;
+            border-radius: 100px;
+            margin-bottom: 1rem;
+        }
+
+        .mini-hack h3 {
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mini-hack p { color: rgba(255,255,255,0.8); }
+        .mini-hack ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+        .mini-hack li { color: rgba(255,255,255,0.8); margin-bottom: 0.35rem; }
+
+        /* ── KPI Dashboard Mock ── */
+        .kpi-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .kpi-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .kpi-card.green::before { background: var(--accent-green); }
+        .kpi-card.blue::before { background: var(--primary); }
+        .kpi-card.orange::before { background: var(--accent-warm); }
+        .kpi-card.red::before { background: var(--accent-red); }
+        .kpi-card.purple::before { background: var(--accent-purple); }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-trend {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .trend-up { color: var(--accent-green); }
+        .trend-down { color: var(--accent-red); }
+        .trend-flat { color: var(--text-muted); }
+
+        /* ── Drift Detection Viz ── */
+        .drift-viz {
+            background: #f8f9fa;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .drift-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .drift-label {
+            width: 140px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .drift-bar-track {
+            flex: 1;
+            height: 22px;
+            background: #e0e0e0;
+            border-radius: 11px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .drift-bar-fill {
+            height: 100%;
+            border-radius: 11px;
+            transition: width 1s ease;
+        }
+
+        .drift-threshold {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background: var(--accent-red);
+        }
+
+        .drift-bar-value {
+            font-size: 0.8rem;
+            font-weight: 700;
+            width: 50px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Bottom Navigation ── */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: 2px solid var(--border-light);
+            color: var(--text-primary);
+            background: var(--bg-white);
+        }
+
+        .nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-btn-next {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .nav-btn-next:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            background: var(--bg-code);
+            color: rgba(255,255,255,0.5);
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.82rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ── Ordered / Unordered Lists ── */
+        .content-card ol, .content-card ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .content-card li { margin-bottom: 0.35rem; }
+
+        /* ── Strong / Bold ── */
+        strong { color: var(--text-primary); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .content-card { padding: 1.5rem; }
+            .hero { padding: 2rem 1rem 3rem; }
+            .hero-meta { gap: 1rem; }
+            .metric-grid { grid-template-columns: 1fr 1fr; }
+            .kpi-dashboard { grid-template-columns: 1fr 1fr; }
+            .pipeline-flow { flex-direction: column; }
+            .pipeline-arrow { transform: rotate(90deg); }
+            .bottom-nav { flex-direction: column; gap: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .metric-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Print ── */
+        @media print {
+            .hero { background: #003566 !important; }
+            .progress-bar, .video-container { display: none; }
+            .content-card { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- ═══════════════════ HERO ═══════════════════ -->
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="hero-badge">
+                <span class="badge-icon">🚀</span>
+                ARC 6 · DEPLOYMENT &amp; MLOps
+            </div>
+            <div class="hero-module-num">Module 28 of 45</div>
+            <h1>Monitoring, Observability &amp;&nbsp;<span class="highlight">Drift Detection</span></h1>
+            <p class="hero-subtitle">
+                Build production-grade observability for your Azure AI Foundry workloads — track latency, token usage, and error rates, detect model drift before users do, and respond with intelligent alerting.
+            </p>
+            <div class="hero-meta">
+                <span class="hero-meta-item"><span class="icon">📅</span> April 2026</span>
+                <span class="hero-meta-item"><span class="icon">⏱️</span> 55 min read</span>
+                <span class="hero-meta-item"><span class="icon">🎯</span> Intermediate–Advanced</span>
+                <span class="hero-meta-item"><span class="icon">🛠️</span> Hands-on Lab Included</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════ CONTENT ═══════════════════ -->
+    <main class="content-wrapper">
+        <article class="content-card">
+
+            <!-- Table of Contents -->
+            <nav class="toc">
+                <h2>📑 In This Module</h2>
+                <ol>
+                    <li><a href="#s1">Why Observability Matters for AI</a></li>
+                    <li><a href="#s2">Azure Monitor Integration for AI Workloads</a></li>
+                    <li><a href="#s3">Key Metrics — Latency, Token Usage &amp; Error Rates</a></li>
+                    <li><a href="#s4">Detecting Model Drift &amp; Quality Degradation</a></li>
+                    <li><a href="#s5">Alerting &amp; Dashboards</a></li>
+                    <li><a href="#s6">Application Insights for AI Agents</a></li>
+                    <li><a href="#s7">Mini Hack: Build a Monitoring Dashboard</a></li>
+                    <li><a href="#s8">Best Practices &amp; Troubleshooting</a></li>
+                    <li><a href="#video">Featured Video</a></li>
+                </ol>
+            </nav>
+
+            <!-- ═══════════ Section 1 ═══════════ -->
+            <div class="section-header" id="s1">
+                <span class="section-num">01</span>
+                <h2>Why Observability Matters for AI</h2>
+            </div>
+
+            <p>
+                Traditional software has predictable outputs for given inputs. AI systems are <strong>stochastic</strong> — the same prompt can produce different results, quality can silently degrade as data distributions shift, and failures often manifest as <em>subtly wrong</em> answers rather than crashes. This makes monitoring AI fundamentally different from monitoring conventional applications.
+            </p>
+
+            <div class="callout callout-danger">
+                <span class="callout-icon">⚠️</span>
+                <div>
+                    <p><strong>The Silent Failure Problem:</strong> Unlike a 500 error, a model that starts giving lower-quality answers won't trigger traditional alerting. Without AI-specific observability, you won't know until users complain — or worse, leave.</p>
+                </div>
+            </div>
+
+            <h3>Three Pillars of AI Observability</h3>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-name">Metrics</div>
+                    <div class="metric-desc">Latency, throughput, token counts, error rates, cost-per-request</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📜</div>
+                    <div class="metric-name">Traces</div>
+                    <div class="metric-desc">End-to-end request flow, agent step tracing, tool invocations</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📝</div>
+                    <div class="metric-name">Logs</div>
+                    <div class="metric-desc">Structured events, prompt/completion pairs, guardrail triggers</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-name">Evaluations</div>
+                    <div class="metric-desc">Quality scores, drift indicators, safety checks, groundedness</div>
+                </div>
+            </div>
+
+            <p>
+                Azure AI Foundry integrates deeply with <strong>Azure Monitor</strong>, <strong>Application Insights</strong>, and <strong>Log Analytics</strong> to provide a unified observability stack purpose-built for AI workloads.
+            </p>
+
+            <!-- ═══════════ Section 2 ═══════════ -->
+            <div class="section-header" id="s2">
+                <span class="section-num">02</span>
+                <h2>Azure Monitor Integration for AI Workloads</h2>
+            </div>
+
+            <p>
+                Azure AI Foundry projects automatically emit telemetry to Azure Monitor when diagnostics are enabled. This includes model invocation metrics, agent execution traces, and resource health signals — all queryable through <strong>Log Analytics (KQL)</strong>.
+            </p>
+
+            <h3>Architecture Overview</h3>
+
+            <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                     Azure AI Foundry Project                     │
+│                                                                   │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │
+│  │  Model    │  │  Agent   │  │  Prompt  │  │  Evaluation      │ │
+│  │ Endpoints │  │ Service  │  │  Flow    │  │  Pipeline        │ │
+│  └─────┬────┘  └────┬─────┘  └────┬─────┘  └────────┬─────────┘ │
+│        │            │             │                   │           │
+│        └────────────┴──────┬──────┴───────────────────┘           │
+│                            │                                      │
+│                   Diagnostic Settings                             │
+└────────────────────────────┬──────────────────────────────────────┘
+                             │
+                  ┌──────────▼──────────┐
+                  │    Azure Monitor     │
+                  │                      │
+                  │  ┌────────────────┐  │
+                  │  │  Log Analytics │  │
+                  │  │  Workspace     │  │
+                  │  └───────┬────────┘  │
+                  │          │           │
+                  │  ┌───────▼────────┐  │
+                  │  │  Application   │  │
+                  │  │  Insights      │  │
+                  │  └───────┬────────┘  │
+                  └──────────┼──────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+       ┌──────▼─────┐ ┌─────▼──────┐ ┌─────▼──────┐
+       │  Dashboards │ │   Alerts   │ │  Workbooks │
+       │  (Portal)   │ │  (Action   │ │  (Reports) │
+       │             │ │   Groups)  │ │            │
+       └─────────────┘ └────────────┘ └────────────┘
+            </div>
+
+            <h3>Enabling Diagnostic Settings</h3>
+
+            <p>Configure diagnostic settings on your AI Foundry project to route telemetry to a Log Analytics workspace:</p>
+
+            <pre><code><span class="cmt"># Enable diagnostic settings for your AI Foundry project</span>
+<span class="fn">az monitor diagnostic-settings create</span> \
+  <span class="param">--name</span> <span class="str">"ai-foundry-diagnostics"</span> \
+  <span class="param">--resource</span> <span class="str">"/subscriptions/{sub-id}/resourceGroups/{rg}/providers/Microsoft.MachineLearningServices/workspaces/{project}"</span> \
+  <span class="param">--workspace</span> <span class="str">"/subscriptions/{sub-id}/resourceGroups/{rg}/providers/Microsoft.OperationalInsights/workspaces/{workspace}"</span> \
+  <span class="param">--logs</span> <span class="str">'[
+    {"category": "AmlComputeClusterEvent", "enabled": true},
+    {"category": "AmlRunStatusChangedEvent", "enabled": true},
+    {"category": "AmlModelsEvent", "enabled": true}
+  ]'</span> \
+  <span class="param">--metrics</span> <span class="str">'[{"category": "AllMetrics", "enabled": true}]'</span>
+<span class="code-label">Azure CLI</span></code></pre>
+
+            <h3>Instrumenting with OpenTelemetry</h3>
+
+            <p>For custom telemetry, Azure AI Foundry supports <strong>OpenTelemetry</strong> through the Azure Monitor OpenTelemetry exporter:</p>
+
+            <pre><code><span class="kw">from</span> azure.monitor.opentelemetry <span class="kw">import</span> configure_azure_monitor
+<span class="kw">from</span> opentelemetry <span class="kw">import</span> trace
+<span class="kw">from</span> opentelemetry <span class="kw">import</span> metrics
+
+<span class="cmt"># Configure Azure Monitor with your connection string</span>
+<span class="fn">configure_azure_monitor</span>(
+    connection_string=<span class="str">"InstrumentationKey=&lt;key&gt;;IngestionEndpoint=https://..."</span>
+)
+
+<span class="cmt"># Get a tracer for AI operations</span>
+tracer = trace.<span class="fn">get_tracer</span>(<span class="str">"ai-foundry-app"</span>)
+meter = metrics.<span class="fn">get_meter</span>(<span class="str">"ai-foundry-app"</span>)
+
+<span class="cmt"># Create custom metrics</span>
+token_counter = meter.<span class="fn">create_counter</span>(
+    <span class="str">"ai.tokens.total"</span>,
+    description=<span class="str">"Total tokens consumed"</span>
+)
+latency_histogram = meter.<span class="fn">create_histogram</span>(
+    <span class="str">"ai.request.duration"</span>,
+    unit=<span class="str">"ms"</span>,
+    description=<span class="str">"Model request latency"</span>
+)
+<span class="code-label">Python</span></code></pre>
+
+            <div class="callout callout-foundry">
+                <span class="callout-icon">🔷</span>
+                <div>
+                    <p><strong>Azure AI Foundry Tracing:</strong> When you enable tracing in Azure AI Foundry, every agent invocation automatically captures spans for each step — tool calls, model invocations, and retrieval operations — all correlated via a single <code>trace_id</code>.</p>
+                </div>
+            </div>
+
+            <!-- ═══════════ Section 3 ═══════════ -->
+            <div class="section-header" id="s3">
+                <span class="section-num">03</span>
+                <h2>Key Metrics — Latency, Token Usage &amp; Error Rates</h2>
+            </div>
+
+            <p>
+                Monitoring AI workloads requires tracking a different set of metrics than traditional web applications. Here are the critical signals you need to capture:
+            </p>
+
+            <!-- KPI Dashboard Mock -->
+            <div class="kpi-dashboard">
+                <div class="kpi-card blue">
+                    <div class="kpi-value">142ms</div>
+                    <div class="kpi-label">P50 Latency</div>
+                    <div class="kpi-trend trend-up">↓ 8ms from last week</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-value">1,247</div>
+                    <div class="kpi-label">Avg Tokens/Req</div>
+                    <div class="kpi-trend trend-flat">→ Stable</div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-value">0.3%</div>
+                    <div class="kpi-label">Error Rate</div>
+                    <div class="kpi-trend trend-up">↑ 0.1% from baseline</div>
+                </div>
+                <div class="kpi-card purple">
+                    <div class="kpi-value">$0.42</div>
+                    <div class="kpi-label">Avg Cost/Request</div>
+                    <div class="kpi-trend trend-down">↑ $0.05 increase</div>
+                </div>
+            </div>
+
+            <h3>Metric Categories</h3>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Metric</th>
+                            <th>What It Tells You</th>
+                            <th>Alert Threshold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Latency</strong></td>
+                            <td>P50 / P95 / P99 response time</td>
+                            <td>User experience quality</td>
+                            <td>P95 &gt; 3s for 5 min</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Token Usage</strong></td>
+                            <td>Prompt + completion tokens per request</td>
+                            <td>Cost and prompt efficiency</td>
+                            <td>&gt; 2x baseline avg</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Error Rate</strong></td>
+                            <td>HTTP 4xx/5xx, content filter blocks</td>
+                            <td>System reliability</td>
+                            <td>&gt; 1% over 10 min</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Throughput</strong></td>
+                            <td>Requests per minute (RPM)</td>
+                            <td>Capacity and scaling needs</td>
+                            <td>&gt; 80% of rate limit</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rate Limiting</strong></td>
+                            <td>429 responses, retry counts</td>
+                            <td>Quota saturation</td>
+                            <td>Any 429 sustained &gt; 1 min</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Safety</strong></td>
+                            <td>Content filter trigger rate</td>
+                            <td>Guardrail effectiveness</td>
+                            <td>&gt; 5% trigger rate</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Querying Metrics with KQL</h3>
+
+            <p>Use <strong>Kusto Query Language (KQL)</strong> in Log Analytics to analyze your AI telemetry:</p>
+
+            <pre><code><span class="cmt">// Latency percentiles over the last 24 hours</span>
+<span class="type">AzureDiagnostics</span>
+| <span class="kw">where</span> Category == <span class="str">"AmlModelsEvent"</span>
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="num">24h</span>)
+| <span class="kw">summarize</span>
+    <span class="fn">percentile</span>(DurationMs, <span class="num">50</span>) <span class="kw">as</span> P50,
+    <span class="fn">percentile</span>(DurationMs, <span class="num">95</span>) <span class="kw">as</span> P95,
+    <span class="fn">percentile</span>(DurationMs, <span class="num">99</span>) <span class="kw">as</span> P99
+    <span class="kw">by</span> <span class="fn">bin</span>(TimeGenerated, <span class="num">1h</span>)
+| <span class="kw">render</span> timechart
+<span class="code-label">KQL</span></code></pre>
+
+            <pre><code><span class="cmt">// Token usage by model deployment</span>
+<span class="type">AzureDiagnostics</span>
+| <span class="kw">where</span> Category == <span class="str">"AmlModelsEvent"</span>
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="num">7d</span>)
+| <span class="kw">extend</span> PromptTokens = <span class="fn">toint</span>(properties_s.<span class="param">prompt_tokens</span>)
+| <span class="kw">extend</span> CompletionTokens = <span class="fn">toint</span>(properties_s.<span class="param">completion_tokens</span>)
+| <span class="kw">summarize</span>
+    <span class="fn">avg</span>(PromptTokens) <span class="kw">as</span> AvgPromptTokens,
+    <span class="fn">avg</span>(CompletionTokens) <span class="kw">as</span> AvgCompletionTokens,
+    <span class="fn">sum</span>(PromptTokens + CompletionTokens) <span class="kw">as</span> TotalTokens
+    <span class="kw">by</span> <span class="fn">bin</span>(TimeGenerated, <span class="num">1h</span>), resource_s
+| <span class="kw">render</span> timechart
+<span class="code-label">KQL</span></code></pre>
+
+            <h3>Custom Telemetry Wrapper</h3>
+
+            <p>Wrap your model calls to automatically capture key metrics:</p>
+
+            <pre><code><span class="kw">import</span> time
+<span class="kw">from</span> opentelemetry <span class="kw">import</span> trace, metrics
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+tracer = trace.<span class="fn">get_tracer</span>(<span class="str">"ai-monitor"</span>)
+meter = metrics.<span class="fn">get_meter</span>(<span class="str">"ai-monitor"</span>)
+
+<span class="cmt"># Define counters and histograms</span>
+request_counter = meter.<span class="fn">create_counter</span>(<span class="str">"ai.requests.total"</span>)
+error_counter = meter.<span class="fn">create_counter</span>(<span class="str">"ai.errors.total"</span>)
+token_counter = meter.<span class="fn">create_counter</span>(<span class="str">"ai.tokens.consumed"</span>)
+latency_hist = meter.<span class="fn">create_histogram</span>(<span class="str">"ai.request.latency_ms"</span>)
+
+<span class="kw">class</span> <span class="type">MonitoredModelClient</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">project_client</span>: <span class="type">AIProjectClient</span>):
+        <span class="param">self</span>.client = project_client
+
+    <span class="kw">def</span> <span class="fn">complete</span>(<span class="param">self</span>, <span class="param">messages</span>, <span class="param">model</span>=<span class="str">"gpt-4o"</span>, **<span class="param">kwargs</span>):
+        <span class="kw">with</span> tracer.<span class="fn">start_as_current_span</span>(<span class="str">"model.completion"</span>) <span class="kw">as</span> span:
+            span.<span class="fn">set_attribute</span>(<span class="str">"ai.model"</span>, model)
+            span.<span class="fn">set_attribute</span>(<span class="str">"ai.message_count"</span>, <span class="fn">len</span>(messages))
+
+            start = time.<span class="fn">perf_counter</span>()
+            request_counter.<span class="fn">add</span>(<span class="num">1</span>, {<span class="str">"model"</span>: model})
+
+            <span class="kw">try</span>:
+                response = <span class="param">self</span>.client.inference.<span class="fn">get_chat_completions</span>(
+                    model=model, messages=messages, **kwargs
+                )
+
+                <span class="cmt"># Record latency</span>
+                latency = (time.<span class="fn">perf_counter</span>() - start) * <span class="num">1000</span>
+                latency_hist.<span class="fn">record</span>(latency, {<span class="str">"model"</span>: model})
+
+                <span class="cmt"># Record token usage</span>
+                usage = response.usage
+                token_counter.<span class="fn">add</span>(
+                    usage.prompt_tokens + usage.completion_tokens,
+                    {<span class="str">"model"</span>: model, <span class="str">"type"</span>: <span class="str">"total"</span>}
+                )
+
+                span.<span class="fn">set_attribute</span>(<span class="str">"ai.latency_ms"</span>, latency)
+                span.<span class="fn">set_attribute</span>(<span class="str">"ai.tokens.prompt"</span>, usage.prompt_tokens)
+                span.<span class="fn">set_attribute</span>(<span class="str">"ai.tokens.completion"</span>, usage.completion_tokens)
+
+                <span class="kw">return</span> response
+
+            <span class="kw">except</span> <span class="type">Exception</span> <span class="kw">as</span> e:
+                error_counter.<span class="fn">add</span>(<span class="num">1</span>, {<span class="str">"model"</span>: model, <span class="str">"error"</span>: <span class="fn">type</span>(e).__name__})
+                span.<span class="fn">set_status</span>(trace.StatusCode.ERROR, <span class="fn">str</span>(e))
+                <span class="kw">raise</span>
+<span class="code-label">Python</span></code></pre>
+
+            <!-- ═══════════ Section 4 ═══════════ -->
+            <div class="section-header" id="s4">
+                <span class="section-num">04</span>
+                <h2>Detecting Model Drift &amp; Quality Degradation</h2>
+            </div>
+
+            <p>
+                <strong>Model drift</strong> occurs when the statistical properties of input data or the relationship between inputs and outputs changes over time, causing model performance to degrade. In the context of generative AI, drift can manifest as:
+            </p>
+
+            <ul>
+                <li><strong>Data drift:</strong> User prompts shift to topics or phrasing the model wasn't optimized for</li>
+                <li><strong>Concept drift:</strong> The "correct" answer changes (e.g., regulations update, product info changes)</li>
+                <li><strong>Quality drift:</strong> Model outputs gradually become less relevant, accurate, or grounded</li>
+                <li><strong>Behavioral drift:</strong> Model updates from the provider change response patterns</li>
+            </ul>
+
+            <h3>Drift Detection Pipeline</h3>
+
+            <div class="pipeline-flow">
+                <div class="pipeline-step">📥 Collect<br>Samples</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">📊 Compute<br>Baselines</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">🔍 Statistical<br>Tests</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">🤖 AI-Judge<br>Evaluation</div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">🚨 Alert &amp;<br>Respond</div>
+            </div>
+
+            <h3>Drift Detection Visualization</h3>
+
+            <div class="drift-viz">
+                <p style="font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">📊 Drift Indicators — Current vs. Baseline</p>
+
+                <div class="drift-bar-container">
+                    <span class="drift-label">Groundedness</span>
+                    <div class="drift-bar-track">
+                        <div class="drift-bar-fill" style="width: 85%; background: linear-gradient(90deg, var(--accent-green), #6dd400);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-bar-value" style="color: var(--accent-green);">0.85</span>
+                </div>
+
+                <div class="drift-bar-container">
+                    <span class="drift-label">Relevance</span>
+                    <div class="drift-bar-track">
+                        <div class="drift-bar-fill" style="width: 72%; background: linear-gradient(90deg, var(--accent-warm), #ffa940);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-bar-value" style="color: var(--accent-warm);">0.72 ⚠️</span>
+                </div>
+
+                <div class="drift-bar-container">
+                    <span class="drift-label">Coherence</span>
+                    <div class="drift-bar-track">
+                        <div class="drift-bar-fill" style="width: 91%; background: linear-gradient(90deg, var(--accent-green), #6dd400);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-bar-value" style="color: var(--accent-green);">0.91</span>
+                </div>
+
+                <div class="drift-bar-container">
+                    <span class="drift-label">Fluency</span>
+                    <div class="drift-bar-track">
+                        <div class="drift-bar-fill" style="width: 94%; background: linear-gradient(90deg, var(--accent-green), #6dd400);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-bar-value" style="color: var(--accent-green);">0.94</span>
+                </div>
+
+                <div class="drift-bar-container">
+                    <span class="drift-label">Safety</span>
+                    <div class="drift-bar-track">
+                        <div class="drift-bar-fill" style="width: 62%; background: linear-gradient(90deg, var(--accent-red), #ff4d4f);"></div>
+                        <div class="drift-threshold" style="left: 70%;"></div>
+                    </div>
+                    <span class="drift-bar-value" style="color: var(--accent-red);">0.62 🚨</span>
+                </div>
+
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+                    Red line = threshold. Scores below threshold trigger drift alerts.
+                </p>
+            </div>
+
+            <h3>Implementing Drift Detection with Azure AI Foundry Evaluations</h3>
+
+            <pre><code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> (
+    GroundednessEvaluator,
+    RelevanceEvaluator,
+    CoherenceEvaluator,
+    FluencyEvaluator,
+)
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">import</span> json, statistics
+
+<span class="cmt"># Initialize the project client</span>
+project = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    project_name=<span class="str">"my-ai-project"</span>,
+    resource_group_name=<span class="str">"my-rg"</span>,
+    subscription_id=<span class="str">"&lt;sub-id&gt;"</span>
+)
+
+<span class="cmt"># Define baseline thresholds from initial evaluation</span>
+BASELINES = {
+    <span class="str">"groundedness"</span>: <span class="num">0.80</span>,
+    <span class="str">"relevance"</span>:     <span class="num">0.75</span>,
+    <span class="str">"coherence"</span>:     <span class="num">0.80</span>,
+    <span class="str">"fluency"</span>:       <span class="num">0.85</span>,
+}
+
+<span class="cmt"># Drift detection threshold (percentage drop from baseline)</span>
+DRIFT_THRESHOLD = <span class="num">0.10</span>  <span class="cmt"># 10% drop triggers alert</span>
+
+<span class="kw">def</span> <span class="fn">evaluate_sample_batch</span>(samples: <span class="type">list</span>[<span class="type">dict</span>]) -> <span class="type">dict</span>:
+    <span class="str">"""Evaluate a batch of recent production samples for drift."""</span>
+    evaluators = {
+        <span class="str">"groundedness"</span>: <span class="type">GroundednessEvaluator</span>(project),
+        <span class="str">"relevance"</span>:     <span class="type">RelevanceEvaluator</span>(project),
+        <span class="str">"coherence"</span>:     <span class="type">CoherenceEvaluator</span>(project),
+        <span class="str">"fluency"</span>:       <span class="type">FluencyEvaluator</span>(project),
+    }
+
+    results = {name: [] <span class="kw">for</span> name <span class="kw">in</span> evaluators}
+
+    <span class="kw">for</span> sample <span class="kw">in</span> samples:
+        <span class="kw">for</span> name, evaluator <span class="kw">in</span> evaluators.items():
+            score = evaluator(
+                query=sample[<span class="str">"query"</span>],
+                response=sample[<span class="str">"response"</span>],
+                context=sample.get(<span class="str">"context"</span>, <span class="str">""</span>)
+            )
+            results[name].append(score.score)
+
+    <span class="cmt"># Compute averages and detect drift</span>
+    drift_report = {}
+    <span class="kw">for</span> metric, scores <span class="kw">in</span> results.items():
+        avg_score = statistics.<span class="fn">mean</span>(scores)
+        baseline = BASELINES[metric]
+        drift_pct = (baseline - avg_score) / baseline
+
+        drift_report[metric] = {
+            <span class="str">"current_score"</span>: <span class="fn">round</span>(avg_score, <span class="num">3</span>),
+            <span class="str">"baseline"</span>: baseline,
+            <span class="str">"drift_percentage"</span>: <span class="fn">round</span>(drift_pct * <span class="num">100</span>, <span class="num">1</span>),
+            <span class="str">"drifted"</span>: drift_pct > DRIFT_THRESHOLD,
+        }
+
+    <span class="kw">return</span> drift_report
+<span class="code-label">Python</span></code></pre>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">💡</span>
+                <div>
+                    <p><strong>Scheduled Drift Checks:</strong> Run drift detection as a scheduled pipeline (e.g., daily via Azure Functions or Azure DevOps) against a random sample of recent production requests. Store results in Log Analytics for trend analysis.</p>
+                </div>
+            </div>
+
+            <!-- ═══════════ Section 5 ═══════════ -->
+            <div class="section-header" id="s5">
+                <span class="section-num">05</span>
+                <h2>Alerting &amp; Dashboards</h2>
+            </div>
+
+            <p>
+                Effective alerting transforms raw metrics into <strong>actionable signals</strong>. The goal is to catch problems early while minimizing alert fatigue.
+            </p>
+
+            <h3>Alert Strategy for AI Workloads</h3>
+
+            <div class="feature-panel">
+                <div class="feature-panel-header">🔔 Recommended Alert Rules</div>
+                <div class="feature-panel-body">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Alert</th>
+                                    <th>Condition</th>
+                                    <th>Severity</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>High Latency</td>
+                                    <td>P95 &gt; 5s for 5 min</td>
+                                    <td>Sev 2</td>
+                                    <td>Page on-call, check capacity</td>
+                                </tr>
+                                <tr>
+                                    <td>Error Spike</td>
+                                    <td>Error rate &gt; 5% for 3 min</td>
+                                    <td>Sev 1</td>
+                                    <td>Page on-call, check model health</td>
+                                </tr>
+                                <tr>
+                                    <td>Token Budget</td>
+                                    <td>Daily tokens &gt; 80% of budget</td>
+                                    <td>Sev 3</td>
+                                    <td>Notify team, review usage</td>
+                                </tr>
+                                <tr>
+                                    <td>Drift Detected</td>
+                                    <td>Quality score &lt; baseline - 10%</td>
+                                    <td>Sev 2</td>
+                                    <td>Trigger evaluation pipeline</td>
+                                </tr>
+                                <tr>
+                                    <td>Rate Limiting</td>
+                                    <td>429 count &gt; 10 in 5 min</td>
+                                    <td>Sev 2</td>
+                                    <td>Scale up, check retry logic</td>
+                                </tr>
+                                <tr>
+                                    <td>Safety Trigger</td>
+                                    <td>Content filter rate &gt; 5%</td>
+                                    <td>Sev 1</td>
+                                    <td>Review inputs, check for abuse</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Creating Alert Rules with Azure CLI</h3>
+
+            <pre><code><span class="cmt"># Create a metric alert for high latency</span>
+<span class="fn">az monitor metrics alert create</span> \
+  <span class="param">--name</span> <span class="str">"ai-high-latency"</span> \
+  <span class="param">--resource-group</span> <span class="str">"my-rg"</span> \
+  <span class="param">--scopes</span> <span class="str">"/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.MachineLearningServices/workspaces/{project}"</span> \
+  <span class="param">--condition</span> <span class="str">"avg RequestLatency > 5000"</span> \
+  <span class="param">--window-size</span> <span class="str">"5m"</span> \
+  <span class="param">--evaluation-frequency</span> <span class="str">"1m"</span> \
+  <span class="param">--severity</span> <span class="num">2</span> \
+  <span class="param">--action</span> <span class="str">"/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Insights/actionGroups/ai-ops-team"</span> \
+  <span class="param">--description</span> <span class="str">"AI model P95 latency exceeds 5 seconds"</span>
+
+<span class="cmt"># Create a log-based alert for error spikes</span>
+<span class="fn">az monitor scheduled-query create</span> \
+  <span class="param">--name</span> <span class="str">"ai-error-spike"</span> \
+  <span class="param">--resource-group</span> <span class="str">"my-rg"</span> \
+  <span class="param">--scopes</span> <span class="str">"/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.OperationalInsights/workspaces/{workspace}"</span> \
+  <span class="param">--condition</span> <span class="str">"count > 50"</span> \
+  <span class="param">--condition-query</span> <span class="str">"AzureDiagnostics
+    | where Category == 'AmlModelsEvent'
+    | where ResultType != 'Success'
+    | where TimeGenerated > ago(5m)
+    | summarize ErrorCount = count() by bin(TimeGenerated, 5m)"</span> \
+  <span class="param">--severity</span> <span class="num">1</span> \
+  <span class="param">--action-groups</span> <span class="str">"/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Insights/actionGroups/ai-ops-team"</span>
+<span class="code-label">Azure CLI</span></code></pre>
+
+            <h3>Building Azure Dashboards</h3>
+
+            <p>Create an Azure Monitor dashboard that gives your team at-a-glance visibility into AI health:</p>
+
+            <pre><code><span class="cmt">// Azure Dashboard template (ARM/Bicep) for AI monitoring</span>
+<span class="kw">resource</span> <span class="param">aiDashboard</span> <span class="str">'Microsoft.Portal/dashboards@2020-09-01-preview'</span> = {
+  name: <span class="str">'ai-foundry-monitoring'</span>
+  location: resourceGroup().location
+  properties: {
+    lenses: [
+      {
+        parts: [
+          <span class="cmt">// Latency tile — P50, P95, P99 time chart</span>
+          {
+            position: { x: <span class="num">0</span>, y: <span class="num">0</span>, colSpan: <span class="num">6</span>, rowSpan: <span class="num">4</span> }
+            metadata: {
+              type: <span class="str">'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'</span>
+              settings: {
+                query: <span class="str">'''
+                  AzureDiagnostics
+                  | where Category == "AmlModelsEvent"
+                  | summarize P50=percentile(DurationMs,50),
+                              P95=percentile(DurationMs,95),
+                              P99=percentile(DurationMs,99)
+                    by bin(TimeGenerated, 15m)
+                  | render timechart
+                '''</span>
+              }
+            }
+          }
+          <span class="cmt">// Token usage tile</span>
+          {
+            position: { x: <span class="num">6</span>, y: <span class="num">0</span>, colSpan: <span class="num">6</span>, rowSpan: <span class="num">4</span> }
+            metadata: {
+              type: <span class="str">'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'</span>
+              settings: {
+                query: <span class="str">'''
+                  customMetrics
+                  | where name == "ai.tokens.consumed"
+                  | summarize TotalTokens=sum(value)
+                    by bin(timestamp, 1h)
+                  | render barchart
+                '''</span>
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+<span class="code-label">Bicep</span></code></pre>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">📘</span>
+                <div>
+                    <p><strong>Azure Workbooks:</strong> For more interactive and shareable dashboards, use <strong>Azure Monitor Workbooks</strong>. They support parameterized queries, drill-down views, and can combine metrics from multiple AI Foundry projects.</p>
+                </div>
+            </div>
+
+            <!-- ═══════════ Section 6 ═══════════ -->
+            <div class="section-header" id="s6">
+                <span class="section-num">06</span>
+                <h2>Application Insights for AI Agents</h2>
+            </div>
+
+            <p>
+                When monitoring AI agents in Azure AI Foundry, <strong>Application Insights</strong> provides end-to-end distributed tracing that captures the full execution flow of multi-step agent interactions.
+            </p>
+
+            <h3>Agent Trace Anatomy</h3>
+
+            <div class="arch-diagram">
+Trace: agent-invocation-abc123
+│
+├── Span: agent.run (12.4s)
+│   ├── Span: llm.chat (2.1s)        [model: gpt-4o, tokens: 847]
+│   ├── Span: tool.search (3.2s)     [tool: azure_search, results: 5]
+│   ├── Span: llm.chat (1.8s)        [model: gpt-4o, tokens: 1,203]
+│   ├── Span: tool.code_exec (4.1s)  [tool: code_interpreter]
+│   └── Span: llm.chat (1.2s)        [model: gpt-4o, tokens: 624]
+│
+└── Custom Events:
+    ├── guardrail.input_check (PASS)
+    ├── guardrail.output_check (PASS)
+    └── evaluation.groundedness (0.87)
+            </div>
+
+            <h3>Querying Agent Traces in Application Insights</h3>
+
+            <pre><code><span class="cmt">// Find slowest agent invocations in the last hour</span>
+<span class="type">dependencies</span>
+| <span class="kw">where</span> timestamp > <span class="fn">ago</span>(<span class="num">1h</span>)
+| <span class="kw">where</span> type == <span class="str">"AI Agent"</span>
+| <span class="kw">summarize</span>
+    AvgDuration = <span class="fn">avg</span>(duration),
+    P95Duration = <span class="fn">percentile</span>(duration, <span class="num">95</span>),
+    FailureRate = <span class="fn">countif</span>(success == <span class="kw">false</span>) * <span class="num">100.0</span> / <span class="fn">count</span>()
+    <span class="kw">by</span> target
+| <span class="kw">order by</span> P95Duration <span class="kw">desc</span>
+
+<span class="cmt">// Trace a specific agent invocation end-to-end</span>
+<span class="type">union</span> requests, dependencies, customEvents, traces
+| <span class="kw">where</span> operation_Id == <span class="str">"abc123"</span>
+| <span class="kw">project</span> timestamp, itemType, name, duration, success,
+         customDimensions
+| <span class="kw">order by</span> timestamp <span class="kw">asc</span>
+<span class="code-label">KQL</span></code></pre>
+
+            <div class="callout callout-warning">
+                <span class="callout-icon">⚠️</span>
+                <div>
+                    <p><strong>PII in Traces:</strong> Be careful not to log full prompts or completions to Application Insights if they may contain personal data. Use sampling and redaction strategies to maintain compliance with data privacy regulations.</p>
+                </div>
+            </div>
+
+            <!-- ═══════════ Section 7 ═══════════ -->
+            <div class="section-header" id="s7">
+                <span class="section-num">07</span>
+                <h2>Mini Hack: Build a Monitoring Dashboard</h2>
+            </div>
+
+            <div class="mini-hack">
+                <div class="mini-hack-label">🧪 Mini Hack</div>
+                <h3>Build a Monitoring Dashboard for Your Deployed Model</h3>
+                <p>
+                    In this hands-on exercise, you'll create a complete monitoring setup for a deployed AI model in Azure AI Foundry — from telemetry instrumentation to a live dashboard with drift detection alerts.
+                </p>
+
+                <h4 style="color: #5ce6ed; margin-top: 1.5rem;">What You'll Build</h4>
+                <ul>
+                    <li>OpenTelemetry instrumentation that captures latency, tokens, and errors</li>
+                    <li>A Log Analytics workspace with custom KQL queries for AI metrics</li>
+                    <li>An Azure Monitor dashboard with real-time latency, token, and error tiles</li>
+                    <li>Drift detection evaluations that run on a sample of production traffic</li>
+                    <li>Alert rules that fire when latency, errors, or drift exceed thresholds</li>
+                </ul>
+
+                <h4 style="color: #5ce6ed; margin-top: 1.5rem;">Steps</h4>
+                <ol style="padding-left: 1.5rem;">
+                    <li>Deploy a model endpoint in Azure AI Foundry</li>
+                    <li>Enable diagnostic settings to route telemetry to Log Analytics</li>
+                    <li>Instrument your application with the OpenTelemetry wrapper</li>
+                    <li>Send 50+ test requests to generate baseline metrics</li>
+                    <li>Create KQL queries for latency percentiles, token trends, error rates</li>
+                    <li>Build an Azure Monitor dashboard with 4+ tiles</li>
+                    <li>Run a drift evaluation against your baseline</li>
+                    <li>Create at least 2 alert rules (latency + errors)</li>
+                    <li>Simulate a degradation scenario and verify alerts fire</li>
+                </ol>
+
+                <h4 style="color: #5ce6ed; margin-top: 1.5rem;">Success Criteria</h4>
+                <ul>
+                    <li>✅ Dashboard displays real-time latency, token, and error metrics</li>
+                    <li>✅ KQL queries return accurate percentile data</li>
+                    <li>✅ Drift evaluation produces scores for at least 3 quality metrics</li>
+                    <li>✅ Alert fires when simulated degradation exceeds thresholds</li>
+                </ul>
+            </div>
+
+            <!-- ═══════════ Section 8 ═══════════ -->
+            <div class="section-header" id="s8">
+                <span class="section-num">08</span>
+                <h2>Best Practices &amp; Troubleshooting</h2>
+            </div>
+
+            <h3>Observability Best Practices</h3>
+
+            <ul class="checklist">
+                <li><strong>Start with the four golden signals:</strong> latency, traffic, errors, and saturation</li>
+                <li><strong>Use structured logging:</strong> Emit JSON logs with consistent fields like <code>model</code>, <code>trace_id</code>, <code>token_count</code></li>
+                <li><strong>Sample wisely:</strong> Log 100% of errors, but sample successful requests (e.g., 10%) to manage costs</li>
+                <li><strong>Establish baselines early:</strong> Capture quality and performance baselines before going to production</li>
+                <li><strong>Separate model metrics from infra metrics:</strong> Track model quality separately from compute health</li>
+                <li><strong>Set up anomaly detection:</strong> Use Azure Monitor's dynamic thresholds to catch unusual patterns</li>
+                <li><strong>Tag everything:</strong> Include deployment version, model version, and environment in all telemetry</li>
+                <li><strong>Automate drift detection:</strong> Run scheduled evaluations, don't rely on manual checks</li>
+            </ul>
+
+            <h3>Common Troubleshooting Scenarios</h3>
+
+            <div class="feature-panel">
+                <div class="feature-panel-header">🔧 Troubleshooting Guide</div>
+                <div class="feature-panel-body">
+                    <h4>Symptom: Latency suddenly increased</h4>
+                    <ol>
+                        <li>Check <strong>token usage</strong> — longer prompts cause higher latency</li>
+                        <li>Check <strong>rate limiting</strong> — 429 responses indicate throttling</li>
+                        <li>Check <strong>region health</strong> via Azure Status page</li>
+                        <li>Review recent <strong>prompt changes</strong> that may have increased complexity</li>
+                    </ol>
+
+                    <h4>Symptom: Quality scores dropping</h4>
+                    <ol>
+                        <li>Analyze <strong>input distribution</strong> — are users asking new types of questions?</li>
+                        <li>Check if the <strong>knowledge base</strong> is stale or missing recent information</li>
+                        <li>Verify if a <strong>model version update</strong> changed behavior</li>
+                        <li>Review <strong>system prompt</strong> — recent changes may have degraded quality</li>
+                    </ol>
+
+                    <h4>Symptom: High error rates</h4>
+                    <ol>
+                        <li>Check <strong>content filter</strong> blocks — review triggered categories</li>
+                        <li>Inspect <strong>token limits</strong> — requests exceeding context window</li>
+                        <li>Verify <strong>authentication</strong> — expired keys or managed identity issues</li>
+                        <li>Check <strong>endpoint health</strong> — model deployment status</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <span class="callout-icon">🎯</span>
+                <div>
+                    <p><strong>Key Takeaway:</strong> AI observability is not optional — it's the difference between a demo and a production system. Invest in monitoring early, establish baselines, and automate drift detection to maintain quality at scale.</p>
+                </div>
+            </div>
+
+            <!-- ═══════════ Video Section ═══════════ -->
+            <div class="section-header" id="video">
+                <span class="section-num">🎬</span>
+                <h2>Featured Video</h2>
+            </div>
+
+            <p>
+                Watch this deep dive on debugging and observing AI agents in production. Learn practical techniques for tracing failures, diagnosing latency issues, and building effective observability pipelines:
+            </p>
+
+            <div class="video-container">
+                <iframe
+                    src="https://www.youtube.com/embed/DpvR9ZgXK84"
+                    title="Debug Your AI Agents: Fix Failures Fast with Observability"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy"
+                ></iframe>
+            </div>
+
+            <div class="callout callout-info">
+                <span class="callout-icon">🎥</span>
+                <div>
+                    <p><strong>Video:</strong> <em>Debug Your AI Agents: Fix Failures Fast with Observability</em> — covers end-to-end tracing patterns, common failure modes, and real-world debugging workflows for AI agents running on Azure AI Foundry.</p>
+                </div>
+            </div>
+
+        </article>
+    </main>
+
+    <!-- ═══════════════════ BOTTOM NAV ═══════════════════ -->
+    <nav class="bottom-nav" aria-label="Module navigation">
+        <a href="../module-27/blog.html" class="nav-btn">
+            ← Module 27
+        </a>
+        <a href="../module-29/blog.html" class="nav-btn nav-btn-next">
+            Module 29 →
+        </a>
+    </nav>
+
+    <!-- ═══════════════════ FOOTER ═══════════════════ -->
+    <footer class="footer">
+        <p>
+            <strong>Azure AI Foundry: Zero to Hero</strong> — Module 28 of 45<br>
+            ARC 6: Deployment &amp; MLOps · April 2026<br>
+            <a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry</a> ·
+            <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">Documentation</a> ·
+            <a href="https://github.com/Azure-Samples" target="_blank" rel="noopener">Samples</a>
+        </p>
+    </footer>
+
+    <!-- ═══════════════════ SCROLL PROGRESS ═══════════════════ -->
+    <script>
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        });
+    </script>
+</body>
+</html>

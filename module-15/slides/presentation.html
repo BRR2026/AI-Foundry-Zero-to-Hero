@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 15: Evaluation Datasets & Quality Measurement — Slides</title>
+    <style>
+        /* ===== BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-green: #107c10;
+            --ms-yellow: #ffb900;
+            --ms-red: #d13438;
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-code: #0f1626;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b0;
+            --text-accent: #64b5f6;
+            --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== SLIDE CONTAINER ===== */
+        .slides-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .slide.exit-left {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        /* ===== SLIDE CONTENT ===== */
+        .slide-inner {
+            max-width: 1000px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .slide h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .slide h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-accent);
+            border-bottom: 2px solid var(--ms-blue);
+            padding-bottom: 8px;
+        }
+
+        .slide h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            color: var(--ms-blue);
+        }
+
+        .slide p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .slide ul, .slide ol {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        .slide li { margin-bottom: 8px; }
+        .slide li strong { color: var(--text-primary); }
+
+        .slide code {
+            font-family: var(--font-mono);
+            background: var(--bg-code);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #7dd3fc;
+        }
+
+        .slide pre {
+            background: var(--bg-code);
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #c8d6e5;
+            margin: 16px 0;
+        }
+
+        /* ===== SPECIAL ELEMENTS ===== */
+        .badge {
+            display: inline-block;
+            background: rgba(0,120,212,0.2);
+            border: 1px solid var(--ms-blue);
+            border-radius: 20px;
+            padding: 4px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ms-blue);
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card h4 {
+            color: var(--text-accent);
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .flow-node {
+            background: var(--bg-card);
+            border: 2px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-accent);
+        }
+
+        .flow-arrow {
+            color: var(--ms-blue);
+            font-size: 1.5rem;
+        }
+
+        .metric-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+
+        .metric-table th {
+            background: var(--ms-dark-blue);
+            color: #fff;
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .metric-table td {
+            padding: 8px 16px;
+            border-bottom: 1px solid #2a2a4a;
+            color: var(--text-secondary);
+        }
+
+        .metric-table tbody tr:hover { background: rgba(0,120,212,0.1); }
+
+        .highlight-box {
+            background: rgba(92,45,145,0.15);
+            border-left: 4px solid var(--ms-purple);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-size: 1rem;
+        }
+
+        .celebration {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        /* ===== CONTROLS ===== */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: #111128;
+            border-top: 1px solid #2a2a4a;
+        }
+
+        .controls button {
+            background: var(--bg-card);
+            border: 1px solid #2a2a4a;
+            color: var(--text-primary);
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover { background: var(--ms-blue); border-color: var(--ms-blue); }
+        .controls button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .controls button:disabled:hover { background: var(--bg-card); }
+
+        .slide-counter {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            transition: width 0.4s ease;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .slide { padding: 32px 24px; }
+            .slide h1 { font-size: 1.8rem; }
+            .slide h2 { font-size: 1.4rem; }
+            .slide p, .slide li { font-size: 1rem; }
+            .card-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="slides-wrapper">
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Slide 1: Title -->
+    <div class="slide active" data-slide="1">
+        <div class="slide-inner" style="text-align:center;">
+            <div class="badge">ARC 3 · DATA & RAG</div>
+            <h1>Evaluation Datasets &<br>Quality Measurement</h1>
+            <p class="subtitle">Module 15 of 45 · 🟢 Beginner Tier — Final Module</p>
+            <p style="color:var(--text-secondary); font-size:0.95rem;">Azure AI Foundry: Zero to Hero · April 2026</p>
+        </div>
+    </div>
+
+    <!-- Slide 2: Why Evaluation Matters -->
+    <div class="slide" data-slide="2">
+        <div class="slide-inner">
+            <h2>Why Evaluation Matters</h2>
+            <p>Without systematic evaluation, AI quality is guesswork.</p>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🔇 Silent Regressions</h4>
+                    <p>A model update degrades 20% of answers — nobody notices until users churn.</p>
+                </div>
+                <div class="card">
+                    <h4>📉 Prompt Drift</h4>
+                    <p>A prompt fix for one scenario breaks three others. No automated check catches it.</p>
+                </div>
+                <div class="card">
+                    <h4>🗣️ Anecdotal Quality</h4>
+                    <p>"It seems better" doesn't hold up in production reviews or compliance audits.</p>
+                </div>
+                <div class="card">
+                    <h4>📊 Data-Driven Alternative</h4>
+                    <p>Evaluation datasets provide hard numbers: confidence in every deployment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: The Evaluation Pipeline -->
+    <div class="slide" data-slide="3">
+        <div class="slide-inner">
+            <h2>The Evaluation Pipeline</h2>
+            <div class="flow-diagram">
+                <div class="flow-node">Eval Dataset</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Run Inference</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Score Outputs</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Track Metrics</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Detect Regressions</div>
+            </div>
+            <div class="highlight-box">
+                Trigger evaluations on every model update, prompt change, data refresh, and on a weekly schedule — even without changes.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Golden Datasets -->
+    <div class="slide" data-slide="4">
+        <div class="slide-inner">
+            <h2>Building Golden Datasets</h2>
+            <p>A golden dataset is your AI's "unit test suite" — curated input/output pairs that define expected behavior.</p>
+            <h3>Sources</h3>
+            <ul>
+                <li><strong>Real user conversations</strong> — mine production logs for common queries & failures</li>
+                <li><strong>Subject matter experts</strong> — craft questions covering critical knowledge areas</li>
+                <li><strong>Adversarial testing</strong> — include tricky, ambiguous, and out-of-scope queries</li>
+                <li><strong>Synthetic generation</strong> — use LLMs to generate variants (with human review)</li>
+            </ul>
+            <h3>Dataset Structure</h3>
+            <pre><code>{"query": "...", "context": "...", "ground_truth": "...", "category": "factual"}</code></pre>
+        </div>
+    </div>
+
+    <!-- Slide 5: Ground Truth -->
+    <div class="slide" data-slide="5">
+        <div class="slide-inner">
+            <h2>Ground Truth & Reference Answers</h2>
+            <p>Ground truth is the "correct" answer against which your AI's output is compared.</p>
+            <table class="metric-table">
+                <thead>
+                    <tr><th>Type</th><th>Use Case</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Exact Match</strong></td><td>Factual lookups</td><td>"Capital of France" → "Paris"</td></tr>
+                    <tr><td><strong>Semantic</strong></td><td>Paraphrase OK</td><td>Same meaning, different words</td></tr>
+                    <tr><td><strong>Key-Point</strong></td><td>Coverage check</td><td>"Mentions 3 security benefits"</td></tr>
+                    <tr><td><strong>Rubric-Based</strong></td><td>Graded quality</td><td>Excellent / Adequate / Insufficient</td></tr>
+                    <tr><td><strong>Constraint</strong></td><td>Format rules</td><td>"Under 200 words + code example"</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Slide 6: Built-in Evaluators -->
+    <div class="slide" data-slide="6">
+        <div class="slide-inner">
+            <h2>Built-in Evaluators</h2>
+            <p><code>azure-ai-evaluation</code> SDK provides pre-built evaluators:</p>
+            <table class="metric-table">
+                <thead>
+                    <tr><th>Evaluator</th><th>Measures</th><th>Scale</th><th>Needs GT?</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Groundedness</strong></td><td>Claims supported by context</td><td>1–5</td><td>No</td></tr>
+                    <tr><td><strong>Relevance</strong></td><td>Answer addresses the query</td><td>1–5</td><td>No</td></tr>
+                    <tr><td><strong>Coherence</strong></td><td>Well-organized and logical</td><td>1–5</td><td>No</td></tr>
+                    <tr><td><strong>Fluency</strong></td><td>Natural language quality</td><td>1–5</td><td>No</td></tr>
+                    <tr><td><strong>Similarity</strong></td><td>Closeness to ground truth</td><td>1–5</td><td>Yes</td></tr>
+                    <tr><td><strong>F1 Score</strong></td><td>Token overlap</td><td>0–1</td><td>Yes</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Slide 7: evaluate() Function -->
+    <div class="slide" data-slide="7">
+        <div class="slide-inner">
+            <h2>The evaluate() Function</h2>
+            <pre><code>from azure.ai.evaluation import evaluate
+from azure.ai.evaluation import (
+    GroundednessEvaluator, RelevanceEvaluator,
+    CoherenceEvaluator, FluencyEvaluator
+)
+
+results = evaluate(
+    data="golden_dataset.jsonl",
+    evaluators={
+        "groundedness": GroundednessEvaluator(...),
+        "relevance": RelevanceEvaluator(...),
+        "coherence": CoherenceEvaluator(...),
+        "fluency": FluencyEvaluator(...)
+    },
+    azure_ai_project=project
+)
+
+# Results logged to AI Foundry portal automatically!</code></pre>
+            <div class="highlight-box">
+                Pass <code>azure_ai_project</code> to log results to the AI Foundry portal for visualization and comparison.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: LLM-as-a-Judge -->
+    <div class="slide" data-slide="8">
+        <div class="slide-inner">
+            <h2>LLM-as-a-Judge Patterns</h2>
+            <p>Use a powerful LLM to evaluate another model's output with human-like assessments at scale.</p>
+            <div class="flow-diagram">
+                <div class="flow-node">Define Criteria</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Craft Judge Prompt</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Present Evidence</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Collect Scores</div>
+            </div>
+            <h3>Best Practices</h3>
+            <ul>
+                <li><strong>Use a stronger model as judge</strong> (GPT-4o judging GPT-4o-mini)</li>
+                <li><strong>Calibrate with human labels</strong> on 50–100 examples</li>
+                <li><strong>Request structured JSON</strong> output for parseable results</li>
+                <li><strong>Include reasoning</strong> to debug evaluation failures</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Slide 9: Judge Pitfalls -->
+    <div class="slide" data-slide="9">
+        <div class="slide-inner">
+            <h2>LLM-as-a-Judge: Watch Out For</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🔄 Self-Evaluation Bias</h4>
+                    <p>Models rate their own outputs more favorably. Use a different model as judge.</p>
+                </div>
+                <div class="card">
+                    <h4>📏 Verbosity Bias</h4>
+                    <p>Longer answers get higher scores regardless of quality. Normalize for length.</p>
+                </div>
+                <div class="card">
+                    <h4>🔀 Position Bias</h4>
+                    <p>Judges may prefer the first or last response. Swap order and test.</p>
+                </div>
+                <div class="card">
+                    <h4>🌀 Circular Reasoning</h4>
+                    <p>Same model for app and judge makes errors invisible. Use different models.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Tracking Quality Over Time -->
+    <div class="slide" data-slide="10">
+        <div class="slide-inner">
+            <h2>Tracking Quality Over Time</h2>
+            <p>A single snapshot tells you where you are. A trend tells you where you're going.</p>
+            <h3>When to Re-Evaluate</h3>
+            <ul>
+                <li><strong>Model changes</strong> — switching versions or providers</li>
+                <li><strong>Prompt updates</strong> — any modification to system prompts</li>
+                <li><strong>Data source changes</strong> — new documents, schema changes</li>
+                <li><strong>Configuration changes</strong> — temperature, top-p, chunk size</li>
+                <li><strong>Weekly schedule</strong> — even without changes (catch external drift)</li>
+            </ul>
+            <div class="highlight-box">
+                Record every evaluation run with metadata: model version, prompt version, dataset version, and timestamp.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Regression Detection -->
+    <div class="slide" data-slide="11">
+        <div class="slide-inner">
+            <h2>Regression Detection</h2>
+            <p>Automatically flag when quality drops below acceptable thresholds.</p>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🎯 Absolute Thresholds</h4>
+                    <p>Block deployment if groundedness &lt; 3.5. Simple and predictable.</p>
+                </div>
+                <div class="card">
+                    <h4>📉 Relative Delta</h4>
+                    <p>Flag if any metric drops &gt; 0.3 from previous run.</p>
+                </div>
+                <div class="card">
+                    <h4>📊 Rolling Averages</h4>
+                    <p>Compare against 5-run rolling average to catch gradual decline.</p>
+                </div>
+                <div class="card">
+                    <h4>🔍 Category-Level</h4>
+                    <p>Break down by question type — overall can hide topic-specific regressions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: CI/CD Gate -->
+    <div class="slide" data-slide="12">
+        <div class="slide-inner">
+            <h2>CI/CD Evaluation Gate</h2>
+            <pre><code>def evaluation_gate(results, thresholds):
+    failures = []
+    for metric, min_score in thresholds.items():
+        score = results["metrics"].get(metric, 0)
+        if score < min_score:
+            failures.append(f"❌ {metric}: {score:.2f}")
+
+    if failures:
+        print("🚫 GATE FAILED")
+        sys.exit(1)
+    else:
+        print("✅ GATE PASSED")
+        sys.exit(0)
+
+thresholds = {
+    "groundedness": 3.5,
+    "relevance": 3.5,
+    "coherence": 3.5
+}</code></pre>
+            <div class="highlight-box">
+                Integrate into your CI/CD pipeline to block deployments that fail quality checks automatically.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Mini Hack -->
+    <div class="slide" data-slide="13">
+        <div class="slide-inner">
+            <h2>🧪 Mini Hack Challenge</h2>
+            <p><strong>Create an Eval Dataset & Run a Quality Benchmark</strong></p>
+            <ol>
+                <li><strong>Build dataset</strong> — 20+ examples across 4 categories (20 min)</li>
+                <li><strong>Generate responses</strong> — Run inference with your AI Foundry deployment (10 min)</li>
+                <li><strong>Run evaluators</strong> — Groundedness, Relevance, Coherence, Similarity (10 min)</li>
+                <li><strong>Analyze results</strong> — Find & fix lowest-scoring examples (10 min)</li>
+                <li><strong>Stretch: Custom judge</strong> — Build an LLM-as-a-Judge evaluator (15 min)</li>
+            </ol>
+            <div class="highlight-box">
+                ✅ Success: 20+ examples, 4 evaluators run, 3 low-scoring examples analyzed, 1 metric improved
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Key Takeaways -->
+    <div class="slide" data-slide="14">
+        <div class="slide-inner">
+            <h2>Key Takeaways</h2>
+            <ul>
+                <li><strong>Golden datasets</strong> = unit tests for your AI — invest in quality annotations</li>
+                <li><strong>Automated pipelines</strong> provide consistent evaluation on every change</li>
+                <li><strong>LLM-as-a-Judge</strong> enables nuanced assessment at scale</li>
+                <li><strong><code>azure-ai-evaluation</code> SDK</strong> — pre-built evaluators + portal integration</li>
+                <li><strong>Track quality over time</strong> to catch gradual degradation</li>
+                <li><strong>CI/CD gates</strong> prevent regressions from reaching production</li>
+                <li><strong>Evaluation is continuous</strong> — not a one-time activity</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Slide 15: Next Module -->
+    <div class="slide" data-slide="15">
+        <div class="slide-inner" style="text-align:center;">
+            <div class="celebration">🎉🎓</div>
+            <h1>Beginner Tier Complete!</h1>
+            <p class="subtitle">You've completed 15 modules across ARC 1, 2, and 3.</p>
+            <div class="highlight-box" style="text-align:left; max-width:600px; margin:24px auto;">
+                <strong>🟡 Module 16 begins the Intermediate tier with ARC 4: AI Agents!</strong><br><br>
+                Build autonomous AI systems that reason, plan, use tools, and take actions on behalf of users.
+            </div>
+            <p style="margin-top:24px; font-size:1.1rem; color:var(--ms-blue);">
+                The Beginner tier gave you the building blocks.<br>
+                The Intermediate tier teaches you to build intelligent systems. 🚀
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Controls -->
+<div class="controls">
+    <button id="prevBtn" onclick="changeSlide(-1)" disabled>← Previous</button>
+    <span class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">15</span></span>
+    <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+    let currentSlide = 1;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    document.getElementById('totalSlides').textContent = totalSlides;
+
+    function showSlide(n) {
+        slides.forEach(slide => {
+            slide.classList.remove('active', 'exit-left');
+        });
+        slides[n - 1].classList.add('active');
+        document.getElementById('currentSlide').textContent = n;
+        document.getElementById('prevBtn').disabled = n === 1;
+        document.getElementById('nextBtn').disabled = n === totalSlides;
+
+        const progress = ((n - 1) / (totalSlides - 1)) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+    }
+
+    function changeSlide(direction) {
+        const next = currentSlide + direction;
+        if (next >= 1 && next <= totalSlides) {
+            currentSlide = next;
+            showSlide(currentSlide);
+        }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            e.preventDefault();
+            changeSlide(1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            changeSlide(-1);
+        } else if (e.key === 'Home') {
+            currentSlide = 1;
+            showSlide(currentSlide);
+        } else if (e.key === 'End') {
+            currentSlide = totalSlides;
+            showSlide(currentSlide);
+        }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', (e) => {
+        const delta = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(delta) > 50) {
+            changeSlide(delta < 0 ? 1 : -1);
+        }
+    });
+
+    showSlide(1);
+</script>
+
+</body>
+</html>

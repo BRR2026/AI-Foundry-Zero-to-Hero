@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 23: Connecting AI Foundry to Copilot Studio — Azure AI Foundry Zero to Hero Training Series">
+    <meta name="author" content="Azure AI Foundry Training">
+    <meta name="keywords" content="Azure AI Foundry, Copilot Studio, RAG Agent, Conversational AI, Microsoft Copilot, Plugin Development">
+    <title>Module 23: Connecting AI Foundry to Copilot Studio | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-light-purple: #e8d4f0;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --ms-red: #d13438;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-90: #323130;
+            --ms-gray-100: #201f1e;
+            --ms-gray-130: #605e5c;
+            --font-primary: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+            --max-width: 820px;
+            --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-primary);
+            color: var(--ms-gray-90);
+            background: var(--ms-gray-10);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Top Navigation Bar ── */
+        .top-nav {
+            background: var(--ms-gray-100);
+            color: #fff;
+            padding: 10px 32px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .top-nav a { color: #fff; text-decoration: none; opacity: 0.85; transition: opacity 0.2s; }
+        .top-nav a:hover { opacity: 1; }
+        .top-nav .ms-logo { font-weight: 700; font-size: 15px; opacity: 1; margin-right: 8px; }
+        .top-nav .nav-sep { opacity: 0.4; }
+        .top-nav .course-label { opacity: 0.6; }
+
+        /* ── Hero Section ── */
+        .hero {
+            background: linear-gradient(135deg, var(--ms-dark-blue) 0%, var(--ms-blue) 40%, var(--ms-purple) 100%);
+            color: #fff;
+            padding: 80px 32px 64px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(92,45,145,0.25) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+        .hero h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .hero .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        .hero-meta {
+            margin-top: 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+        /* ── Progress Indicator ── */
+        .progress-bar {
+            background: var(--ms-gray-20);
+            padding: 14px 32px;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+        .progress-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            color: var(--ms-gray-130);
+        }
+        .progress-track {
+            flex: 1;
+            height: 6px;
+            background: var(--ms-gray-30);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 51.1%;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        /* ── Main Content ── */
+        .content-wrapper {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 48px 32px 64px;
+        }
+
+        h2 {
+            font-size: 1.75em;
+            font-weight: 700;
+            color: var(--ms-gray-100);
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-blue);
+            display: inline-block;
+        }
+        h2:first-of-type { margin-top: 0; }
+
+        h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            margin: 32px 0 12px;
+        }
+
+        h4 {
+            font-size: 1.05em;
+            font-weight: 600;
+            color: var(--ms-purple);
+            margin: 24px 0 10px;
+        }
+
+        p { margin-bottom: 16px; }
+
+        a { color: var(--ms-blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        ul, ol { margin: 0 0 16px 24px; }
+        li { margin-bottom: 6px; }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            font-size: 15px;
+        }
+        .callout-title {
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .callout.info { background: #e7f3ff; border-color: var(--ms-blue); }
+        .callout.info .callout-title { color: var(--ms-blue); }
+        .callout.tip { background: #e6f7e6; border-color: var(--ms-green); }
+        .callout.tip .callout-title { color: var(--ms-green); }
+        .callout.warning { background: #fff8e1; border-color: var(--ms-orange); }
+        .callout.warning .callout-title { color: var(--ms-orange); }
+        .callout.important { background: #fde7e9; border-color: var(--ms-red); }
+        .callout.important .callout-title { color: var(--ms-red); }
+        .callout.purple { background: var(--ms-light-purple); border-color: var(--ms-purple); }
+        .callout.purple .callout-title { color: var(--ms-purple); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--ms-gray-100);
+            color: #d4d4d4;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+            line-height: 1.65;
+            position: relative;
+        }
+        pre .comment { color: #6a9955; }
+        pre .keyword { color: #569cd6; }
+        pre .string { color: #ce9178; }
+        pre .function { color: #dcdcaa; }
+        pre .type { color: #4ec9b0; }
+        pre .number { color: #b5cea8; }
+        pre .param { color: #9cdcfe; }
+
+        code {
+            font-family: var(--font-mono);
+            background: var(--ms-gray-20);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--ms-dark-blue);
+        }
+        pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+        .code-label {
+            display: inline-block;
+            background: var(--ms-purple);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: -4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 14.5px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        thead { background: var(--ms-dark-blue); color: #fff; }
+        th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--ms-gray-30); }
+        tbody tr:nth-child(even) { background: var(--ms-gray-20); }
+        tbody tr:hover { background: var(--ms-light-blue); }
+
+        /* ── Video Embed ── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            margin: 24px 0 32px;
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: 0;
+        }
+        .video-caption {
+            text-align: center;
+            font-size: 14px;
+            color: var(--ms-gray-130);
+            margin-top: -16px;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        /* ── Architecture Diagram ── */
+        .arch-diagram {
+            background: linear-gradient(135deg, #f0f6ff 0%, #f5f0fa 100%);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-diagram h4 {
+            color: var(--ms-dark-blue);
+            margin-bottom: 24px;
+            font-size: 1.1em;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .arch-box {
+            background: #fff;
+            border: 2px solid var(--ms-blue);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            box-shadow: var(--shadow-sm);
+            min-width: 130px;
+            text-align: center;
+        }
+        .arch-box.purple { border-color: var(--ms-purple); color: var(--ms-purple); }
+        .arch-box.green { border-color: var(--ms-green); color: var(--ms-green); }
+        .arch-arrow {
+            font-size: 22px;
+            color: var(--ms-blue);
+            font-weight: 700;
+        }
+
+        /* ── Step Cards ── */
+        .step-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            margin: 16px 0;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--ms-gray-30);
+            position: relative;
+            padding-left: 72px;
+        }
+        .step-number {
+            position: absolute;
+            left: 20px;
+            top: 22px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .step-card h4 { margin-top: 0; color: var(--ms-dark-blue); }
+
+        /* ── Feature Cards Grid ── */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+        .feature-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--ms-gray-30);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .feature-card .card-icon { font-size: 28px; margin-bottom: 12px; }
+        .feature-card h4 { margin-top: 0; font-size: 1em; color: var(--ms-dark-blue); }
+        .feature-card p { font-size: 14px; color: var(--ms-gray-130); margin-bottom: 0; }
+
+        /* ── Mini Hack Banner ── */
+        .mini-hack {
+            background: linear-gradient(135deg, var(--ms-purple) 0%, var(--ms-dark-blue) 100%);
+            color: #fff;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 40px 0;
+        }
+        .mini-hack h3 { color: #fff; margin-top: 0; font-size: 1.4em; }
+        .mini-hack p { opacity: 0.92; }
+        .mini-hack ul { opacity: 0.92; }
+        .mini-hack .hack-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 4px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        /* ── Learning Objectives ── */
+        .objectives {
+            background: linear-gradient(to right, var(--ms-light-blue), #fff);
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            margin: 24px 0;
+            border: 1px solid rgba(0,120,212,0.2);
+        }
+        .objectives h3 { color: var(--ms-dark-blue); margin-top: 0; }
+        .objectives li { margin-bottom: 8px; }
+        .objectives li::marker { color: var(--ms-blue); }
+
+        /* ── Checklist ── */
+        .checklist { list-style: none; margin-left: 0; padding-left: 0; }
+        .checklist li {
+            padding: 8px 0 8px 32px;
+            position: relative;
+        }
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 4px;
+            color: var(--ms-blue);
+            font-size: 16px;
+        }
+
+        /* ── Bottom Navigation ── */
+        .bottom-nav {
+            max-width: var(--max-width);
+            margin: 0 auto 48px;
+            padding: 0 32px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid var(--ms-gray-40);
+            border-radius: var(--radius);
+            padding: 16px 24px;
+            text-decoration: none;
+            color: var(--ms-gray-90);
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+            flex: 1;
+            max-width: 48%;
+        }
+        .nav-btn:hover { border-color: var(--ms-blue); color: var(--ms-blue); box-shadow: var(--shadow-md); text-decoration: none; }
+        .nav-btn.next { justify-content: flex-end; text-align: right; }
+        .nav-btn .nav-label { font-size: 11px; color: var(--ms-gray-130); font-weight: 400; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--ms-gray-100);
+            color: #fff;
+            padding: 40px 32px;
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        footer a { color: var(--ms-light-blue); }
+        footer .footer-links { margin-top: 12px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hero { padding: 48px 20px 40px; }
+            .hero h1 { font-size: 2em; }
+            .content-wrapper { padding: 32px 20px 48px; }
+            .bottom-nav { flex-direction: column; padding: 0 20px; }
+            .nav-btn { max-width: 100%; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+            h2 { font-size: 1.4em; }
+        }
+
+        /* ── Print Styles ── */
+        @media print {
+            .top-nav, .progress-bar, .bottom-nav, .video-container, footer { display: none; }
+            .hero { background: var(--ms-dark-blue) !important; padding: 32px; -webkit-print-color-adjust: exact; }
+            body { font-size: 11pt; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TOP NAVIGATION
+     ══════════════════════════════════════════════════════════════════ -->
+<nav class="top-nav">
+    <a href="#" class="ms-logo">Microsoft</a>
+    <span class="nav-sep">|</span>
+    <a href="#">Azure AI Foundry</a>
+    <span class="nav-sep">|</span>
+    <span class="course-label">Zero to Hero — 45-Module Training</span>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     HERO SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<header class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">ARC 5 · ORCHESTRATION &amp; INTEGRATION</div>
+        <h1>Connecting AI Foundry<br>to Copilot Studio</h1>
+        <p class="subtitle">Publish your Azure AI Foundry models and RAG agents as Copilot Studio plugins — bridging enterprise AI with low-code conversational experiences.</p>
+        <div class="hero-meta">
+            <span>📘 Module 23 of 45</span>
+            <span>⏱️ ~90 minutes</span>
+            <span>📅 April 2026</span>
+            <span>🎯 Intermediate–Advanced</span>
+        </div>
+    </div>
+</header>
+
+<!-- Progress Bar -->
+<div class="progress-bar">
+    <div class="progress-inner">
+        <span>Progress</span>
+        <div class="progress-track"><div class="progress-fill"></div></div>
+        <span><strong>23</strong> / 45 modules</span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════════ -->
+<main class="content-wrapper">
+
+    <!-- ── Learning Objectives ── -->
+    <div class="objectives">
+        <h3>🎯 Learning Objectives</h3>
+        <p>By the end of this module, you will be able to:</p>
+        <ol>
+            <li>Explain Copilot Studio's role in the Microsoft AI ecosystem and its core capabilities</li>
+            <li>Publish AI Foundry models and endpoints as Copilot Studio custom plugins</li>
+            <li>Design and build conversational experiences that leverage AI Foundry intelligence</li>
+            <li>Configure authentication and secure data flow between AI Foundry and Copilot Studio</li>
+            <li>Integrate a RAG-powered agent into a Copilot Studio bot for end-to-end deployment</li>
+        </ol>
+    </div>
+
+    <!-- ── Prerequisites ── -->
+    <div class="callout info">
+        <div class="callout-title">📋 Prerequisites</div>
+        <ul>
+            <li>Completed Module 22 (Event-Driven Architectures with AI Foundry)</li>
+            <li>An active Azure AI Foundry hub and project with a deployed model</li>
+            <li>Access to Microsoft Copilot Studio (trial or licensed environment)</li>
+            <li>Familiarity with REST APIs and OAuth 2.0 authentication concepts</li>
+            <li>A working RAG agent (from Module 14 or later) deployed to an endpoint</li>
+        </ul>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SECTION 1: COPILOT STUDIO OVERVIEW
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>1. Copilot Studio Overview and Capabilities</h2>
+
+    <p>Microsoft Copilot Studio is a low-code platform for building, customizing, and deploying AI-powered conversational agents (copilots). It sits at the intersection of Microsoft's Power Platform and its enterprise AI investments, enabling organizations to create intelligent bots without deep coding expertise while still allowing pro-code extensibility.</p>
+
+    <h3>1.1 What is Copilot Studio?</h3>
+
+    <p>Copilot Studio evolved from Power Virtual Agents and has been reimagined as the primary platform for creating and managing copilots across the Microsoft ecosystem. It provides a visual authoring canvas, built-in natural language understanding, and seamless integration with Microsoft 365, Dynamics 365, and Azure services.</p>
+
+    <div class="card-grid">
+        <div class="feature-card">
+            <div class="card-icon">🎨</div>
+            <h4>Visual Authoring</h4>
+            <p>Drag-and-drop topic and conversation flow designer with low-code logic branching.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">🧠</div>
+            <h4>Generative AI Answers</h4>
+            <p>Built-in generative answers using GPT models with grounded knowledge sources.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">🔌</div>
+            <h4>Plugin Ecosystem</h4>
+            <p>Extend copilots with custom plugins, connectors, and AI Foundry model endpoints.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">🌐</div>
+            <h4>Omnichannel Deployment</h4>
+            <p>Publish to Teams, web, Dynamics 365, Slack, Facebook, and custom channels.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">🔒</div>
+            <h4>Enterprise Security</h4>
+            <p>Entra ID authentication, DLP policies, environment-level governance, and audit logs.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">📊</div>
+            <h4>Built-in Analytics</h4>
+            <p>Session analytics, CSAT tracking, topic performance, and AI-driven conversation insights.</p>
+        </div>
+    </div>
+
+    <h3>1.2 Copilot Studio Architecture</h3>
+
+    <p>At its core, Copilot Studio uses a <strong>topic-based routing system</strong> enhanced with generative AI capabilities. When a user sends a message, the system evaluates trigger phrases, generative AI classifiers, and plugin definitions to route the conversation to the appropriate handler:</p>
+
+    <div class="arch-diagram">
+        <h4>Copilot Studio Message Processing Pipeline</h4>
+        <div class="arch-flow">
+            <div class="arch-box">User Message</div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box purple">Copilot Studio<br><small>Topic Router + AI</small></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box">Plugin / Action</div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box green">AI Foundry<br><small>Model Endpoint</small></div>
+        </div>
+    </div>
+
+    <h3>1.3 Where AI Foundry Fits In</h3>
+
+    <p>While Copilot Studio provides built-in generative answers, enterprises often need <strong>custom models, domain-specific RAG pipelines, and specialized agents</strong> built on Azure AI Foundry. The integration allows you to:</p>
+
+    <ul>
+        <li><strong>Use custom fine-tuned models</strong> deployed on AI Foundry as the intelligence layer behind Copilot Studio conversations</li>
+        <li><strong>Leverage RAG agents</strong> with proprietary data indexes for accurate, grounded responses</li>
+        <li><strong>Chain multiple AI Foundry endpoints</strong> together within a single copilot conversation flow</li>
+        <li><strong>Apply enterprise governance</strong> from both platforms — Copilot Studio DLP + AI Foundry content safety</li>
+    </ul>
+
+    <div class="callout tip">
+        <div class="callout-title">💡 Key Insight</div>
+        Think of Copilot Studio as the <strong>conversational front-end</strong> and Azure AI Foundry as the <strong>AI back-end</strong>. Together, they let you deliver sophisticated AI experiences through familiar chat interfaces without rebuilding everything from scratch.
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SECTION 2: PUBLISHING AI FOUNDRY MODELS AS COPILOT PLUGINS
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>2. Publishing AI Foundry Models as Copilot Plugins</h2>
+
+    <p>Copilot Studio's <strong>plugin framework</strong> enables you to expose any REST API — including AI Foundry model endpoints — as a callable action within your copilot. This section walks through the process of creating a custom connector plugin for an AI Foundry deployment.</p>
+
+    <h3>2.1 Understanding the Plugin Architecture</h3>
+
+    <p>Copilot Studio plugins are defined using <strong>OpenAPI specifications</strong> (Swagger) that describe the API contract. When a user's intent matches a plugin's description, Copilot Studio's orchestrator invokes the API and uses the response to formulate a reply.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Plugin Component</th>
+                <th>Purpose</th>
+                <th>AI Foundry Mapping</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>OpenAPI Spec</strong></td>
+                <td>Describes API endpoints and parameters</td>
+                <td>AI Foundry model inference endpoint</td>
+            </tr>
+            <tr>
+                <td><strong>Authentication</strong></td>
+                <td>Secures API calls</td>
+                <td>API key or Entra ID managed identity</td>
+            </tr>
+            <tr>
+                <td><strong>Plugin Description</strong></td>
+                <td>Tells the AI when to invoke this plugin</td>
+                <td>Model / agent purpose description</td>
+            </tr>
+            <tr>
+                <td><strong>Input Schema</strong></td>
+                <td>Defines required/optional parameters</td>
+                <td>Model input format (prompt, context)</td>
+            </tr>
+            <tr>
+                <td><strong>Output Schema</strong></td>
+                <td>Structures the response</td>
+                <td>Model output format (completion, citations)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2.2 Step-by-Step: Create the OpenAPI Specification</h3>
+
+    <p>First, create an OpenAPI 3.0 specification file that wraps your AI Foundry model endpoint. This tells Copilot Studio how to call your model:</p>
+
+    <div class="code-label">YAML — OpenAPI Spec for AI Foundry Plugin</div>
+    <pre><code><span class="keyword">openapi</span>: <span class="string">"3.0.1"</span>
+<span class="keyword">info</span>:
+  <span class="param">title</span>: <span class="string">"AI Foundry RAG Agent Plugin"</span>
+  <span class="param">description</span>: <span class="string">"Queries a RAG agent deployed on Azure AI Foundry for
+    grounded answers from enterprise knowledge bases."</span>
+  <span class="param">version</span>: <span class="string">"1.0.0"</span>
+<span class="keyword">servers</span>:
+  - <span class="param">url</span>: <span class="string">"https://{project-name}.{region}.inference.ml.azure.com"</span>
+    <span class="param">description</span>: <span class="string">"AI Foundry Inference Endpoint"</span>
+<span class="keyword">paths</span>:
+  <span class="string">/score</span>:
+    <span class="keyword">post</span>:
+      <span class="param">operationId</span>: <span class="string">"queryRAGAgent"</span>
+      <span class="param">summary</span>: <span class="string">"Query the enterprise RAG agent"</span>
+      <span class="param">description</span>: <span class="string">"Send a user question to the RAG agent which
+        searches the enterprise knowledge base and returns a grounded
+        answer with source citations."</span>
+      <span class="keyword">requestBody</span>:
+        <span class="param">required</span>: <span class="keyword">true</span>
+        <span class="keyword">content</span>:
+          <span class="string">application/json</span>:
+            <span class="keyword">schema</span>:
+              <span class="param">type</span>: <span class="type">object</span>
+              <span class="keyword">properties</span>:
+                <span class="param">question</span>:
+                  <span class="param">type</span>: <span class="type">string</span>
+                  <span class="param">description</span>: <span class="string">"The user's question"</span>
+                <span class="param">chat_history</span>:
+                  <span class="param">type</span>: <span class="type">array</span>
+                  <span class="param">description</span>: <span class="string">"Previous conversation turns"</span>
+                  <span class="keyword">items</span>:
+                    <span class="param">type</span>: <span class="type">object</span>
+              <span class="param">required</span>:
+                - <span class="string">question</span>
+      <span class="keyword">responses</span>:
+        <span class="string">"200"</span>:
+          <span class="param">description</span>: <span class="string">"Successful RAG response"</span>
+          <span class="keyword">content</span>:
+            <span class="string">application/json</span>:
+              <span class="keyword">schema</span>:
+                <span class="param">type</span>: <span class="type">object</span>
+                <span class="keyword">properties</span>:
+                  <span class="param">answer</span>:
+                    <span class="param">type</span>: <span class="type">string</span>
+                  <span class="param">citations</span>:
+                    <span class="param">type</span>: <span class="type">array</span>
+                    <span class="keyword">items</span>:
+                      <span class="param">type</span>: <span class="type">object</span></code></pre>
+
+    <h3>2.3 Registering the Plugin in Copilot Studio</h3>
+
+    <div class="step-card">
+        <div class="step-number">1</div>
+        <h4>Open Copilot Studio and Navigate to Plugins</h4>
+        <p>In your copilot project, go to <strong>Settings → Plugins → Add a plugin</strong>. Select <strong>"Custom connector"</strong> to register your AI Foundry endpoint as a plugin.</p>
+    </div>
+
+    <div class="step-card">
+        <div class="step-number">2</div>
+        <h4>Upload the OpenAPI Specification</h4>
+        <p>Upload your YAML or JSON OpenAPI spec file. Copilot Studio will parse the spec, extract endpoint definitions, parameter schemas, and generate a plugin configuration preview.</p>
+    </div>
+
+    <div class="step-card">
+        <div class="step-number">3</div>
+        <h4>Configure Authentication</h4>
+        <p>Set the authentication method — either <strong>API Key</strong> (inserted as a header) or <strong>OAuth 2.0 with Entra ID</strong> for managed identity. For production, Entra ID is strongly recommended.</p>
+    </div>
+
+    <div class="step-card">
+        <div class="step-number">4</div>
+        <h4>Test and Publish the Plugin</h4>
+        <p>Use the built-in test panel to send sample queries to the AI Foundry endpoint through Copilot Studio. Verify the response format and then enable the plugin for your copilot.</p>
+    </div>
+
+    <div class="callout warning">
+        <div class="callout-title">⚠️ Important: Plugin Descriptions Matter</div>
+        The <code>description</code> field in your OpenAPI spec is <strong>critically important</strong>. Copilot Studio's AI orchestrator uses it to decide when to invoke your plugin. Write clear, specific descriptions that explain <em>exactly</em> what your AI Foundry model does and what types of questions it can answer.
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SECTION 3: BUILDING CONVERSATIONAL EXPERIENCES
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>3. Building Conversational Experiences in Copilot Studio</h2>
+
+    <p>With your AI Foundry plugin registered, you can now build sophisticated conversational flows that combine Copilot Studio's visual authoring with AI Foundry's inference power.</p>
+
+    <h3>3.1 Designing Conversation Topics</h3>
+
+    <p>Copilot Studio organizes conversations around <strong>topics</strong> — self-contained conversational units with trigger phrases, logic nodes, and responses. When integrating AI Foundry, you'll typically create topics that:</p>
+
+    <ul>
+        <li><strong>Collect context</strong> from the user before calling the AI Foundry endpoint</li>
+        <li><strong>Invoke the plugin</strong> action with structured input</li>
+        <li><strong>Format the response</strong> including citations and follow-up suggestions</li>
+        <li><strong>Handle errors</strong> gracefully when the AI Foundry endpoint is unavailable</li>
+    </ul>
+
+    <h3>3.2 Example: Knowledge Base Q&amp;A Topic</h3>
+
+    <p>Below is a Power Fx expression used within a Copilot Studio topic node to call the AI Foundry plugin and process the response:</p>
+
+    <div class="code-label">Power Fx — Plugin Invocation in Topic</div>
+    <pre><code><span class="comment">// Invoke the AI Foundry RAG agent plugin</span>
+<span class="keyword">Set</span>(<span class="param">ragResponse</span>,
+    <span class="function">'AI Foundry RAG Agent Plugin'</span>.<span class="function">queryRAGAgent</span>({
+        question: <span class="param">System.Activity.Text</span>,
+        chat_history: <span class="param">Conversation.History</span>
+    })
+);
+
+<span class="comment">// Format the response with citations</span>
+<span class="keyword">If</span>(
+    <span class="function">IsBlank</span>(<span class="param">ragResponse</span>.answer),
+    <span class="string">"I couldn't find an answer. Let me connect you to a specialist."</span>,
+    <span class="function">Concatenate</span>(
+        <span class="param">ragResponse</span>.answer,
+        <span class="string">Char(10) &amp; Char(10) &amp; "📚 Sources:"</span>,
+        <span class="function">Concat</span>(
+            <span class="param">ragResponse</span>.citations,
+            <span class="function">Concatenate</span>(<span class="string">Char(10) &amp; "• "</span>, <span class="param">ThisRecord</span>.title)
+        )
+    )
+);</code></pre>
+
+    <h3>3.3 Multi-Turn Conversations with AI Foundry</h3>
+
+    <p>One of the most powerful patterns is maintaining <strong>conversation context</strong> across multiple turns. Copilot Studio can pass the full conversation history to your AI Foundry agent, enabling contextual follow-up questions:</p>
+
+    <div class="arch-diagram">
+        <h4>Multi-Turn Conversation Flow</h4>
+        <div class="arch-flow">
+            <div class="arch-box">User: "What's<br>our refund policy?"</div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box purple">Copilot Studio<br><small>+ Chat History</small></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box green">AI Foundry RAG<br><small>Grounded Answer</small></div>
+        </div>
+        <br>
+        <div class="arch-flow">
+            <div class="arch-box">User: "What<br>about for digital<br>products?"</div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box purple">Copilot Studio<br><small>+ Full History</small></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box green">AI Foundry RAG<br><small>Contextual Reply</small></div>
+        </div>
+    </div>
+
+    <h3>3.4 Generative Orchestration vs. Classic Topics</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Classic Topics</th>
+                <th>Generative Orchestration</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Routing</td>
+                <td>Trigger phrases (keyword-based)</td>
+                <td>AI-powered intent classification</td>
+            </tr>
+            <tr>
+                <td>Plugin invocation</td>
+                <td>Explicit action nodes</td>
+                <td>Automatic based on description</td>
+            </tr>
+            <tr>
+                <td>Context management</td>
+                <td>Manual variable passing</td>
+                <td>Automatic conversation memory</td>
+            </tr>
+            <tr>
+                <td>Best for AI Foundry</td>
+                <td>Deterministic workflows</td>
+                <td>Open-ended Q&amp;A scenarios</td>
+            </tr>
+            <tr>
+                <td>Fallback behavior</td>
+                <td>Configured escalation</td>
+                <td>Generative answer or escalation</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="callout tip">
+        <div class="callout-title">💡 Pro Tip: Generative Orchestration + Plugins</div>
+        When using generative orchestration, Copilot Studio's AI engine reads your plugin's OpenAPI description to determine when to invoke it automatically. This means a well-described AI Foundry plugin can be invoked intelligently <strong>without any manual topic configuration</strong> — the AI decides when to call it based on the user's intent.
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SECTION 4: AUTHENTICATION & DATA FLOW
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>4. Authentication and Data Flow Between Services</h2>
+
+    <p>Security is paramount when connecting Copilot Studio to AI Foundry. This section covers the authentication patterns and data flow architecture that ensure secure, compliant operation.</p>
+
+    <h3>4.1 Authentication Patterns</h3>
+
+    <div class="card-grid">
+        <div class="feature-card">
+            <div class="card-icon">🔑</div>
+            <h4>API Key Authentication</h4>
+            <p>Simplest approach — store the AI Foundry endpoint key in Copilot Studio's secure configuration. Suitable for development and testing environments.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">🛡️</div>
+            <h4>Entra ID (OAuth 2.0)</h4>
+            <p>Production-recommended. Uses managed identity with client credentials flow. No secrets stored in Copilot Studio — tokens are acquired dynamically.</p>
+        </div>
+        <div class="feature-card">
+            <div class="card-icon">👤</div>
+            <h4>User-Delegated Auth</h4>
+            <p>Passes the signed-in user's identity through to AI Foundry — enabling per-user content filtering and row-level security on data.</p>
+        </div>
+    </div>
+
+    <h3>4.2 Configuring Entra ID Authentication</h3>
+
+    <p>The recommended production pattern uses an <strong>Entra ID app registration</strong> to secure the connection between Copilot Studio and AI Foundry:</p>
+
+    <div class="code-label">BASH — Register the App and Configure Permissions</div>
+    <pre><code><span class="comment"># Step 1: Create an Entra ID app registration for the plugin</span>
+<span class="function">az</span> ad app create \
+  --display-name <span class="string">"Copilot-Studio-AIFoundry-Plugin"</span> \
+  --sign-in-audience <span class="string">"AzureADMyOrg"</span>
+
+<span class="comment"># Step 2: Create a service principal</span>
+<span class="function">az</span> ad sp create --id <span class="param">&lt;app-id&gt;</span>
+
+<span class="comment"># Step 3: Assign the Cognitive Services User role</span>
+<span class="comment"># This allows the plugin to call AI Foundry endpoints</span>
+<span class="function">az</span> role assignment create \
+  --assignee <span class="param">&lt;service-principal-id&gt;</span> \
+  --role <span class="string">"Cognitive Services User"</span> \
+  --scope <span class="string">"/subscriptions/&lt;sub-id&gt;/resourceGroups/&lt;rg&gt;/providers/Microsoft.CognitiveServices/accounts/&lt;account&gt;"</span>
+
+<span class="comment"># Step 4: Generate a client secret (store securely)</span>
+<span class="function">az</span> ad app credential reset \
+  --id <span class="param">&lt;app-id&gt;</span> \
+  --display-name <span class="string">"copilot-studio-secret"</span></code></pre>
+
+    <h3>4.3 End-to-End Data Flow</h3>
+
+    <div class="arch-diagram">
+        <h4>Secure Data Flow: Copilot Studio ↔ AI Foundry</h4>
+        <div class="arch-flow">
+            <div class="arch-box">End User<br><small>Teams / Web</small></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box">Copilot Studio<br><small>Entra ID Auth</small></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box purple">Custom Connector<br><small>OAuth 2.0 Token</small></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box green">AI Foundry<br><small>RBAC Validated</small></div>
+        </div>
+    </div>
+
+    <p>The data flow follows these security checkpoints:</p>
+
+    <ol>
+        <li><strong>User authenticates</strong> to Copilot Studio via Entra ID (SSO through Teams or web)</li>
+        <li><strong>Copilot Studio acquires a token</strong> using the plugin's app registration (client credentials or on-behalf-of flow)</li>
+        <li><strong>The token is sent</strong> in the Authorization header to the AI Foundry inference endpoint</li>
+        <li><strong>AI Foundry validates</strong> the token against its RBAC policies, checking role assignments</li>
+        <li><strong>The response traverses</strong> back through the same secure channel, with content safety applied at the AI Foundry layer</li>
+    </ol>
+
+    <h3>4.4 Data Residency and Compliance</h3>
+
+    <div class="callout important">
+        <div class="callout-title">🔐 Compliance Considerations</div>
+        <ul>
+            <li><strong>Data residency:</strong> Ensure both your Copilot Studio environment and AI Foundry project are deployed in the same Azure region to maintain data residency requirements</li>
+            <li><strong>DLP policies:</strong> Configure Power Platform DLP policies to control which connectors can be used together — place your AI Foundry connector in the "Business" group</li>
+            <li><strong>Audit logging:</strong> Both platforms generate audit logs — combine them in Microsoft Purview for unified compliance monitoring</li>
+            <li><strong>Content safety:</strong> AI Foundry's content safety filters remain active even when called via Copilot Studio, providing defense-in-depth</li>
+        </ul>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         VIDEO SECTION
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>5. Deep Dive Video</h2>
+
+    <p>Watch Shervin Shaffie (Microsoft Principal Tech Specialist) demonstrate multi-agent orchestration patterns in Copilot Studio, including how to connect external AI services like Azure AI Foundry:</p>
+
+    <div class="video-container">
+        <iframe
+            src="https://www.youtube.com/embed/WKKdBC2zM3k"
+            title="Multi-agent Orchestration in Microsoft Copilot Studio — Shervin Shaffie"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy">
+        </iframe>
+    </div>
+    <p class="video-caption">🎬 "Multi-agent Orchestration in Microsoft Copilot Studio" — Shervin Shaffie, Microsoft Principal Tech Specialist</p>
+
+    <h3>Key Takeaways from the Video</h3>
+    <ul>
+        <li>Multi-agent patterns enable <strong>specialized agents to collaborate</strong> within a single copilot</li>
+        <li>Copilot Studio's orchestration layer can <strong>route queries to the best-suited agent</strong> automatically</li>
+        <li>External agents (including AI Foundry deployments) integrate via the <strong>plugin and connector framework</strong></li>
+        <li>Agent handoff patterns allow <strong>seamless escalation</strong> between AI agents and human operators</li>
+    </ul>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SECTION 5: ADVANCED PATTERNS
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>6. Advanced Integration Patterns</h2>
+
+    <h3>6.1 Multi-Agent Routing with AI Foundry</h3>
+
+    <p>For complex enterprise scenarios, you can register <strong>multiple AI Foundry agents</strong> as separate plugins in Copilot Studio. The generative orchestrator will route each user query to the most appropriate agent:</p>
+
+    <div class="code-label">YAML — Multi-Agent Plugin Configuration</div>
+    <pre><code><span class="comment"># Plugin 1: HR Knowledge Agent</span>
+<span class="keyword">info</span>:
+  <span class="param">title</span>: <span class="string">"HR Knowledge Agent"</span>
+  <span class="param">description</span>: <span class="string">"Answers questions about company HR policies,
+    benefits, leave policies, and employee handbook topics."</span>
+<span class="keyword">servers</span>:
+  - <span class="param">url</span>: <span class="string">"https://hr-agent.eastus.inference.ml.azure.com"</span>
+
+<span class="comment"># Plugin 2: IT Support Agent</span>
+<span class="keyword">info</span>:
+  <span class="param">title</span>: <span class="string">"IT Support Agent"</span>
+  <span class="param">description</span>: <span class="string">"Helps employees troubleshoot IT issues,
+    reset passwords, request software, and manage devices."</span>
+<span class="keyword">servers</span>:
+  - <span class="param">url</span>: <span class="string">"https://it-agent.eastus.inference.ml.azure.com"</span>
+
+<span class="comment"># Plugin 3: Finance FAQ Agent</span>
+<span class="keyword">info</span>:
+  <span class="param">title</span>: <span class="string">"Finance FAQ Agent"</span>
+  <span class="param">description</span>: <span class="string">"Answers questions about expense policies,
+    procurement processes, budget approvals, and invoicing."</span>
+<span class="keyword">servers</span>:
+  - <span class="param">url</span>: <span class="string">"https://finance-agent.eastus.inference.ml.azure.com"</span></code></pre>
+
+    <h3>6.2 Adaptive Cards for Rich Responses</h3>
+
+    <p>Enhance your AI Foundry responses in Copilot Studio by rendering them as <strong>Adaptive Cards</strong> — rich, interactive UI elements that work across Teams, web, and mobile:</p>
+
+    <div class="code-label">JSON — Adaptive Card Template for RAG Response</div>
+    <pre><code>{
+  <span class="string">"type"</span>: <span class="string">"AdaptiveCard"</span>,
+  <span class="string">"$schema"</span>: <span class="string">"http://adaptivecards.io/schemas/adaptive-card.json"</span>,
+  <span class="string">"version"</span>: <span class="string">"1.5"</span>,
+  <span class="string">"body"</span>: [
+    {
+      <span class="string">"type"</span>: <span class="string">"TextBlock"</span>,
+      <span class="string">"text"</span>: <span class="string">"${ragResponse.answer}"</span>,
+      <span class="string">"wrap"</span>: <span class="keyword">true</span>
+    },
+    {
+      <span class="string">"type"</span>: <span class="string">"FactSet"</span>,
+      <span class="string">"facts"</span>: [
+        { <span class="string">"title"</span>: <span class="string">"Confidence"</span>, <span class="string">"value"</span>: <span class="string">"${ragResponse.confidence}%"</span> },
+        { <span class="string">"title"</span>: <span class="string">"Sources"</span>, <span class="string">"value"</span>: <span class="string">"${length(ragResponse.citations)} documents"</span> }
+      ]
+    }
+  ],
+  <span class="string">"actions"</span>: [
+    {
+      <span class="string">"type"</span>: <span class="string">"Action.OpenUrl"</span>,
+      <span class="string">"title"</span>: <span class="string">"📄 View Sources"</span>,
+      <span class="string">"url"</span>: <span class="string">"${ragResponse.citations[0].url}"</span>
+    },
+    {
+      <span class="string">"type"</span>: <span class="string">"Action.Submit"</span>,
+      <span class="string">"title"</span>: <span class="string">"👍 Helpful"</span>,
+      <span class="string">"data"</span>: { <span class="string">"feedback"</span>: <span class="string">"positive"</span> }
+    }
+  ]
+}</code></pre>
+
+    <h3>6.3 Error Handling and Fallback Patterns</h3>
+
+    <p>Robust conversational experiences need graceful error handling. Design your Copilot Studio topics to handle AI Foundry failures:</p>
+
+    <div class="code-label">Power Fx — Error Handling Pattern</div>
+    <pre><code><span class="comment">// Attempt to call AI Foundry with error handling</span>
+<span class="keyword">Set</span>(<span class="param">pluginResult</span>,
+    <span class="function">IfError</span>(
+        <span class="function">'AI Foundry RAG Agent Plugin'</span>.<span class="function">queryRAGAgent</span>({
+            question: <span class="param">System.Activity.Text</span>
+        }),
+        <span class="comment">// Fallback: Use built-in generative answers</span>
+        {
+            answer: <span class="string">"I'm experiencing a temporary issue with my knowledge base.
+                     Let me try answering with general knowledge."</span>,
+            citations: <span class="function">Blank</span>(),
+            fallback: <span class="keyword">true</span>
+        }
+    )
+);
+
+<span class="comment">// Log errors for monitoring</span>
+<span class="keyword">If</span>(<span class="param">pluginResult</span>.fallback,
+    <span class="function">Trace</span>(<span class="string">"AI Foundry plugin unavailable — used fallback"</span>,
+          <span class="type">TraceSeverity.Warning</span>)
+);</code></pre>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         MINI HACK
+         ══════════════════════════════════════════════════════════════ -->
+    <h2>7. Mini Hack</h2>
+
+    <div class="mini-hack">
+        <div class="hack-badge">🧪 Hands-On Challenge</div>
+        <h3>Publish Your RAG Agent as a Copilot Studio Bot</h3>
+        <p>Put everything together! In this mini hack, you'll take a RAG agent deployed on Azure AI Foundry and publish it as a fully functional Copilot Studio bot.</p>
+        <ul>
+            <li><strong>Step 1:</strong> Verify your AI Foundry RAG agent is deployed and the inference endpoint is accessible</li>
+            <li><strong>Step 2:</strong> Create the OpenAPI specification for your agent's endpoint</li>
+            <li><strong>Step 3:</strong> Register the plugin in Copilot Studio with API key authentication</li>
+            <li><strong>Step 4:</strong> Build a topic that invokes the plugin and formats responses with citations</li>
+            <li><strong>Step 5:</strong> Enable generative orchestration and test natural-language routing to your plugin</li>
+            <li><strong>Step 6:</strong> Publish the copilot to Microsoft Teams and test with real users</li>
+        </ul>
+        <p><strong>⏱️ Estimated Time:</strong> 45–60 minutes &nbsp;|&nbsp; <strong>Difficulty:</strong> Intermediate</p>
+    </div>
+
+    <!-- ── Key Takeaways ── -->
+    <h2>8. Key Takeaways</h2>
+
+    <div class="callout purple">
+        <div class="callout-title">🎯 Module Summary</div>
+        <ul>
+            <li><strong>Copilot Studio</strong> is Microsoft's low-code platform for building conversational AI — it provides the user-facing experience</li>
+            <li><strong>AI Foundry models</strong> are published as Copilot Studio plugins via OpenAPI specifications defining endpoints, parameters, and descriptions</li>
+            <li><strong>Generative orchestration</strong> enables intelligent routing — Copilot Studio's AI decides when to invoke your AI Foundry plugin based on user intent</li>
+            <li><strong>Authentication</strong> should use Entra ID with managed identity for production; API keys are acceptable for development</li>
+            <li><strong>Multi-agent patterns</strong> allow multiple AI Foundry agents to serve different domains within a single copilot</li>
+            <li><strong>Data governance</strong> applies at both layers — Copilot Studio DLP policies and AI Foundry content safety provide defense-in-depth</li>
+        </ul>
+    </div>
+
+    <!-- ── What's Next ── -->
+    <h3>What's Next?</h3>
+    <p>In <strong>Module 24</strong>, we'll explore <strong>advanced orchestration patterns</strong> — including how to build multi-step AI workflows that chain multiple AI Foundry endpoints together with logic, conditional branching, and human-in-the-loop approval gates.</p>
+
+    <!-- ── Further Reading ── -->
+    <h3>📚 Further Reading</h3>
+    <ul>
+        <li><a href="https://learn.microsoft.com/microsoft-copilot-studio/" target="_blank" rel="noopener">Microsoft Copilot Studio Documentation</a></li>
+        <li><a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a></li>
+        <li><a href="https://learn.microsoft.com/microsoft-copilot-studio/copilot-plugins-overview" target="_blank" rel="noopener">Copilot Studio Plugins Overview</a></li>
+        <li><a href="https://learn.microsoft.com/microsoft-copilot-studio/advanced-generative-actions" target="_blank" rel="noopener">Generative Orchestration in Copilot Studio</a></li>
+        <li><a href="https://learn.microsoft.com/entra/identity-platform/" target="_blank" rel="noopener">Microsoft Entra ID Platform Documentation</a></li>
+    </ul>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     BOTTOM NAVIGATION
+     ══════════════════════════════════════════════════════════════════ -->
+<nav class="bottom-nav">
+    <a href="../module-22/blog.html" class="nav-btn prev">
+        <span>←</span>
+        <span>
+            <span class="nav-label">Previous</span>
+            Module 22: Event-Driven Architectures
+        </span>
+    </a>
+    <a href="../module-24/blog.html" class="nav-btn next">
+        <span>
+            <span class="nav-label">Next</span>
+            Module 24: Advanced Orchestration Patterns
+        </span>
+        <span>→</span>
+    </a>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════════════════════ -->
+<footer>
+    <p><strong>Azure AI Foundry: Zero to Hero</strong> — A 45-Module Training Series</p>
+    <p>Module 23: Connecting AI Foundry to Copilot Studio &nbsp;|&nbsp; ARC 5: Orchestration &amp; Integration &nbsp;|&nbsp; April 2026</p>
+    <div class="footer-links">
+        <a href="#">Course Home</a>
+        <a href="#">GitHub Repository</a>
+        <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">AI Foundry Docs</a>
+        <a href="https://learn.microsoft.com/microsoft-copilot-studio/" target="_blank" rel="noopener">Copilot Studio Docs</a>
+        <a href="#">Report an Issue</a>
+    </div>
+    <p style="margin-top:16px; opacity:0.6;">© 2026 Microsoft. All rights reserved. This training content is provided for educational purposes.</p>
+</footer>
+
+</body>
+</html>

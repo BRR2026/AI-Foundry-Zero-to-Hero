@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 19: Custom Tools &amp; Function Calling — Presentation</title>
+<style>
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-green: #107c10;
+  --ms-red: #d13438;
+  --ms-orange: #ff8c00;
+  --ms-yellow: #fce100;
+  --bg-dark: #0d1117;
+  --bg-slide: #161b22;
+  --bg-code: #1e2430;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-accent: #58a6ff;
+  --border: #30363d;
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Slide container */
+.deck {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 80px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(60px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-slide);
+}
+
+.slide.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.slide.prev {
+  transform: translateX(-60px);
+}
+
+.slide-content {
+  max-width: 960px;
+  width: 100%;
+  text-align: left;
+}
+
+/* Typography */
+.slide h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+}
+
+.slide h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  border-bottom: 3px solid var(--ms-blue);
+  padding-bottom: 12px;
+  display: inline-block;
+}
+
+.slide h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--ms-blue);
+  margin: 20px 0 12px;
+}
+
+.slide p {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.slide ul, .slide ol {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-left: 28px;
+  margin-bottom: 16px;
+}
+
+.slide li { margin-bottom: 8px; }
+.slide li strong { color: var(--text-primary); }
+
+.slide code {
+  font-family: var(--mono);
+  background: var(--bg-code);
+  color: #79c0ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.slide pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin: 16px 0;
+}
+
+.slide pre code {
+  background: none;
+  padding: 0;
+  color: #e6edf3;
+}
+
+/* Accent colors in code */
+.k { color: #ff7b72; } /* keyword */
+.s { color: #a5d6ff; } /* string */
+.c { color: #8b949e; } /* comment */
+.f { color: #d2a8ff; } /* function */
+.t { color: #7ee787; } /* type */
+.n { color: #79c0ff; } /* number */
+.p { color: #ffa657; } /* param */
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.accent-text {
+  background: linear-gradient(90deg, #fce100, #ff8c00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  background: rgba(0,120,212,0.15);
+  color: var(--ms-blue);
+  border: 1px solid rgba(0,120,212,0.3);
+  padding: 4px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+/* Cards grid */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.card h4 {
+  font-size: 1rem;
+  color: var(--ms-blue);
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Flow diagram */
+.flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.flow-box {
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 120px;
+  border: 2px solid;
+}
+
+.flow-box.blue { background: rgba(0,120,212,0.15); border-color: var(--ms-blue); color: #58a6ff; }
+.flow-box.purple { background: rgba(92,45,145,0.15); border-color: var(--ms-purple); color: #d2a8ff; }
+.flow-box.green { background: rgba(16,124,16,0.15); border-color: var(--ms-green); color: #7ee787; }
+.flow-box.orange { background: rgba(255,140,0,0.15); border-color: var(--ms-orange); color: #ffa657; }
+.flow-box.red { background: rgba(209,52,56,0.15); border-color: var(--ms-red); color: #ff7b72; }
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  padding: 0 8px;
+}
+
+.flow-sub {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* Table */
+.slide table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.slide th {
+  background: rgba(0,120,212,0.2);
+  color: var(--ms-blue);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--ms-blue);
+}
+
+.slide td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.slide tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* Callout */
+.callout {
+  background: rgba(0,120,212,0.08);
+  border-left: 4px solid var(--ms-blue);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin: 16px 0;
+}
+
+.callout.warn {
+  background: rgba(255,140,0,0.08);
+  border-color: var(--ms-orange);
+}
+
+.callout.danger {
+  background: rgba(209,52,56,0.08);
+  border-color: var(--ms-red);
+}
+
+.callout p { margin: 0; font-size: 1rem; }
+
+/* Pyramid */
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0;
+}
+
+.pyramid-row {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid;
+}
+
+/* Two-column layout */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Slide number & navigation */
+.slide-number {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  z-index: 100;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-track {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  z-index: 100;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  transition: width 0.4s ease;
+}
+
+.nav-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  z-index: 100;
+}
+
+/* Title slide special */
+.slide.title-slide {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1040 100%);
+  text-align: center;
+}
+
+.slide.title-slide .slide-content { text-align: center; }
+.slide.title-slide h1 { font-size: 3.2rem; }
+.slide.title-slide p { text-align: center; }
+
+/* End slide */
+.slide.end-slide {
+  background: linear-gradient(135deg, #1a1040 0%, #0d1117 100%);
+  text-align: center;
+}
+
+.slide.end-slide .slide-content { text-align: center; }
+
+@media (max-width: 768px) {
+  .slide { padding: 32px 24px; }
+  .slide h1 { font-size: 1.8rem; }
+  .slide h2 { font-size: 1.4rem; }
+  .slide p, .slide li { font-size: 0.95rem; }
+  .two-col { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: 1fr; }
+  .flow { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ===== SLIDE 1: Title ===== -->
+<div class="slide title-slide active" data-slide="1">
+  <div class="slide-content">
+    <div class="badge">ARC 4 · AI AGENTS</div>
+    <h1>Custom Tools &amp;<br><span class="accent-text">Function Calling</span></h1>
+    <p style="font-size:1.3rem;margin-top:16px;">Module 19 · Azure AI Foundry: Zero to Hero</p>
+    <p style="font-size:0.95rem;margin-top:24px;">April 2026 · 45-Module Training Series</p>
+  </div>
+</div>
+
+<!-- ===== SLIDE 2: Agenda ===== -->
+<div class="slide" data-slide="2">
+  <div class="slide-content">
+    <h2>📋 Today's Agenda</h2>
+    <ol>
+      <li><strong>What is function calling?</strong> — The model-to-code bridge</li>
+      <li><strong>Defining custom functions</strong> — Tool schemas with JSON Schema</li>
+      <li><strong>Function calling patterns</strong> — Sequential, parallel, chained</li>
+      <li><strong>External connectivity</strong> — APIs, databases, microservices</li>
+      <li><strong>Error handling</strong> — Retries, circuit breakers, fallbacks</li>
+      <li><strong>Mini Hack</strong> — Weather checker + meeting booker agent</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ===== SLIDE 3: What Is Function Calling ===== -->
+<div class="slide" data-slide="3">
+  <div class="slide-content">
+    <h2>What Is Function Calling?</h2>
+    <p>The mechanism that turns a text generator into an <strong>active agent</strong>.</p>
+    <div class="flow">
+      <div class="flow-box blue">👤 User Query<span class="flow-sub">Natural language</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box purple">🤖 LLM Reasoning<span class="flow-sub">Selects tool + args</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box orange">⚙️ Your Code<span class="flow-sub">Executes function</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">📊 Result<span class="flow-sub">JSON response</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box blue">💬 Answer<span class="flow-sub">Natural language</span></div>
+    </div>
+    <div class="callout">
+      <p>⚡ <strong>Key insight:</strong> The model never executes code. It outputs a JSON request; your application runs the function and returns the result.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 4: Why Function Calling ===== -->
+<div class="slide" data-slide="4">
+  <div class="slide-content">
+    <h2>Why Function Calling Matters</h2>
+    <div class="cards">
+      <div class="card">
+        <h4>🌐 Live Data</h4>
+        <p>Fetch real-time weather, stock prices, system status — no stale training data</p>
+      </div>
+      <div class="card">
+        <h4>⚡ Real Actions</h4>
+        <p>Book meetings, send emails, update records — agents that actually do things</p>
+      </div>
+      <div class="card">
+        <h4>🔗 Integration</h4>
+        <p>Connect to REST APIs, databases, microservices — bridge the AI-to-enterprise gap</p>
+      </div>
+      <div class="card">
+        <h4>🧠 Business Logic</h4>
+        <p>Apply complex rules, calculations, and validations that models can't handle alone</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 5: Tool Definition Anatomy ===== -->
+<div class="slide" data-slide="5">
+  <div class="slide-content">
+    <h2>Anatomy of a Tool Definition</h2>
+    <pre><code>{
+  <span class="s">"type"</span>: <span class="s">"function"</span>,
+  <span class="s">"function"</span>: {
+    <span class="s">"name"</span>: <span class="s">"get_weather"</span>,           <span class="c">// Unique identifier</span>
+    <span class="s">"description"</span>: <span class="s">"Get current     // When to call</span>
+      <span class="s">weather for a city..."</span>,
+    <span class="s">"parameters"</span>: {                <span class="c">// JSON Schema</span>
+      <span class="s">"type"</span>: <span class="s">"object"</span>,
+      <span class="s">"properties"</span>: {
+        <span class="s">"city"</span>: { <span class="s">"type"</span>: <span class="s">"string"</span> },
+        <span class="s">"units"</span>: { <span class="s">"enum"</span>: [<span class="s">"celsius"</span>, <span class="s">"fahrenheit"</span>] }
+      },
+      <span class="s">"required"</span>: [<span class="s">"city"</span>],
+      <span class="s">"additionalProperties"</span>: <span class="k">false</span>
+    }
+  }
+}</code></pre>
+    <p>Three pillars: <strong>name</strong> (what), <strong>description</strong> (when/why), <strong>parameters</strong> (how)</p>
+  </div>
+</div>
+
+<!-- ===== SLIDE 6: JSON Schema Best Practices ===== -->
+<div class="slide" data-slide="6">
+  <div class="slide-content">
+    <h2>JSON Schema Best Practices</h2>
+    <table>
+      <tr><th>Practice</th><th>Why It Matters</th><th>Example</th></tr>
+      <tr><td><code>enum</code></td><td>Constrains to valid values</td><td><code>["celsius", "fahrenheit"]</code></td></tr>
+      <tr><td><code>pattern</code></td><td>Validates format</td><td><code>"^\\d{4}-\\d{2}-\\d{2}$"</code></td></tr>
+      <tr><td><code>min/max</code></td><td>Bounds numeric ranges</td><td><code>"minimum": 15, "maximum": 480</code></td></tr>
+      <tr><td><code>required</code></td><td>Ensures essential fields</td><td><code>["city", "date"]</code></td></tr>
+      <tr><td><code>additionalProperties: false</code></td><td>Prevents hallucinated fields</td><td>Always set on root</td></tr>
+    </table>
+    <div class="callout">
+      <p>💡 Keep schemas flat (max 2 levels). Deep nesting reduces model accuracy.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 7: Pattern 1 — Sequential ===== -->
+<div class="slide" data-slide="7">
+  <div class="slide-content">
+    <h2>Pattern 1: Sequential Calling</h2>
+    <p>Call one function → get result → decide next action → repeat</p>
+    <pre><code><span class="c"># Agent processes function calls one at a time</span>
+<span class="p">agent</span> = client.agents.create_agent(
+    model=<span class="s">"gpt-4o"</span>,
+    name=<span class="s">"scheduling-assistant"</span>,
+    instructions=<span class="s">"Check weather before outdoor meetings"</span>,
+    tools=[weather_tool, meeting_tool]
+)
+
+<span class="c"># Automatic function calling loop</span>
+<span class="p">run</span> = client.agents.create_and_process_run(
+    thread_id=thread.id,
+    agent_id=agent.id
+)</code></pre>
+    <p><strong>Use case:</strong> Weather check → if nice → book outdoor meeting</p>
+  </div>
+</div>
+
+<!-- ===== SLIDE 8: Pattern 2 — Parallel ===== -->
+<div class="slide" data-slide="8">
+  <div class="slide-content">
+    <h2>Pattern 2: Parallel Calling</h2>
+    <p>Model requests multiple independent functions simultaneously.</p>
+    <div class="flow">
+      <div class="flow-box blue">User: "Weather in<br>3 cities?"</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box orange" style="display:flex;flex-direction:column;gap:4px;">
+        <span>get_weather("Seattle")</span>
+        <span>get_weather("Portland")</span>
+        <span>get_weather("Vancouver")</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">Combined<br>Response</div>
+    </div>
+    <pre><code><span class="k">async def</span> <span class="f">handle_parallel</span>(tool_calls):
+    tasks = [dispatch(call) <span class="k">for</span> call <span class="k">in</span> tool_calls]
+    results = <span class="k">await</span> asyncio.gather(*tasks)
+    <span class="k">return</span> results</code></pre>
+    <p><strong>Benefit:</strong> Reduces latency — all calls execute concurrently</p>
+  </div>
+</div>
+
+<!-- ===== SLIDE 9: Pattern 3 — Chained ===== -->
+<div class="slide" data-slide="9">
+  <div class="slide-content">
+    <h2>Pattern 3: Chained (Multi-Turn)</h2>
+    <p>Results from one call inform the next. The model reasons between steps.</p>
+    <div class="flow">
+      <div class="flow-box blue">get_weather<span class="flow-sub">Step 1</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box purple">LLM Decides<span class="flow-sub">"Weather is good"</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box orange">check_avail<span class="flow-sub">Step 2</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">book_meeting<span class="flow-sub">Step 3</span></div>
+    </div>
+    <div class="callout">
+      <p>🔑 Use <code>create_and_process_run()</code> for automatic chaining, or <code>create_run()</code> for manual control with custom logging/approval gates.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 10: External APIs ===== -->
+<div class="slide" data-slide="10">
+  <div class="slide-content">
+    <h2>Connecting to External APIs</h2>
+    <pre><code><span class="k">import</span> httpx
+
+<span class="k">async def</span> <span class="f">get_weather</span>(city: <span class="t">str</span>, units: <span class="t">str</span> = <span class="s">"celsius"</span>) -> <span class="t">dict</span>:
+    api_key = get_secret_from_keyvault(<span class="s">"weather-api-key"</span>)
+
+    <span class="k">async with</span> httpx.AsyncClient(timeout=<span class="n">10.0</span>) <span class="k">as</span> client:
+        resp = <span class="k">await</span> client.get(
+            <span class="s">"https://api.weather.com/v2/current"</span>,
+            params={<span class="s">"q"</span>: city, <span class="s">"appid"</span>: api_key}
+        )
+        resp.raise_for_status()
+
+    <span class="k">return</span> {<span class="s">"city"</span>: city, <span class="s">"temp"</span>: data[<span class="s">"main"</span>][<span class="s">"temp"</span>]}</code></pre>
+    <div class="callout warn">
+      <p>🔐 <strong>Security:</strong> Always store API keys in Azure Key Vault. Never hard-code secrets. Use parameterized queries for databases.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 11: Function Router ===== -->
+<div class="slide" data-slide="11">
+  <div class="slide-content">
+    <h2>The Function Router Pattern</h2>
+    <pre><code><span class="k">class</span> <span class="t">FunctionRouter</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self):
+        self._registry: <span class="t">dict</span>[<span class="t">str</span>, <span class="t">Callable</span>] = {}
+
+    <span class="k">def</span> <span class="f">register</span>(self, name: <span class="t">str</span>, func: <span class="t">Callable</span>):
+        self._registry[name] = func
+
+    <span class="k">async def</span> <span class="f">dispatch</span>(self, tool_call) -> <span class="t">str</span>:
+        func = self._registry.get(tool_call.function.name)
+        <span class="k">if not</span> func:
+            <span class="k">return</span> json.dumps({<span class="s">"error"</span>: <span class="s">"Unknown function"</span>})
+        <span class="k">try</span>:
+            result = <span class="k">await</span> func(**json.loads(tool_call.function.arguments))
+            <span class="k">return</span> json.dumps(result)
+        <span class="k">except</span> <span class="t">Exception</span> <span class="k">as</span> e:
+            <span class="k">return</span> json.dumps({<span class="s">"error"</span>: str(e)})</code></pre>
+    <p>📌 Centralizes dispatch, error wrapping, and extensibility.</p>
+  </div>
+</div>
+
+<!-- ===== SLIDE 12: Error Handling ===== -->
+<div class="slide" data-slide="12">
+  <div class="slide-content">
+    <h2>Error Handling Pyramid</h2>
+    <div class="pyramid">
+      <div class="pyramid-row" style="min-width:220px;background:rgba(209,52,56,0.15);border-color:var(--ms-red);color:#ff7b72;">🛡️ Input Validation</div>
+      <div class="pyramid-row" style="min-width:300px;background:rgba(255,140,0,0.15);border-color:var(--ms-orange);color:#ffa657;">⏱️ Timeouts &amp; Retries</div>
+      <div class="pyramid-row" style="min-width:380px;background:rgba(92,45,145,0.15);border-color:var(--ms-purple);color:#d2a8ff;">🔄 Circuit Breaker</div>
+      <div class="pyramid-row" style="min-width:460px;background:rgba(0,120,212,0.15);border-color:var(--ms-blue);color:#58a6ff;">🔀 Fallback &amp; Degradation</div>
+      <div class="pyramid-row" style="min-width:540px;background:rgba(16,124,16,0.15);border-color:var(--ms-green);color:#7ee787;">📝 Structured Error Responses</div>
+    </div>
+    <p>Defense-in-depth: every layer catches what the layer above misses.</p>
+  </div>
+</div>
+
+<!-- ===== SLIDE 13: Retry & Circuit Breaker ===== -->
+<div class="slide" data-slide="13">
+  <div class="slide-content">
+    <h2>Retry &amp; Circuit Breaker</h2>
+    <div class="two-col">
+      <div>
+        <h3>Exponential Backoff</h3>
+        <pre><code><span class="k">for</span> attempt <span class="k">in</span> range(retries):
+  <span class="k">try</span>:
+    <span class="k">return await</span> func()
+  <span class="k">except</span> TransientError:
+    delay = base * (2 ** attempt)
+    <span class="k">await</span> sleep(delay)</code></pre>
+        <p>Handles transient failures with increasing wait times + jitter.</p>
+      </div>
+      <div>
+        <h3>Circuit Breaker</h3>
+        <pre><code><span class="c"># States:</span>
+CLOSED  → healthy, allow calls
+OPEN    → failing, block calls
+HALF    → test with single call
+
+<span class="c"># Triggers:</span>
+3+ failures → OPEN
+timeout expires → HALF-OPEN
+success → CLOSED</code></pre>
+        <p>Prevents cascade failures when services are down.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 14: Structured Errors ===== -->
+<div class="slide" data-slide="14">
+  <div class="slide-content">
+    <h2>Structured Error Responses</h2>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--ms-green);">✅ Good</h3>
+        <pre><code>{
+  <span class="s">"error"</span>: <span class="s">"service_unavailable"</span>,
+  <span class="s">"message"</span>: <span class="s">"Weather API 503"</span>,
+  <span class="s">"retry_after"</span>: <span class="n">30</span>,
+  <span class="s">"fallback_data"</span>: {
+    <span class="s">"last_known_temp"</span>: <span class="n">18</span>,
+    <span class="s">"data_age_min"</span>: <span class="n">45</span>
+  }
+}</code></pre>
+      </div>
+      <div>
+        <h3 style="color:var(--ms-red);">❌ Bad</h3>
+        <pre><code><span class="s">"ConnectionError:
+ HTTPSConnectionPool(
+  host='api.weather.com',
+  port=443
+ ): Max retries exceeded
+ with url: /v2/current"</span></code></pre>
+      </div>
+    </div>
+    <div class="callout">
+      <p>💡 Include <code>fallback_data</code> so the model can still provide an approximate answer.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 15: Mini Hack ===== -->
+<div class="slide" data-slide="15">
+  <div class="slide-content">
+    <h2>🛠️ Mini Hack: Weather + Meeting Agent</h2>
+    <p>Build a multi-tool agent end-to-end:</p>
+    <ol>
+      <li><strong>Define tools</strong> — <code>get_weather</code> + <code>book_meeting</code> schemas</li>
+      <li><strong>Implement handlers</strong> — REST API + calendar integration</li>
+      <li><strong>Build router</strong> — Dispatch with error wrapping</li>
+      <li><strong>Create agent</strong> — Register tools, set instructions</li>
+      <li><strong>Add resilience</strong> — Retries + circuit breaker</li>
+      <li><strong>Test chaining</strong> — "Check weather → book if sunny"</li>
+    </ol>
+    <div class="callout">
+      <p>🎯 <strong>Success:</strong> Agent chains weather → meeting decisions, handles API failures gracefully, returns structured errors.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 16: Wrap Up ===== -->
+<div class="slide end-slide" data-slide="16">
+  <div class="slide-content">
+    <div class="badge">MODULE 19 COMPLETE</div>
+    <h1><span class="gradient-text">Key Takeaways</span></h1>
+    <ul style="list-style:none;margin:24px 0;text-align:left;max-width:600px;margin-left:auto;margin-right:auto;">
+      <li style="padding:8px 0;">✅ Function calling bridges LLMs to real-world actions</li>
+      <li style="padding:8px 0;">✅ JSON Schema is the language of tool definitions</li>
+      <li style="padding:8px 0;">✅ Sequential, parallel, and chained patterns cover all use cases</li>
+      <li style="padding:8px 0;">✅ Security: Key Vault, parameterized queries, least-privilege</li>
+      <li style="padding:8px 0;">✅ Resilience: retries → circuit breakers → structured errors</li>
+    </ul>
+    <p style="margin-top:32px;font-size:1.1rem;">
+      <strong>Next:</strong> Module 20 — Agent Memory &amp; State Management →
+    </p>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation UI -->
+<div class="slide-number" id="slideNumber">1 / 16</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="nav-hint">← → Arrow keys to navigate</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let current = 0;
+
+  function goTo(index) {
+    if (index < 0 || index >= totalSlides) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add(index > current ? 'prev' : '');
+    slides.forEach(s => s.classList.remove('prev'));
+    current = index;
+    slides[current].classList.add('active');
+    if (current > 0) slides[current - 1].classList.add('prev');
+    document.getElementById('slideNumber').textContent = (current + 1) + ' / ' + totalSlides;
+    document.getElementById('progressFill').style.width = ((current + 1) / totalSlides * 100) + '%';
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goTo(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goTo(totalSlides - 1);
+    }
+  });
+
+  // Touch / swipe support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? goTo(current + 1) : goTo(current - 1);
+    }
+  });
+
+  // Click navigation (left third = back, right two-thirds = forward)
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('a, button, pre, code')) return;
+    const x = e.clientX / window.innerWidth;
+    x < 0.33 ? goTo(current - 1) : goTo(current + 1);
+  });
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>

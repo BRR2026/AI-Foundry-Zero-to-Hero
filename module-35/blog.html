@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 35: Securing AI Workloads End-to-End — Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-bg: #ffffff;
+            --ms-text: #1a1a1a;
+            --ms-text-secondary: #505050;
+            --ms-border: #e1e1e1;
+            --ms-code-bg: #1e1e1e;
+            --ms-callout-blue: #f0f8ff;
+            --ms-callout-yellow: #fffbeb;
+            --ms-callout-green: #f0fdf4;
+            --ms-callout-red: #fef2f2;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --content-width: 780px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ms-text);
+            background: #f5f5f5;
+            line-height: 1.75;
+            font-size: 16px;
+        }
+
+        /* ── Progress Bar ── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+
+        /* ── Top Nav ── */
+        .top-nav {
+            background: #1a1a1a;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .top-nav .ms-logo {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-nav .ms-logo svg { width: 20px; height: 20px; }
+        .top-nav .blog-title {
+            color: #b3b3b3;
+            font-size: 14px;
+            padding-left: 24px;
+            border-left: 1px solid #444;
+        }
+        .top-nav .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+        }
+        .top-nav .nav-links a {
+            color: #b3b3b3;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-links a:hover { color: #fff; }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, #0a2540 0%, #1a1a2e 40%, #5c2d91 100%);
+            padding: 60px 24px 50px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(92,45,145,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            max-width: var(--content-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+        .hero .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .hero .meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero .meta .avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .hero .meta .author-info .name { font-weight: 600; }
+        .hero .meta .divider { opacity: 0.4; }
+        .hero .meta .reading-time { display: flex; align-items: center; gap: 4px; }
+
+        /* ── Main Layout ── */
+        .main-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+        }
+
+        /* ── Table of Contents Sidebar ── */
+        .toc {
+            position: sticky;
+            top: 60px;
+            align-self: start;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .toc h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .toc ul { list-style: none; }
+        .toc ul li { margin-bottom: 6px; }
+        .toc ul li a {
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            line-height: 1.5;
+            display: block;
+            padding: 3px 0 3px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .toc ul li a:hover,
+        .toc ul li a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+        }
+
+        /* ── Article Content ── */
+        .article {
+            background: var(--ms-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 48px 56px;
+            min-width: 0;
+        }
+
+        .article h2 {
+            font-size: 26px;
+            font-weight: 600;
+            margin: 48px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-light-blue);
+            color: var(--ms-dark-blue);
+        }
+        .article h2:first-child { margin-top: 0; }
+
+        .article h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 32px 0 12px;
+            color: var(--ms-text);
+        }
+
+        .article h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 24px 0 10px;
+            color: var(--ms-text);
+        }
+
+        .article p {
+            margin-bottom: 16px;
+            color: var(--ms-text);
+        }
+
+        .article a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .article a:hover { border-bottom-color: var(--ms-blue); }
+
+        .article strong { font-weight: 600; }
+
+        .article ul, .article ol {
+            margin: 0 0 16px 24px;
+        }
+        .article li { margin-bottom: 6px; }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .callout-blue {
+            background: var(--ms-callout-blue);
+            border-left: 4px solid var(--ms-blue);
+        }
+        .callout-yellow {
+            background: var(--ms-callout-yellow);
+            border-left: 4px solid var(--ms-warning);
+        }
+        .callout-green {
+            background: var(--ms-callout-green);
+            border-left: 4px solid var(--ms-success);
+        }
+        .callout-red {
+            background: var(--ms-callout-red);
+            border-left: 4px solid var(--ms-error);
+        }
+        .callout .callout-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* ── Code Blocks ── */
+        .code-block {
+            background: var(--ms-code-bg);
+            color: #d4d4d4;
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin: 16px 0 24px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+            position: relative;
+        }
+        .code-block .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: #333;
+            color: #999;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .code-block .kw { color: #569cd6; }
+        .code-block .str { color: #ce9178; }
+        .code-block .cm { color: #6a9955; }
+        .code-block .fn { color: #dcdcaa; }
+        .code-block .num { color: #b5cea8; }
+        .code-block .param { color: #9cdcfe; }
+        .code-block .type { color: #4ec9b0; }
+        .code-block .op { color: #d4d4d4; }
+
+        /* ── Diagram / Architecture Boxes ── */
+        .architecture-diagram {
+            background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+            border: 2px solid var(--ms-light-blue);
+            border-radius: 8px;
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .architecture-diagram .diagram-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+        .arch-box {
+            background: white;
+            border: 2px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            min-width: 100px;
+            text-align: center;
+        }
+        .arch-box.secure {
+            border-color: var(--ms-success);
+            background: #f0fdf4;
+        }
+        .arch-box.vault {
+            border-color: var(--ms-purple);
+            background: #f5f0ff;
+        }
+        .arch-box.network {
+            border-color: #0078d4;
+            background: #e8f4fd;
+        }
+        .arch-arrow {
+            font-size: 20px;
+            color: var(--ms-blue);
+            font-weight: bold;
+        }
+
+        /* ── Video Container ── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 24px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ── Tables ── */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .styled-table thead th {
+            background: var(--ms-dark-blue);
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .styled-table tbody td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--ms-border);
+        }
+        .styled-table tbody tr:hover {
+            background: var(--ms-callout-blue);
+        }
+
+        /* ── Security Badge Styles ── */
+        .security-layer {
+            background: linear-gradient(135deg, #0a2540, #1a1a2e);
+            border-radius: 12px;
+            padding: 28px;
+            margin: 24px 0;
+            color: #e0e0e0;
+        }
+        .security-layer h4 {
+            color: #00d4aa;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .security-layer p, .security-layer li {
+            color: #c0c0c0;
+        }
+        .security-layer ul {
+            margin: 8px 0 0 20px;
+        }
+        .security-layer code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 13px;
+            color: #7dd3fc;
+        }
+
+        /* ── Threat Model Grid ── */
+        .threat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .threat-card {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .threat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .threat-card .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .threat-card h5 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--ms-dark-blue);
+        }
+        .threat-card p {
+            font-size: 12px;
+            color: var(--ms-text-secondary);
+            line-height: 1.4;
+        }
+
+        /* ── Checklist ── */
+        .checklist {
+            list-style: none;
+            margin: 12px 0 20px 0;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0 8px 32px;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 4px;
+            top: 8px;
+            font-size: 16px;
+        }
+        .checklist li.done::before {
+            content: '☑';
+            color: var(--ms-success);
+        }
+
+        /* ── Module Navigation ── */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0 0;
+            padding: 24px 0;
+            border-top: 2px solid var(--ms-border);
+        }
+        .module-nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .module-nav a:hover {
+            background: var(--ms-callout-blue);
+        }
+        .module-nav .disabled {
+            color: #999;
+            pointer-events: none;
+        }
+
+        /* ── Author Card ── */
+        .author-card {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 40px 0 24px;
+        }
+        .author-card .avatar-lg {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            flex-shrink: 0;
+        }
+        .author-card h4 { margin-bottom: 4px; }
+        .author-card p {
+            color: var(--ms-text-secondary);
+            font-size: 14px;
+        }
+
+        /* ── Related Posts ── */
+        .related-posts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0 24px;
+        }
+        .related-card {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .related-card:hover {
+            border-color: var(--ms-blue);
+            box-shadow: 0 2px 8px rgba(0,120,212,0.1);
+        }
+        .related-card .module-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ms-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .related-card h4 {
+            font-size: 15px;
+            color: var(--ms-text);
+            margin-top: 4px;
+        }
+
+        /* ── Footer ── */
+        .site-footer {
+            text-align: center;
+            padding: 32px 24px;
+            color: var(--ms-text-secondary);
+            font-size: 13px;
+            background: #1a1a1a;
+            color: #888;
+        }
+
+        /* ── Back to Top ── */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+                padding: 20px 16px;
+            }
+            .toc { display: none; }
+            .article { padding: 28px 20px; }
+            .hero h1 { font-size: 28px; }
+            .hero .meta { flex-wrap: wrap; }
+            .related-posts { grid-template-columns: 1fr; }
+            .module-nav { flex-direction: column; gap: 12px; }
+            .threat-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+    <div class="top-nav-inner">
+        <div class="ms-logo">
+            <svg viewBox="0 0 23 23"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
+            Microsoft
+        </div>
+        <span class="blog-title">Azure AI Foundry — Zero to Hero</span>
+        <div class="nav-links">
+            <a href="#">Docs</a>
+            <a href="#">AI Foundry</a>
+            <a href="#">Learn</a>
+            <a href="#">Community</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ── Hero Section ── -->
+<header class="hero">
+    <div class="hero-inner">
+        <span class="series-badge">ARC 7 · SECURITY &amp; GOVERNANCE</span>
+        <h1>Securing AI Workloads End-to-End</h1>
+        <p class="subtitle">Module 35 of 45 — Master network isolation, private connectivity, firewall rules, and secrets management to protect your Azure AI Foundry deployments from edge to core.</p>
+        <div class="meta">
+            <div class="avatar">🔒</div>
+            <div class="author-info">
+                <div class="name">Zero to Hero Training Team</div>
+                <div>Security &amp; Infrastructure Series</div>
+            </div>
+            <span class="divider">|</span>
+            <span>April 2026</span>
+            <span class="divider">|</span>
+            <span class="reading-time">🕐 25 min read</span>
+        </div>
+    </div>
+</header>
+
+<!-- ── Main Content ── -->
+<div class="main-wrapper">
+
+    <!-- Sidebar TOC -->
+    <aside class="toc">
+        <h4>On This Page</h4>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#threat-landscape">Threat Landscape</a></li>
+            <li><a href="#vnet-integration">VNet Integration</a></li>
+            <li><a href="#private-endpoints">Private Endpoints</a></li>
+            <li><a href="#nsg-firewall">NSGs &amp; Firewall</a></li>
+            <li><a href="#keyvault">Key Vault Secrets</a></li>
+            <li><a href="#architecture">Reference Architecture</a></li>
+            <li><a href="#video">Video Deep Dive</a></li>
+            <li><a href="#mini-hack">Mini Hack</a></li>
+            <li><a href="#best-practices">Best Practices</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+            <li><a href="#summary">Summary</a></li>
+        </ul>
+    </aside>
+
+    <!-- Article -->
+    <article class="article">
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="overview">Why End-to-End Security Matters</h2>
+
+        <p>AI workloads process some of the most sensitive data in any organization — customer records, proprietary models, inference results, and training datasets. A single misconfigured endpoint can expose this data to the public internet, creating regulatory, financial, and reputational risk.</p>
+
+        <p>Azure AI Foundry provides enterprise-grade security capabilities that let you lock down every layer of the AI stack. In this module, you will learn how to build a <strong>defense-in-depth</strong> architecture using four pillars:</p>
+
+        <div class="threat-grid">
+            <div class="threat-card">
+                <div class="icon">🌐</div>
+                <h5>VNet Integration</h5>
+                <p>Isolate AI services inside your own virtual network with no public internet exposure.</p>
+            </div>
+            <div class="threat-card">
+                <div class="icon">🔗</div>
+                <h5>Private Endpoints</h5>
+                <p>Connect to AI Foundry resources over private IP addresses using Azure Private Link.</p>
+            </div>
+            <div class="threat-card">
+                <div class="icon">🛡️</div>
+                <h5>NSGs &amp; Firewall</h5>
+                <p>Control inbound and outbound traffic with granular network security rules.</p>
+            </div>
+            <div class="threat-card">
+                <div class="icon">🔑</div>
+                <h5>Key Vault</h5>
+                <p>Centralize secrets, keys, and certificates with RBAC and audit logging.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">📘 Prerequisites</div>
+            This module assumes you have completed <strong>Module 34: Responsible AI Governance</strong> and have a working Azure subscription with Contributor access. Familiarity with basic networking concepts (IP addressing, subnets, DNS) is recommended.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="threat-landscape">Understanding the AI Threat Landscape</h2>
+
+        <p>Before diving into implementation, it's essential to understand <em>what</em> you're defending against. AI workloads face a unique blend of traditional infrastructure threats and AI-specific attack vectors.</p>
+
+        <h3>Traditional Network Threats</h3>
+        <ul>
+            <li><strong>Data exfiltration</strong> — Unauthorized transfer of training data or model weights to external endpoints</li>
+            <li><strong>Man-in-the-middle attacks</strong> — Intercepting API calls between your application and AI services</li>
+            <li><strong>Lateral movement</strong> — Attackers pivoting from a compromised VM to AI service endpoints</li>
+            <li><strong>Credential theft</strong> — Harvesting API keys stored in code, environment variables, or config files</li>
+        </ul>
+
+        <h3>AI-Specific Threats</h3>
+        <ul>
+            <li><strong>Model extraction</strong> — Repeated inference calls to reverse-engineer your proprietary model</li>
+            <li><strong>Training data poisoning</strong> — Injecting malicious data through unsecured data pipelines</li>
+            <li><strong>Prompt injection</strong> — Manipulating input to override model safety guardrails</li>
+            <li><strong>Inference endpoint abuse</strong> — Unauthorized usage driving up costs or degrading performance</li>
+        </ul>
+
+        <div class="callout callout-red">
+            <div class="callout-title">⚠️ Real-World Impact</div>
+            According to Microsoft's 2026 AI Security Report, <strong>73% of organizations</strong> running AI workloads experienced at least one security incident in the prior 12 months. The most common root cause was <strong>misconfigured network access</strong> — exactly what this module teaches you to prevent.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="vnet-integration">Virtual Network (VNet) Integration</h2>
+
+        <p>A <strong>Virtual Network (VNet)</strong> is the fundamental building block for private networking in Azure. By integrating Azure AI Foundry resources into a VNet, you ensure that all traffic stays within Microsoft's backbone network — never traversing the public internet.</p>
+
+        <h3>How VNet Integration Works</h3>
+
+        <p>When you deploy Azure AI Foundry into a VNet, each component receives a <strong>private IP address</strong> from a subnet you define. Resources communicate over these private IPs, and DNS resolution is configured to point to internal addresses rather than public endpoints.</p>
+
+        <div class="architecture-diagram">
+            <div class="diagram-title">VNet Integration Architecture</div>
+            <div class="arch-flow">
+                <div class="arch-box network">Corporate Network<br><small>10.0.0.0/16</small></div>
+                <div class="arch-arrow">⟶</div>
+                <div class="arch-box network">VPN / ExpressRoute</div>
+                <div class="arch-arrow">⟶</div>
+                <div class="arch-box">AI Foundry VNet<br><small>10.1.0.0/16</small></div>
+            </div>
+            <div class="arch-flow" style="margin-top: 12px;">
+                <div class="arch-box secure">AI Hub Subnet<br><small>10.1.1.0/24</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-box secure">Compute Subnet<br><small>10.1.2.0/24</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-box vault">Storage Subnet<br><small>10.1.3.0/24</small></div>
+            </div>
+        </div>
+
+        <h3>Subnet Planning for AI Foundry</h3>
+
+        <p>A well-designed subnet topology is critical. Each AI Foundry component should have its own subnet with appropriate address space:</p>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Subnet</th>
+                    <th>Purpose</th>
+                    <th>Recommended CIDR</th>
+                    <th>Min IPs</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>snet-ai-hub</code></td>
+                    <td>AI Foundry Hub &amp; Projects</td>
+                    <td>/24 (256 IPs)</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td><code>snet-compute</code></td>
+                    <td>Compute instances &amp; clusters</td>
+                    <td>/23 (512 IPs)</td>
+                    <td>16</td>
+                </tr>
+                <tr>
+                    <td><code>snet-storage</code></td>
+                    <td>Storage Private Endpoints</td>
+                    <td>/26 (64 IPs)</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td><code>snet-keyvault</code></td>
+                    <td>Key Vault Private Endpoints</td>
+                    <td>/27 (32 IPs)</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td><code>snet-acr</code></td>
+                    <td>Container Registry endpoints</td>
+                    <td>/27 (32 IPs)</td>
+                    <td>2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Creating the VNet with Azure CLI</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Define variables</span>
+<span class="param">RG</span>=<span class="str">"rg-ai-foundry-secure"</span>
+<span class="param">LOCATION</span>=<span class="str">"eastus2"</span>
+<span class="param">VNET_NAME</span>=<span class="str">"vnet-ai-foundry"</span>
+
+<span class="cm"># Create resource group</span>
+<span class="fn">az group create</span> --name <span class="param">$RG</span> --location <span class="param">$LOCATION</span>
+
+<span class="cm"># Create VNet with address space</span>
+<span class="fn">az network vnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="param">$VNET_NAME</span> \
+  --address-prefix <span class="str">"10.1.0.0/16"</span> \
+  --location <span class="param">$LOCATION</span>
+
+<span class="cm"># Create subnets</span>
+<span class="fn">az network vnet subnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --name <span class="str">"snet-ai-hub"</span> \
+  --address-prefixes <span class="str">"10.1.1.0/24"</span>
+
+<span class="fn">az network vnet subnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --name <span class="str">"snet-compute"</span> \
+  --address-prefixes <span class="str">"10.1.2.0/23"</span>
+
+<span class="fn">az network vnet subnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --name <span class="str">"snet-storage"</span> \
+  --address-prefixes <span class="str">"10.1.4.0/26"</span>
+
+<span class="fn">az network vnet subnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --name <span class="str">"snet-keyvault"</span> \
+  --address-prefixes <span class="str">"10.1.4.64/27"</span></div>
+
+        <h3>Bicep Template for VNet Provisioning</h3>
+
+        <div class="code-block"><span class="code-label">Bicep</span>
+<span class="cm">// vnet-ai-foundry.bicep</span>
+<span class="kw">param</span> <span class="param">location</span> <span class="type">string</span> = resourceGroup().location
+<span class="kw">param</span> <span class="param">vnetName</span> <span class="type">string</span> = <span class="str">'vnet-ai-foundry'</span>
+
+<span class="kw">resource</span> <span class="param">vnet</span> <span class="str">'Microsoft.Network/virtualNetworks@2023-09-01'</span> = {
+  name: <span class="param">vnetName</span>
+  location: <span class="param">location</span>
+  properties: {
+    addressSpace: {
+      addressPrefixes: [ <span class="str">'10.1.0.0/16'</span> ]
+    }
+    subnets: [
+      {
+        name: <span class="str">'snet-ai-hub'</span>
+        properties: {
+          addressPrefix: <span class="str">'10.1.1.0/24'</span>
+          privateEndpointNetworkPolicies: <span class="str">'Disabled'</span>
+        }
+      }
+      {
+        name: <span class="str">'snet-compute'</span>
+        properties: {
+          addressPrefix: <span class="str">'10.1.2.0/23'</span>
+        }
+      }
+      {
+        name: <span class="str">'snet-storage'</span>
+        properties: {
+          addressPrefix: <span class="str">'10.1.4.0/26'</span>
+          privateEndpointNetworkPolicies: <span class="str">'Disabled'</span>
+        }
+      }
+      {
+        name: <span class="str">'snet-keyvault'</span>
+        properties: {
+          addressPrefix: <span class="str">'10.1.4.64/27'</span>
+          privateEndpointNetworkPolicies: <span class="str">'Disabled'</span>
+        }
+      }
+    ]
+  }
+}
+
+<span class="kw">output</span> <span class="param">vnetId</span> <span class="type">string</span> = vnet.id
+<span class="kw">output</span> <span class="param">aiHubSubnetId</span> <span class="type">string</span> = vnet.properties.subnets[0].id</div>
+
+        <div class="callout callout-yellow">
+            <div class="callout-title">⚡ Important: Subnet Delegation</div>
+            AI Foundry compute instances require the subnet property <code>privateEndpointNetworkPolicies</code> to be set to <code>'Disabled'</code>. Without this, private endpoint creation will fail. This is a common deployment blocker.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="private-endpoints">Private Endpoints for AI Services</h2>
+
+        <p><strong>Azure Private Link</strong> enables you to access Azure AI Foundry, Azure Storage, Azure Key Vault, and Azure Container Registry over a <strong>private endpoint</strong> — a network interface with a private IP address in your VNet. This eliminates exposure to the public internet entirely.</p>
+
+        <h3>How Private Endpoints Work</h3>
+
+        <div class="security-layer">
+            <h4>🔒 Private Link Data Flow</h4>
+            <p>When a private endpoint is created for an Azure service:</p>
+            <ul>
+                <li>A <strong>network interface (NIC)</strong> is provisioned in the specified subnet with a private IP</li>
+                <li>DNS is configured (via Private DNS Zone) to resolve the service FQDN to the private IP</li>
+                <li>The service's <strong>public endpoint can be disabled</strong>, ensuring all traffic is private</li>
+                <li>Traffic flows over the <strong>Microsoft backbone network</strong> — never the internet</li>
+            </ul>
+        </div>
+
+        <h3>Services Requiring Private Endpoints</h3>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Group ID</th>
+                    <th>Private DNS Zone</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>AI Foundry Hub</td>
+                    <td><code>amlworkspace</code></td>
+                    <td><code>privatelink.api.azureml.ms</code></td>
+                </tr>
+                <tr>
+                    <td>Storage (Blob)</td>
+                    <td><code>blob</code></td>
+                    <td><code>privatelink.blob.core.windows.net</code></td>
+                </tr>
+                <tr>
+                    <td>Storage (File)</td>
+                    <td><code>file</code></td>
+                    <td><code>privatelink.file.core.windows.net</code></td>
+                </tr>
+                <tr>
+                    <td>Key Vault</td>
+                    <td><code>vault</code></td>
+                    <td><code>privatelink.vaultcore.azure.net</code></td>
+                </tr>
+                <tr>
+                    <td>Container Registry</td>
+                    <td><code>registry</code></td>
+                    <td><code>privatelink.azurecr.io</code></td>
+                </tr>
+                <tr>
+                    <td>Azure AI Services</td>
+                    <td><code>account</code></td>
+                    <td><code>privatelink.cognitiveservices.azure.com</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Creating a Private Endpoint for AI Foundry</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Get the AI Foundry Hub resource ID</span>
+<span class="param">HUB_ID</span>=$(<span class="fn">az resource show</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"hub-ai-foundry"</span> \
+  --resource-type <span class="str">"Microsoft.MachineLearningServices/workspaces"</span> \
+  --query <span class="str">"id"</span> -o tsv)
+
+<span class="cm"># Create private endpoint</span>
+<span class="fn">az network private-endpoint create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"pe-ai-hub"</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --subnet <span class="str">"snet-ai-hub"</span> \
+  --private-connection-resource-id <span class="param">$HUB_ID</span> \
+  --group-id <span class="str">"amlworkspace"</span> \
+  --connection-name <span class="str">"conn-ai-hub"</span>
+
+<span class="cm"># Configure Private DNS Zone</span>
+<span class="fn">az network private-dns zone create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"privatelink.api.azureml.ms"</span>
+
+<span class="cm"># Link DNS zone to VNet</span>
+<span class="fn">az network private-dns link vnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --zone-name <span class="str">"privatelink.api.azureml.ms"</span> \
+  --name <span class="str">"link-ai-foundry"</span> \
+  --virtual-network <span class="param">$VNET_NAME</span> \
+  --registration-enabled <span class="kw">false</span>
+
+<span class="cm"># Create DNS zone group for automatic DNS record management</span>
+<span class="fn">az network private-endpoint dns-zone-group create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --endpoint-name <span class="str">"pe-ai-hub"</span> \
+  --name <span class="str">"dzg-ai-hub"</span> \
+  --private-dns-zone <span class="str">"privatelink.api.azureml.ms"</span> \
+  --zone-name <span class="str">"azureml"</span></div>
+
+        <h3>Bicep: Private Endpoint Module</h3>
+
+        <div class="code-block"><span class="code-label">Bicep</span>
+<span class="cm">// private-endpoint.bicep — reusable module</span>
+<span class="kw">param</span> <span class="param">name</span> <span class="type">string</span>
+<span class="kw">param</span> <span class="param">location</span> <span class="type">string</span> = resourceGroup().location
+<span class="kw">param</span> <span class="param">subnetId</span> <span class="type">string</span>
+<span class="kw">param</span> <span class="param">privateLinkServiceId</span> <span class="type">string</span>
+<span class="kw">param</span> <span class="param">groupId</span> <span class="type">string</span>
+<span class="kw">param</span> <span class="param">privateDnsZoneId</span> <span class="type">string</span>
+
+<span class="kw">resource</span> <span class="param">privateEndpoint</span> <span class="str">'Microsoft.Network/privateEndpoints@2023-09-01'</span> = {
+  name: <span class="param">name</span>
+  location: <span class="param">location</span>
+  properties: {
+    subnet: {
+      id: <span class="param">subnetId</span>
+    }
+    privateLinkServiceConnections: [
+      {
+        name: <span class="str">'${name}-connection'</span>
+        properties: {
+          privateLinkServiceId: <span class="param">privateLinkServiceId</span>
+          groupIds: [ <span class="param">groupId</span> ]
+        }
+      }
+    ]
+  }
+}
+
+<span class="kw">resource</span> <span class="param">dnsZoneGroup</span> <span class="str">'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01'</span> = {
+  parent: <span class="param">privateEndpoint</span>
+  name: <span class="str">'default'</span>
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: <span class="str">'config1'</span>
+        properties: {
+          privateDnsZoneId: <span class="param">privateDnsZoneId</span>
+        }
+      }
+    ]
+  }
+}</div>
+
+        <h3>Disabling Public Network Access</h3>
+
+        <p>After creating private endpoints, you should disable public access to ensure all traffic flows privately:</p>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Disable public access on the AI Foundry Hub</span>
+<span class="fn">az resource update</span> \
+  --ids <span class="param">$HUB_ID</span> \
+  --set properties.publicNetworkAccess=<span class="str">"Disabled"</span>
+
+<span class="cm"># Disable public access on Storage account</span>
+<span class="fn">az storage account update</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"staifoundrysecure"</span> \
+  --default-action <span class="str">"Deny"</span> \
+  --public-network-access <span class="str">"Disabled"</span>
+
+<span class="cm"># Disable public access on Key Vault</span>
+<span class="fn">az keyvault update</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"kv-ai-foundry-secure"</span> \
+  --public-network-access <span class="str">"Disabled"</span></div>
+
+        <div class="callout callout-green">
+            <div class="callout-title">✅ Validation Check</div>
+            After creating private endpoints and disabling public access, verify connectivity by running <code>nslookup hub-ai-foundry.api.azureml.ms</code> from a VM inside the VNet. The resolved IP should be a <strong>private IP</strong> (e.g., 10.1.1.x), not a public IP.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="nsg-firewall">Network Security Groups &amp; Firewall Rules</h2>
+
+        <p><strong>Network Security Groups (NSGs)</strong> act as virtual firewalls for your subnets and individual network interfaces. They contain inbound and outbound security rules that filter traffic based on source, destination, port, and protocol.</p>
+
+        <h3>NSG Design Principles for AI Foundry</h3>
+
+        <div class="security-layer">
+            <h4>🛡️ Defense-in-Depth NSG Strategy</h4>
+            <ul>
+                <li><strong>Default deny</strong> — Start with all traffic blocked, then allow only what's needed</li>
+                <li><strong>Subnet-level NSGs</strong> — Apply rules at the subnet level for broad protection</li>
+                <li><strong>NIC-level NSGs</strong> — Apply additional rules at the NIC level for critical resources</li>
+                <li><strong>Service Tags</strong> — Use Azure service tags instead of hardcoded IP ranges</li>
+                <li><strong>Application Security Groups</strong> — Group VMs by function for simplified rules</li>
+            </ul>
+        </div>
+
+        <h3>Essential NSG Rules for AI Foundry</h3>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Name</th>
+                    <th>Direction</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Port</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>100</td>
+                    <td>AllowAzureAD</td>
+                    <td>Outbound</td>
+                    <td>VNet</td>
+                    <td>AzureActiveDirectory</td>
+                    <td>443</td>
+                    <td>Allow</td>
+                </tr>
+                <tr>
+                    <td>110</td>
+                    <td>AllowAzureRM</td>
+                    <td>Outbound</td>
+                    <td>VNet</td>
+                    <td>AzureResourceManager</td>
+                    <td>443</td>
+                    <td>Allow</td>
+                </tr>
+                <tr>
+                    <td>120</td>
+                    <td>AllowStorage</td>
+                    <td>Outbound</td>
+                    <td>VNet</td>
+                    <td>Storage.EastUS2</td>
+                    <td>443</td>
+                    <td>Allow</td>
+                </tr>
+                <tr>
+                    <td>130</td>
+                    <td>AllowKeyVault</td>
+                    <td>Outbound</td>
+                    <td>VNet</td>
+                    <td>AzureKeyVault</td>
+                    <td>443</td>
+                    <td>Allow</td>
+                </tr>
+                <tr>
+                    <td>140</td>
+                    <td>AllowACR</td>
+                    <td>Outbound</td>
+                    <td>VNet</td>
+                    <td>AzureContainerRegistry</td>
+                    <td>443</td>
+                    <td>Allow</td>
+                </tr>
+                <tr>
+                    <td>150</td>
+                    <td>AllowMonitor</td>
+                    <td>Outbound</td>
+                    <td>VNet</td>
+                    <td>AzureMonitor</td>
+                    <td>443</td>
+                    <td>Allow</td>
+                </tr>
+                <tr>
+                    <td>4096</td>
+                    <td>DenyAllOutbound</td>
+                    <td>Outbound</td>
+                    <td>*</td>
+                    <td>*</td>
+                    <td>*</td>
+                    <td>Deny</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Creating NSGs with Azure CLI</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Create NSG for compute subnet</span>
+<span class="fn">az network nsg create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"nsg-ai-compute"</span>
+
+<span class="cm"># Allow outbound to Azure AD for authentication</span>
+<span class="fn">az network nsg rule create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --nsg-name <span class="str">"nsg-ai-compute"</span> \
+  --name <span class="str">"AllowAzureAD"</span> \
+  --priority <span class="num">100</span> \
+  --direction <span class="str">"Outbound"</span> \
+  --access <span class="str">"Allow"</span> \
+  --protocol <span class="str">"Tcp"</span> \
+  --source-address-prefixes <span class="str">"VirtualNetwork"</span> \
+  --destination-address-prefixes <span class="str">"AzureActiveDirectory"</span> \
+  --destination-port-ranges <span class="str">"443"</span>
+
+<span class="cm"># Allow outbound to Azure Resource Manager</span>
+<span class="fn">az network nsg rule create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --nsg-name <span class="str">"nsg-ai-compute"</span> \
+  --name <span class="str">"AllowARM"</span> \
+  --priority <span class="num">110</span> \
+  --direction <span class="str">"Outbound"</span> \
+  --access <span class="str">"Allow"</span> \
+  --protocol <span class="str">"Tcp"</span> \
+  --source-address-prefixes <span class="str">"VirtualNetwork"</span> \
+  --destination-address-prefixes <span class="str">"AzureResourceManager"</span> \
+  --destination-port-ranges <span class="str">"443"</span>
+
+<span class="cm"># Deny all other outbound traffic</span>
+<span class="fn">az network nsg rule create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --nsg-name <span class="str">"nsg-ai-compute"</span> \
+  --name <span class="str">"DenyAllOutbound"</span> \
+  --priority <span class="num">4096</span> \
+  --direction <span class="str">"Outbound"</span> \
+  --access <span class="str">"Deny"</span> \
+  --protocol <span class="str">"*"</span> \
+  --source-address-prefixes <span class="str">"*"</span> \
+  --destination-address-prefixes <span class="str">"*"</span> \
+  --destination-port-ranges <span class="str">"*"</span>
+
+<span class="cm"># Associate NSG with subnet</span>
+<span class="fn">az network vnet subnet update</span> \
+  --resource-group <span class="param">$RG</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --name <span class="str">"snet-compute"</span> \
+  --network-security-group <span class="str">"nsg-ai-compute"</span></div>
+
+        <h3>Azure Firewall for Centralized Egress</h3>
+
+        <p>For enterprise deployments, <strong>Azure Firewall</strong> provides centralized egress filtering with FQDN-based rules, threat intelligence, and TLS inspection. This is the recommended approach for production AI Foundry deployments.</p>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Create Azure Firewall subnet (must be named AzureFirewallSubnet)</span>
+<span class="fn">az network vnet subnet create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --name <span class="str">"AzureFirewallSubnet"</span> \
+  --address-prefixes <span class="str">"10.1.5.0/26"</span>
+
+<span class="cm"># Create public IP for firewall</span>
+<span class="fn">az network public-ip create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"pip-fw-ai"</span> \
+  --sku <span class="str">"Standard"</span> \
+  --allocation-method <span class="str">"Static"</span>
+
+<span class="cm"># Create Azure Firewall</span>
+<span class="fn">az network firewall create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"fw-ai-foundry"</span> \
+  --location <span class="param">$LOCATION</span> \
+  --sku <span class="str">"AZFW_VNet"</span> \
+  --tier <span class="str">"Standard"</span>
+
+<span class="cm"># Add application rule for AI Foundry dependencies</span>
+<span class="fn">az network firewall application-rule create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --firewall-name <span class="str">"fw-ai-foundry"</span> \
+  --collection-name <span class="str">"AllowAIFoundry"</span> \
+  --priority <span class="num">200</span> \
+  --action <span class="str">"Allow"</span> \
+  --name <span class="str">"ai-foundry-deps"</span> \
+  --source-addresses <span class="str">"10.1.0.0/16"</span> \
+  --protocols <span class="str">"Https=443"</span> \
+  --target-fqdns \
+    <span class="str">"*.api.azureml.ms"</span> \
+    <span class="str">"*.notebooks.azure.net"</span> \
+    <span class="str">"*.instances.azureml.ms"</span> \
+    <span class="str">"*.blob.core.windows.net"</span></div>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">📘 NSG Flow Logs</div>
+            Enable <strong>NSG Flow Logs</strong> for audit and compliance. Flow logs capture all traffic allowed or denied by NSG rules and can be sent to Azure Monitor, Log Analytics, or Storage for analysis. Use the <a href="#">Traffic Analytics</a> feature for visual insights.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="keyvault">Key Vault for Secrets Management</h2>
+
+        <p><strong>Azure Key Vault</strong> is the centralized secrets management service used by AI Foundry to store API keys, connection strings, certificates, and cryptographic keys. Proper Key Vault configuration is essential for any secure AI deployment.</p>
+
+        <h3>Key Vault Integration with AI Foundry</h3>
+
+        <p>When you create an AI Foundry Hub, a Key Vault is automatically provisioned as a dependent resource. AI Foundry uses this vault to securely store:</p>
+
+        <ul>
+            <li><strong>Data store connection strings</strong> — credentials for accessing Azure Storage, SQL databases, and external data sources</li>
+            <li><strong>API keys</strong> — keys for Azure AI Services (OpenAI, Speech, Vision, etc.)</li>
+            <li><strong>Custom secrets</strong> — any secrets your training or inference code needs at runtime</li>
+            <li><strong>SSL/TLS certificates</strong> — certificates for custom domains on endpoints</li>
+        </ul>
+
+        <h3>Configuring Key Vault with RBAC</h3>
+
+        <p>The modern approach uses <strong>Azure RBAC</strong> instead of access policies for fine-grained, identity-based access control:</p>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Create Key Vault with RBAC authorization</span>
+<span class="fn">az keyvault create</span> \
+  --resource-group <span class="param">$RG</span> \
+  --name <span class="str">"kv-ai-foundry-secure"</span> \
+  --location <span class="param">$LOCATION</span> \
+  --enable-rbac-authorization <span class="kw">true</span> \
+  --enable-purge-protection <span class="kw">true</span> \
+  --enable-soft-delete <span class="kw">true</span> \
+  --soft-delete-retention-days <span class="num">90</span> \
+  --public-network-access <span class="str">"Disabled"</span>
+
+<span class="cm"># Assign "Key Vault Secrets Officer" to AI Foundry managed identity</span>
+<span class="param">HUB_PRINCIPAL_ID</span>=$(<span class="fn">az resource show</span> \
+  --ids <span class="param">$HUB_ID</span> \
+  --query <span class="str">"identity.principalId"</span> -o tsv)
+
+<span class="fn">az role assignment create</span> \
+  --role <span class="str">"Key Vault Secrets Officer"</span> \
+  --assignee-object-id <span class="param">$HUB_PRINCIPAL_ID</span> \
+  --assignee-principal-type <span class="str">"ServicePrincipal"</span> \
+  --scope <span class="str">"/subscriptions/{sub}/resourceGroups/$RG/providers/Microsoft.KeyVault/vaults/kv-ai-foundry-secure"</span>
+
+<span class="cm"># Assign "Key Vault Secrets User" for read-only access by compute</span>
+<span class="fn">az role assignment create</span> \
+  --role <span class="str">"Key Vault Secrets User"</span> \
+  --assignee-object-id <span class="param">$COMPUTE_PRINCIPAL_ID</span> \
+  --assignee-principal-type <span class="str">"ServicePrincipal"</span> \
+  --scope <span class="str">"/subscriptions/{sub}/resourceGroups/$RG/providers/Microsoft.KeyVault/vaults/kv-ai-foundry-secure"</span></div>
+
+        <h3>Storing and Retrieving Secrets</h3>
+
+        <div class="code-block"><span class="code-label">Python</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.keyvault.secrets <span class="kw">import</span> SecretClient
+
+<span class="cm"># Authenticate using managed identity (no keys in code!)</span>
+<span class="param">credential</span> = <span class="fn">DefaultAzureCredential</span>()
+<span class="param">vault_url</span> = <span class="str">"https://kv-ai-foundry-secure.vault.azure.net"</span>
+<span class="param">client</span> = <span class="fn">SecretClient</span>(vault_url=<span class="param">vault_url</span>, credential=<span class="param">credential</span>)
+
+<span class="cm"># Store an API key</span>
+<span class="param">client</span>.<span class="fn">set_secret</span>(<span class="str">"openai-api-key"</span>, <span class="str">"sk-your-key-here"</span>)
+
+<span class="cm"># Retrieve the secret at runtime</span>
+<span class="param">secret</span> = <span class="param">client</span>.<span class="fn">get_secret</span>(<span class="str">"openai-api-key"</span>)
+<span class="fn">print</span>(<span class="str">f"Secret value: {secret.value}"</span>)</div>
+
+        <h3>Key Vault Monitoring &amp; Auditing</h3>
+
+        <p>Enable diagnostic settings to track every secret access, modification, and deletion:</p>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Enable diagnostic logs for Key Vault</span>
+<span class="fn">az monitor diagnostic-settings create</span> \
+  --resource <span class="str">"/subscriptions/{sub}/resourceGroups/$RG/providers/Microsoft.KeyVault/vaults/kv-ai-foundry-secure"</span> \
+  --name <span class="str">"kv-diagnostics"</span> \
+  --workspace <span class="str">"law-ai-foundry"</span> \
+  --logs <span class="str">'[{"category":"AuditEvent","enabled":true,"retentionPolicy":{"enabled":true,"days":365}}]'</span></div>
+
+        <div class="callout callout-green">
+            <div class="callout-title">✅ Best Practice: No Keys in Code</div>
+            <strong>Never</strong> embed API keys, connection strings, or passwords directly in application code, environment variables, or configuration files. Always use <strong>managed identities</strong> with Key Vault references. This eliminates the need to rotate credentials manually and prevents accidental exposure in source control.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="architecture">Reference Architecture: Secure AI Foundry</h2>
+
+        <p>The following architecture combines all security layers into a production-ready deployment pattern:</p>
+
+        <div class="architecture-diagram">
+            <div class="diagram-title">Enterprise Secure AI Foundry Architecture</div>
+            <div style="font-size: 14px; color: var(--ms-text-secondary); margin-bottom: 12px;">All traffic stays on Microsoft backbone — zero public internet exposure</div>
+            <div class="arch-flow">
+                <div class="arch-box">🏢 On-Premises<br><small>Corporate Users</small></div>
+                <div class="arch-arrow">⟶</div>
+                <div class="arch-box network">ExpressRoute<br><small>Private Peering</small></div>
+                <div class="arch-arrow">⟶</div>
+                <div class="arch-box network">Hub VNet<br><small>Azure Firewall</small></div>
+            </div>
+            <div style="text-align: center; font-size: 20px; color: var(--ms-blue); margin: 8px 0;">⇅ VNet Peering</div>
+            <div class="arch-flow">
+                <div class="arch-box secure">AI Foundry Hub<br><small>Private Endpoint</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-box vault">Key Vault<br><small>Private Endpoint</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-box secure">Storage Account<br><small>Private Endpoint</small></div>
+            </div>
+            <div class="arch-flow" style="margin-top: 8px;">
+                <div class="arch-box secure">Compute Cluster<br><small>Managed VNet</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-box vault">Container Registry<br><small>Private Endpoint</small></div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-box secure">AI Services<br><small>Private Endpoint</small></div>
+            </div>
+        </div>
+
+        <h3>Key Architectural Decisions</h3>
+
+        <ul>
+            <li><strong>Hub-spoke topology</strong> — Centralized firewall in the hub VNet with AI Foundry in spoke VNets connected via peering</li>
+            <li><strong>Managed VNet for compute</strong> — AI Foundry compute clusters use managed VNets with automatic private endpoint injection</li>
+            <li><strong>Private DNS Zones</strong> — Linked to both hub and spoke VNets for consistent name resolution</li>
+            <li><strong>No public IPs</strong> — All resources deployed with public network access disabled</li>
+            <li><strong>User-Defined Routes (UDRs)</strong> — Force all egress traffic through Azure Firewall for inspection</li>
+        </ul>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="video">Video Deep Dive</h2>
+
+        <p>Watch this comprehensive walkthrough covering VNet integration, Private Endpoints, firewall configuration, and Key Vault secrets management for Azure AI Foundry:</p>
+
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/bL9n83uPV84" title="AI Foundry Networking and Security: Deep Dive" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">📺 Video: AI Foundry Networking and Security: Deep Dive</div>
+            This session covers the complete security story — from VNet planning through Private Endpoint deployment to ongoing monitoring. Follow along with the demo to see each concept applied in the Azure portal and CLI.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="mini-hack">Mini Hack: Deploy AI Foundry with Private Endpoints</h2>
+
+        <p>In this hands-on exercise, you will deploy a fully secured AI Foundry Hub inside a Virtual Network with Private Endpoints for all dependent services. This is the same pattern used by enterprise customers in production.</p>
+
+        <div class="callout callout-yellow">
+            <div class="callout-title">⏱️ Estimated Time: 45–60 minutes</div>
+            This mini hack deploys multiple Azure resources. Expect provisioning to take 15–20 minutes. Use the wait time to review the security configuration of each resource.
+        </div>
+
+        <h3>Step 1: Set Up the Foundation</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Variables for the entire deployment</span>
+<span class="param">RG</span>=<span class="str">"rg-ai-foundry-secure-hack"</span>
+<span class="param">LOCATION</span>=<span class="str">"eastus2"</span>
+<span class="param">VNET_NAME</span>=<span class="str">"vnet-ai-secure"</span>
+<span class="param">HUB_NAME</span>=<span class="str">"hub-ai-secure-$RANDOM"</span>
+<span class="param">KV_NAME</span>=<span class="str">"kv-aisec-$RANDOM"</span>
+<span class="param">STORAGE_NAME</span>=<span class="str">"staisec$RANDOM"</span>
+<span class="param">ACR_NAME</span>=<span class="str">"acraisec$RANDOM"</span>
+
+<span class="cm"># Create resource group</span>
+<span class="fn">az group create</span> -n <span class="param">$RG</span> -l <span class="param">$LOCATION</span>
+
+<span class="cm"># Create VNet with subnets</span>
+<span class="fn">az network vnet create</span> \
+  -g <span class="param">$RG</span> -n <span class="param">$VNET_NAME</span> \
+  --address-prefix <span class="str">"10.0.0.0/16"</span>
+
+<span class="kw">for</span> subnet <span class="kw">in</span> <span class="str">"snet-hub:10.0.1.0/24"</span> <span class="str">"snet-compute:10.0.2.0/23"</span> <span class="str">"snet-pe:10.0.4.0/24"</span>; <span class="kw">do</span>
+  <span class="param">name</span>=${subnet%%:*}
+  <span class="param">prefix</span>=${subnet##*:}
+  <span class="fn">az network vnet subnet create</span> \
+    -g <span class="param">$RG</span> --vnet-name <span class="param">$VNET_NAME</span> \
+    -n <span class="param">$name</span> --address-prefixes <span class="param">$prefix</span> \
+    --private-endpoint-network-policies Disabled
+<span class="kw">done</span></div>
+
+        <h3>Step 2: Deploy Supporting Services</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Create Key Vault with RBAC</span>
+<span class="fn">az keyvault create</span> \
+  -g <span class="param">$RG</span> -n <span class="param">$KV_NAME</span> -l <span class="param">$LOCATION</span> \
+  --enable-rbac-authorization true \
+  --public-network-access Disabled
+
+<span class="cm"># Create Storage account</span>
+<span class="fn">az storage account create</span> \
+  -g <span class="param">$RG</span> -n <span class="param">$STORAGE_NAME</span> -l <span class="param">$LOCATION</span> \
+  --sku Standard_LRS \
+  --default-action Deny \
+  --public-network-access Disabled
+
+<span class="cm"># Create Container Registry</span>
+<span class="fn">az acr create</span> \
+  -g <span class="param">$RG</span> -n <span class="param">$ACR_NAME</span> -l <span class="param">$LOCATION</span> \
+  --sku Premium \
+  --public-network-access Disabled</div>
+
+        <h3>Step 3: Create Private Endpoints</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Create private endpoints for each service</span>
+<span class="param">KV_ID</span>=$(<span class="fn">az keyvault show</span> -g <span class="param">$RG</span> -n <span class="param">$KV_NAME</span> --query id -o tsv)
+<span class="param">ST_ID</span>=$(<span class="fn">az storage account show</span> -g <span class="param">$RG</span> -n <span class="param">$STORAGE_NAME</span> --query id -o tsv)
+<span class="param">ACR_ID</span>=$(<span class="fn">az acr show</span> -g <span class="param">$RG</span> -n <span class="param">$ACR_NAME</span> --query id -o tsv)
+
+<span class="cm"># Key Vault PE</span>
+<span class="fn">az network private-endpoint create</span> \
+  -g <span class="param">$RG</span> -n <span class="str">"pe-keyvault"</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> --subnet <span class="str">"snet-pe"</span> \
+  --private-connection-resource-id <span class="param">$KV_ID</span> \
+  --group-id <span class="str">"vault"</span> \
+  --connection-name <span class="str">"conn-kv"</span>
+
+<span class="cm"># Storage Blob PE</span>
+<span class="fn">az network private-endpoint create</span> \
+  -g <span class="param">$RG</span> -n <span class="str">"pe-storage-blob"</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> --subnet <span class="str">"snet-pe"</span> \
+  --private-connection-resource-id <span class="param">$ST_ID</span> \
+  --group-id <span class="str">"blob"</span> \
+  --connection-name <span class="str">"conn-blob"</span>
+
+<span class="cm"># ACR PE</span>
+<span class="fn">az network private-endpoint create</span> \
+  -g <span class="param">$RG</span> -n <span class="str">"pe-acr"</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> --subnet <span class="str">"snet-pe"</span> \
+  --private-connection-resource-id <span class="param">$ACR_ID</span> \
+  --group-id <span class="str">"registry"</span> \
+  --connection-name <span class="str">"conn-acr"</span></div>
+
+        <h3>Step 4: Configure DNS &amp; Validate</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Create Private DNS Zones</span>
+<span class="kw">for</span> zone <span class="kw">in</span> \
+  <span class="str">"privatelink.vaultcore.azure.net"</span> \
+  <span class="str">"privatelink.blob.core.windows.net"</span> \
+  <span class="str">"privatelink.azurecr.io"</span> \
+  <span class="str">"privatelink.api.azureml.ms"</span>; <span class="kw">do</span>
+  <span class="fn">az network private-dns zone create</span> -g <span class="param">$RG</span> -n <span class="param">$zone</span>
+  <span class="fn">az network private-dns link vnet create</span> \
+    -g <span class="param">$RG</span> -n <span class="str">"link-${zone%%.*}"</span> \
+    --zone-name <span class="param">$zone</span> \
+    --virtual-network <span class="param">$VNET_NAME</span> \
+    --registration-enabled false
+<span class="kw">done</span>
+
+<span class="cm"># Verify: deploy a test VM and run nslookup</span>
+<span class="fn">az vm create</span> \
+  -g <span class="param">$RG</span> -n <span class="str">"vm-test"</span> \
+  --image <span class="str">"Ubuntu2204"</span> \
+  --size <span class="str">"Standard_B1ms"</span> \
+  --vnet-name <span class="param">$VNET_NAME</span> \
+  --subnet <span class="str">"snet-hub"</span> \
+  --public-ip-address <span class="str">""</span> \
+  --admin-username <span class="str">"azureuser"</span> \
+  --generate-ssh-keys
+
+<span class="cm"># Test DNS resolution (should return private IP)</span>
+<span class="fn">az vm run-command invoke</span> \
+  -g <span class="param">$RG</span> -n <span class="str">"vm-test"</span> \
+  --command-id <span class="str">"RunShellScript"</span> \
+  --scripts <span class="str">"nslookup $KV_NAME.vault.azure.net"</span></div>
+
+        <h3>Step 5: Clean Up</h3>
+
+        <div class="code-block"><span class="code-label">Bash</span>
+<span class="cm"># Remove all resources when done</span>
+<span class="fn">az group delete</span> --name <span class="param">$RG</span> --yes --no-wait</div>
+
+        <div class="callout callout-green">
+            <div class="callout-title">🎉 Mini Hack Complete!</div>
+            You've deployed a fully network-isolated AI Foundry environment with Private Endpoints for Key Vault, Storage, and Container Registry. All traffic flows over the Microsoft backbone network with zero public internet exposure.
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="best-practices">Security Best Practices Checklist</h2>
+
+        <p>Use this checklist to validate that your AI Foundry deployment meets enterprise security standards:</p>
+
+        <h3>Network Security</h3>
+        <ul class="checklist">
+            <li class="done">Deploy AI Foundry inside a dedicated VNet with planned subnet topology</li>
+            <li class="done">Create Private Endpoints for all dependent services (Storage, Key Vault, ACR, AI Services)</li>
+            <li class="done">Disable public network access on all resources</li>
+            <li class="done">Configure Private DNS Zones for automatic DNS resolution</li>
+            <li class="done">Apply NSGs with default-deny outbound rules on all subnets</li>
+            <li>Use Azure Firewall for centralized egress control with FQDN filtering</li>
+            <li>Enable NSG Flow Logs and Traffic Analytics</li>
+            <li>Implement DDoS Protection Standard on the VNet</li>
+        </ul>
+
+        <h3>Identity &amp; Secrets</h3>
+        <ul class="checklist">
+            <li class="done">Use Azure RBAC authorization for Key Vault (not access policies)</li>
+            <li class="done">Enable soft-delete and purge protection on Key Vault</li>
+            <li class="done">Use managed identities instead of API keys wherever possible</li>
+            <li>Enable diagnostic logging on Key Vault for audit compliance</li>
+            <li>Rotate secrets automatically using Key Vault rotation policies</li>
+            <li>Use Conditional Access policies for user access to AI Foundry portal</li>
+        </ul>
+
+        <h3>Data Protection</h3>
+        <ul class="checklist">
+            <li>Enable customer-managed keys (CMK) for data encryption at rest</li>
+            <li>Enforce HTTPS/TLS 1.2+ for all data in transit</li>
+            <li>Enable Azure Defender for Storage for threat detection</li>
+            <li>Implement data classification and sensitivity labels</li>
+        </ul>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="troubleshooting">Common Issues &amp; Troubleshooting</h2>
+
+        <h3>Problem: "Unable to connect to workspace"</h3>
+        <div class="callout callout-yellow">
+            <div class="callout-title">🔧 Resolution</div>
+            <p>After disabling public access, users must connect from within the VNet (via VPN, ExpressRoute, or Azure Bastion). Verify DNS resolution returns a private IP:</p>
+            <code>nslookup {hub-name}.api.azureml.ms</code>
+            <p style="margin-top: 8px;">If it returns a public IP, check that the Private DNS Zone is linked to your VNet.</p>
+        </div>
+
+        <h3>Problem: "Private endpoint creation fails with policy error"</h3>
+        <div class="callout callout-yellow">
+            <div class="callout-title">🔧 Resolution</div>
+            <p>Ensure the subnet has <code>privateEndpointNetworkPolicies</code> set to <code>Disabled</code>. Update it with:</p>
+            <code>az network vnet subnet update --disable-private-endpoint-network-policies true</code>
+        </div>
+
+        <h3>Problem: "Compute instance cannot pull container images"</h3>
+        <div class="callout callout-yellow">
+            <div class="callout-title">🔧 Resolution</div>
+            <p>Container Registry requires a Private Endpoint. Also verify that NSG rules allow outbound traffic to the <code>AzureContainerRegistry</code> service tag on port 443.</p>
+        </div>
+
+        <h3>Problem: "Key Vault access denied (403)"</h3>
+        <div class="callout callout-yellow">
+            <div class="callout-title">🔧 Resolution</div>
+            <p>When using RBAC authorization, ensure the calling identity has the appropriate role (<code>Key Vault Secrets User</code> or <code>Key Vault Secrets Officer</code>) assigned at the correct scope. Role assignments can take up to 10 minutes to propagate.</p>
+        </div>
+
+        <!-- ════════════════════════════════════════════ -->
+        <h2 id="summary">Summary &amp; Key Takeaways</h2>
+
+        <p>In this module, you learned how to build a <strong>defense-in-depth</strong> security architecture for Azure AI Foundry using four complementary layers:</p>
+
+        <ol>
+            <li><strong>Virtual Network integration</strong> isolates all AI resources in a private address space</li>
+            <li><strong>Private Endpoints</strong> eliminate public internet exposure for every service dependency</li>
+            <li><strong>NSGs and Azure Firewall</strong> enforce granular traffic control at the network layer</li>
+            <li><strong>Azure Key Vault</strong> centralizes secrets management with RBAC, auditing, and managed identities</li>
+        </ol>
+
+        <p>Together, these controls ensure that your AI models, training data, and inference endpoints are protected from unauthorized access, data exfiltration, and network-based attacks.</p>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">📘 What's Next</div>
+            In <strong>Module 36: Cost Management &amp; FinOps for AI</strong>, you'll learn how to monitor, optimize, and govern the costs of your AI Foundry deployments using Azure Cost Management, budgets, and reserved capacity.
+        </div>
+
+        <!-- ── Author Card ── -->
+        <div class="author-card">
+            <div class="avatar-lg">🔒</div>
+            <div>
+                <h4>Zero to Hero Training Team</h4>
+                <p>A 45-Module comprehensive training program designed to take you from absolute beginner to confident Azure AI Foundry practitioner. Each module builds on the last, combining theory, hands-on labs, and real-world scenarios.</p>
+            </div>
+        </div>
+
+        <!-- ── Related Posts ── -->
+        <h3>Related Modules</h3>
+        <div class="related-posts">
+            <a class="related-card" href="../module-34/blog.html">
+                <span class="module-label">Module 34</span>
+                <h4>Responsible AI Governance</h4>
+            </a>
+            <a class="related-card" href="../module-36/blog.html">
+                <span class="module-label">Module 36</span>
+                <h4>Cost Management &amp; FinOps for AI</h4>
+            </a>
+        </div>
+
+        <!-- ── Module Navigation ── -->
+        <div class="module-nav">
+            <a href="../module-34/blog.html">← Module 34: Responsible AI Governance</a>
+            <a href="../module-36/blog.html">Module 36: Cost Management &amp; FinOps →</a>
+        </div>
+
+    </article>
+</div>
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+    © 2026 Zero to Hero: Azure AI Foundry Training Program. All rights reserved.<br>
+    Powered by Azure AI Foundry
+</footer>
+
+<!-- ── Back to Top ── -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0})">↑</button>
+
+<script>
+    // Progress bar
+    window.addEventListener('scroll', () => {
+        const h = document.documentElement;
+        const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('backToTop').classList.toggle('visible', h.scrollTop > 400);
+    });
+
+    // TOC active highlighting
+    const sections = document.querySelectorAll('h2[id]');
+    const tocLinks = document.querySelectorAll('.toc a');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                tocLinks.forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-80px 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

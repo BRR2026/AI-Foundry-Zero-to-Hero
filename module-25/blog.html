@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 25: Real-World Integration Patterns | Azure AI Foundry: Zero to Hero</title>
+<style>
+  :root {
+    --primary: #0078d4;
+    --primary-dark: #005a9e;
+    --primary-light: #deecf9;
+    --accent: #e74856;
+    --accent-orange: #ff8c00;
+    --hero-gradient: linear-gradient(135deg, #1b1b3a 0%, #162447 30%, #1f4068 60%, #1b6ca8 100%);
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --surface-code: #1e1e1e;
+    --text: #24292f;
+    --text-secondary: #57606a;
+    --text-light: #ffffff;
+    --border: #d0d7de;
+    --success: #2ea043;
+    --warning: #d29922;
+    --info: #0969da;
+    --radius: 8px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.06);
+    --max-width: 880px;
+    --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--text);
+    background: var(--surface-alt);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Top Navigation Bar ── */
+  .top-nav {
+    background: #1b1b1b;
+    color: #fff;
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .top-nav .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+  .top-nav .brand {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    text-decoration: none;
+  }
+  .top-nav .brand svg { fill: #0078d4; }
+  .top-nav .nav-links { display: flex; gap: 20px; }
+  .top-nav .nav-links a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .top-nav .nav-links a:hover { color: #fff; }
+
+  /* ── Hero Section ── */
+  .hero {
+    background: var(--hero-gradient);
+    color: var(--text-light);
+    padding: 72px 24px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(231,72,86,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 100px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    backdrop-filter: blur(8px);
+  }
+  .hero-badge .dot {
+    width: 8px; height: 8px;
+    background: var(--accent-orange);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 .highlight {
+    background: linear-gradient(90deg, #4fc3f7, #0078d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-subtitle {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.8);
+    max-width: 640px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+  }
+  .hero-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Main Content ── */
+  .content-wrapper {
+    max-width: var(--max-width);
+    margin: -32px auto 60px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  article {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 48px 56px;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    article { padding: 28px 20px; }
+  }
+
+  /* ── Typography ── */
+  h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 48px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-light);
+    letter-spacing: -0.3px;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin: 32px 0 12px;
+  }
+
+  h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 24px 0 8px;
+  }
+
+  p { margin-bottom: 16px; color: var(--text); }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  ul, ol {
+    margin: 0 0 20px 24px;
+    color: var(--text);
+  }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--primary); }
+
+  strong { font-weight: 600; }
+
+  /* ── Code Blocks ── */
+  pre {
+    background: var(--surface-code);
+    color: #d4d4d4;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.65;
+    border: 1px solid #333;
+    position: relative;
+  }
+  pre .lang-label {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-sans);
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: #f0f3f6;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #0550ae;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .kw { color: #569cd6; }
+  .str { color: #ce9178; }
+  .cm { color: #6a9955; }
+  .fn { color: #dcdcaa; }
+  .num { color: #b5cea8; }
+  .type { color: #4ec9b0; }
+  .param { color: #9cdcfe; }
+  .op { color: #d4d4d4; }
+
+  /* ── Callout Boxes ── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-left: 4px solid;
+    font-size: 0.95rem;
+  }
+  .callout-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .callout-info {
+    background: #dbeafe;
+    border-color: var(--info);
+  }
+  .callout-info .callout-title { color: var(--info); }
+  .callout-warning {
+    background: #fff8e1;
+    border-color: var(--warning);
+  }
+  .callout-warning .callout-title { color: #93700a; }
+  .callout-success {
+    background: #dcfce7;
+    border-color: var(--success);
+  }
+  .callout-success .callout-title { color: var(--success); }
+  .callout-danger {
+    background: #fee2e2;
+    border-color: var(--accent);
+  }
+  .callout-danger .callout-title { color: var(--accent); }
+  .callout-hack {
+    background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+    border-color: #7c3aed;
+  }
+  .callout-hack .callout-title { color: #7c3aed; }
+
+  /* ── Info Cards / Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+  .card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+  .card h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: var(--primary-dark);
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--primary-light);
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+  tr:hover td { background: #f8fafd; }
+
+  /* ── Video Embed ── */
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin: 32px 0;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+  }
+  .video-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  /* ── Architecture Diagram ── */
+  .arch-diagram {
+    background: linear-gradient(135deg, #f0f4ff, #e8f0fe);
+    border: 2px dashed #aac4e6;
+    border-radius: var(--radius-lg);
+    padding: 40px 24px;
+    margin: 32px 0;
+    text-align: center;
+  }
+  .arch-diagram .arch-title {
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 1rem;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .arch-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .arch-node {
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    color: var(--primary-dark);
+    box-shadow: 0 2px 6px rgba(0,120,212,0.12);
+  }
+  .arch-node.highlight-node {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary-dark);
+  }
+  .arch-arrow {
+    color: var(--primary);
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  /* ── Progress Tracker ── */
+  .progress-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 32px 0;
+  }
+  .progress-bar .label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .progress-track {
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #4fc3f7);
+    border-radius: 100px;
+    transition: width 0.8s ease;
+  }
+
+  /* ── Mini Hack Banner ── */
+  .mini-hack-banner {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    margin: 40px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .mini-hack-banner::before {
+    content: '🏗️';
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    font-size: 80px;
+    opacity: 0.15;
+  }
+  .mini-hack-banner h3 {
+    color: #fff;
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+  }
+  .mini-hack-banner p {
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+  }
+
+  /* ── Step List ── */
+  .step-list {
+    counter-reset: steps;
+    list-style: none;
+    margin-left: 0;
+    padding: 0;
+  }
+  .step-list li {
+    counter-increment: steps;
+    padding: 16px 16px 16px 56px;
+    position: relative;
+    border-left: 2px solid var(--primary-light);
+    margin-bottom: 4px;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: -14px;
+    top: 14px;
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  /* ── Bottom Navigation ── */
+  .bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 2px solid var(--border);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .bottom-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .nav-prev {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .nav-prev:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); }
+  .nav-next {
+    background: var(--primary);
+    color: #fff;
+  }
+  .nav-next:hover { background: var(--primary-dark); }
+
+  /* ── Footer ── */
+  .site-footer {
+    text-align: center;
+    padding: 40px 24px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .site-footer .footer-brand {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    margin: 24px 0;
+  }
+  .tab-buttons {
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    gap: 0;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .tab-panel {
+    display: none;
+    padding-top: 16px;
+  }
+  .tab-panel.active { display: block; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .hero { padding: 48px 16px 40px; }
+    .hero h1 { font-size: 1.7rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .arch-flow { flex-direction: column; }
+    .arch-arrow { transform: rotate(90deg); }
+    article { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAVIGATION ═══════════ -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a class="brand" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Azure AI Foundry: Zero to Hero
+    </a>
+    <div class="nav-links">
+      <a href="#">Modules</a>
+      <a href="#">GitHub</a>
+      <a href="#">Community</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO SECTION ═══════════ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      ARC 5 · ORCHESTRATION &amp; INTEGRATION
+    </div>
+    <h1>Module 25: <span class="highlight">Real-World Integration Patterns</span></h1>
+    <p class="hero-subtitle">
+      Connect your Azure AI Foundry agents to Microsoft Teams, Power Platform, REST APIs, and
+      event-driven architectures — turning intelligent models into production-ready solutions
+      that live where your users work.
+    </p>
+    <div class="hero-meta">
+      <span>📅 April 2026</span>
+      <span>⏱️ 90 min read</span>
+      <span>🎯 Intermediate–Advanced</span>
+      <span>📦 Module 25 of 45</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="content-wrapper">
+<article>
+
+  <!-- Progress -->
+  <div class="progress-bar">
+    <div class="label">
+      <span>Course Progress</span>
+      <span>Module 25 / 45 — 55% Complete</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:55%"></div>
+    </div>
+  </div>
+
+  <!-- ═══ INTRODUCTION ═══ -->
+  <h2>Introduction: From Prototype to Production</h2>
+  <p>
+    You've built intelligent agents in Azure AI Foundry — they reason, they call tools, they produce
+    accurate answers. But an agent that only lives in a playground is an agent that delivers zero business
+    value. <strong>Module 25</strong> is about crossing the last mile: wiring your agents into the systems
+    where decisions actually happen — Microsoft Teams conversations, Power Platform workflows, custom
+    REST APIs, and event-driven pipelines.
+  </p>
+  <p>
+    By the end of this module you will understand the architectural patterns, authentication flows,
+    and design decisions that separate a proof-of-concept from a production-grade AI integration.
+  </p>
+
+  <div class="callout callout-info">
+    <div class="callout-title">💡 Key Insight</div>
+    Azure AI Foundry provides a unified platform
+    for building, deploying, and orchestrating AI agents — combining model management, prompt engineering,
+    evaluation, and production-grade agent hosting in a single experience.
+  </div>
+
+  <!-- ═══ INTEGRATION LANDSCAPE ═══ -->
+  <h2>The Integration Landscape</h2>
+  <p>
+    Every integration pattern in this module follows the same core flow: an external trigger reaches a
+    gateway, the gateway authenticates and transforms the request, the request is routed to your Azure AI
+    Foundry agent, and the response flows back to the caller.
+  </p>
+
+  <div class="arch-diagram">
+    <div class="arch-title">End-to-End Integration Architecture</div>
+    <div class="arch-flow">
+      <div class="arch-node">External Client<br><small>Teams · Power Apps · REST</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">API Gateway<br><small>Azure API Mgmt / Functions</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight-node">Azure AI Foundry<br><small>Agent Runtime</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Downstream Services<br><small>Databases · APIs · Storage</small></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <h4>Teams Bot</h4>
+      <p>Embed AI-powered conversations directly in Microsoft Teams using Bot Framework and AI Foundry agents.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h4>Power Platform</h4>
+      <p>Create custom connectors for Power Automate and Power Apps that invoke your agents with no code.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <h4>REST APIs</h4>
+      <p>Expose your agents through RESTful endpoints for any external application to consume.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔔</div>
+      <h4>Webhooks &amp; Events</h4>
+      <p>Trigger agent workflows reactively through Event Grid, Service Bus, and webhook patterns.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 1: TEAMS BOT ═══ -->
+  <h2>1. Microsoft Teams Bot Integration</h2>
+  <p>
+    Microsoft Teams is the default collaboration surface for millions of enterprise users. Integrating
+    your AI Foundry agent as a Teams bot puts AI capabilities directly into the flow of work — no
+    context switching required.
+  </p>
+
+  <h3>Architecture Overview</h3>
+  <p>
+    A Teams bot integration uses the <strong>Azure Bot Service</strong> as the messaging relay between
+    Teams and your agent. The bot receives activities (messages, card actions, adaptive card submissions),
+    forwards them to your Azure AI Foundry agent endpoint, and returns the response to the user.
+  </p>
+
+  <div class="arch-diagram">
+    <div class="arch-title">Teams Bot → AI Foundry Agent Flow</div>
+    <div class="arch-flow">
+      <div class="arch-node">Microsoft Teams</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Azure Bot Service</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Bot App (Functions)</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight-node">AI Foundry Agent</div>
+    </div>
+  </div>
+
+  <h3>Setting Up the Bot Registration</h3>
+  <ol>
+    <li>Navigate to the <strong>Azure Portal</strong> → Create an <strong>Azure Bot</strong> resource.</li>
+    <li>Configure the <strong>Messaging Endpoint</strong> to point to your Azure Function or App Service.</li>
+    <li>Enable the <strong>Microsoft Teams channel</strong> in the Bot Service configuration.</li>
+    <li>Register the bot in <strong>Teams Admin Center</strong> or side-load for development.</li>
+  </ol>
+
+  <h3>Bot Framework Handler — Forwarding to AI Foundry</h3>
+  <p>
+    The bot handler intercepts each incoming message, constructs a request to the AI Foundry agent
+    API, and returns the response as a Teams message. Below is a simplified implementation:
+  </p>
+
+<pre><code><span class="lang-label">Python</span>
+<span class="kw">import</span> os
+<span class="kw">from</span> botbuilder.core <span class="kw">import</span> ActivityHandler, TurnContext
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> AgentThread
+
+<span class="kw">class</span> <span class="type">FoundryBot</span>(ActivityHandler):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>):
+        <span class="param">self</span>.client = AIProjectClient(
+            credential=DefaultAzureCredential(),
+            project=os.environ[<span class="str">"FOUNDRY_PROJECT_CONN_STR"</span>]
+        )
+        <span class="param">self</span>.agent_id = os.environ[<span class="str">"FOUNDRY_AGENT_ID"</span>]
+
+    <span class="kw">async def</span> <span class="fn">on_message_activity</span>(<span class="param">self</span>, turn_context: TurnContext):
+        <span class="cm"># Create a thread and send the user's message</span>
+        thread: AgentThread = <span class="param">self</span>.client.agents.create_thread()
+
+        <span class="param">self</span>.client.agents.create_message(
+            thread_id=thread.id,
+            role=<span class="str">"user"</span>,
+            content=turn_context.activity.text
+        )
+
+        <span class="cm"># Run the agent and wait for completion</span>
+        run = <span class="param">self</span>.client.agents.create_and_process_run(
+            thread_id=thread.id,
+            agent_id=<span class="param">self</span>.agent_id
+        )
+
+        <span class="cm"># Retrieve the latest assistant response</span>
+        messages = <span class="param">self</span>.client.agents.list_messages(thread_id=thread.id)
+        reply = messages.data[<span class="num">0</span>].content[<span class="num">0</span>].text.value
+
+        <span class="kw">await</span> turn_context.send_activity(reply)
+</code></pre>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">⚠️ Production Considerations</div>
+    <ul>
+      <li><strong>Thread management:</strong> Map each Teams conversation ID to a persistent AI Foundry thread
+        ID using Azure Table Storage or Cosmos DB to preserve context across messages.</li>
+      <li><strong>Typing indicators:</strong> Show a typing indicator while the agent processes to avoid user
+        frustration. Use <code>turn_context.send_activities()</code> with a typing activity.</li>
+      <li><strong>Rate limiting:</strong> Implement token bucket or sliding window rate limiting per user to
+        prevent abuse of your agent quota.</li>
+    </ul>
+  </div>
+
+  <h3>Adaptive Cards for Rich Responses</h3>
+  <p>
+    Plain text responses work, but <strong>Adaptive Cards</strong> let your bot deliver structured,
+    interactive content — tables, buttons, forms — directly in Teams. You can format agent responses
+    into Adaptive Card JSON for a polished user experience.
+  </p>
+
+<pre><code><span class="lang-label">JSON</span>{
+  <span class="str">"type"</span>: <span class="str">"AdaptiveCard"</span>,
+  <span class="str">"$schema"</span>: <span class="str">"http://adaptivecards.io/schemas/adaptive-card.json"</span>,
+  <span class="str">"version"</span>: <span class="str">"1.5"</span>,
+  <span class="str">"body"</span>: [
+    {
+      <span class="str">"type"</span>: <span class="str">"TextBlock"</span>,
+      <span class="str">"text"</span>: <span class="str">"AI Foundry Agent Response"</span>,
+      <span class="str">"weight"</span>: <span class="str">"Bolder"</span>,
+      <span class="str">"size"</span>: <span class="str">"Medium"</span>
+    },
+    {
+      <span class="str">"type"</span>: <span class="str">"TextBlock"</span>,
+      <span class="str">"text"</span>: <span class="str">"${agentResponse}"</span>,
+      <span class="str">"wrap"</span>: <span class="kw">true</span>
+    }
+  ],
+  <span class="str">"actions"</span>: [
+    {
+      <span class="str">"type"</span>: <span class="str">"Action.Submit"</span>,
+      <span class="str">"title"</span>: <span class="str">"👍 Helpful"</span>,
+      <span class="str">"data"</span>: { <span class="str">"feedback"</span>: <span class="str">"positive"</span> }
+    },
+    {
+      <span class="str">"type"</span>: <span class="str">"Action.Submit"</span>,
+      <span class="str">"title"</span>: <span class="str">"👎 Not Helpful"</span>,
+      <span class="str">"data"</span>: { <span class="str">"feedback"</span>: <span class="str">"negative"</span> }
+    }
+  ]
+}</code></pre>
+
+  <!-- ═══ SECTION 2: POWER PLATFORM ═══ -->
+  <h2>2. Power Platform Connectors</h2>
+  <p>
+    The Power Platform — Power Automate, Power Apps, and Power Virtual Agents — brings AI capabilities
+    to citizen developers without writing code. By creating <strong>custom connectors</strong>, you
+    expose your AI Foundry agent as a drag-and-drop action that anyone in the organization can use.
+  </p>
+
+  <h3>Custom Connector Architecture</h3>
+  <div class="arch-diagram">
+    <div class="arch-title">Power Platform → AI Foundry via Custom Connector</div>
+    <div class="arch-flow">
+      <div class="arch-node">Power Automate /<br>Power Apps</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Custom Connector</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Azure Functions<br><small>(proxy)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight-node">AI Foundry Agent</div>
+    </div>
+  </div>
+
+  <h3>Building the Azure Function Proxy</h3>
+  <p>
+    Custom connectors communicate via REST. An Azure Function acts as a lightweight proxy that
+    authenticates with AI Foundry using managed identity and forwards requests:
+  </p>
+
+<pre><code><span class="lang-label">C#</span>
+<span class="kw">using</span> Azure.AI.Projects;
+<span class="kw">using</span> Azure.Identity;
+
+[<span class="type">Function</span>(<span class="str">"InvokeAgent"</span>)]
+<span class="kw">public async</span> Task&lt;IActionResult&gt; <span class="fn">Run</span>(
+    [<span class="type">HttpTrigger</span>(AuthorizationLevel.Function, <span class="str">"post"</span>)] HttpRequest req)
+{
+    <span class="kw">var</span> body = <span class="kw">await</span> req.ReadFromJsonAsync&lt;<span class="type">AgentRequest</span>&gt;();
+
+    <span class="kw">var</span> client = <span class="kw">new</span> <span class="type">AIProjectClient</span>(
+        Environment.GetEnvironmentVariable(<span class="str">"FOUNDRY_PROJECT_CONN_STR"</span>),
+        <span class="kw">new</span> <span class="type">DefaultAzureCredential</span>()
+    );
+
+    <span class="cm">// Create thread, message, and run the agent</span>
+    AgentThread thread = <span class="kw">await</span> client.Agents.CreateThreadAsync();
+
+    <span class="kw">await</span> client.Agents.CreateMessageAsync(
+        thread.Id, <span class="str">"user"</span>, body.Message);
+
+    ThreadRun run = <span class="kw">await</span> client.Agents.CreateAndProcessRunAsync(
+        thread.Id, Environment.GetEnvironmentVariable(<span class="str">"AGENT_ID"</span>));
+
+    <span class="kw">var</span> messages = <span class="kw">await</span> client.Agents.GetMessagesAsync(thread.Id);
+    <span class="kw">var</span> reply = messages.Value.Data[<span class="num">0</span>].Content[<span class="num">0</span>].Text;
+
+    <span class="kw">return new</span> <span class="type">OkObjectResult</span>(<span class="kw">new</span> { response = reply });
+}</code></pre>
+
+  <h3>Registering the Custom Connector</h3>
+  <ol class="step-list">
+    <li>In <strong>Power Automate</strong>, go to <em>Data → Custom Connectors → New Custom Connector</em>.</li>
+    <li>Provide your Azure Function URL as the <strong>Host</strong> and configure the base path.</li>
+    <li>Set <strong>Authentication</strong> to API Key — pass the Function key in the header.</li>
+    <li>Define the <strong>Actions</strong> with request/response schemas matching your Function's contract.</li>
+    <li>Test the connector, then publish it for your organization.</li>
+  </ol>
+
+  <h3>Power Automate Flow Example</h3>
+  <p>
+    A practical Power Automate flow that triggers when an email arrives, extracts the body, sends it to
+    your AI Foundry agent for summarization, and posts the summary to a Teams channel:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th>Connector</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Outlook 365</td><td>When a new email arrives (trigger)</td></tr>
+      <tr><td>2</td><td>AI Foundry Connector</td><td>Invoke Agent — pass email body</td></tr>
+      <tr><td>3</td><td>Microsoft Teams</td><td>Post message to channel with summary</td></tr>
+      <tr><td>4</td><td>SharePoint</td><td>Create list item with original + summary</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-success">
+    <div class="callout-title">✅ Power Apps Integration</div>
+    The same custom connector works in Power Apps. Bind a text input to collect user questions,
+    call the connector on button click, and display the agent's response in a label — all with zero code.
+  </div>
+
+  <!-- ═══ SECTION 3: REST API PATTERNS ═══ -->
+  <h2>3. REST API Patterns for External Applications</h2>
+  <p>
+    When you need to integrate AI Foundry agents with applications outside the Microsoft ecosystem
+    — mobile apps, third-party SaaS platforms, or custom web applications — REST APIs are the universal
+    integration language.
+  </p>
+
+  <h3>API Design Patterns</h3>
+
+  <div class="tabs">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab(event, 'tab-sync')">Synchronous</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-async')">Asynchronous</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-stream')">Streaming</button>
+    </div>
+
+    <div id="tab-sync" class="tab-panel active">
+      <h4>Synchronous Request-Response</h4>
+      <p>Best for short interactions (under 30 seconds). The client sends a request, waits for the full response, and renders it.</p>
+<pre><code><span class="lang-label">HTTP</span>
+POST /api/agent/invoke HTTP/1.1
+Host: your-function-app.azurewebsites.net
+Content-Type: application/json
+x-functions-key: {{functionKey}}
+
+{
+  <span class="str">"message"</span>: <span class="str">"Summarize Q4 sales trends"</span>,
+  <span class="str">"thread_id"</span>: <span class="str">"thread_abc123"</span>  <span class="cm">// optional: continue conversation</span>
+}
+
+<span class="cm">// Response</span>
+{
+  <span class="str">"response"</span>: <span class="str">"Q4 sales showed a 12% increase..."</span>,
+  <span class="str">"thread_id"</span>: <span class="str">"thread_abc123"</span>,
+  <span class="str">"usage"</span>: { <span class="str">"prompt_tokens"</span>: <span class="num">340</span>, <span class="str">"completion_tokens"</span>: <span class="num">215</span> }
+}</code></pre>
+    </div>
+
+    <div id="tab-async" class="tab-panel">
+      <h4>Asynchronous Polling</h4>
+      <p>Ideal for longer agent tasks. Submit a job, receive a <code>202 Accepted</code> with a polling URL, and check for completion.</p>
+<pre><code><span class="lang-label">HTTP</span>
+<span class="cm">// 1. Submit</span>
+POST /api/agent/jobs  →  202 Accepted
+Location: /api/agent/jobs/job_xyz789
+
+<span class="cm">// 2. Poll</span>
+GET /api/agent/jobs/job_xyz789
+{
+  <span class="str">"status"</span>: <span class="str">"running"</span>,
+  <span class="str">"progress"</span>: <span class="num">65</span>
+}
+
+<span class="cm">// 3. Completed</span>
+GET /api/agent/jobs/job_xyz789
+{
+  <span class="str">"status"</span>: <span class="str">"completed"</span>,
+  <span class="str">"result"</span>: { <span class="str">"response"</span>: <span class="str">"Analysis complete..."</span> }
+}</code></pre>
+    </div>
+
+    <div id="tab-stream" class="tab-panel">
+      <h4>Server-Sent Events (SSE) Streaming</h4>
+      <p>Best for real-time UX. The agent streams tokens as they are generated, providing immediate feedback.</p>
+<pre><code><span class="lang-label">Python</span>
+<span class="kw">from</span> flask <span class="kw">import</span> Flask, Response
+
+<span class="kw">def</span> <span class="fn">stream_agent_response</span>(<span class="param">thread_id</span>, <span class="param">agent_id</span>):
+    <span class="cm"># Use AI Foundry's streaming API</span>
+    <span class="kw">with</span> client.agents.create_stream(
+        thread_id=thread_id,
+        agent_id=agent_id
+    ) <span class="kw">as</span> stream:
+        <span class="kw">for</span> event <span class="kw">in</span> stream:
+            <span class="kw">if</span> event.type == <span class="str">"content_delta"</span>:
+                <span class="kw">yield</span> <span class="str">f"data: {event.delta.text}\n\n"</span>
+        <span class="kw">yield</span> <span class="str">"data: [DONE]\n\n"</span>
+
+@app.route(<span class="str">"/api/stream"</span>)
+<span class="kw">def</span> <span class="fn">stream</span>():
+    <span class="kw">return</span> Response(
+        stream_agent_response(thread_id, agent_id),
+        mimetype=<span class="str">"text/event-stream"</span>
+    )</code></pre>
+    </div>
+  </div>
+
+  <h3>Authentication &amp; Security</h3>
+  <table>
+    <thead>
+      <tr><th>Pattern</th><th>When to Use</th><th>Implementation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>API Key</strong></td>
+        <td>Internal services, quick prototyping</td>
+        <td>Pass key in <code>x-api-key</code> header</td>
+      </tr>
+      <tr>
+        <td><strong>OAuth 2.0 + Microsoft Entra ID</strong></td>
+        <td>Production multi-tenant apps</td>
+        <td>JWT token via MSAL; validate in API middleware</td>
+      </tr>
+      <tr>
+        <td><strong>Managed Identity</strong></td>
+        <td>Service-to-service within Azure</td>
+        <td><code>DefaultAzureCredential</code> — zero secrets in config</td>
+      </tr>
+      <tr>
+        <td><strong>API Management + Subscription Key</strong></td>
+        <td>External partners, metered access</td>
+        <td>APIM policies: rate-limit, throttle, transform</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-danger">
+    <div class="callout-title">🔒 Security Best Practice</div>
+    Never expose your AI Foundry project connection string or agent ID to client-side code. Always proxy
+    through a server-side API (Azure Functions, App Service) that authenticates with managed identity.
+  </div>
+
+  <!-- ═══ SECTION 4: WEBHOOKS & EVENTS ═══ -->
+  <h2>4. Webhook &amp; Event-Driven Architectures</h2>
+  <p>
+    Not every AI interaction starts with a human typing a message. <strong>Event-driven patterns</strong>
+    trigger agent workflows automatically when something happens — a file lands in Blob Storage, a
+    database record changes, a third-party system fires a webhook.
+  </p>
+
+  <h3>Event-Driven Architecture with Azure Services</h3>
+  <div class="arch-diagram">
+    <div class="arch-title">Event-Driven Agent Invocation</div>
+    <div class="arch-flow">
+      <div class="arch-node">Event Source<br><small>Blob · DB · Webhook</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Event Grid /<br>Service Bus</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Azure Function<br><small>(event handler)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight-node">AI Foundry Agent</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Action<br><small>Notify · Store · Trigger</small></div>
+    </div>
+  </div>
+
+  <h3>Incoming Webhooks — Receiving External Events</h3>
+  <p>
+    Expose an Azure Function as a webhook receiver. When a third-party system (GitHub, Stripe, Salesforce)
+    sends an event, the function validates the payload, extracts the relevant data, and invokes the agent:
+  </p>
+
+<pre><code><span class="lang-label">Python</span>
+<span class="kw">import</span> azure.functions <span class="kw">as</span> func
+<span class="kw">import</span> hmac, hashlib, json
+
+<span class="kw">def</span> <span class="fn">main</span>(req: func.HttpRequest) -> func.HttpResponse:
+    <span class="cm"># 1. Validate webhook signature</span>
+    signature = req.headers.get(<span class="str">"X-Hub-Signature-256"</span>)
+    payload = req.get_body()
+    expected = <span class="str">"sha256="</span> + hmac.new(
+        WEBHOOK_SECRET.encode(), payload, hashlib.sha256
+    ).hexdigest()
+
+    <span class="kw">if not</span> hmac.compare_digest(signature, expected):
+        <span class="kw">return</span> func.HttpResponse(status_code=<span class="num">401</span>)
+
+    <span class="cm"># 2. Parse event and invoke agent</span>
+    event = json.loads(payload)
+    prompt = <span class="str">f"Analyze this event: {json.dumps(event)}"</span>
+
+    <span class="cm"># 3. Call AI Foundry agent (same pattern as before)</span>
+    result = invoke_foundry_agent(prompt)
+
+    <span class="cm"># 4. Take action based on agent's analysis</span>
+    <span class="kw">if</span> result[<span class="str">"severity"</span>] == <span class="str">"high"</span>:
+        send_teams_notification(result[<span class="str">"summary"</span>])
+
+    <span class="kw">return</span> func.HttpResponse(status_code=<span class="num">200</span>)</code></pre>
+
+  <h3>Event Grid Integration</h3>
+  <p>
+    Azure Event Grid provides reliable, at-scale event routing with built-in retry and dead-lettering.
+    Common triggers for AI agent invocation:
+  </p>
+  <ul>
+    <li><strong>Blob Storage events:</strong> Process uploaded documents (summarize, classify, extract data)</li>
+    <li><strong>Resource events:</strong> React to Azure resource changes (compliance checks, cost alerts)</li>
+    <li><strong>Custom topics:</strong> Application-specific events routed to your agent for intelligent processing</li>
+    <li><strong>Partner events:</strong> SaaS event sources integrated via Event Grid partner topics</li>
+  </ul>
+
+  <h3>Outgoing Webhooks — Agent-Initiated Actions</h3>
+  <p>
+    Your agent can also <em>send</em> webhooks. By configuring <strong>function tools</strong> in your
+    AI Foundry agent, the agent can call external APIs as part of its reasoning — posting to Slack,
+    creating Jira tickets, or updating CRM records.
+  </p>
+
+<pre><code><span class="lang-label">JSON</span><span class="cm">// Agent tool definition — outbound webhook action</span>
+{
+  <span class="str">"type"</span>: <span class="str">"function"</span>,
+  <span class="str">"function"</span>: {
+    <span class="str">"name"</span>: <span class="str">"create_support_ticket"</span>,
+    <span class="str">"description"</span>: <span class="str">"Creates a support ticket in the external system"</span>,
+    <span class="str">"parameters"</span>: {
+      <span class="str">"type"</span>: <span class="str">"object"</span>,
+      <span class="str">"properties"</span>: {
+        <span class="str">"title"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> },
+        <span class="str">"priority"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span>, <span class="str">"enum"</span>: [<span class="str">"low"</span>, <span class="str">"medium"</span>, <span class="str">"high"</span>] },
+        <span class="str">"description"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> }
+      },
+      <span class="str">"required"</span>: [<span class="str">"title"</span>, <span class="str">"priority"</span>]
+    }
+  }
+}</code></pre>
+
+  <!-- ═══ SECTION 5: PATTERNS COMPARISON ═══ -->
+  <h2>5. Choosing the Right Pattern</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Pattern</th>
+        <th>Best For</th>
+        <th>Latency</th>
+        <th>Complexity</th>
+        <th>Users</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Teams Bot</strong></td>
+        <td>Internal enterprise copilots</td>
+        <td>Medium</td>
+        <td>Medium</td>
+        <td>End users</td>
+      </tr>
+      <tr>
+        <td><strong>Power Platform</strong></td>
+        <td>No-code automation</td>
+        <td>Medium</td>
+        <td>Low</td>
+        <td>Citizen devs</td>
+      </tr>
+      <tr>
+        <td><strong>REST API</strong></td>
+        <td>Custom apps, SaaS</td>
+        <td>Low</td>
+        <td>Medium-High</td>
+        <td>Developers</td>
+      </tr>
+      <tr>
+        <td><strong>Webhooks/Events</strong></td>
+        <td>Automated pipelines</td>
+        <td>Variable</td>
+        <td>Medium</td>
+        <td>Systems</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ SECTION 6: API MANAGEMENT ═══ -->
+  <h2>6. API Management &amp; Gateway Patterns</h2>
+  <p>
+    In production, you rarely expose Azure Functions directly to clients. <strong>Azure API Management
+    (APIM)</strong> sits in front of your agent endpoints, providing a unified API surface with
+    enterprise-grade capabilities: rate limiting, request transformation, caching, analytics, and
+    developer portal access.
+  </p>
+
+  <h3>APIM Architecture</h3>
+  <div class="arch-diagram">
+    <div class="arch-title">Production API Gateway Pattern</div>
+    <div class="arch-flow">
+      <div class="arch-node">External<br>Consumers</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight-node">Azure API<br>Management</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Azure Function<br><small>(backend)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">AI Foundry<br>Agent</div>
+    </div>
+  </div>
+
+  <h3>Essential APIM Policies for AI Agents</h3>
+  <p>
+    APIM policies let you apply cross-cutting concerns declaratively, without modifying your backend code.
+    Here are the policies most relevant to AI agent endpoints:
+  </p>
+
+<pre><code><span class="lang-label">XML</span>
+<span class="cm">&lt;!-- Rate limiting: 10 requests per minute per subscription --&gt;</span>
+&lt;<span class="kw">inbound</span>&gt;
+    &lt;<span class="kw">rate-limit-by-key</span>
+        <span class="param">calls</span>=<span class="str">"10"</span>
+        <span class="param">renewal-period</span>=<span class="str">"60"</span>
+        <span class="param">counter-key</span>=<span class="str">"@(context.Subscription?.Key ?? context.Request.IpAddress)"</span>
+        <span class="param">retry-after-header-name</span>=<span class="str">"Retry-After"</span> /&gt;
+
+    <span class="cm">&lt;!-- Validate JWT token from Microsoft Entra ID --&gt;</span>
+    &lt;<span class="kw">validate-jwt</span>
+        <span class="param">header-name</span>=<span class="str">"Authorization"</span>
+        <span class="param">failed-validation-httpcode</span>=<span class="str">"401"</span>
+        <span class="param">require-scheme</span>=<span class="str">"Bearer"</span>&gt;
+        &lt;<span class="kw">openid-config</span>
+            <span class="param">url</span>=<span class="str">"https://login.microsoftonline.com/{tenant-id}/v2.0/.well-known/openid-configuration"</span> /&gt;
+        &lt;<span class="kw">required-claims</span>&gt;
+            &lt;<span class="kw">claim</span> <span class="param">name</span>=<span class="str">"aud"</span> <span class="param">match</span>=<span class="str">"all"</span>&gt;
+                &lt;<span class="kw">value</span>&gt;{your-api-app-id}&lt;/<span class="kw">value</span>&gt;
+            &lt;/<span class="kw">claim</span>&gt;
+        &lt;/<span class="kw">required-claims</span>&gt;
+    &lt;/<span class="kw">validate-jwt</span>&gt;
+
+    <span class="cm">&lt;!-- Add correlation ID for distributed tracing --&gt;</span>
+    &lt;<span class="kw">set-header</span> <span class="param">name</span>=<span class="str">"x-correlation-id"</span> <span class="param">exists-action</span>=<span class="str">"skip"</span>&gt;
+        &lt;<span class="kw">value</span>&gt;@(Guid.NewGuid().ToString())&lt;/<span class="kw">value</span>&gt;
+    &lt;/<span class="kw">set-header</span>&gt;
+&lt;/<span class="kw">inbound</span>&gt;
+
+<span class="cm">&lt;!-- Cache responses for identical prompts (optional, use carefully) --&gt;</span>
+&lt;<span class="kw">outbound</span>&gt;
+    &lt;<span class="kw">set-header</span> <span class="param">name</span>=<span class="str">"X-Request-Cost"</span>&gt;
+        &lt;<span class="kw">value</span>&gt;@(context.Response.Headers.GetValueOrDefault(<span class="str">"x-token-usage"</span>,<span class="str">"0"</span>))&lt;/<span class="kw">value</span>&gt;
+    &lt;/<span class="kw">set-header</span>&gt;
+&lt;/<span class="kw">outbound</span>&gt;
+</code></pre>
+
+  <h3>Key APIM Capabilities for AI Endpoints</h3>
+  <table>
+    <thead>
+      <tr><th>Capability</th><th>Description</th><th>Why It Matters</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Rate Limiting</strong></td>
+        <td>Limit requests per subscription, per IP, or per user</td>
+        <td>Prevents abuse and controls AI Foundry token consumption</td>
+      </tr>
+      <tr>
+        <td><strong>Request Validation</strong></td>
+        <td>Validate request body against JSON schema</td>
+        <td>Rejects malformed requests before they reach your backend</td>
+      </tr>
+      <tr>
+        <td><strong>JWT Validation</strong></td>
+        <td>Validate OAuth 2.0 tokens from Microsoft Entra ID</td>
+        <td>Centralized authentication — no auth code in your Functions</td>
+      </tr>
+      <tr>
+        <td><strong>Response Caching</strong></td>
+        <td>Cache identical request/response pairs</td>
+        <td>Reduces AI Foundry calls for repeated queries (use with care)</td>
+      </tr>
+      <tr>
+        <td><strong>Analytics</strong></td>
+        <td>Built-in dashboards for latency, error rates, usage</td>
+        <td>Visibility into how your AI endpoints are consumed</td>
+      </tr>
+      <tr>
+        <td><strong>Developer Portal</strong></td>
+        <td>Self-service API documentation and key management</td>
+        <td>Enables partners to onboard without manual provisioning</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ SECTION 7: OBSERVABILITY ═══ -->
+  <h2>7. Observability &amp; Monitoring</h2>
+  <p>
+    Every production integration must be observable. Without instrumentation, you are flying blind —
+    unable to detect latency regressions, token budget overruns, or silent failures that degrade
+    user experience.
+  </p>
+
+  <h3>The Three Pillars of AI Integration Observability</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <h4>Metrics</h4>
+      <p>Track quantitative signals: request count, latency (p50/p95/p99), token usage per invocation,
+        error rate, and active thread count.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h4>Logs</h4>
+      <p>Structured logs with correlation IDs that trace a request from the client through the gateway,
+        to the Function, and into the AI Foundry agent run.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <h4>Traces</h4>
+      <p>Distributed traces using Application Insights that show end-to-end latency breakdown across
+        all services in the integration chain.</p>
+    </div>
+  </div>
+
+  <h3>Application Insights Integration</h3>
+<pre><code><span class="lang-label">Python</span>
+<span class="kw">import</span> logging
+<span class="kw">from</span> opencensus.ext.azure.log_exporter <span class="kw">import</span> AzureLogHandler
+<span class="kw">from</span> opencensus.ext.azure.trace_exporter <span class="kw">import</span> AzureExporter
+<span class="kw">from</span> opencensus.trace.tracer <span class="kw">import</span> Tracer
+
+<span class="cm"># Configure Application Insights</span>
+logger = logging.getLogger(__name__)
+logger.addHandler(AzureLogHandler(
+    connection_string=os.environ[<span class="str">"APPLICATIONINSIGHTS_CONNECTION_STRING"</span>]
+))
+
+tracer = Tracer(exporter=AzureExporter(
+    connection_string=os.environ[<span class="str">"APPLICATIONINSIGHTS_CONNECTION_STRING"</span>]
+))
+
+<span class="kw">async def</span> <span class="fn">invoke_agent_with_telemetry</span>(
+    <span class="param">client</span>, <span class="param">thread_id</span>, <span class="param">agent_id</span>, <span class="param">message</span>
+):
+    <span class="kw">with</span> tracer.span(name=<span class="str">"agent_invocation"</span>) <span class="kw">as</span> span:
+        span.add_attribute(<span class="str">"agent_id"</span>, agent_id)
+        span.add_attribute(<span class="str">"thread_id"</span>, thread_id)
+
+        <span class="cm"># Track timing</span>
+        start = time.time()
+
+        <span class="kw">try</span>:
+            client.agents.create_message(
+                thread_id=thread_id, role=<span class="str">"user"</span>, content=message
+            )
+            run = client.agents.create_and_process_run(
+                thread_id=thread_id, agent_id=agent_id
+            )
+
+            duration = time.time() - start
+            span.add_attribute(<span class="str">"duration_seconds"</span>, duration)
+            span.add_attribute(<span class="str">"run_status"</span>, run.status)
+
+            <span class="cm"># Log custom metrics</span>
+            logger.info(<span class="str">"Agent invocation completed"</span>, extra={
+                <span class="str">"custom_dimensions"</span>: {
+                    <span class="str">"agent_id"</span>: agent_id,
+                    <span class="str">"duration_ms"</span>: <span class="kw">int</span>(duration * <span class="num">1000</span>),
+                    <span class="str">"status"</span>: run.status,
+                    <span class="str">"prompt_tokens"</span>: run.usage.prompt_tokens,
+                    <span class="str">"completion_tokens"</span>: run.usage.completion_tokens,
+                }
+            })
+
+            <span class="kw">return</span> run
+
+        <span class="kw">except</span> Exception <span class="kw">as</span> e:
+            span.add_attribute(<span class="str">"error"</span>, <span class="kw">str</span>(e))
+            logger.exception(<span class="str">"Agent invocation failed"</span>)
+            <span class="kw">raise</span>
+</code></pre>
+
+  <h3>Key Metrics Dashboard</h3>
+  <p>
+    Build an Azure Monitor workbook or Grafana dashboard that tracks these critical metrics
+    across all integration channels:
+  </p>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Target</th><th>Alert Threshold</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Agent Invocation Latency (p95)</strong></td>
+        <td>&lt; 10 seconds</td>
+        <td>&gt; 30 seconds for 5 consecutive minutes</td>
+      </tr>
+      <tr>
+        <td><strong>Error Rate</strong></td>
+        <td>&lt; 1%</td>
+        <td>&gt; 5% over 15-minute window</td>
+      </tr>
+      <tr>
+        <td><strong>Token Usage (daily)</strong></td>
+        <td>Within budget</td>
+        <td>&gt; 80% of daily budget consumed</td>
+      </tr>
+      <tr>
+        <td><strong>Active Threads</strong></td>
+        <td>Trend monitoring</td>
+        <td>Sudden spike &gt; 3x baseline</td>
+      </tr>
+      <tr>
+        <td><strong>Thread Reuse Rate</strong></td>
+        <td>&gt; 60%</td>
+        <td>&lt; 30% (indicates thread mapping issues)</td>
+      </tr>
+      <tr>
+        <td><strong>Webhook Validation Failures</strong></td>
+        <td>0</td>
+        <td>Any occurrence (potential security issue)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ SECTION 8: ERROR HANDLING ═══ -->
+  <h2>8. Error Handling &amp; Resilience Patterns</h2>
+  <p>
+    AI agent integrations face unique failure modes: model timeouts, token limit exhaustion,
+    content filter triggers, and transient service outages. Robust error handling is not optional —
+    it is a requirement for production readiness.
+  </p>
+
+  <h3>Error Categories</h3>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Examples</th><th>Handling Strategy</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Transient</strong></td>
+        <td>HTTP 429 (rate limit), 503 (service unavailable)</td>
+        <td>Retry with exponential backoff + jitter</td>
+      </tr>
+      <tr>
+        <td><strong>Client Error</strong></td>
+        <td>HTTP 400 (bad request), invalid message format</td>
+        <td>Return descriptive error to caller; do not retry</td>
+      </tr>
+      <tr>
+        <td><strong>Agent Failure</strong></td>
+        <td>Run status = "failed", content filter triggered</td>
+        <td>Log details, return fallback message, alert on repeat failures</td>
+      </tr>
+      <tr>
+        <td><strong>Timeout</strong></td>
+        <td>Agent processing exceeds allowed duration</td>
+        <td>Cancel run, notify user, offer retry option</td>
+      </tr>
+      <tr>
+        <td><strong>Quota Exhausted</strong></td>
+        <td>Token budget exceeded, TPM/RPM limits hit</td>
+        <td>Queue request for later processing, notify user of delay</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Retry Pattern with Exponential Backoff</h3>
+<pre><code><span class="lang-label">Python</span>
+<span class="kw">import</span> time, random
+
+<span class="kw">def</span> <span class="fn">invoke_with_retry</span>(<span class="param">func</span>, <span class="param">max_retries</span>=<span class="num">3</span>, <span class="param">base_delay</span>=<span class="num">1.0</span>):
+    <span class="str">"""Invoke a function with exponential backoff and jitter."""</span>
+    <span class="kw">for</span> attempt <span class="kw">in</span> range(max_retries + <span class="num">1</span>):
+        <span class="kw">try</span>:
+            <span class="kw">return</span> func()
+        <span class="kw">except</span> <span class="type">RateLimitError</span> <span class="kw">as</span> e:
+            <span class="kw">if</span> attempt == max_retries:
+                <span class="kw">raise</span>
+            <span class="cm"># Exponential backoff: 1s, 2s, 4s + random jitter</span>
+            delay = base_delay * (<span class="num">2</span> ** attempt) + random.uniform(<span class="num">0</span>, <span class="num">0.5</span>)
+            logger.warning(
+                <span class="str">f"Rate limited, retrying in {delay:.1f}s "</span>
+                <span class="str">f"(attempt {attempt + 1}/{max_retries})"</span>
+            )
+            time.sleep(delay)
+        <span class="kw">except</span> <span class="type">ContentFilterError</span>:
+            <span class="cm"># Content filter is not retryable</span>
+            logger.error(<span class="str">"Content filter triggered — not retrying"</span>)
+            <span class="kw">raise</span>
+</code></pre>
+
+  <h3>Circuit Breaker Pattern</h3>
+  <p>
+    When the AI Foundry service is experiencing sustained failures, a circuit breaker prevents
+    your application from wasting resources on calls that will fail. The circuit "opens" after
+    a threshold of failures, and "closes" again after a cooldown period.
+  </p>
+
+<pre><code><span class="lang-label">Python</span>
+<span class="kw">import</span> time, threading
+
+<span class="kw">class</span> <span class="type">CircuitBreaker</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">failure_threshold</span>=<span class="num">5</span>, <span class="param">reset_timeout</span>=<span class="num">60</span>):
+        <span class="param">self</span>.failure_count = <span class="num">0</span>
+        <span class="param">self</span>.failure_threshold = failure_threshold
+        <span class="param">self</span>.reset_timeout = reset_timeout
+        <span class="param">self</span>.last_failure_time = <span class="num">0</span>
+        <span class="param">self</span>.state = <span class="str">"closed"</span>  <span class="cm"># closed, open, half-open</span>
+        <span class="param">self</span>.lock = threading.Lock()
+
+    <span class="kw">def</span> <span class="fn">call</span>(<span class="param">self</span>, <span class="param">func</span>):
+        <span class="kw">with</span> <span class="param">self</span>.lock:
+            <span class="kw">if</span> <span class="param">self</span>.state == <span class="str">"open"</span>:
+                <span class="kw">if</span> time.time() - <span class="param">self</span>.last_failure_time > <span class="param">self</span>.reset_timeout:
+                    <span class="param">self</span>.state = <span class="str">"half-open"</span>
+                <span class="kw">else</span>:
+                    <span class="kw">raise</span> <span class="type">CircuitOpenError</span>(
+                        <span class="str">"Circuit breaker is open — agent temporarily unavailable"</span>
+                    )
+
+        <span class="kw">try</span>:
+            result = func()
+            <span class="kw">with</span> <span class="param">self</span>.lock:
+                <span class="param">self</span>.failure_count = <span class="num">0</span>
+                <span class="param">self</span>.state = <span class="str">"closed"</span>
+            <span class="kw">return</span> result
+
+        <span class="kw">except</span> Exception:
+            <span class="kw">with</span> <span class="param">self</span>.lock:
+                <span class="param">self</span>.failure_count += <span class="num">1</span>
+                <span class="param">self</span>.last_failure_time = time.time()
+                <span class="kw">if</span> <span class="param">self</span>.failure_count >= <span class="param">self</span>.failure_threshold:
+                    <span class="param">self</span>.state = <span class="str">"open"</span>
+            <span class="kw">raise</span>
+</code></pre>
+
+  <!-- ═══ SECTION 9: MULTI-CHANNEL ═══ -->
+  <h2>9. Multi-Channel Deployment Strategy</h2>
+  <p>
+    The most powerful aspect of these integration patterns is that they are <strong>composable</strong>.
+    A single AI Foundry agent can simultaneously serve Teams users, Power Automate flows, REST API
+    clients, and event-driven pipelines — each through its own integration endpoint, but sharing the
+    same underlying intelligence.
+  </p>
+
+  <h3>Unified Agent, Multiple Channels</h3>
+  <div class="arch-diagram">
+    <div class="arch-title">Multi-Channel Agent Architecture</div>
+    <div class="arch-flow">
+      <div class="arch-node">Teams Bot</div>
+      <div class="arch-arrow">↘</div>
+      <div class="arch-node highlight-node" style="padding:20px 28px;">Azure AI<br>Foundry Agent<br><small>(single source of truth)</small></div>
+      <div class="arch-arrow">↙</div>
+      <div class="arch-node">REST API</div>
+    </div>
+    <div class="arch-flow" style="margin-top: 8px;">
+      <div class="arch-node">Power Platform</div>
+      <div class="arch-arrow">↗</div>
+      <div class="arch-node" style="visibility:hidden;">spacer</div>
+      <div class="arch-arrow">↖</div>
+      <div class="arch-node">Event Grid</div>
+    </div>
+  </div>
+
+  <h3>Channel-Specific Considerations</h3>
+  <table>
+    <thead>
+      <tr><th>Concern</th><th>Teams</th><th>Power Platform</th><th>REST API</th><th>Events</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Response Format</strong></td>
+        <td>Adaptive Cards</td>
+        <td>JSON object</td>
+        <td>JSON / SSE</td>
+        <td>Action-specific</td>
+      </tr>
+      <tr>
+        <td><strong>Thread Lifecycle</strong></td>
+        <td>Per conversation</td>
+        <td>Per flow run</td>
+        <td>Client-managed</td>
+        <td>Per event</td>
+      </tr>
+      <tr>
+        <td><strong>Auth Model</strong></td>
+        <td>Bot Service token</td>
+        <td>Connector API key</td>
+        <td>OAuth 2.0 / Key</td>
+        <td>Event Grid / SAS</td>
+      </tr>
+      <tr>
+        <td><strong>Timeout Handling</strong></td>
+        <td>Proactive messaging</td>
+        <td>Async with polling</td>
+        <td>202 Accepted</td>
+        <td>Queue + retry</td>
+      </tr>
+      <tr>
+        <td><strong>Error UX</strong></td>
+        <td>Error card</td>
+        <td>Flow error step</td>
+        <td>HTTP error codes</td>
+        <td>Dead letter queue</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Shared Infrastructure Pattern</h3>
+  <p>
+    Rather than duplicating agent invocation logic across each channel, centralize it in a shared
+    service layer. Each channel-specific Function calls the same internal API:
+  </p>
+
+<pre><code><span class="lang-label">Python</span>
+<span class="cm"># shared/agent_service.py — centralized agent invocation</span>
+
+<span class="kw">class</span> <span class="type">AgentService</span>:
+    <span class="str">"""Centralized service for invoking AI Foundry agents across all channels."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>):
+        <span class="param">self</span>.client = AIProjectClient(
+            credential=DefaultAzureCredential(),
+            project=os.environ[<span class="str">"FOUNDRY_PROJECT_CONN_STR"</span>]
+        )
+        <span class="param">self</span>.circuit_breaker = CircuitBreaker()
+        <span class="param">self</span>.thread_store = ThreadStore()
+
+    <span class="kw">def</span> <span class="fn">invoke</span>(
+        <span class="param">self</span>,
+        <span class="param">message</span>: <span class="kw">str</span>,
+        <span class="param">channel</span>: <span class="kw">str</span>,
+        <span class="param">conversation_id</span>: <span class="kw">str</span> | None = None,
+        <span class="param">agent_id</span>: <span class="kw">str</span> | None = None
+    ) -> <span class="kw">dict</span>:
+        <span class="str">"""Invoke the agent with channel-agnostic logic."""</span>
+        agent_id = agent_id <span class="kw">or</span> os.environ[<span class="str">"FOUNDRY_AGENT_ID"</span>]
+
+        <span class="cm"># Resolve or create thread</span>
+        thread_id = None
+        <span class="kw">if</span> conversation_id:
+            thread_id = <span class="param">self</span>.thread_store.get_thread_id(conversation_id)
+
+        <span class="kw">if not</span> thread_id:
+            thread = <span class="param">self</span>.client.agents.create_thread()
+            thread_id = thread.id
+            <span class="kw">if</span> conversation_id:
+                <span class="param">self</span>.thread_store.set_thread_id(conversation_id, thread_id)
+
+        <span class="cm"># Invoke with circuit breaker and retry</span>
+        <span class="kw">def</span> <span class="fn">_invoke</span>():
+            <span class="param">self</span>.client.agents.create_message(
+                thread_id=thread_id, role=<span class="str">"user"</span>, content=message
+            )
+            <span class="kw">return</span> <span class="param">self</span>.client.agents.create_and_process_run(
+                thread_id=thread_id, agent_id=agent_id
+            )
+
+        run = <span class="param">self</span>.circuit_breaker.call(
+            <span class="kw">lambda</span>: invoke_with_retry(_invoke)
+        )
+
+        messages = <span class="param">self</span>.client.agents.list_messages(thread_id=thread_id)
+        response = messages.data[<span class="num">0</span>].content[<span class="num">0</span>].text.value
+
+        <span class="kw">return</span> {
+            <span class="str">"response"</span>: response,
+            <span class="str">"thread_id"</span>: thread_id,
+            <span class="str">"channel"</span>: channel,
+            <span class="str">"status"</span>: run.status,
+            <span class="str">"usage"</span>: {
+                <span class="str">"prompt_tokens"</span>: run.usage.prompt_tokens,
+                <span class="str">"completion_tokens"</span>: run.usage.completion_tokens
+            }
+        }
+</code></pre>
+
+  <div class="callout callout-success">
+    <div class="callout-title">✅ Architecture Best Practice</div>
+    Centralizing agent invocation in a shared service ensures consistent behavior — retry logic,
+    circuit breaking, telemetry, and thread management — regardless of which channel triggered
+    the request. Update once, benefit everywhere.
+  </div>
+
+  <!-- ═══ SECTION 10: PRODUCTION CHECKLIST ═══ -->
+  <h2>10. Production Readiness Checklist</h2>
+  <p>
+    Before deploying any AI agent integration to production, walk through this comprehensive checklist
+    to ensure you have covered security, reliability, observability, and governance.
+  </p>
+
+  <h3>Security</h3>
+  <ul>
+    <li>✅ All secrets stored in Azure Key Vault — zero secrets in application settings or code</li>
+    <li>✅ Managed Identity used for all Azure service-to-service communication</li>
+    <li>✅ API endpoints protected with authentication (OAuth 2.0, API Key, or APIM subscription)</li>
+    <li>✅ Webhook endpoints validate cryptographic signatures before processing</li>
+    <li>✅ No AI Foundry connection strings or agent IDs exposed to client-side code</li>
+    <li>✅ Network restrictions: Virtual Network integration or private endpoints where applicable</li>
+    <li>✅ Data Loss Prevention (DLP) policies configured in Power Platform environments</li>
+  </ul>
+
+  <h3>Reliability</h3>
+  <ul>
+    <li>✅ Retry logic with exponential backoff for all agent invocations</li>
+    <li>✅ Circuit breaker pattern to prevent cascading failures</li>
+    <li>✅ Dead-letter queues configured for event-driven integrations</li>
+    <li>✅ Graceful error messages returned to users (never raw exceptions)</li>
+    <li>✅ Health check endpoints for monitoring service availability</li>
+    <li>✅ Thread cleanup strategy — archive or delete old threads to manage storage</li>
+  </ul>
+
+  <h3>Observability</h3>
+  <ul>
+    <li>✅ Application Insights connected to all Azure Functions and App Services</li>
+    <li>✅ Custom metrics: latency, token usage, error rate, thread reuse rate</li>
+    <li>✅ Correlation IDs propagated across all services in the chain</li>
+    <li>✅ Alerts configured for error rate spikes, latency degradation, and budget overruns</li>
+    <li>✅ Dashboard showing per-channel usage and performance breakdown</li>
+  </ul>
+
+  <h3>Governance</h3>
+  <ul>
+    <li>✅ Content moderation policies enforced (AI Foundry content filters)</li>
+    <li>✅ User feedback collection mechanism (thumbs up/down) for continuous improvement</li>
+    <li>✅ Audit logging for all agent interactions (who asked what, when)</li>
+    <li>✅ Token budget and rate limit policies per user/team/department</li>
+    <li>✅ Data retention policies aligned with organizational and regulatory requirements</li>
+  </ul>
+
+  <!-- ═══ VIDEO ═══ -->
+  <h2>📺 Featured Video</h2>
+  <p>
+    Watch the MS Mechanics deep dive into Microsoft Foundry as the AI app and agent factory — covering
+    how the platform enables building, deploying, and integrating AI agents at enterprise scale.
+  </p>
+  <div class="video-container">
+    <iframe
+      src="https://www.youtube.com/embed/C6rxEGJay70"
+      title="Microsoft Foundry - AI app & agent factory (MS Mechanics)"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      loading="lazy">
+    </iframe>
+  </div>
+
+  <!-- ═══ MINI HACK ═══ -->
+  <div class="mini-hack-banner">
+    <h3>🏗️ Mini Hack: Build a Teams Bot Powered by Your AI Foundry Agent</h3>
+    <p>
+      Combine everything you've learned — create a fully functional Microsoft Teams bot that connects
+      to your AI Foundry agent, maintains conversation context, and responds with Adaptive Cards.
+      Complete lab instructions in the <strong>hands-on-lab.md</strong> file.
+    </p>
+  </div>
+
+  <h3>Mini Hack Architecture</h3>
+  <ol class="step-list">
+    <li><strong>Create an AI Foundry Agent</strong> — Define system prompt, tools, and knowledge sources in your AI Foundry project.</li>
+    <li><strong>Build the Bot Backend</strong> — Create an Azure Function with Bot Framework SDK that proxies messages to your agent.</li>
+    <li><strong>Register the Azure Bot</strong> — Create an Azure Bot resource, configure the messaging endpoint, and enable the Teams channel.</li>
+    <li><strong>Map Conversations to Threads</strong> — Use Azure Table Storage to persist the mapping between Teams conversation IDs and AI Foundry thread IDs.</li>
+    <li><strong>Format with Adaptive Cards</strong> — Convert agent responses to Adaptive Cards for a polished, interactive experience.</li>
+    <li><strong>Test in Teams</strong> — Side-load the bot manifest, have a conversation, and verify context persistence across messages.</li>
+  </ol>
+
+  <!-- ═══ KEY TAKEAWAYS ═══ -->
+  <h2>Key Takeaways</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h4>Proxy Pattern</h4>
+      <p>Always place a server-side proxy (Azure Functions) between clients and AI Foundry. Never expose project credentials to clients.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <h4>Thread Persistence</h4>
+      <p>Map external conversation IDs to AI Foundry thread IDs for multi-turn context across all integration patterns.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔐</div>
+      <h4>Managed Identity</h4>
+      <p>Use DefaultAzureCredential for service-to-service auth. Eliminate connection strings from configuration wherever possible.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h4>Observability</h4>
+      <p>Instrument every integration with Application Insights. Track latency, token usage, and error rates per integration channel.</p>
+    </div>
+  </div>
+
+  <!-- ═══ BOTTOM NAVIGATION ═══ -->
+  <div class="bottom-nav">
+    <a href="../module-24/blog.html" class="nav-prev">
+      ← Module 24: Orchestration Frameworks
+    </a>
+    <a href="../module-26/blog.html" class="nav-next">
+      Module 26: CI/CD for AI Agents →
+    </a>
+  </div>
+
+</article>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="site-footer">
+  <p>
+    <span class="footer-brand">Azure AI Foundry: Zero to Hero</span> — 45-Module Training Series<br>
+    © 2026 AI Training Series. Built with Azure AI Foundry — not Azure ML.
+  </p>
+</footer>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+function switchTab(event, tabId) {
+  const parent = event.target.closest('.tabs');
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+</script>
+
+</body>
+</html>

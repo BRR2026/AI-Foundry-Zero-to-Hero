@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Module 38 of Azure AI Foundry Zero to Hero — Building repeatable AI offerings: packaging solutions, white-label and multi-tenant patterns, solution templates, and pricing strategies.">
+<meta name="author" content="Zero to Hero Training Team">
+<meta name="date" content="2026-04">
+<title>Module 38: Building Repeatable AI Offerings for Customers — Azure AI Foundry: Zero to Hero</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & DESIGN TOKENS
+   ============================================================ */
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #50e6ff;
+  --ms-teal: #00b7c3;
+  --ms-green: #107c10;
+  --ms-yellow: #ffb900;
+  --ms-orange: #d83b01;
+  --ms-red: #e74856;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eef1f5;
+  --bg-dark: #1b1b1b;
+  --bg-code: #1e1e1e;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #424242;
+  --text-muted: #6e6e6e;
+  --text-inverse: #ffffff;
+  --text-link: #0078d4;
+
+  --border-light: #e1e4e8;
+  --border-medium: #d0d7de;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-xl: 0 12px 48px rgba(0,0,0,0.15);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --content-max: 780px;
+  --toc-width: 220px;
+
+  --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  z-index: 10000;
+  transition: width 0.1s linear;
+}
+
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 9000;
+  background: var(--bg-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.nav-links a:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #0078d4, #5c2d91);
+  color: var(--text-inverse);
+  padding: 80px 24px 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(80,230,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 5px 16px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.hero .subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   LAYOUT: SIDEBAR TOC + MAIN CONTENT
+   ============================================================ */
+.page-layout {
+  display: flex;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  gap: 48px;
+}
+
+/* ---------- Sticky TOC Sidebar ---------- */
+.toc-sidebar {
+  position: sticky;
+  top: 70px;
+  width: var(--toc-width);
+  min-width: var(--toc-width);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  align-self: flex-start;
+  padding-right: 8px;
+}
+
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+.toc-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ms-blue);
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list li {
+  margin-bottom: 2px;
+}
+
+.toc-list a {
+  display: block;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  transition: all var(--transition-fast);
+  line-height: 1.45;
+}
+
+.toc-list a:hover {
+  color: var(--ms-blue);
+  background: rgba(0,120,212,0.05);
+}
+
+.toc-list a.active {
+  color: var(--ms-blue);
+  border-left-color: var(--ms-blue);
+  background: rgba(0,120,212,0.08);
+  font-weight: 600;
+}
+
+/* ---------- Main Content ---------- */
+.main-content {
+  flex: 1;
+  max-width: var(--content-max);
+  min-width: 0;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.main-content h2 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 56px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--bg-tertiary);
+  scroll-margin-top: 80px;
+}
+
+.main-content h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ms-dark-blue);
+  margin-top: 36px;
+  margin-bottom: 14px;
+  scroll-margin-top: 80px;
+}
+
+.main-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.main-content p {
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.8;
+}
+
+.main-content ul, .main-content ol {
+  margin-bottom: 20px;
+  padding-left: 24px;
+}
+
+.main-content li {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.main-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.main-content a {
+  color: var(--text-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.main-content a:hover {
+  border-bottom-color: var(--ms-blue);
+}
+
+/* Inline code */
+.main-content code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--bg-secondary);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--ms-dark-blue);
+  border: 1px solid var(--border-light);
+}
+
+/* Code blocks */
+.code-block {
+  background: var(--bg-code);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  margin: 20px 0;
+  overflow-x: auto;
+  border: 1px solid #333;
+  position: relative;
+}
+
+.code-block code {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: #d4d4d4;
+  background: none;
+  padding: 0;
+  border: none;
+  line-height: 1.65;
+}
+
+.code-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+}
+
+.code-block .kw { color: #569cd6; }
+.code-block .str { color: #ce9178; }
+.code-block .fn { color: #dcdcaa; }
+.code-block .cm { color: #6a9955; }
+.code-block .num { color: #b5cea8; }
+.code-block .type { color: #4ec9b0; }
+
+/* ============================================================
+   CALLOUT BOXES
+   ============================================================ */
+.callout {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.callout-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout p { margin-bottom: 8px; font-size: 0.95rem; }
+.callout p:last-child { margin-bottom: 0; }
+
+.callout-blue {
+  background: rgba(0,120,212,0.06);
+  border-color: var(--ms-blue);
+}
+.callout-blue .callout-title { color: var(--ms-blue); }
+
+.callout-yellow {
+  background: rgba(255,185,0,0.08);
+  border-color: var(--ms-yellow);
+}
+.callout-yellow .callout-title { color: #986f0a; }
+
+.callout-green {
+  background: rgba(16,124,16,0.06);
+  border-color: var(--ms-green);
+}
+.callout-green .callout-title { color: var(--ms-green); }
+
+.callout-red {
+  background: rgba(231,72,86,0.06);
+  border-color: var(--ms-red);
+}
+.callout-red .callout-title { color: var(--ms-red); }
+
+.callout-purple {
+  background: rgba(92,45,145,0.06);
+  border-color: var(--ms-purple);
+}
+.callout-purple .callout-title { color: var(--ms-purple); }
+
+/* ============================================================
+   VIDEO EMBED
+   ============================================================ */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  margin: 24px 0;
+  box-shadow: var(--shadow-lg);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.main-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 0.92rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.main-content thead th {
+  background: var(--ms-dark-blue);
+  color: var(--text-inverse);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-content tbody td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.main-content tbody tr:nth-child(even) {
+  background: var(--bg-secondary);
+}
+
+.main-content tbody tr:hover {
+  background: rgba(0,120,212,0.04);
+}
+
+/* ============================================================
+   FEATURE CARDS / GRID
+   ============================================================ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.feature-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.feature-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.feature-card .card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.feature-card h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   DIAGRAM / ASCII ART
+   ============================================================ */
+.diagram-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  margin: 24px 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   MODULE NAVIGATION (PREV / NEXT)
+   ============================================================ */
+.module-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  margin: 60px 0 40px;
+  padding-top: 30px;
+  border-top: 2px solid var(--bg-tertiary);
+}
+
+.module-nav a {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-normal);
+  flex: 1;
+}
+
+.module-nav a:hover {
+  border-color: var(--ms-blue);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.module-nav a .nav-label {
+  font-size: 0.78rem;
+  color: var(--ms-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.module-nav a .nav-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.module-nav a.next {
+  text-align: right;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  background: var(--bg-dark);
+  color: rgba(255,255,255,0.7);
+  padding: 40px 24px;
+  margin-top: 60px;
+}
+
+.footer-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-inner p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   BACK TO TOP BUTTON
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 44px;
+  height: 44px;
+  background: var(--ms-blue);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
+  z-index: 8000;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  background: var(--ms-dark-blue);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .toc-sidebar { display: none; }
+  .page-layout { padding: 24px 16px; }
+  .hero h1 { font-size: 2rem; }
+  .hero { padding: 48px 16px 40px; }
+  .module-nav { flex-direction: column; }
+  .card-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ============================================================
+     TOP NAVIGATION
+     ============================================================ -->
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="../" class="nav-brand">
+      <svg class="ms-logo" viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+      Azure AI Foundry: Zero to Hero
+    </a>
+    <ul class="nav-links">
+      <li><a href="../">Curriculum</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">Docs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">ARC 8 · Advanced Patterns &amp; Enterprise</div>
+    <h1>Building Repeatable AI Offerings for Customers</h1>
+    <p class="subtitle">Transform one-off AI projects into scalable, white-labeled products — with solution templates, multi-tenant isolation, and pricing strategies built on Azure AI Foundry.</p>
+    <div class="hero-meta">
+      <span>📅 April 2026</span>
+      <span>📘 Module 38 of 45</span>
+      <span>⏱️ ~4 hours</span>
+      <span>🎯 Advanced</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN LAYOUT: TOC + CONTENT
+     ============================================================ -->
+<div class="page-layout">
+
+  <!-- ---------- Table of Contents ---------- -->
+  <aside class="toc-sidebar">
+    <div class="toc-title">On This Page</div>
+    <ul class="toc-list">
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#video">Video Resource</a></li>
+      <li><a href="#productization">From Projects to Products</a></li>
+      <li><a href="#packaging">Packaging AI Solutions</a></li>
+      <li><a href="#white-label">White-Label Patterns</a></li>
+      <li><a href="#multi-tenant">Multi-Tenant Architecture</a></li>
+      <li><a href="#accelerators">Solution Accelerators</a></li>
+      <li><a href="#pricing">Pricing &amp; Licensing</a></li>
+      <li><a href="#mini-hack">Mini Hack</a></li>
+      <li><a href="#best-practices">Best Practices</a></li>
+      <li><a href="#module-39-preview">Module 39 Preview</a></li>
+      <li><a href="#resources">Resources</a></li>
+    </ul>
+  </aside>
+
+  <!-- ---------- Article Content ---------- -->
+  <article class="main-content">
+
+    <!-- ============================================================
+         SECTION: INTRODUCTION
+         ============================================================ -->
+    <h2 id="introduction">Introduction</h2>
+
+    <p>You've built intelligent agents, grounded them in enterprise knowledge, secured them with private networking, and optimized their costs. Now the question becomes: <strong>how do you do this for the next 50 customers without rebuilding from scratch each time?</strong></p>
+
+    <p>Module 38 is about the transition from <em>project delivery</em> to <em>product delivery</em>. Whether you're an ISV building an AI-powered SaaS product, a consulting partner accelerating customer engagements, or an enterprise team creating internal platforms, the principles are the same: <strong>parameterize, isolate, automate, and monetize</strong>.</p>
+
+    <p>We'll explore how to package Azure AI Foundry solutions as distributable products, implement white-label and multi-tenant architectures, build solution templates that provision complete AI systems in minutes, and define pricing strategies that ensure healthy margins.</p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Why This Matters</div>
+      <p>The AI market is rapidly moving from custom consulting toward productized offerings. Partners and ISVs who can deliver <strong>repeatable, scalable AI solutions</strong> will capture far more market share than those building one-off projects. Azure AI Foundry provides the building blocks — this module teaches you how to assemble them into a product.</p>
+    </div>
+
+    <h3>What You'll Learn</h3>
+    <ul>
+      <li><strong>Packaging patterns</strong> — Project templates, IaC modules, container images, and ARM template specs</li>
+      <li><strong>White-label architecture</strong> — One solution serving many customer brands</li>
+      <li><strong>Multi-tenant isolation</strong> — Strategies from shared-everything to separate subscriptions</li>
+      <li><strong>Solution accelerators</strong> — Production-ready starting points that go beyond demos</li>
+      <li><strong>Pricing models</strong> — Per-conversation, per-seat, tiered, and outcome-based pricing</li>
+      <li><strong>Hands-on lab</strong> — Build a customer FAQ bot template and deploy it for two fictional customers</li>
+    </ul>
+
+    <!-- ============================================================
+         SECTION: VIDEO
+         ============================================================ -->
+    <h2 id="video">Video Resource</h2>
+
+    <p>Watch this MS Mechanics deep dive on how Microsoft Foundry serves as an AI application and agent factory — the platform foundation for building repeatable AI offerings:</p>
+
+    <div class="video-container">
+      <iframe src="https://www.youtube.com/embed/C6rxEGJay70"
+              title="Microsoft Foundry - AI app & agent factory (MS Mechanics)"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <div class="callout callout-green">
+      <div class="callout-title">📺 Key Takeaways from the Video</div>
+      <p>Pay special attention to how the video demonstrates the factory pattern for AI applications — creating, deploying, and managing agents at scale. This is the platform layer that enables the productization patterns we'll explore in this module.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: PRODUCTIZATION
+         ============================================================ -->
+    <h2 id="productization">From Projects to Products — The Productization Mindset</h2>
+
+    <p>Every AI engagement starts as a project. A customer needs a chatbot, a document processor, or an intelligent assistant. You build it, deploy it, and move on. But what happens when the next customer needs something nearly identical?</p>
+
+    <h3>The Productization Spectrum</h3>
+
+    <div class="diagram-box">Custom Consulting          Configurable Template          Self-Service SaaS
+       │                           │                            │
+   High Touch               Medium Touch                  Low Touch
+   High Margin               Good Margin                  Scale Margin
+   Low Scale                 Medium Scale                 High Scale
+       │                           │                            │
+   ◄──────────────────────────────────────────────────────────────►
+   Per-customer build         Parameterized deploy         Customer self-serve</div>
+
+    <p>The goal is to move your AI solution <strong>rightward</strong> on this spectrum — from bespoke to repeatable — without losing the ability to customize for each customer's unique needs.</p>
+
+    <h3>What Makes an AI Solution "Repeatable"?</h3>
+
+    <ul>
+      <li><strong>Configuration over code</strong> — Customer differences are captured in config files, not code branches</li>
+      <li><strong>Infrastructure as Code</strong> — All Azure resources can be provisioned programmatically</li>
+      <li><strong>Parameterized prompts</strong> — System prompts accept customer-specific variables (name, tone, guardrails)</li>
+      <li><strong>Pluggable knowledge</strong> — Each customer brings their own data; the pipeline handles any content</li>
+      <li><strong>Automated evaluation</strong> — Quality gates run automatically for every deployment</li>
+      <li><strong>Self-service onboarding</strong> — New customers can be provisioned without developer intervention</li>
+    </ul>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ Common Pitfall</div>
+      <p>Don't try to productize too early. Build the solution for 2–3 customers first, observe what actually varies between them, and <em>then</em> extract the parameterization. Premature abstraction leads to over-engineered templates that don't fit real customer needs.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: PACKAGING
+         ============================================================ -->
+    <h2 id="packaging">Packaging AI Solutions in Azure AI Foundry</h2>
+
+    <p>Azure AI Foundry provides several natural packaging points for distributing AI solutions. The right choice depends on your target audience and distribution model.</p>
+
+    <h3>Packaging Options</h3>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="card-icon">📦</div>
+        <h4>Project Template</h4>
+        <p>Pre-configured Foundry project with agents, knowledge connections, evaluation pipelines, and documentation. Best for partners deploying into customer tenants.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🏗️</div>
+        <h4>Bicep / Terraform Module</h4>
+        <p>Infrastructure as Code that provisions all Azure resources and Foundry assets. Best for enterprise IT teams who manage their own deployments.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🐳</div>
+        <h4>Container Image</h4>
+        <p>Dockerized agent with <code>agent.yaml</code> published to Azure Container Registry. Best for ISVs distributing via ACR or Azure Marketplace.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">📋</div>
+        <h4>ARM Template Spec</h4>
+        <p>Versioned ARM template stored in Azure with role-based access. Best for managed service providers deploying across multiple customer subscriptions.</p>
+      </div>
+    </div>
+
+    <h3>Solution Template Structure</h3>
+
+    <p>Regardless of the packaging format, every repeatable AI offering should follow a consistent structure:</p>
+
+    <div class="code-block">
+      <div class="code-label">Directory Structure</div>
+      <code>my-ai-offering/
+├── <span class="fn">agent.yaml</span>                  <span class="cm"># Agent definition</span>
+├── infra/
+│   ├── <span class="fn">main.bicep</span>              <span class="cm"># Infrastructure as Code</span>
+│   └── <span class="fn">parameters.json</span>         <span class="cm"># Default parameters</span>
+├── src/
+│   ├── prompts/
+│   │   └── <span class="fn">system-prompt.md</span>    <span class="cm"># Configurable system prompt</span>
+│   └── functions/              <span class="cm"># Custom tool functions</span>
+├── data/
+│   ├── <span class="fn">sample-knowledge.jsonl</span>  <span class="cm"># Sample knowledge base</span>
+│   └── <span class="fn">eval-dataset.jsonl</span>      <span class="cm"># Evaluation dataset</span>
+├── tests/
+│   └── <span class="fn">smoke-test.py</span>           <span class="cm"># Post-deployment validation</span>
+├── docs/
+│   └── <span class="fn">onboarding.md</span>           <span class="cm"># Customer onboarding guide</span>
+└── <span class="fn">deploy.sh</span>                   <span class="cm"># One-click deployment</span></code>
+    </div>
+
+    <h3>Packaging Checklist</h3>
+
+    <table>
+      <thead><tr><th>#</th><th>Requirement</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Externalize all configuration</strong></td><td>No hardcoded endpoints, keys, or model names</td></tr>
+        <tr><td>2</td><td><strong>Parameterize tenant values</strong></td><td>Branding, domain, data sources vary per customer</td></tr>
+        <tr><td>3</td><td><strong>Include evaluation datasets</strong></td><td>Baseline quality metrics for every deployment</td></tr>
+        <tr><td>4</td><td><strong>Add deployment validation</strong></td><td>Smoke tests catch misconfigurations immediately</td></tr>
+        <tr><td>5</td><td><strong>Document onboarding</strong></td><td>Customers or field teams can deploy without you</td></tr>
+        <tr><td>6</td><td><strong>Version everything</strong></td><td>Semantic versioning for templates, agents, and data</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ============================================================
+         SECTION: WHITE-LABEL
+         ============================================================ -->
+    <h2 id="white-label">White-Label Patterns — One Solution, Many Brands</h2>
+
+    <p>A white-label AI offering allows customers to present the solution under their own brand. End users interact with "Contoso Assistant" or "Fabrikam Help Desk" — never knowing the underlying platform or provider.</p>
+
+    <h3>What to Make Configurable</h3>
+
+    <table>
+      <thead><tr><th>Layer</th><th>Configurable Elements</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Visual branding</strong></td><td>Logo, colors, bot name, avatars</td><td>CSS variables + config file</td></tr>
+        <tr><td><strong>Conversation</strong></td><td>Greeting, tone, persona name</td><td>System prompt template</td></tr>
+        <tr><td><strong>Domain</strong></td><td>Custom domain or subdomain</td><td>Azure Front Door / App Service</td></tr>
+        <tr><td><strong>Knowledge</strong></td><td>FAQ documents, product catalog</td><td>Per-tenant AI Search indexes</td></tr>
+        <tr><td><strong>Model</strong></td><td>GPT-4o vs. GPT-4o-mini, temperature</td><td>Deployment parameters</td></tr>
+        <tr><td><strong>Guardrails</strong></td><td>Blocked topics, response limits</td><td>System prompt + content filters</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Customer Configuration File</h3>
+
+    <p>The entire customer identity is captured in a single YAML file:</p>
+
+    <div class="code-block">
+      <div class="code-label">YAML</div>
+      <code><span class="cm"># configs/contoso.yaml</span>
+<span class="kw">tenant_id</span>: <span class="str">"contoso"</span>
+<span class="kw">display_name</span>: <span class="str">"Contoso AI Assistant"</span>
+
+<span class="kw">branding</span>:
+  <span class="kw">primary_color</span>: <span class="str">"#0078D4"</span>
+  <span class="kw">logo_url</span>: <span class="str">"https://contoso.com/logo.png"</span>
+  <span class="kw">greeting</span>: <span class="str">"Hello! I'm the Contoso assistant. How can I help?"</span>
+
+<span class="kw">knowledge</span>:
+  <span class="kw">index_name</span>: <span class="str">"contoso-knowledge-index"</span>
+  <span class="kw">data_source</span>: <span class="str">"contoso-blob-container"</span>
+
+<span class="kw">model</span>:
+  <span class="kw">deployment</span>: <span class="str">"gpt-4o"</span>
+  <span class="kw">temperature</span>: <span class="num">0.3</span>
+
+<span class="kw">guardrails</span>:
+  <span class="kw">blocked_topics</span>: [<span class="str">"competitor-products"</span>, <span class="str">"pricing-negotiation"</span>]
+  <span class="kw">max_response_length</span>: <span class="num">500</span></code>
+    </div>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Design Principle</div>
+      <p>A new customer should be onboarded by creating a single config file — not by modifying any code. If you need a code change for a new customer, your template isn't parameterized enough.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: MULTI-TENANT
+         ============================================================ -->
+    <h2 id="multi-tenant">Multi-Tenant Architecture for AI</h2>
+
+    <p>Multi-tenancy determines how you share (or isolate) infrastructure across customers. For AI offerings, the critical isolation points are <strong>data</strong> (knowledge bases), <strong>compute</strong> (model inference), and <strong>configuration</strong> (prompts, guardrails).</p>
+
+    <h3>Isolation Strategies</h3>
+
+    <table>
+      <thead><tr><th>Strategy</th><th>Isolation</th><th>Cost</th><th>Complexity</th><th>Best For</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Shared everything</strong></td><td>Low</td><td>Lowest</td><td>Low</td><td>Dev/test environments</td></tr>
+        <tr><td><strong>Shared infra, separate data</strong></td><td>Medium</td><td>Medium</td><td>Medium</td><td>Most commercial offerings</td></tr>
+        <tr><td><strong>Separate Foundry projects</strong></td><td>High</td><td>High</td><td>Medium</td><td>Regulated industries</td></tr>
+        <tr><td><strong>Separate subscriptions</strong></td><td>Maximum</td><td>Highest</td><td>High</td><td>Government, defense</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Recommended Pattern: Shared Infra, Separate Data</h3>
+
+    <p>For most AI offerings, we recommend the <strong>"shared infra, separate data"</strong> pattern:</p>
+
+    <ul>
+      <li><strong>Single AI Foundry hub</strong> with multiple projects (one per tenant)</li>
+      <li><strong>Shared model deployments</strong> with per-tenant rate limiting</li>
+      <li><strong>Separate Azure AI Search indexes</strong> per tenant for knowledge isolation</li>
+      <li><strong>Tenant routing layer</strong> that directs requests to the correct project and index</li>
+      <li><strong>Centralized monitoring</strong> with tenant-level dashboards and cost attribution</li>
+    </ul>
+
+    <h3>Multi-Tenant Request Flow</h3>
+
+    <div class="diagram-box">Customer Request
+       │
+       ▼
+┌─────────────────┐
+│  API Gateway /   │
+│  Tenant Router   │
+└───────┬─────────┘
+        │  (extract tenant ID from header / token)
+        ▼
+┌─────────────────┐        ┌──────────────────┐
+│  Config Lookup   │───────▶│ Tenant Config DB │
+└───────┬─────────┘        └──────────────────┘
+        │
+        ▼
+┌─────────────────┐        ┌──────────────────┐
+│  AI Foundry      │───────▶│ Tenant Project   │
+│  Agent Endpoint  │        └──────────────────┘
+└───────┬─────────┘
+        │
+        ▼
+┌─────────────────┐        ┌──────────────────┐
+│  Knowledge       │───────▶│ Tenant Search    │
+│  Retrieval       │        │  Index           │
+└───────┬─────────┘        └──────────────────┘
+        │
+        ▼
+    Response</div>
+
+    <div class="callout callout-red">
+      <div class="callout-title">🔐 Critical: Data Isolation</div>
+      <p>Never co-mingle customer data in a shared search index, even with field-level filtering. Use <strong>separate indexes per tenant</strong> as the minimum isolation boundary. This prevents data leakage, simplifies compliance, and allows per-tenant index management (rebuild, delete, scale).</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: ACCELERATORS
+         ============================================================ -->
+    <h2 id="accelerators">Solution Templates &amp; Accelerators</h2>
+
+    <p>A solution accelerator is a <strong>production-ready, parameterized starting point</strong> that reduces time-to-value from months to days. Unlike a demo or proof-of-concept, an accelerator is designed for production workloads from day one.</p>
+
+    <h3>Demo vs. Accelerator</h3>
+
+    <table>
+      <thead><tr><th>Attribute</th><th>Demo / Sample</th><th>Solution Accelerator</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Purpose</strong></td><td>Show what's possible</td><td>Get to production fast</td></tr>
+        <tr><td><strong>Infrastructure</strong></td><td>Manual setup</td><td>Full IaC (Bicep / Terraform)</td></tr>
+        <tr><td><strong>Security</strong></td><td>None or basic</td><td>Private endpoints, RBAC, managed identity</td></tr>
+        <tr><td><strong>Monitoring</strong></td><td>Console logs</td><td>App Insights, dashboards, alerts</td></tr>
+        <tr><td><strong>Evaluation</strong></td><td>Ad-hoc testing</td><td>Automated eval pipelines with baselines</td></tr>
+        <tr><td><strong>Documentation</strong></td><td>README only</td><td>Architecture diagram, onboarding guide, runbook</td></tr>
+        <tr><td><strong>Time to deploy</strong></td><td>Hours to days</td><td>Minutes</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Building an Accelerator: Step by Step</h3>
+
+    <ol>
+      <li><strong>Start with a working solution</strong> — Build the solution for one real customer first</li>
+      <li><strong>Identify variation points</strong> — What changes between customers? (model, data, branding, scale)</li>
+      <li><strong>Extract parameters</strong> — Move all variable values into config files and IaC parameters</li>
+      <li><strong>Create IaC templates</strong> — Wrap all resources in Bicep or Terraform modules</li>
+      <li><strong>Add deployment automation</strong> — Scripts or GitHub Actions for one-click provisioning</li>
+      <li><strong>Embed evaluation</strong> — Include eval datasets and automated quality gates</li>
+      <li><strong>Document everything</strong> — Onboarding guide, architecture diagram, troubleshooting guide</li>
+    </ol>
+
+    <h3>Parameterized Bicep Example</h3>
+
+    <div class="code-block">
+      <div class="code-label">Bicep</div>
+      <code><span class="kw">@description</span>(<span class="str">'Customer tenant identifier'</span>)
+<span class="kw">param</span> <span class="fn">tenantId</span> <span class="type">string</span>
+
+<span class="kw">@description</span>(<span class="str">'Azure region for deployment'</span>)
+<span class="kw">param</span> <span class="fn">location</span> <span class="type">string</span> = resourceGroup().location
+
+<span class="kw">@description</span>(<span class="str">'AI model to deploy'</span>)
+<span class="kw">@allowed</span>([<span class="str">'gpt-4o'</span>, <span class="str">'gpt-4o-mini'</span>, <span class="str">'gpt-4.1'</span>])
+<span class="kw">param</span> <span class="fn">modelName</span> <span class="type">string</span> = <span class="str">'gpt-4o'</span>
+
+<span class="kw">@description</span>(<span class="str">'Tokens-per-minute quota'</span>)
+<span class="kw">param</span> <span class="fn">tpmQuota</span> <span class="type">int</span> = <span class="num">30000</span>
+
+<span class="kw">resource</span> aiHub <span class="str">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
+  name: <span class="str">'${tenantId}-ai-hub'</span>
+  location: location
+  kind: <span class="str">'Hub'</span>
+  identity: { type: <span class="str">'SystemAssigned'</span> }
+  properties: {
+    friendlyName: <span class="str">'${tenantId} AI Hub'</span>
+  }
+}
+
+<span class="kw">resource</span> aiProject <span class="str">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
+  name: <span class="str">'${tenantId}-faq-project'</span>
+  location: location
+  kind: <span class="str">'Project'</span>
+  properties: {
+    hubResourceId: aiHub.id
+  }
+}</code>
+    </div>
+
+    <!-- ============================================================
+         SECTION: PRICING
+         ============================================================ -->
+    <h2 id="pricing">Pricing &amp; Licensing Strategies</h2>
+
+    <p>Pricing an AI offering requires understanding both your cost structure and your customer's willingness to pay. The right pricing model aligns your revenue with the value your solution delivers.</p>
+
+    <h3>Pricing Models</h3>
+
+    <table>
+      <thead><tr><th>Model</th><th>How It Works</th><th>Best For</th><th>Risk</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Per-conversation</strong></td><td>Charge per completed session</td><td>FAQ bots, support agents</td><td>Low — aligned with usage</td></tr>
+        <tr><td><strong>Per-query</strong></td><td>Charge per API call</td><td>Search, analytics tools</td><td>Low — predictable cost</td></tr>
+        <tr><td><strong>Per-seat / per-user</strong></td><td>Fixed monthly fee per user</td><td>Enterprise copilots</td><td>Medium — usage may vary</td></tr>
+        <tr><td><strong>Tiered consumption</strong></td><td>Volume-based pricing tiers</td><td>High-volume applications</td><td>Low — scales with value</td></tr>
+        <tr><td><strong>Flat subscription</strong></td><td>Fixed monthly/annual fee</td><td>SMB solutions</td><td>High — unpredictable cost</td></tr>
+        <tr><td><strong>Outcome-based</strong></td><td>Based on measurable results</td><td>Premium offerings</td><td>High — hard to measure</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Cost Components to Include</h3>
+
+    <p>When pricing your AI offering, account for <strong>all</strong> cost layers:</p>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="card-icon">🧠</div>
+        <h4>Model Inference</h4>
+        <p>Tokens consumed (input + output) across all customer conversations</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🔍</div>
+        <h4>AI Search</h4>
+        <p>Index storage, query volume, and semantic ranking operations</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">💾</div>
+        <h4>Storage</h4>
+        <p>Knowledge base documents, conversation logs, evaluation data</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🌐</div>
+        <h4>Networking</h4>
+        <p>Private endpoints, VNet integration, data transfer</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">📊</div>
+        <h4>Monitoring</h4>
+        <p>Application Insights, Log Analytics, custom dashboards</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🛟</div>
+        <h4>Support</h4>
+        <p>Your team's time for onboarding, maintenance, and incident response</p>
+      </div>
+    </div>
+
+    <h3>Margin Calculation Example</h3>
+
+    <div class="code-block">
+      <div class="code-label">Pricing</div>
+      <code><span class="cm">Per-conversation pricing example (FAQ bot):</span>
+
+  Average tokens per conversation:     <span class="num">2,500</span>
+  GPT-4o cost per 1K tokens:           ~$<span class="num">0.005</span> (blended in/out)
+  Azure AI Search cost per query:      ~$<span class="num">0.001</span>
+  Infrastructure overhead:             ~$<span class="num">0.002</span>
+  ─────────────────────────────────────────────────
+  <span class="kw">Total cost per conversation:</span>         ~$<span class="num">0.020</span>
+
+  Your price per conversation:          $<span class="num">0.10</span>
+  <span class="fn">Gross margin:                          80%</span></code>
+    </div>
+
+    <h3>Licensing Considerations</h3>
+
+    <ul>
+      <li><strong>Model licensing</strong> — Ensure your usage of Azure AI models complies with Microsoft's terms for redistribution and embedding in commercial products</li>
+      <li><strong>Data ownership</strong> — Customer data must stay in the customer's tenant; never co-mingle across customers</li>
+      <li><strong>IP ownership</strong> — Clearly define in your agreements who owns fine-tuned models, evaluation datasets, custom prompts, and derived insights</li>
+      <li><strong>Usage transparency</strong> — Provide customers with dashboards showing their actual consumption, not just invoiced amounts</li>
+      <li><strong>SLA commitments</strong> — Define uptime guarantees, response latency targets, and remediation procedures in your customer agreements</li>
+    </ul>
+
+    <h3>Revenue Growth Strategies</h3>
+
+    <p>Once your base offering is established, explore these strategies for growing revenue per customer:</p>
+
+    <table>
+      <thead><tr><th>Strategy</th><th>Description</th><th>Revenue Impact</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tier upgrades</strong></td><td>Offer premium tiers with faster models, higher limits, or advanced features</td><td>+30–50% per customer</td></tr>
+        <tr><td><strong>Add-on modules</strong></td><td>Sell optional capabilities like sentiment analytics, multilingual support, or custom reporting</td><td>+20–40% per customer</td></tr>
+        <tr><td><strong>Professional services</strong></td><td>Offer knowledge base curation, prompt engineering, and custom integration services</td><td>Variable, high-margin</td></tr>
+        <tr><td><strong>Usage-based expansion</strong></td><td>As customers see value, they naturally increase usage — make this easy to scale</td><td>Organic growth</td></tr>
+        <tr><td><strong>Multi-department expansion</strong></td><td>Expand from one department (e.g., support) to others (HR, sales, IT) within the same customer</td><td>2–5x per customer</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ Pricing Anti-Pattern</div>
+      <p>Don't price based on Azure costs alone. Your value includes the <strong>solution design</strong>, <strong>evaluation quality</strong>, <strong>domain expertise</strong>, and <strong>time-to-value</strong>. A customer paying $0.10 per conversation for a solution that took you one day to deploy (instead of three months to build from scratch) is getting exceptional value.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: MINI HACK
+         ============================================================ -->
+    <h2 id="mini-hack">🧪 Mini Hack: Customer FAQ Bot Template</h2>
+
+    <p>Put everything together by building a reusable, parameterized solution template that deploys a knowledge-grounded FAQ bot for any customer in under 10 minutes.</p>
+
+    <h3>What You'll Build</h3>
+
+    <div class="diagram-box">┌───────────────────────────────────────────────────┐
+│           FAQ Bot Solution Template               │
+├───────────────────────────────────────────────────┤
+│                                                   │
+│  customer-config.yaml ──▶ deploy.py               │
+│                              │                    │
+│               ┌──────────────┼──────────┐         │
+│               ▼              ▼          ▼         │
+│      ┌──────────────┐ ┌──────────┐ ┌─────────┐   │
+│      │ AI Foundry   │ │ AI Search│ │ Storage │   │
+│      │ Project +    │ │ Index    │ │ Account │   │
+│      │ Agent        │ │          │ │         │   │
+│      └──────────────┘ └──────────┘ └─────────┘   │
+│               │              ▲                    │
+│               └──────────────┘                    │
+│          (agent queries index)                    │
+└───────────────────────────────────────────────────┘</div>
+
+    <h3>Lab Steps</h3>
+
+    <ol>
+      <li><strong>Define the config schema</strong> — What customer-specific values does your template accept?</li>
+      <li><strong>Create customer configs</strong> — Write YAML files for Contoso and Fabrikam with different branding, models, and guardrails</li>
+      <li><strong>Build Bicep templates</strong> — Parameterized IaC for AI Foundry hub, project, AI Search, and Storage</li>
+      <li><strong>Create agent templates</strong> — <code>agent.yaml</code> and system prompt with configurable placeholders</li>
+      <li><strong>Write deployment automation</strong> — Python script that reads a config file and provisions everything</li>
+      <li><strong>Add smoke tests</strong> — Validate agent configuration, tenant isolation, and guardrail presence</li>
+      <li><strong>Deploy for both customers</strong> — Run the same script with different configs and verify isolation</li>
+    </ol>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ Success Criteria</div>
+      <p>Both Contoso and Fabrikam deployments complete in under 10 minutes, pass all smoke tests, and each agent only answers from its own knowledge base. Running <code>diff</code> between the two deployments shows only customer-specific values — not structural differences.</p>
+    </div>
+
+    <p>👉 See the full step-by-step instructions in <strong><code>lab/hands-on-lab.md</code></strong></p>
+
+    <!-- ============================================================
+         SECTION: BEST PRACTICES
+         ============================================================ -->
+    <h2 id="best-practices">Best Practices</h2>
+
+    <h3>Template Design</h3>
+
+    <ul>
+      <li><strong>Start concrete, then abstract</strong> — Build for real customers first, extract patterns second</li>
+      <li><strong>Use semantic versioning</strong> — <code>v1.2.3</code> for templates, agents, and evaluation datasets</li>
+      <li><strong>Include sample data</strong> — Every template ships with example knowledge and evaluation sets</li>
+      <li><strong>Test the onboarding flow</strong> — Have someone outside your team deploy from scratch using only your docs</li>
+    </ul>
+
+    <h3>Multi-Tenant Operations</h3>
+
+    <ul>
+      <li><strong>Tag all resources</strong> — Use <code>tenant_id</code> tags for cost attribution and resource discovery</li>
+      <li><strong>Implement per-tenant rate limiting</strong> — Prevent one customer's spike from affecting others</li>
+      <li><strong>Plan for tenant offboarding</strong> — Automate the cleanup of indexes, storage, and projects when a customer leaves</li>
+      <li><strong>Monitor per-tenant quality</strong> — Track evaluation metrics (groundedness, coherence) per tenant, not just globally</li>
+      <li><strong>Automate tenant provisioning</strong> — Use deployment scripts that create all resources from a single config file</li>
+      <li><strong>Implement health checks</strong> — Scheduled probes that verify each tenant's agent is responding correctly</li>
+    </ul>
+
+    <h3>Operational Readiness Checklist</h3>
+
+    <p>Before launching a multi-tenant AI offering, ensure your operations team has these capabilities in place:</p>
+
+    <table>
+      <thead><tr><th>Capability</th><th>Tool / Approach</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tenant provisioning</strong></td><td>Automated deployment script with config-driven setup</td><td>P0 — Required</td></tr>
+        <tr><td><strong>Tenant offboarding</strong></td><td>Cleanup script that removes all tenant resources safely</td><td>P0 — Required</td></tr>
+        <tr><td><strong>Cost attribution</strong></td><td>Azure Cost Management with tenant tags + custom dashboards</td><td>P0 — Required</td></tr>
+        <tr><td><strong>Health monitoring</strong></td><td>Synthetic probes + Azure Monitor alerts per tenant</td><td>P1 — Important</td></tr>
+        <tr><td><strong>Quality monitoring</strong></td><td>Automated evaluation runs with tenant-specific baselines</td><td>P1 — Important</td></tr>
+        <tr><td><strong>Incident response</strong></td><td>Runbooks for common failure modes (index corruption, model throttling)</td><td>P1 — Important</td></tr>
+        <tr><td><strong>Capacity planning</strong></td><td>Forecast model TPM, search RPS, and storage growth per tenant</td><td>P2 — Nice to have</td></tr>
+        <tr><td><strong>Self-service portal</strong></td><td>Customer-facing dashboard for usage, config, and support</td><td>P2 — Nice to have</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Pricing &amp; Business</h3>
+
+    <ul>
+      <li><strong>Build cost dashboards early</strong> — Understand your per-tenant cost before you set prices</li>
+      <li><strong>Offer a free tier or trial</strong> — Lower the barrier to entry, then convert to paid</li>
+      <li><strong>Review margins quarterly</strong> — Azure pricing changes, model costs decrease, usage patterns shift</li>
+      <li><strong>Document IP boundaries clearly</strong> — Prevent disputes over who owns what after the engagement ends</li>
+    </ul>
+
+    <!-- ============================================================
+         SECTION: MODULE 39 PREVIEW
+         ============================================================ -->
+    <h2 id="module-39-preview">Module 39 Preview</h2>
+
+    <p>Now that you can build repeatable AI offerings, the next question is: <strong>where do you sell them?</strong> In Module 39, we'll explore the <strong>AI Marketplace and Partner Ecosystem</strong> — publishing your solutions to Azure Marketplace, joining the Microsoft partner network, and scaling your AI business.</p>
+
+    <h3>What's Coming in Module 39</h3>
+
+    <ul>
+      <li><strong>Azure Marketplace publishing</strong> — Listing your AI offerings for discovery and transactability</li>
+      <li><strong>Microsoft partner programs</strong> — ISV Success, Co-sell, and marketplace rewards</li>
+      <li><strong>Go-to-market strategies</strong> — Positioning your AI offering against competitors</li>
+      <li><strong>Customer success patterns</strong> — Onboarding, support, and retention for AI products</li>
+      <li><strong>Scaling your AI practice</strong> — From first customer to hundreds</li>
+    </ul>
+
+    <div class="callout callout-purple">
+      <div class="callout-title">🔮 Preparation for Module 39</div>
+      <p>Keep your FAQ bot solution template from the Mini Hack ready — in Module 39, we'll walk through the process of publishing it as a Marketplace offer, including the technical and business requirements.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: RESOURCES
+         ============================================================ -->
+    <h2 id="resources">Resources</h2>
+
+    <h3>Official Documentation</h3>
+
+    <ul>
+      <li><a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a> — Platform overview and quickstarts</li>
+      <li><a href="https://learn.microsoft.com/azure/architecture/guide/multitenant/overview" target="_blank" rel="noopener">Azure Multi-Tenant Architecture Guide</a> — Patterns and best practices</li>
+      <li><a href="https://learn.microsoft.com/azure/search/search-modeling-multitenant-saas-applications" target="_blank" rel="noopener">Multi-Tenant Patterns for Azure AI Search</a> — Index-per-tenant strategies</li>
+      <li><a href="https://learn.microsoft.com/azure/templates/microsoft.machinelearningservices/workspaces" target="_blank" rel="noopener">Bicep Templates for AI Workloads</a> — Resource definitions and schemas</li>
+      <li><a href="https://learn.microsoft.com/partner-center/marketplace/marketplace-overview" target="_blank" rel="noopener">Azure Marketplace Overview</a> — Publishing and transacting</li>
+    </ul>
+
+    <h3>Tools &amp; Portals</h3>
+
+    <ul>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry Portal</a> — Manage AI projects and agent deployments</li>
+      <li><a href="https://portal.azure.com" target="_blank" rel="noopener">Azure Portal</a> — Manage all Azure resources</li>
+      <li><a href="https://partner.microsoft.com" target="_blank" rel="noopener">Microsoft Partner Center</a> — Partner programs and marketplace publishing</li>
+    </ul>
+
+    <h3>Related Module Materials</h3>
+
+    <ul>
+      <li><strong>Training Guide:</strong> <code>training-guide.md</code></li>
+      <li><strong>Presentation:</strong> <code>slides/presentation.html</code></li>
+      <li><strong>Hands-On Lab:</strong> <code>lab/hands-on-lab.md</code></li>
+      <li><strong>Assessment Quiz:</strong> <code>quiz/assessment.md</code></li>
+    </ul>
+
+    <!-- ============================================================
+         MODULE NAVIGATION
+         ============================================================ -->
+    <nav class="module-nav">
+      <a href="../module-37/blog.html" class="prev">
+        <span class="nav-label">← Previous</span>
+        <span class="nav-title">Module 37: Advanced Networking &amp; Security</span>
+      </a>
+      <a href="../module-39/blog.html" class="next">
+        <span class="nav-label">Next →</span>
+        <span class="nav-title">Module 39: AI Marketplace &amp; Partner Ecosystem</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. Module 38 of 45.</p>
+    <ul class="footer-links">
+      <li><a href="#">Curriculum</a></li>
+      <li><a href="#">Resources</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+      <li><a href="#">Privacy</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Scroll Progress Bar ----
+  var progressBar = document.getElementById('scrollProgress');
+  function updateProgress() {
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+
+  // ---- Back to Top Button ----
+  var backToTop = document.getElementById('backToTop');
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---- Sticky TOC Active State with IntersectionObserver ----
+  var tocLinks = document.querySelectorAll('.toc-list a');
+  var sections = [];
+
+  tocLinks.forEach(function(link) {
+    var id = link.getAttribute('href').substring(1);
+    var section = document.getElementById(id);
+    if (section) sections.push({ id: id, element: section, link: link });
+  });
+
+  function setActiveLink(id) {
+    tocLinks.forEach(function(link) {
+      link.classList.remove('active');
+    });
+    var activeLink = document.querySelector('.toc-list a[href="#' + id + '"]');
+    if (activeLink) {
+      activeLink.classList.add('active');
+    }
+  }
+
+  if ('IntersectionObserver' in window) {
+    var observerOptions = {
+      root: null,
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    };
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          setActiveLink(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(function(section) {
+      observer.observe(section.element);
+    });
+  }
+
+  // ---- Smooth scroll for TOC links ----
+  tocLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = this.getAttribute('href').substring(1);
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ---- Combined scroll listener ----
+  var ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        updateProgress();
+        updateBackToTop();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // ---- Initial state ----
+  updateProgress();
+  updateBackToTop();
+  if (sections.length > 0) {
+    setActiveLink(sections[0].id);
+  }
+})();
+</script>
+</body>
+</html>

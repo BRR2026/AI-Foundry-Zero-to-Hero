@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 41: Choose Your Capstone Project — Slide Deck</title>
+<style>
+/* ============================================================
+   DARK PRESENTATION THEME
+   ============================================================ */
+:root {
+  --bg-slide: #0d1117;
+  --bg-surface: #161b22;
+  --bg-card: #1c2333;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-blue: #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-teal: #3ddbd9;
+  --accent-green: #3fb950;
+  --accent-orange: #f0883e;
+  --accent-red: #f85149;
+  --accent-yellow: #d29922;
+  --border: #30363d;
+  --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  font-family: var(--font-body);
+  background: var(--bg-slide);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* ============================================================
+   SLIDE CONTAINER
+   ============================================================ */
+.deck { width: 100%; height: 100%; position: relative; }
+
+.slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.slide.active { display: flex; opacity: 1; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.slide h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.slide h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.slide h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.slide p {
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 800px;
+}
+
+.slide ul, .slide ol {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-left: 28px;
+  max-width: 800px;
+}
+
+.slide li { margin-bottom: 8px; }
+.slide li strong { color: var(--text-primary); }
+
+.slide code {
+  font-family: var(--font-mono);
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--accent-teal);
+}
+
+/* ============================================================
+   SPECIAL ELEMENTS
+   ============================================================ */
+.badge {
+  display: inline-block;
+  padding: 6px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-purple);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-purple);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.slide-number {
+  position: absolute;
+  bottom: 24px;
+  right: 40px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.slide-title-footer {
+  position: absolute;
+  bottom: 24px;
+  left: 40px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 16px;
+}
+
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.card h4 {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  color: var(--accent-blue);
+}
+
+.card p, .card li {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.card .icon { font-size: 2rem; margin-bottom: 12px; }
+
+.highlight-box {
+  background: linear-gradient(135deg, rgba(88,166,255,0.1), rgba(188,140,255,0.1));
+  border: 1px solid rgba(88,166,255,0.3);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-top: 20px;
+}
+
+.highlight-box p { color: var(--text-primary); font-size: 1.1rem; }
+
+.diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+
+.diagram .box {
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  min-width: 130px;
+}
+
+.diagram .arrow {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+}
+
+.table-slide {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 0.95rem;
+}
+
+.table-slide th {
+  background: var(--bg-card);
+  color: var(--accent-blue);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--border);
+}
+
+.table-slide td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   NAVIGATION CONTROLS
+   ============================================================ */
+.nav-controls {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 100;
+}
+
+.nav-btn {
+  padding: 8px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover { border-color: var(--accent-blue); background: var(--bg-surface); }
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  transition: width 0.4s ease;
+  z-index: 200;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ==================== SLIDE 1: TITLE ==================== -->
+  <div class="slide active" data-slide="1">
+    <span class="badge">ARC 9 · CAPSTONE &amp; MASTERY</span>
+    <h1>Module 41: Choose Your Capstone Project</h1>
+    <p>Project ideas, scope definition, requirements gathering, architecture planning, and building your project proposal.</p>
+    <div class="highlight-box">
+      <p>🎓 Azure AI Foundry: Zero to Hero — Module 41 of 45 · April 2026</p>
+    </div>
+    <span class="slide-number">1 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 2: AGENDA ==================== -->
+  <div class="slide" data-slide="2">
+    <h3>Today's Agenda</h3>
+    <h2>What We'll Cover</h2>
+    <ol>
+      <li><strong>Project Ideas &amp; Scope Definition</strong> — Curated ideas and the Scope Fitness Test</li>
+      <li><strong>Requirements Gathering</strong> — User stories, functional &amp; non-functional reqs</li>
+      <li><strong>Architecture Planning</strong> — AI Foundry components and patterns</li>
+      <li><strong>Success Criteria</strong> — SMART goals and evaluation planning</li>
+      <li><strong>Templates &amp; Starter Code</strong> — Accelerate your start</li>
+      <li><strong>Evaluation Rubric</strong> — How your capstone will be assessed</li>
+      <li><strong>Mini Hack</strong> — Write your proposal and architecture diagram</li>
+    </ol>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">2 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 3: WHY CAPSTONE ==================== -->
+  <div class="slide" data-slide="3">
+    <h3>The Capstone Arc</h3>
+    <h2>Why a Capstone Project?</h2>
+    <div class="two-col">
+      <div>
+        <ul>
+          <li><strong>Synthesize</strong> skills from all 40 prior modules</li>
+          <li><strong>Demonstrate</strong> end-to-end AI Foundry mastery</li>
+          <li><strong>Solve</strong> a real-world problem with AI agents</li>
+          <li><strong>Build</strong> a portfolio-worthy project</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Capstone Journey</h4>
+        <p>
+          <strong>Module 41:</strong> Choose &amp; Plan<br>
+          <strong>Module 42:</strong> Build Part 1<br>
+          <strong>Module 43:</strong> Build Part 2<br>
+          <strong>Module 44:</strong> Polish &amp; Present<br>
+          <strong>Module 45:</strong> Graduation
+        </p>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">3 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 4: PROJECT IDEAS ==================== -->
+  <div class="slide" data-slide="4">
+    <h3>Project Ideas</h3>
+    <h2>Curated Capstone Projects</h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="icon">🏥</div>
+        <h4>Healthcare Triage Agent</h4>
+        <p>Multi-agent patient inquiry system with RAG, scheduling, and escalation</p>
+      </div>
+      <div class="card">
+        <div class="icon">📊</div>
+        <h4>Enterprise BI Copilot</h4>
+        <p>NL analytics over business data with multi-turn Q&amp;A and charting</p>
+      </div>
+      <div class="card">
+        <div class="icon">📝</div>
+        <h4>Document Pipeline</h4>
+        <p>End-to-end OCR, classification, extraction, and summarization</p>
+      </div>
+      <div class="card">
+        <div class="icon">🛒</div>
+        <h4>Shopping Agent</h4>
+        <p>Conversational commerce with product search and personalization</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔐</div>
+        <h4>SOC Security Agent</h4>
+        <p>Autonomous log monitoring, anomaly detection, and remediation</p>
+      </div>
+      <div class="card">
+        <div class="icon">🌍</div>
+        <h4>Multilingual Support</h4>
+        <p>Multi-language customer support with translation and sentiment</p>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">4 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 5: SCOPE FITNESS ==================== -->
+  <div class="slide" data-slide="5">
+    <h3>Scope Definition</h3>
+    <h2>The Scope Fitness Test</h2>
+    <table class="table-slide">
+      <thead>
+        <tr><th>Criterion</th><th>Minimum</th><th>Stretch Goal</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>AI Foundry Services</td><td>≥ 3 core services</td><td>5+ with custom connectors</td></tr>
+        <tr><td>Agent Complexity</td><td>Single agent + tools</td><td>Multi-agent orchestration</td></tr>
+        <tr><td>Data Integration</td><td>1 data source + search</td><td>Multi-modal pipeline</td></tr>
+        <tr><td>Responsible AI</td><td>Content safety + eval</td><td>Full RAI dashboard + red-teaming</td></tr>
+        <tr><td>Operations</td><td>Basic monitoring</td><td>CI/CD + auto-scaling</td></tr>
+        <tr><td>Timeline</td><td>Core flow in 3 sprints</td><td>Production-ready with tests</td></tr>
+      </tbody>
+    </table>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">5 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 6: MVC ==================== -->
+  <div class="slide" data-slide="6">
+    <h3>Minimum Viable Capstone</h3>
+    <h2>Start Small, Iterate Fast</h2>
+    <p>Define the smallest end-to-end slice that demonstrates real value:</p>
+    <ul>
+      <li><strong>One agent</strong> with system prompt and ≥1 tool integration</li>
+      <li><strong>One data source</strong> indexed in Azure AI Search</li>
+      <li><strong>One evaluation run</strong> with baseline metrics captured</li>
+      <li><strong>Content safety</strong> filter enabled on inputs and outputs</li>
+      <li><strong>One conversation flow</strong> demonstrated end-to-end</li>
+    </ul>
+    <div class="highlight-box">
+      <p>💡 Lock your MVC scope before Module 42 begins. Additional features go to a "future work" backlog.</p>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">6 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 7: REQUIREMENTS ==================== -->
+  <div class="slide" data-slide="7">
+    <h3>Requirements Gathering</h3>
+    <h2>Functional &amp; Non-Functional Requirements</h2>
+    <div class="two-col">
+      <div>
+        <h4 style="color:var(--accent-green);margin-bottom:12px;">Functional</h4>
+        <ul>
+          <li>User stories (As a… I want… So that…)</li>
+          <li>Core interactions &amp; queries</li>
+          <li>Tool integrations &amp; APIs</li>
+          <li>Multi-turn &amp; session memory</li>
+          <li>Output formats (text, JSON, charts)</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:var(--accent-orange);margin-bottom:12px;">Non-Functional</h4>
+        <ul>
+          <li>Latency: &lt;3s response time</li>
+          <li>Throughput: concurrent users</li>
+          <li>Security: managed identity, RBAC</li>
+          <li>Compliance: PII handling, data residency</li>
+          <li>Cost budget: monthly Azure spend</li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">7 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 8: ARCHITECTURE ==================== -->
+  <div class="slide" data-slide="8">
+    <h3>Architecture Planning</h3>
+    <h2>Reference Capstone Architecture</h2>
+    <div class="diagram">
+      <span class="box" style="background:#0078d4;">User Interface</span>
+      <span class="arrow">→</span>
+      <span class="box" style="background:#5c2d91;">AI Foundry Agent</span>
+      <span class="arrow">→</span>
+      <span class="box" style="background:#00b7c3;">Tools &amp; Functions</span>
+    </div>
+    <div class="diagram">
+      <span class="box" style="background:#107c10;">Azure AI Search</span>
+      <span class="arrow">⟷</span>
+      <span class="box" style="background:#5c2d91;">Model Deployments</span>
+      <span class="arrow">⟷</span>
+      <span class="box" style="background:#d83b01;">Content Safety</span>
+    </div>
+    <div class="diagram">
+      <span class="box" style="background:#444;">Monitoring</span>
+      <span class="arrow">⟷</span>
+      <span class="box" style="background:#444;">Evaluation</span>
+      <span class="arrow">⟷</span>
+      <span class="box" style="background:#444;">CI / CD</span>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">8 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 9: PATTERNS ==================== -->
+  <div class="slide" data-slide="9">
+    <h3>Architecture Patterns</h3>
+    <h2>Choose Your Pattern</h2>
+    <div class="three-col">
+      <div class="card">
+        <h4>Pattern A: Single-Agent RAG</h4>
+        <p>One agent + Azure AI Search. Best for knowledge Q&amp;A, support bots, document search.</p>
+        <p style="color:var(--accent-green);margin-top:8px;">Intermediate</p>
+      </div>
+      <div class="card">
+        <h4>Pattern B: Multi-Agent</h4>
+        <p>Orchestrator + specialist agents. Best for complex workflows and domain expertise.</p>
+        <p style="color:var(--accent-orange);margin-top:8px;">Advanced</p>
+      </div>
+      <div class="card">
+        <h4>Pattern C: Event-Driven</h4>
+        <p>Event triggers → agent workflows. Best for document processing and automation.</p>
+        <p style="color:var(--accent-red);margin-top:8px;">Expert</p>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">9 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 10: SUCCESS CRITERIA ==================== -->
+  <div class="slide" data-slide="10">
+    <h3>Success Criteria</h3>
+    <h2>SMART Goals for Your Capstone</h2>
+    <table class="table-slide">
+      <thead>
+        <tr><th>SMART</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>S</strong>pecific</td><td>Agent correctly answers 90% of test queries</td></tr>
+        <tr><td><strong>M</strong>easurable</td><td>Groundedness score ≥ 4.0/5.0</td></tr>
+        <tr><td><strong>A</strong>chievable</td><td>Completable in 3 module sprints</td></tr>
+        <tr><td><strong>R</strong>elevant</td><td>Solves a real workflow bottleneck</td></tr>
+        <tr><td><strong>T</strong>ime-bound</td><td>MVP by Module 43, final by Module 44</td></tr>
+      </tbody>
+    </table>
+    <div class="highlight-box">
+      <p>📊 Use AI Foundry's built-in evaluators for groundedness, relevance, coherence, and content safety metrics.</p>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">10 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 11: EVALUATION PLAN ==================== -->
+  <div class="slide" data-slide="11">
+    <h3>Evaluation Plan</h3>
+    <h2>Four-Phase Assessment</h2>
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <h4>Phase 1: Baseline (M42)</h4>
+          <p>Create test dataset (50+ cases), run initial batch evaluation, capture baseline scores.</p>
+        </div>
+        <div class="card">
+          <h4>Phase 2: Iteration (M43)</h4>
+          <p>Optimize prompts, tune retrieval, refine tools. Target ≥15% improvement over baseline.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <h4>Phase 3: Final Eval (M44)</h4>
+          <p>Comprehensive evaluation with edge cases, adversarial inputs, and RAI red-teaming.</p>
+        </div>
+        <div class="card">
+          <h4>Phase 4: Presentation</h4>
+          <p>Live demo to peers with Q&amp;A. Rubric: technical depth, UX, RAI, and presentation.</p>
+        </div>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">11 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 12: TEMPLATES ==================== -->
+  <div class="slide" data-slide="12">
+    <h3>Starter Code</h3>
+    <h2>Project Templates &amp; Structure</h2>
+    <div class="two-col">
+      <div>
+        <h4 style="color:var(--accent-teal);margin-bottom:12px;">Recommended Layout</h4>
+        <ul style="font-size:0.95rem;">
+          <li><code>README.md</code> — Project overview</li>
+          <li><code>PROPOSAL.md</code> — Your proposal</li>
+          <li><code>agent.yaml</code> — Agent config</li>
+          <li><code>src/</code> — Agent, tools, prompts</li>
+          <li><code>data/</code> — Knowledge &amp; test data</li>
+          <li><code>eval/</code> — Evaluation scripts</li>
+          <li><code>infra/</code> — Bicep IaC</li>
+          <li><code>tests/</code> — Integration &amp; unit tests</li>
+          <li><code>docs/</code> — Architecture &amp; reports</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:var(--accent-teal);margin-bottom:12px;">Key Artifacts</h4>
+        <ul style="font-size:0.95rem;">
+          <li><strong>PROPOSAL.md</strong> — Formal proposal with all sections</li>
+          <li><strong>architecture.md</strong> — Diagram + ADRs</li>
+          <li><strong>agent.yaml</strong> — Declarative agent definition</li>
+          <li><strong>run_eval.py</strong> — Batch evaluation script</li>
+          <li><strong>main.bicep</strong> — Infrastructure as code</li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">12 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 13: MINI HACK ==================== -->
+  <div class="slide" data-slide="13">
+    <h3>Mini Hack</h3>
+    <h2>🧪 Write Your Project Proposal</h2>
+    <div class="two-col">
+      <div>
+        <ol style="font-size:1.05rem;">
+          <li><strong>Choose your project</strong> (15 min)</li>
+          <li><strong>Gather requirements</strong> (20 min)<br>
+            <span style="color:var(--text-muted);font-size:0.9rem;">— 5–8 user stories + NFRs</span></li>
+          <li><strong>Design architecture</strong> (25 min)<br>
+            <span style="color:var(--text-muted);font-size:0.9rem;">— Diagram + pattern selection</span></li>
+          <li><strong>Define success criteria</strong> (15 min)<br>
+            <span style="color:var(--text-muted);font-size:0.9rem;">— 3–5 SMART goals</span></li>
+          <li><strong>Write PROPOSAL.md</strong> (15 min)<br>
+            <span style="color:var(--text-muted);font-size:0.9rem;">— All sections, no placeholders</span></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h4>Deliverables Checklist</h4>
+        <ul style="font-size:0.95rem;">
+          <li>☐ Project selected &amp; validated</li>
+          <li>☐ 5+ user stories written</li>
+          <li>☐ Architecture diagram drawn</li>
+          <li>☐ 3+ SMART success criteria</li>
+          <li>☐ PROPOSAL.md completed</li>
+          <li>☐ Risk table with 3+ risks</li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">13 / 14</span>
+  </div>
+
+  <!-- ==================== SLIDE 14: CLOSING ==================== -->
+  <div class="slide" data-slide="14">
+    <span class="badge">ARC 9 · CAPSTONE &amp; MASTERY</span>
+    <h1>Key Takeaways</h1>
+    <ul>
+      <li>Your capstone is the <strong>culminating demonstration</strong> of 40 modules of mastery</li>
+      <li><strong>Scope ruthlessly</strong> — define your MVC, lock it before building</li>
+      <li><strong>Requirements &amp; architecture</strong> documented early prevent costly rework</li>
+      <li><strong>SMART criteria</strong> with AI Foundry evaluators ensure measurable outcomes</li>
+      <li><strong>Templates &amp; patterns</strong> accelerate your start — don't reinvent the wheel</li>
+    </ul>
+    <div class="highlight-box" style="margin-top:24px;">
+      <p>➡️ <strong>Next: Module 42 — Build Your Capstone Part 1</strong><br>
+      Set up infrastructure, create your agent, and build your first end-to-end flow.</p>
+    </div>
+    <span class="slide-title-footer">Module 41: Choose Your Capstone Project</span>
+    <span class="slide-number">14 / 14</span>
+  </div>
+
+</div>
+
+<!-- Navigation Controls -->
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const progressBar = document.getElementById('progressBar');
+
+  function showSlide(index) {
+    slides.forEach(function(s) { s.classList.remove('active'); });
+    currentSlide = Math.max(0, Math.min(index, totalSlides - 1));
+    slides[currentSlide].classList.add('active');
+    progressBar.style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+    document.getElementById('prevBtn').disabled = currentSlide === 0;
+    document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+  }
+
+  window.changeSlide = function(delta) {
+    showSlide(currentSlide + delta);
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+    if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+    if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+  });
+
+  showSlide(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 20: Agent Evaluation, Tracing & Debugging — Presentation</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --surface: #1a1a2e;
+            --surface-2: #222240;
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #50e6ff;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --ms-red: #d13438;
+            --text: #e8e8f0;
+            --text-muted: #9898b0;
+            --accent: #50e6ff;
+            --code-bg: #12121f;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Slide Container */
+        .deck { position: relative; width: 100%; height: 100vh; }
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+        .slide.exit {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        /* Slide Layouts */
+        .slide-inner {
+            width: 100%;
+            max-width: 1000px;
+            text-align: left;
+        }
+        .slide h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--ms-light-blue), var(--ms-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .slide h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--ms-light-blue);
+        }
+        .slide h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 20px 0 12px;
+            color: var(--accent);
+        }
+        .slide p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+        .slide .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+        .slide ul, .slide ol {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-left: 28px;
+            margin-bottom: 16px;
+        }
+        .slide li { margin-bottom: 10px; }
+        .slide li strong { color: var(--ms-light-blue); }
+
+        /* Code on slides */
+        .slide pre {
+            background: var(--code-bg);
+            border: 1px solid rgba(80, 230, 255, 0.15);
+            border-radius: 8px;
+            padding: 20px 24px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .slide code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .slide p code, .slide li code {
+            background: rgba(80, 230, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--accent);
+        }
+
+        /* Syntax Highlighting */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+
+        /* Tables */
+        .slide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+        .slide th {
+            background: var(--ms-dark-blue);
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .slide td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .slide tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+
+        /* Cards on slides */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(80, 230, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .card .emoji { font-size: 2rem; margin-bottom: 10px; display: block; }
+        .card h4 { color: var(--ms-light-blue); margin-bottom: 8px; font-size: 1rem; }
+        .card p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+        /* Architecture diagram */
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+        .arch-box {
+            background: var(--surface);
+            border: 2px solid var(--ms-blue);
+            border-radius: 10px;
+            padding: 14px 22px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .arch-box.purple { border-color: var(--ms-purple); color: #b48ee0; }
+        .arch-box.green { border-color: var(--ms-green); color: #4caf50; }
+        .arch-box.orange { border-color: var(--ms-orange); color: var(--ms-orange); }
+        .arch-arrow { color: var(--text-muted); font-size: 1.5rem; }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            background: rgba(92, 45, 145, 0.3);
+            border: 1px solid rgba(92, 45, 145, 0.5);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b48ee0;
+            margin-bottom: 20px;
+        }
+
+        /* Title slide special */
+        .title-slide .slide-inner { text-align: center; }
+        .title-slide h1 { font-size: 3.2rem; margin-bottom: 8px; }
+        .title-slide .subtitle { font-size: 1.4rem; }
+
+        /* Highlight box */
+        .highlight-box {
+            background: rgba(0, 120, 212, 0.1);
+            border: 1px solid rgba(0, 120, 212, 0.3);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+        .highlight-box.warning {
+            background: rgba(255, 140, 0, 0.1);
+            border-color: rgba(255, 140, 0, 0.3);
+        }
+        .highlight-box.green {
+            background: rgba(16, 124, 16, 0.1);
+            border-color: rgba(16, 124, 16, 0.3);
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 32px;
+            right: 40px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        .controls button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .controls button:hover {
+            background: var(--ms-blue);
+            border-color: var(--ms-blue);
+        }
+
+        /* Progress */
+        .slide-progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            transition: width 0.4s ease;
+        }
+        .slide-counter {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Two-column */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin: 16px 0;
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 30px 24px; }
+            .slide h1 { font-size: 2rem; }
+            .slide h2 { font-size: 1.5rem; }
+            .two-col { grid-template-columns: 1fr; }
+            .card-grid { grid-template-columns: 1fr 1fr; }
+            .arch-flow { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="deck" id="deck">
+
+        <!-- Slide 1: Title -->
+        <div class="slide title-slide active" data-slide="0">
+            <div class="slide-inner">
+                <div class="badge">Arc 4 · AI Agents</div>
+                <h1>Agent Evaluation, Tracing &amp; Debugging</h1>
+                <p class="subtitle">Module 20 of 45 — Azure AI Foundry: Zero to Hero</p>
+                <p style="color: var(--text-muted); margin-top: 32px;">April 2026 · 90 minutes · Intermediate–Advanced</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Learning Objectives -->
+        <div class="slide" data-slide="1">
+            <div class="slide-inner">
+                <h2>Learning Objectives</h2>
+                <ol>
+                    <li>Evaluate agent quality with <strong>task completion</strong> and <strong>accuracy</strong> metrics</li>
+                    <li>Integrate <strong>Application Insights</strong> for end-to-end agent tracing</li>
+                    <li>Debug agent failures using <strong>distributed traces</strong> and <strong>KQL queries</strong></li>
+                    <li>Apply <strong>OpenTelemetry semantic conventions</strong> for GenAI</li>
+                    <li>Build <strong>monitoring dashboards</strong> and configure proactive alerts</li>
+                    <li>Complete a <strong>Mini Hack</strong>: end-to-end tracing with App Insights</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Slide 3: Why Observability Matters -->
+        <div class="slide" data-slide="2">
+            <div class="slide-inner">
+                <h2>Why Agent Observability Matters</h2>
+                <p>AI agents are non-deterministic. Without observability, failures are invisible.</p>
+                <div class="card-grid">
+                    <div class="card">
+                        <span class="emoji">🔍</span>
+                        <h4>Visibility</h4>
+                        <p>See every LLM call, tool invocation, and reasoning step</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">📊</span>
+                        <h4>Quality Metrics</h4>
+                        <p>Task completion rate, accuracy, latency, cost per query</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">🐛</span>
+                        <h4>Root Cause</h4>
+                        <p>Pinpoint exactly where and why an agent failed</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">⚡</span>
+                        <h4>Performance</h4>
+                        <p>Identify bottlenecks in tools, tokens, and latency</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Observability Architecture -->
+        <div class="slide" data-slide="3">
+            <div class="slide-inner">
+                <h2>Agent Observability Architecture</h2>
+                <div class="arch-flow">
+                    <div class="arch-box">Agent Code</div>
+                    <div class="arch-arrow">→</div>
+                    <div class="arch-box purple">OpenTelemetry SDK</div>
+                    <div class="arch-arrow">→</div>
+                    <div class="arch-box green">Application Insights</div>
+                    <div class="arch-arrow">→</div>
+                    <div class="arch-box orange">Dashboards &amp; Alerts</div>
+                </div>
+                <div class="highlight-box" style="margin-top: 32px;">
+                    <h3>What Gets Traced Automatically</h3>
+                    <table>
+                        <tr><th>Span Type</th><th>Information Captured</th></tr>
+                        <tr><td>Agent Run</td><td>agent.id, thread.id, run.id, status, duration</td></tr>
+                        <tr><td>LLM Call</td><td>model, prompt/completion tokens, finish_reason</td></tr>
+                        <tr><td>Tool Call</td><td>tool.name, input, output, duration</td></tr>
+                        <tr><td>Exceptions</td><td>type, message, stack trace</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Evaluation Dimensions -->
+        <div class="slide" data-slide="4">
+            <div class="slide-inner">
+                <h2>Evaluating Agent Quality</h2>
+                <p>Agent evaluation goes beyond simple accuracy — measure multiple dimensions:</p>
+                <table>
+                    <tr><th>Dimension</th><th>What It Measures</th><th>Metric</th></tr>
+                    <tr><td><strong>Task Completion</strong></td><td>Did the agent achieve the goal?</td><td>Completion rate (%)</td></tr>
+                    <tr><td><strong>Accuracy</strong></td><td>Were outputs factually correct?</td><td>Groundedness (0–5)</td></tr>
+                    <tr><td><strong>Tool Usage</strong></td><td>Right tools, correct params?</td><td>Precision/Recall</td></tr>
+                    <tr><td><strong>Efficiency</strong></td><td>Resource usage per task</td><td>Tokens, latency</td></tr>
+                    <tr><td><strong>Safety</strong></td><td>Stayed within guardrails?</td><td>Violation rate</td></tr>
+                    <tr><td><strong>Adherence</strong></td><td>Followed instructions?</td><td>Score (0–5)</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 6: Evaluation SDK -->
+        <div class="slide" data-slide="5">
+            <div class="slide-inner">
+                <h2>Azure AI Evaluation SDK</h2>
+                <pre><span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> <span class="type">AgentEvaluator</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+<span class="param">evaluator</span> = <span class="type">AgentEvaluator</span>(
+    azure_ai_project={
+        <span class="str">"subscription_id"</span>: <span class="str">"&lt;sub-id&gt;"</span>,
+        <span class="str">"resource_group_name"</span>: <span class="str">"&lt;rg&gt;"</span>,
+        <span class="str">"project_name"</span>: <span class="str">"&lt;project&gt;"</span>,
+    },
+    credential=<span class="type">DefaultAzureCredential</span>()
+)
+
+<span class="param">results</span> = evaluator.<span class="fn">evaluate</span>(
+    data=eval_dataset,
+    evaluators={
+        <span class="str">"task_completion"</span>: <span class="str">"task_completion"</span>,
+        <span class="str">"groundedness"</span>: <span class="str">"groundedness"</span>,
+        <span class="str">"tool_call_accuracy"</span>: <span class="str">"tool_call_accuracy"</span>,
+    }
+)</pre>
+            </div>
+        </div>
+
+        <!-- Slide 7: App Insights Setup -->
+        <div class="slide" data-slide="6">
+            <div class="slide-inner">
+                <h2>App Insights Integration</h2>
+                <h3>4-Step Setup</h3>
+                <ol>
+                    <li><strong>Create</strong> an Application Insights resource</li>
+                    <li><strong>Link</strong> to your Azure AI Foundry project</li>
+                    <li><strong>Enable</strong> tracing in your agent code</li>
+                    <li><strong>Verify</strong> traces in the portal</li>
+                </ol>
+                <pre><span class="kw">from</span> azure.monitor.opentelemetry <span class="kw">import</span> <span class="fn">configure_azure_monitor</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+
+<span class="cm"># Step 1: Enable telemetry export</span>
+<span class="fn">configure_azure_monitor</span>(
+    connection_string=os.environ[<span class="str">"APPLICATIONINSIGHTS_CONNECTION_STRING"</span>]
+)
+
+<span class="cm"># Step 2: Create client with telemetry</span>
+<span class="param">client</span> = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=os.environ[<span class="str">"PROJECT_ENDPOINT"</span>],
+)
+client.telemetry.<span class="fn">enable</span>()</pre>
+            </div>
+        </div>
+
+        <!-- Slide 8: OpenTelemetry Conventions -->
+        <div class="slide" data-slide="7">
+            <div class="slide-inner">
+                <h2>OpenTelemetry Semantic Conventions</h2>
+                <p>Azure AI Foundry follows the <strong>OpenTelemetry GenAI conventions</strong> for consistent trace attributes.</p>
+                <div class="two-col">
+                    <div>
+                        <h3>Model Attributes</h3>
+                        <pre><span class="param">gen_ai.system</span> = <span class="str">"az.ai.agents"</span>
+<span class="param">gen_ai.request.model</span> = <span class="str">"gpt-4o"</span>
+<span class="param">gen_ai.operation.name</span> = <span class="str">"chat"</span></pre>
+                    </div>
+                    <div>
+                        <h3>Token Attributes</h3>
+                        <pre><span class="param">gen_ai.usage.input_tokens</span>  = <span class="num">1250</span>
+<span class="param">gen_ai.usage.output_tokens</span> = <span class="num">340</span></pre>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <h3>Agent-Specific Attributes</h3>
+                    <pre><span class="param">gen_ai.agent.id</span>     = <span class="str">"asst_abc123"</span>
+<span class="param">gen_ai.thread.id</span>    = <span class="str">"thread_xyz789"</span>
+<span class="param">gen_ai.thread.run.id</span> = <span class="str">"run_def456"</span></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Custom Span Enrichment -->
+        <div class="slide" data-slide="8">
+            <div class="slide-inner">
+                <h2>Custom Span Enrichment</h2>
+                <p>Add <strong>business context</strong> to traces for meaningful monitoring:</p>
+                <pre><span class="kw">from</span> opentelemetry <span class="kw">import</span> trace
+
+<span class="param">tracer</span> = trace.<span class="fn">get_tracer</span>(<span class="str">"my-agent-app"</span>)
+
+<span class="kw">with</span> tracer.<span class="fn">start_as_current_span</span>(<span class="str">"process_request"</span>) <span class="kw">as</span> span:
+    span.<span class="fn">set_attribute</span>(<span class="str">"customer.id"</span>, customer_id)
+    span.<span class="fn">set_attribute</span>(<span class="str">"request.type"</span>, <span class="str">"refund_inquiry"</span>)
+    span.<span class="fn">set_attribute</span>(<span class="str">"request.priority"</span>, <span class="str">"high"</span>)
+
+    <span class="param">response</span> = agent_client.<span class="fn">run</span>(
+        agent_id=agent_id, thread_id=thread_id
+    )
+
+    span.<span class="fn">set_attribute</span>(<span class="str">"agent.task_completed"</span>, <span class="kw">True</span>)
+    span.<span class="fn">set_attribute</span>(<span class="str">"agent.total_tokens"</span>,
+                     response.usage.total_tokens)</pre>
+            </div>
+        </div>
+
+        <!-- Slide 10: Common Failure Patterns -->
+        <div class="slide" data-slide="9">
+            <div class="slide-inner">
+                <h2>Common Agent Failure Patterns</h2>
+                <table>
+                    <tr><th>Pattern</th><th>Symptoms</th><th>Fix</th></tr>
+                    <tr><td><strong>Tool Call Loop</strong></td><td>Same tool 5+ times, high latency</td><td>Clarify instructions</td></tr>
+                    <tr><td><strong>Wrong Tool</strong></td><td>File Search instead of Bing</td><td>Distinct tool descriptions</td></tr>
+                    <tr><td><strong>Hallucination</strong></td><td>Fabricated data in response</td><td>Add verification guardrails</td></tr>
+                    <tr><td><strong>Token Exhaustion</strong></td><td>Truncated response</td><td>Summarize history</td></tr>
+                    <tr><td><strong>Timeout</strong></td><td>Run exceeds max duration</td><td>Circuit breakers</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 11: Debugging Workflow -->
+        <div class="slide" data-slide="10">
+            <div class="slide-inner">
+                <h2>Debugging Workflow</h2>
+                <ol>
+                    <li><strong>Identify</strong> the failed run — query App Insights for failed runs</li>
+                    <li><strong>Inspect</strong> the full trace — view the distributed trace end-to-end</li>
+                    <li><strong>Analyze</strong> tool call sequences — verify correct tool selection</li>
+                    <li><strong>Review</strong> token usage — compare against expected ranges</li>
+                    <li><strong>Test the fix</strong> — replay the conversation to verify</li>
+                </ol>
+                <pre><span class="cm">-- Find failed agent runs in the last 24 hours</span>
+<span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">24h</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">where</span> success == <span class="kw">false</span>
+| <span class="kw">project</span> timestamp, id, name, duration, resultCode
+| <span class="kw">order by</span> timestamp <span class="kw">desc</span></pre>
+            </div>
+        </div>
+
+        <!-- Slide 12: KQL Dashboard Queries -->
+        <div class="slide" data-slide="11">
+            <div class="slide-inner">
+                <h2>KQL Dashboard Queries</h2>
+                <div class="two-col">
+                    <div>
+                        <h3>Success Rate</h3>
+                        <pre><span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">7d</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">summarize</span>
+    total = <span class="fn">count</span>(),
+    ok = <span class="fn">countif</span>(success)
+    <span class="kw">by</span> <span class="fn">bin</span>(timestamp, <span class="num">1h</span>)
+| <span class="kw">extend</span> rate = <span class="fn">round</span>(
+    <span class="num">100.0</span> * ok / total, <span class="num">2</span>)
+| <span class="kw">render</span> timechart</pre>
+                    </div>
+                    <div>
+                        <h3>Token Usage</h3>
+                        <pre><span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">7d</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">extend</span> tokens = <span class="fn">toint</span>(
+    customDimensions[
+      <span class="str">"gen_ai.usage.input_tokens"</span>
+    ])
+| <span class="kw">summarize</span>
+    avg_t = <span class="fn">avg</span>(tokens),
+    p95 = <span class="fn">percentile</span>(tokens, <span class="num">95</span>)
+    <span class="kw">by</span> <span class="fn">bin</span>(timestamp, <span class="num">1d</span>)</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Mini Hack -->
+        <div class="slide" data-slide="12">
+            <div class="slide-inner">
+                <h2>🛠️ Mini Hack: End-to-End Tracing</h2>
+                <p>Set up complete observability for your agent:</p>
+                <ol>
+                    <li>Configure <code>azure-monitor-opentelemetry</code> export</li>
+                    <li>Enable <code>client.telemetry.enable()</code> on AIProjectClient</li>
+                    <li>Add custom span attributes for business context</li>
+                    <li>Run 5 test conversations through your agent</li>
+                    <li>Build a KQL dashboard: success rates, latency, tokens</li>
+                    <li><strong>Stretch:</strong> Set up an alert rule for success rate &lt; 90%</li>
+                </ol>
+                <div class="highlight-box green">
+                    <p><strong>⏱ Time:</strong> 15 minutes · <strong>📋 Deliverable:</strong> App Insights dashboard with live agent traces</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Best Practices -->
+        <div class="slide" data-slide="13">
+            <div class="slide-inner">
+                <h2>Best Practices</h2>
+                <div class="two-col">
+                    <div>
+                        <h3>Evaluation</h3>
+                        <ul>
+                            <li><strong>Automate</strong> in CI/CD pipelines</li>
+                            <li>Use <strong>production data</strong> for test cases</li>
+                            <li><strong>Track metrics</strong> over time</li>
+                            <li>Combine <strong>AI + human</strong> review</li>
+                        </ul>
+                        <h3>Debugging</h3>
+                        <ul>
+                            <li><strong>Reproduce</strong> before fixing</li>
+                            <li>Check <strong>tool outputs</strong> first</li>
+                            <li><strong>Version</strong> agent instructions</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Tracing</h3>
+                        <ul>
+                            <li><strong>Always enable</strong> in production</li>
+                            <li>Use <strong>sampling</strong> (10–25%) for volume</li>
+                            <li>Add <strong>business context</strong> to spans</li>
+                            <li>Set up <strong>alerts from day 1</strong></li>
+                            <li>Implement <strong>log correlation</strong></li>
+                        </ul>
+                        <div class="highlight-box warning" style="margin-top: 16px;">
+                            <p><strong>💰 Cost Tip:</strong> Use <code>OTEL_TRACES_SAMPLER_ARG=0.1</code> to sample 10% in production.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Summary & Next -->
+        <div class="slide" data-slide="14">
+            <div class="slide-inner" style="text-align: center;">
+                <h2>Key Takeaways</h2>
+                <div class="card-grid" style="max-width: 800px; margin: 24px auto;">
+                    <div class="card">
+                        <span class="emoji">📏</span>
+                        <h4>Evaluate</h4>
+                        <p>Task completion, accuracy, tool usage, safety</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">🔭</span>
+                        <h4>Trace</h4>
+                        <p>App Insights + OpenTelemetry for every span</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">🐛</span>
+                        <h4>Debug</h4>
+                        <p>KQL + distributed traces for root cause</p>
+                    </div>
+                    <div class="card">
+                        <span class="emoji">📊</span>
+                        <h4>Monitor</h4>
+                        <p>Dashboards &amp; alerts for proactive health</p>
+                    </div>
+                </div>
+                <div style="margin-top: 40px;">
+                    <p class="subtitle"><strong>Next:</strong> Module 21 — Agent Security &amp; Responsible AI</p>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">← Module 19: Multi-Agent Orchestration &nbsp;|&nbsp; Module 21: Agent Security →</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button id="prevBtn" aria-label="Previous slide">←</button>
+        <button id="nextBtn" aria-label="Next slide">→</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="slide-progress" id="slideProgress"></div>
+    <div class="slide-counter" id="slideCounter"></div>
+
+    <script>
+    (function() {
+        'use strict';
+        const slides = document.querySelectorAll('.slide');
+        const total = slides.length;
+        let current = 0;
+
+        function goTo(n) {
+            if (n < 0 || n >= total) return;
+            slides[current].classList.remove('active');
+            slides[current].classList.add('exit');
+            setTimeout(() => slides[current === n ? current : current].classList.remove('exit'), 500);
+            const prev = current;
+            current = n;
+            slides[current].classList.add('active');
+            setTimeout(() => slides[prev].classList.remove('exit'), 500);
+            update();
+        }
+
+        function next() { goTo(current + 1); }
+        function prev() { goTo(current - 1); }
+
+        function update() {
+            document.getElementById('slideProgress').style.width = ((current + 1) / total * 100) + '%';
+            document.getElementById('slideCounter').textContent = (current + 1) + ' / ' + total;
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', next);
+        document.getElementById('prevBtn').addEventListener('click', prev);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+            if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+            if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+        });
+
+        // Touch support
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+        });
+
+        update();
+    })();
+    </script>
+</body>
+</html>

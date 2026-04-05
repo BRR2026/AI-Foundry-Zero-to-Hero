@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 45 — Publish Your Final Blog: What I Learned in 45 Modules | Presentation</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface-light: #1c2333;
+            --primary: #58a6ff;
+            --primary-glow: rgba(88,166,255,0.15);
+            --accent: #ffb900;
+            --accent-glow: rgba(255,185,0,0.15);
+            --success: #3fb950;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --gradient-gold: linear-gradient(135deg, #f9a825, #ffb900, #ffd54f);
+            --gradient-hero: linear-gradient(135deg, #0f0c29, #1a1a4e, #24243e);
+            --gradient-celebration: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ── Slide System ── */
+        .slide {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            padding: 60px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .slide.active { display: flex; }
+
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            right: 32px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .slide-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--gradient-gold);
+            transition: width 0.5s ease;
+        }
+
+        /* ── Typography ── */
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--primary);
+        }
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        p, li {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 700px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            max-width: 800px;
+            width: 100%;
+        }
+        ul li {
+            padding: 10px 0 10px 32px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+        ul li:last-child { border-bottom: none; }
+        ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 8px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--gradient-gold);
+            color: #000;
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .arc-badge {
+            background: rgba(88,166,255,0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .emoji-big {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        /* ── Grid Layouts ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        .card .card-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .card h4 { font-size: 1.1rem; color: var(--primary); margin-bottom: 8px; }
+        .card p { font-size: 0.95rem; color: var(--text-muted); }
+
+        /* ── Journey Timeline ── */
+        .arc-timeline {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 900px;
+        }
+        .arc-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .arc-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--primary);
+        }
+        .arc-item .arc-num {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .arc-item .arc-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 4px;
+        }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: flex;
+            gap: 48px;
+            margin: 24px 0;
+        }
+        .stat { text-align: center; }
+        .stat .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .stat .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── Code Block ── */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px 28px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            text-align: left;
+            width: 100%;
+            max-width: 800px;
+            color: var(--text);
+            overflow-x: auto;
+        }
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+
+        /* ── Celebration Slide ── */
+        .celebration-bg {
+            background: var(--gradient-hero);
+            position: relative;
+        }
+        .celebration-bg::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(255,185,0,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(88,166,255,0.12) 0%, transparent 50%);
+        }
+
+        .gold-text {
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .trophy-animated {
+            font-size: 6rem;
+            animation: trophyPulse 2s ease-in-out infinite;
+        }
+        @keyframes trophyPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255,185,0,0.3)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 40px rgba(255,185,0,0.6)); }
+        }
+
+        /* ── Controls ── */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        .controls button {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .controls button:hover {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .slide { padding: 30px 24px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.6rem; }
+            .grid-2, .grid-3, .arc-timeline { grid-template-columns: 1fr; }
+            .stats-row { flex-direction: column; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════ SLIDE 1: Title ══════════ -->
+<div class="slide active celebration-bg" id="slide-1">
+    <span class="badge">🏆 Grand Finale — Module 45 of 45</span>
+    <div class="trophy-animated" style="margin-bottom:8px;">🎓</div>
+    <h1><span class="gold-text">Publish Your Final Blog</span><br>What I Learned in 45 Modules</h1>
+    <p class="subtitle">ARC 9: CAPSTONE & MASTERY · April 2026</p>
+    <p style="color:var(--text-muted); margin-top:24px; font-size:0.9rem;">Azure AI Foundry: Zero to Hero</p>
+    <div class="slide-number">1 / 15</div>
+    <div class="slide-progress" style="width: 6.67%"></div>
+</div>
+
+<!-- ══════════ SLIDE 2: The Big Picture ══════════ -->
+<div class="slide" id="slide-2">
+    <span class="arc-badge">ARC 9 · CAPSTONE & MASTERY</span>
+    <h2>The Big Picture</h2>
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-number">45</div>
+            <div class="stat-label">Modules</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">9</div>
+            <div class="stat-label">Learning Arcs</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">45+</div>
+            <div class="stat-label">Labs</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">450+</div>
+            <div class="stat-label">Quiz Questions</div>
+        </div>
+    </div>
+    <p style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">You started at zero. You are now a hero. Let's celebrate. 🎉</p>
+    <div class="slide-number">2 / 15</div>
+    <div class="slide-progress" style="width: 13.33%"></div>
+</div>
+
+<!-- ══════════ SLIDE 3: Your Journey Map ══════════ -->
+<div class="slide" id="slide-3">
+    <h2>🗺️ Your Complete Journey</h2>
+    <div class="arc-timeline">
+        <div class="arc-item"><div class="arc-num">Arc 1 · M1–5</div><div class="arc-name">🏗️ Foundations</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 2 · M6–10</div><div class="arc-name">🤖 Deployment</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 3 · M11–15</div><div class="arc-name">🔍 RAG</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 4 · M16–20</div><div class="arc-name">🧠 Agents</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 5 · M21–25</div><div class="arc-name">⚙️ Advanced</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 6 · M26–30</div><div class="arc-name">🏢 Enterprise</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 7 · M31–35</div><div class="arc-name">🚀 Production</div></div>
+        <div class="arc-item"><div class="arc-num">Arc 8 · M36–40</div><div class="arc-name">🌍 Real-World</div></div>
+        <div class="arc-item" style="border-color:var(--accent);"><div class="arc-num">Arc 9 · M41–45</div><div class="arc-name">🏆 Capstone</div></div>
+    </div>
+    <div class="slide-number">3 / 15</div>
+    <div class="slide-progress" style="width: 20%"></div>
+</div>
+
+<!-- ══════════ SLIDE 4: Reflection ══════════ -->
+<div class="slide" id="slide-4">
+    <div class="emoji-big">🔮</div>
+    <h2>Reflecting on Your Journey</h2>
+    <ul>
+        <li><strong>The Beginning:</strong> What did you know before Module 1?</li>
+        <li><strong>The Struggle:</strong> What was the hardest concept to grasp?</li>
+        <li><strong>The Breakthrough:</strong> When did everything click?</li>
+        <li><strong>The Mastery:</strong> What can you build now that you couldn't before?</li>
+    </ul>
+    <p style="color:var(--accent); margin-top:20px; font-style:italic;">"The struggle is where the real learning happened."</p>
+    <div class="slide-number">4 / 15</div>
+    <div class="slide-progress" style="width: 26.67%"></div>
+</div>
+
+<!-- ══════════ SLIDE 5: Documenting Your Capstone ══════════ -->
+<div class="slide" id="slide-5">
+    <div class="emoji-big">📋</div>
+    <h2>Documenting Your Capstone</h2>
+    <ul>
+        <li><strong>Project Title & Vision</strong> — What problem does it solve?</li>
+        <li><strong>Architecture Overview</strong> — Diagram + component descriptions</li>
+        <li><strong>AI Foundry Services</strong> — Models, agents, RAG, safety</li>
+        <li><strong>Key Technical Decisions</strong> — Why you chose specific patterns</li>
+        <li><strong>Challenges & Solutions</strong> — What went wrong and how you fixed it</li>
+        <li><strong>Results & Impact</strong> — Metrics, scores, user feedback</li>
+    </ul>
+    <div class="slide-number">5 / 15</div>
+    <div class="slide-progress" style="width: 33.33%"></div>
+</div>
+
+<!-- ══════════ SLIDE 6: Sample Architecture ══════════ -->
+<div class="slide" id="slide-6">
+    <h2>📐 Sample Capstone Architecture</h2>
+    <div class="code-block">
+<span class="code-comment">## Intelligent Customer Support Agent</span>
+
+┌─────────────┐    ┌──────────────────┐    ┌─────────────┐
+│   User UI   │───▶│  Orchestrator    │───▶│  AI Search  │
+│  (React)    │    │  Agent (GPT-4o)  │    │  (RAG Index) │
+└─────────────┘    └──────┬───────────┘    └─────────────┘
+                          │
+              ┌───────────┼───────────┐
+              ▼           ▼           ▼
+        ┌──────────┐ ┌──────────┐ ┌──────────┐
+        │ Billing  │ │ Technical│ │ Feedback │
+        │ Agent    │ │ Agent    │ │ Agent    │
+        └──────────┘ └──────────┘ └──────────┘
+
+<span class="code-keyword">Services:</span> <span class="code-string">AI Foundry · GPT-4o · AI Search · Agent Service · Content Safety</span>
+    </div>
+    <div class="slide-number">6 / 15</div>
+    <div class="slide-progress" style="width: 40%"></div>
+</div>
+
+<!-- ══════════ SLIDE 7: Writing Your Blog ══════════ -->
+<div class="slide" id="slide-7">
+    <div class="emoji-big">✍️</div>
+    <h2>Writing Your Blog Post</h2>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-icon">🪝</div>
+            <h4>Hook</h4>
+            <p>Start with a question, bold claim, or personal story</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📖</div>
+            <h4>Journey Narrative</h4>
+            <p>Walk through highlights — not every module, the moments that mattered</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🏆</div>
+            <h4>Capstone Showcase</h4>
+            <p>Architecture, visuals, code highlights, and results</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">💡</div>
+            <h4>Lessons & Advice</h4>
+            <p>3–5 takeaways + what you'd tell someone starting today</p>
+        </div>
+    </div>
+    <div class="slide-number">7 / 15</div>
+    <div class="slide-progress" style="width: 46.67%"></div>
+</div>
+
+<!-- ══════════ SLIDE 8: Where to Publish ══════════ -->
+<div class="slide" id="slide-8">
+    <div class="emoji-big">🌐</div>
+    <h2>Where to Publish</h2>
+    <div class="grid-3">
+        <div class="card">
+            <div class="card-icon">📝</div>
+            <h4>Dev.to</h4>
+            <p>Developer-friendly, great Markdown support</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🏠</div>
+            <h4>Hashnode</h4>
+            <p>Custom domains, built for dev blogs</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📰</div>
+            <h4>Medium</h4>
+            <p>Large audience, broad reach</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">💼</div>
+            <h4>LinkedIn</h4>
+            <p>Professional visibility</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🐙</div>
+            <h4>GitHub Pages</h4>
+            <p>Full control, free hosting</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🔷</div>
+            <h4>MS Tech Community</h4>
+            <p>Azure ecosystem visibility</p>
+        </div>
+    </div>
+    <div class="slide-number">8 / 15</div>
+    <div class="slide-progress" style="width: 53.33%"></div>
+</div>
+
+<!-- ══════════ SLIDE 9: Building Your Portfolio ══════════ -->
+<div class="slide" id="slide-9">
+    <div class="emoji-big">💼</div>
+    <h2>Building Your AI Portfolio</h2>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-icon">🗂️</div>
+            <h4>GitHub Repositories</h4>
+            <p>Clean READMEs, architecture diagrams, deployment instructions</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📝</div>
+            <h4>Technical Writing</h4>
+            <p>Blog posts, guides, and how-tos that demonstrate expertise</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🌐</div>
+            <h4>Live Demos</h4>
+            <p>Deployed apps that anyone can interact with</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🎤</div>
+            <h4>Presentations</h4>
+            <p>Slide decks and recorded talks from your capstone</p>
+        </div>
+    </div>
+    <div class="slide-number">9 / 15</div>
+    <div class="slide-progress" style="width: 60%"></div>
+</div>
+
+<!-- ══════════ SLIDE 10: Career Paths ══════════ -->
+<div class="slide" id="slide-10">
+    <div class="emoji-big">🚀</div>
+    <h2>Career Paths in AI</h2>
+    <div class="grid-3">
+        <div class="card">
+            <div class="card-icon">👩‍💻</div>
+            <h4>AI App Developer</h4>
+            <p>Build intelligent apps with Foundry</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🏛️</div>
+            <h4>Solutions Architect</h4>
+            <p>Design enterprise AI systems</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🎯</div>
+            <h4>AI Consultant</h4>
+            <p>Advise orgs on AI strategy</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🔬</div>
+            <h4>AI/ML Engineer</h4>
+            <p>Fine-tune models & pipelines</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🛡️</div>
+            <h4>Responsible AI Lead</h4>
+            <p>Fairness, safety, governance</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📢</div>
+            <h4>Developer Advocate</h4>
+            <p>Teach, inspire, build community</p>
+        </div>
+    </div>
+    <div class="slide-number">10 / 15</div>
+    <div class="slide-progress" style="width: 66.67%"></div>
+</div>
+
+<!-- ══════════ SLIDE 11: The Future ══════════ -->
+<div class="slide" id="slide-11">
+    <div class="emoji-big">🔮</div>
+    <h2>The Future of Azure AI Foundry</h2>
+    <ul>
+        <li><strong>Autonomous Agent Networks</strong> — Self-correcting multi-agent systems</li>
+        <li><strong>Multimodal by Default</strong> — Text, image, audio, video natively</li>
+        <li><strong>Real-Time AI</strong> — Streaming responses, sub-second inference</li>
+        <li><strong>AI-Native Development</strong> — Foundry as the default app platform</li>
+        <li><strong>Industry Agents</strong> — Pre-built agents for healthcare, finance, legal</li>
+        <li><strong>Edge AI</strong> — Foundry models on IoT and mobile devices</li>
+    </ul>
+    <div class="slide-number">11 / 15</div>
+    <div class="slide-progress" style="width: 73.33%"></div>
+</div>
+
+<!-- ══════════ SLIDE 12: Top 10 Tips ══════════ -->
+<div class="slide" id="slide-12">
+    <div class="emoji-big">💡</div>
+    <h2>Top 10 Tips for Future Learners</h2>
+    <div class="grid-2">
+        <ul>
+            <li>Start before you feel ready</li>
+            <li>Build things, don't just read</li>
+            <li>Embrace the confusion</li>
+            <li>Use the portal first, then code</li>
+            <li>Prompt engineering is a skill</li>
+        </ul>
+        <ul>
+            <li>RAG is a game-changer</li>
+            <li>Agents are the future</li>
+            <li>Evaluation is not optional</li>
+            <li>Build in public</li>
+            <li>Never stop learning</li>
+        </ul>
+    </div>
+    <div class="slide-number">12 / 15</div>
+    <div class="slide-progress" style="width: 80%"></div>
+</div>
+
+<!-- ══════════ SLIDE 13: Mini Hack ══════════ -->
+<div class="slide" id="slide-13">
+    <div class="emoji-big">🧪</div>
+    <h2>Mini Hack: Your Final Challenge</h2>
+    <ul>
+        <li>✍️ <strong>Write</strong> your blog post (800+ words, authentic story)</li>
+        <li>📋 <strong>Document</strong> your capstone (architecture, results, lessons)</li>
+        <li>🌐 <strong>Publish</strong> to at least one platform (Dev.to, Hashnode, Medium, LinkedIn)</li>
+        <li>📢 <strong>Share</strong> on social media (#AzureAIFoundry #ZeroToHero)</li>
+        <li>🎤 <strong>Present</strong> your capstone (10 min, live or recorded)</li>
+        <li>💼 <strong>Update</strong> your portfolio (GitHub + LinkedIn)</li>
+    </ul>
+    <p style="color:var(--accent); margin-top:20px; font-style:italic; text-align:center;">
+        "This is not homework — this is a career asset."
+    </p>
+    <div class="slide-number">13 / 15</div>
+    <div class="slide-progress" style="width: 86.67%"></div>
+</div>
+
+<!-- ══════════ SLIDE 14: Certificate ══════════ -->
+<div class="slide celebration-bg" id="slide-14">
+    <div style="position:relative;z-index:2;text-align:center;">
+        <div style="font-size:4rem;margin-bottom:8px;">🏅</div>
+        <h1 style="font-size:2.4rem;"><span class="gold-text">Certificate of Completion</span></h1>
+        <p class="subtitle" style="margin:0 auto 24px;">Azure AI Foundry: Zero to Hero</p>
+        <div style="width:180px;height:2px;background:var(--gradient-gold);margin:0 auto 24px;"></div>
+        <p style="font-size:1.5rem;font-style:italic;color:var(--accent);">[ Your Name Here ]</p>
+        <p style="max-width:600px;margin:16px auto 0;color:var(--text-muted);font-size:1rem;">
+            Has completed all 45 modules across 9 learning arcs, demonstrating proficiency in
+            model deployment, RAG, agents, enterprise architecture, production operations,
+            and capstone project delivery.
+        </p>
+        <div class="stats-row" style="justify-content:center;margin-top:32px;">
+            <div class="stat"><div class="stat-number">45</div><div class="stat-label">Modules</div></div>
+            <div class="stat"><div class="stat-number">9</div><div class="stat-label">Arcs</div></div>
+            <div class="stat"><div class="stat-number">45+</div><div class="stat-label">Labs</div></div>
+        </div>
+    </div>
+    <div class="slide-number">14 / 15</div>
+    <div class="slide-progress" style="width: 93.33%"></div>
+</div>
+
+<!-- ══════════ SLIDE 15: CELEBRATION — FINAL SLIDE ══════════ -->
+<div class="slide celebration-bg" id="slide-15">
+    <div style="position:relative;z-index:2;text-align:center;">
+        <div class="trophy-animated">🏆</div>
+        <h1 style="font-size:3rem;margin-bottom:8px;">
+            <span class="gold-text">Congratulations!</span>
+        </h1>
+        <p style="font-size:1.5rem;margin-bottom:8px;color:var(--text);">
+            You Are Now a <span class="gold-text" style="font-weight:800;">Zero-to-Hero</span> Graduate
+        </p>
+        <p class="subtitle" style="margin:0 auto 32px;">
+            From your first Azure AI Foundry portal login to building production-grade
+            intelligent applications — you've done it all.
+        </p>
+        <div style="width:180px;height:2px;background:var(--gradient-gold);margin:0 auto 32px;"></div>
+        <p style="font-size:1.3rem;color:var(--accent);font-weight:600;">
+            🎓 From Zero to Hero — The Journey Was the Destination
+        </p>
+        <p style="font-size:1.5rem;margin-top:16px;">
+            Now Go Change the World 🚀
+        </p>
+        <p style="color:var(--text-muted);margin-top:32px;font-size:0.85rem;">
+            Azure AI Foundry: Zero to Hero · 45 Modules · 9 Arcs · April 2026
+        </p>
+    </div>
+    <div class="slide-number">15 / 15</div>
+    <div class="slide-progress" style="width: 100%"></div>
+</div>
+
+<!-- ══════════ Controls ══════════ -->
+<div class="controls">
+    <button onclick="prevSlide()">◄ Prev</button>
+    <button onclick="nextSlide()">Next ►</button>
+</div>
+
+<script>
+    let currentSlide = 1;
+    const totalSlides = 15;
+
+    function showSlide(n) {
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById('slide-' + n);
+        if (target) {
+            target.classList.add('active');
+            currentSlide = n;
+        }
+    }
+
+    function nextSlide() {
+        if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+        if (currentSlide > 1) showSlide(currentSlide - 1);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+            e.preventDefault();
+            prevSlide();
+        } else if (e.key === 'Home') {
+            showSlide(1);
+        } else if (e.key === 'End') {
+            showSlide(totalSlides);
+        } else if (e.key >= '1' && e.key <= '9') {
+            showSlide(parseInt(e.key));
+        }
+    });
+</script>
+
+</body>
+</html>

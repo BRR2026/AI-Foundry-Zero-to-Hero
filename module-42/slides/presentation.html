@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 42: Build the Data + Model + RAG Pipeline — Presentation</title>
+    <style>
+        /* ============================================================
+           DARK PRESENTATION THEME
+           Module 42 — Build the Data + Model + RAG Pipeline
+           ============================================================ */
+
+        :root {
+            --bg-dark: #0F0F1A;
+            --bg-slide: #16162A;
+            --bg-card: #1E1E3A;
+            --accent: #8B5CF6;
+            --accent-light: #A78BFA;
+            --accent-glow: rgba(139, 92, 246, 0.3);
+            --blue: #3B82F6;
+            --green: #10B981;
+            --orange: #F59E0B;
+            --red: #EF4444;
+            --cyan: #06B6D4;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --border: rgba(139, 92, 246, 0.2);
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            font-family: var(--font-sans);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 3rem 4rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--bg-slide);
+            flex-direction: column;
+            justify-content: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .slide.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---- Title Slide ---- */
+        .slide-title {
+            background: linear-gradient(135deg, #0F0F2D 0%, #1a1045 40%, #2d1b69 100%);
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-title .arc-badge {
+            display: inline-block;
+            background: rgba(139,92,246,0.2);
+            border: 1px solid rgba(139,92,246,0.4);
+            padding: 8px 24px;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent-light);
+            margin-bottom: 2rem;
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .slide-title h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #fff 0%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-title .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+        }
+
+        .slide-title .module-info {
+            margin-top: 2.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* ---- Standard Slide ---- */
+        .slide h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slide h2 .icon { font-size: 1.8rem; }
+
+        .slide h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-light);
+            margin: 1.5rem 0 0.8rem;
+        }
+
+        .slide p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 900px;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0;
+        }
+
+        .slide ul li {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .slide ul li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* ---- Grid layouts ---- */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            flex: 1;
+        }
+
+        .three-col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .four-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ---- Code ---- */
+        .code-slide {
+            background: #1a1a2e;
+            border: 1px solid rgba(139,92,246,0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: #D4D4D4;
+        }
+
+        .hl-kw { color: #569CD6; }
+        .hl-str { color: #CE9178; }
+        .hl-fn { color: #DCDCAA; }
+        .hl-cm { color: #6A9955; }
+        .hl-var { color: #9CDCFE; }
+        .hl-tp { color: #4EC9B0; }
+        .hl-num { color: #B5CEA8; }
+
+        /* ---- Flow Diagram ---- */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-node {
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .flow-node .node-icon { font-size: 1.5rem; margin-bottom: 4px; }
+        .flow-node .node-label { font-size: 0.85rem; font-weight: 600; }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--accent);
+            font-weight: 300;
+        }
+
+        /* ---- Table ---- */
+        .slide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .slide-table th {
+            background: rgba(139,92,246,0.15);
+            color: var(--accent-light);
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .slide-table td {
+            padding: 10px 16px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* ---- Metric bar ---- */
+        .metric-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 8px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            width: 140px;
+        }
+
+        .metric-track {
+            flex: 1;
+            height: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+
+        .metric-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            width: 50px;
+            text-align: right;
+        }
+
+        /* ---- Checklist ---- */
+        .checklist li::before { content: '☐' !important; color: var(--accent); }
+
+        /* ---- Slide controls ---- */
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .ctrl-btn {
+            background: rgba(139,92,246,0.2);
+            border: 1px solid rgba(139,92,246,0.3);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(139,92,246,0.4);
+            transform: scale(1.1);
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            z-index: 100;
+        }
+
+        .progress-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            transition: width 0.4s ease;
+            z-index: 100;
+        }
+
+        /* ---- Highlight box ---- */
+        .highlight-box {
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .highlight-box .hb-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation" id="presentation">
+
+    <!-- ===== SLIDE 1: TITLE ===== -->
+    <div class="slide slide-title active" data-slide="1">
+        <div class="arc-badge">🏆 ARC 9 · CAPSTONE &amp; MASTERY</div>
+        <h1>Build the Data + Model<br>+ RAG Pipeline</h1>
+        <p class="subtitle">End-to-end pipeline: from data ingestion and vector indexing to model deployment, RAG orchestration, and evaluation</p>
+        <p class="module-info">Module 42 of 45 — Azure AI Foundry: Zero to Hero — April 2026</p>
+    </div>
+
+    <!-- ===== SLIDE 2: AGENDA ===== -->
+    <div class="slide" data-slide="2">
+        <h2><span class="icon">📋</span> Today's Agenda</h2>
+        <div class="two-col">
+            <div>
+                <ul>
+                    <li><strong>Data Sources & Vector Indexes</strong> — Connect, chunk, and index your data</li>
+                    <li><strong>Model Deployment</strong> — Deploy and configure generation + embedding models</li>
+                    <li><strong>RAG Pipeline</strong> — Build end-to-end with Agents API and custom code</li>
+                </ul>
+            </div>
+            <div>
+                <ul>
+                    <li><strong>Testing & Validation</strong> — Evaluate groundedness, relevance, and coherence</li>
+                    <li><strong>Mini Hack</strong> — Complete your data + model pipeline from scratch</li>
+                </ul>
+                <div class="highlight-box" style="margin-top:2rem;">
+                    <div class="hb-title">Duration</div>
+                    <p style="font-size:0.95rem;">4–5 hours with hands-on labs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 3: PIPELINE OVERVIEW ===== -->
+    <div class="slide" data-slide="3">
+        <h2><span class="icon">🔗</span> RAG Pipeline Architecture</h2>
+        <p>The complete data-to-response flow in Azure AI Foundry</p>
+        <div class="flow-diagram">
+            <div class="flow-node">
+                <div class="node-icon">📄</div>
+                <div class="node-label">Data Sources</div>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node">
+                <div class="node-icon">⚙️</div>
+                <div class="node-label">Chunk &amp; Process</div>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node">
+                <div class="node-icon">🔢</div>
+                <div class="node-label">Vector Index</div>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node">
+                <div class="node-icon">🔍</div>
+                <div class="node-label">Hybrid Search</div>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node">
+                <div class="node-icon">🤖</div>
+                <div class="node-label">LLM Generation</div>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <div class="hb-title">Key Insight</div>
+            <p>Every RAG pipeline has these 5 stages. Azure AI Foundry can manage all of them through the Agents API, or you can control each step individually with the SDK.</p>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 4: DATA SOURCES ===== -->
+    <div class="slide" data-slide="4">
+        <h2><span class="icon">📊</span> Setting Up Data Sources</h2>
+        <div class="four-grid">
+            <div class="card">
+                <div class="card-icon">📦</div>
+                <h4>Azure Blob Storage</h4>
+                <p>PDFs, DOCX, TXT, images — bulk unstructured data ingestion</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🗃️</div>
+                <h4>Azure SQL / Cosmos DB</h4>
+                <p>Structured queries and semi-structured JSON documents</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🔗</div>
+                <h4>SharePoint / OneDrive</h4>
+                <p>Enterprise documents from Microsoft 365 with permissions</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🌐</div>
+                <h4>Web URLs / APIs</h4>
+                <p>Crawled web content and external REST API data</p>
+            </div>
+        </div>
+        <div class="highlight-box" style="margin-top: 1.5rem;">
+            <div class="hb-title">Azure AI Foundry Advantage</div>
+            <p>Data assets in Azure AI Foundry provide versioned, governed access to your data — no manual file management needed.</p>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 5: CHUNKING STRATEGIES ===== -->
+    <div class="slide" data-slide="5">
+        <h2><span class="icon">✂️</span> Chunking Strategies</h2>
+        <p>How you chunk determines retrieval quality</p>
+        <table class="slide-table">
+            <thead>
+                <tr><th>Strategy</th><th>Chunk Size</th><th>Best For</th><th>Trade-off</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Fixed-Size</strong></td><td>512–1024 tokens</td><td>Uniform docs, logs</td><td>Simple but may split context</td></tr>
+                <tr><td><strong>Sentence-Based</strong></td><td>3–5 sentences</td><td>Prose, natural language</td><td>Better boundaries, variable size</td></tr>
+                <tr><td><strong>Semantic</strong></td><td>Variable</td><td>Complex documents</td><td>Best quality, higher compute</td></tr>
+                <tr><td><strong>Page / Section</strong></td><td>By heading</td><td>Structured reports, PDFs</td><td>Preserves structure, large chunks</td></tr>
+            </tbody>
+        </table>
+        <div class="highlight-box">
+            <div class="hb-title">⚡ Best Practice</div>
+            <p>Always configure <strong>10–15% chunk overlap</strong> to preserve context at boundaries. This is the single most impactful setting for retrieval quality.</p>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 6: VECTOR INDEX CODE ===== -->
+    <div class="slide" data-slide="6">
+        <h2><span class="icon">🔢</span> Creating the Vector Index</h2>
+        <div class="code-slide">
+<span class="hl-cm"># Create a vector store with optimal chunking</span>
+<span class="hl-var">vector_store</span> = <span class="hl-var">project_client</span>.<span class="hl-fn">agents</span>.<span class="hl-fn">create_vector_store_and_poll</span>(
+    <span class="hl-var">name</span>=<span class="hl-str">"capstone-knowledge-base"</span>,
+    <span class="hl-var">data_sources</span>=[<span class="hl-var">data_source</span>],
+    <span class="hl-var">chunking_strategy</span>=<span class="hl-tp">VectorStoreStaticChunkingStrategyRequest</span>(
+        <span class="hl-var">static</span>=<span class="hl-tp">VectorStoreStaticChunkingStrategyOptions</span>(
+            <span class="hl-var">max_chunk_size_tokens</span>=<span class="hl-num">800</span>,
+            <span class="hl-var">chunk_overlap_tokens</span>=<span class="hl-num">100</span>,  <span class="hl-cm"># ~12.5% overlap</span>
+        )
+    ),
+)
+
+<span class="hl-kw">print</span>(<span class="hl-str">f"Vector store: </span><span class="hl-var">{vector_store.id}</span><span class="hl-str">"</span>)
+<span class="hl-kw">print</span>(<span class="hl-str">f"Files indexed: </span><span class="hl-var">{vector_store.file_counts}</span><span class="hl-str">"</span>)
+        </div>
+        <p style="margin-top:1rem;">The SDK handles document cracking, embedding generation, and index creation automatically.</p>
+    </div>
+
+    <!-- ===== SLIDE 7: MODEL DEPLOYMENT ===== -->
+    <div class="slide" data-slide="7">
+        <h2><span class="icon">🤖</span> Model Deployment</h2>
+        <p>Choose the right models for your RAG pipeline</p>
+        <div class="two-col">
+            <div>
+                <h3>Generation Models</h3>
+                <table class="slide-table">
+                    <thead><tr><th>Model</th><th>Context</th><th>Use Case</th></tr></thead>
+                    <tbody>
+                        <tr><td>GPT-4o</td><td>128K</td><td>Complex RAG</td></tr>
+                        <tr><td>GPT-4o mini</td><td>128K</td><td>Cost-efficient</td></tr>
+                        <tr><td>Phi-4</td><td>16K</td><td>Low latency</td></tr>
+                        <tr><td>Mistral Large</td><td>128K</td><td>Multilingual</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h3>Embedding Models</h3>
+                <table class="slide-table">
+                    <thead><tr><th>Model</th><th>Dims</th><th>Quality</th></tr></thead>
+                    <tbody>
+                        <tr><td>text-embedding-3-large</td><td>3072</td><td>Best</td></tr>
+                        <tr><td>text-embedding-3-small</td><td>1536</td><td>Good</td></tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box" style="margin-top:1rem;">
+                    <div class="hb-title">Tip</div>
+                    <p>Use the same embedding model for both indexing and queries — mismatched models degrade retrieval.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 8: AGENT-BASED RAG ===== -->
+    <div class="slide" data-slide="8">
+        <h2><span class="icon">🤖</span> Agent-Based RAG Pipeline</h2>
+        <p>The simplest path: use the Agents API with <code style="color:var(--accent-light);">file_search</code></p>
+        <div class="code-slide" style="font-size:0.82rem;">
+<span class="hl-cm"># Create a RAG agent with automatic retrieval</span>
+<span class="hl-var">agent</span> = <span class="hl-var">project_client</span>.<span class="hl-fn">agents</span>.<span class="hl-fn">create_agent</span>(
+    <span class="hl-var">model</span>=<span class="hl-str">"gpt-4o"</span>,
+    <span class="hl-var">name</span>=<span class="hl-str">"rag-pipeline-agent"</span>,
+    <span class="hl-var">instructions</span>=<span class="hl-str">"Answer using ONLY the knowledge base. Cite sources."</span>,
+    <span class="hl-var">tools</span>=<span class="hl-tp">FileSearchTool</span>().<span class="hl-fn">definitions</span>,
+    <span class="hl-var">tool_resources</span>={
+        <span class="hl-str">"file_search"</span>: <span class="hl-tp">FileSearchToolResource</span>(
+            <span class="hl-var">vector_store_ids</span>=[<span class="hl-var">vector_store</span>.<span class="hl-var">id</span>]
+        )
+    },
+)
+
+<span class="hl-cm"># Query → auto-retrieval → grounded response</span>
+<span class="hl-var">thread</span> = <span class="hl-var">project_client</span>.<span class="hl-fn">agents</span>.<span class="hl-fn">create_thread</span>()
+<span class="hl-var">project_client</span>.<span class="hl-fn">agents</span>.<span class="hl-fn">create_message</span>(<span class="hl-var">thread_id</span>=<span class="hl-var">thread</span>.<span class="hl-var">id</span>, <span class="hl-var">role</span>=<span class="hl-str">"user"</span>,
+    <span class="hl-var">content</span>=<span class="hl-str">"What are RAG best practices?"</span>)
+<span class="hl-var">run</span> = <span class="hl-var">project_client</span>.<span class="hl-fn">agents</span>.<span class="hl-fn">create_and_process_run</span>(<span class="hl-var">thread_id</span>=<span class="hl-var">thread</span>.<span class="hl-var">id</span>, <span class="hl-var">agent_id</span>=<span class="hl-var">agent</span>.<span class="hl-var">id</span>)
+        </div>
+        <p style="margin-top:1rem;">The Agents API handles: embedding the query → searching the index → re-ranking results → injecting context → generating a grounded response with citations.</p>
+    </div>
+
+    <!-- ===== SLIDE 9: CUSTOM RAG ===== -->
+    <div class="slide" data-slide="9">
+        <h2><span class="icon">⚙️</span> Custom RAG Pipeline</h2>
+        <p>For full control over each stage</p>
+        <div class="three-col">
+            <div class="card">
+                <h4>1. Retrieve</h4>
+                <p>Hybrid search with Azure AI Search: vector similarity + BM25 keyword matching</p>
+            </div>
+            <div class="card">
+                <h4>2. Augment</h4>
+                <p>Build a system prompt with retrieved context, source citations, and grounding instructions</p>
+            </div>
+            <div class="card">
+                <h4>3. Generate</h4>
+                <p>Call GPT-4o with low temperature (0.1–0.3) for factual, grounded responses</p>
+            </div>
+        </div>
+        <div class="highlight-box" style="margin-top:1.5rem;">
+            <div class="hb-title">Hybrid Search Advantage</div>
+            <p><strong>Vector + keyword search improves recall by 10–15%</strong> compared to pure vector search. Always use hybrid for production RAG.</p>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 10: HYBRID SEARCH CODE ===== -->
+    <div class="slide" data-slide="10">
+        <h2><span class="icon">🔍</span> Hybrid Search Implementation</h2>
+        <div class="code-slide" style="font-size:0.82rem;">
+<span class="hl-cm"># Hybrid search: vector + keyword for best recall</span>
+<span class="hl-var">results</span> = <span class="hl-var">search_client</span>.<span class="hl-fn">search</span>(
+    <span class="hl-var">search_text</span>=<span class="hl-var">user_query</span>,              <span class="hl-cm"># keyword component</span>
+    <span class="hl-var">vector_queries</span>=[
+        <span class="hl-tp">VectorizableTextQuery</span>(
+            <span class="hl-var">text</span>=<span class="hl-var">user_query</span>,                <span class="hl-cm"># vector component</span>
+            <span class="hl-var">k_nearest_neighbors</span>=<span class="hl-num">5</span>,
+            <span class="hl-var">fields</span>=<span class="hl-str">"content_vector"</span>,
+        )
+    ],
+    <span class="hl-var">select</span>=[<span class="hl-str">"title"</span>, <span class="hl-str">"content"</span>, <span class="hl-str">"source"</span>],
+    <span class="hl-var">top</span>=<span class="hl-num">5</span>,
+)
+
+<span class="hl-cm"># Build context from results</span>
+<span class="hl-var">context</span> = <span class="hl-str">"\n---\n"</span>.<span class="hl-fn">join</span>(
+    [<span class="hl-str">f"[{r['source']}] {r['content']}"</span> <span class="hl-kw">for</span> <span class="hl-var">r</span> <span class="hl-kw">in</span> <span class="hl-var">results</span>]
+)
+        </div>
+        <p style="margin-top:1rem;">Azure AI Search automatically handles re-ranking when using hybrid mode with Reciprocal Rank Fusion (RRF).</p>
+    </div>
+
+    <!-- ===== SLIDE 11: EVALUATION METRICS ===== -->
+    <div class="slide" data-slide="11">
+        <h2><span class="icon">📏</span> Evaluation Metrics</h2>
+        <p>Measure pipeline quality with built-in evaluators</p>
+        <div style="margin-top: 1.5rem;">
+            <div class="metric-bar">
+                <span class="metric-label">Groundedness</span>
+                <div class="metric-track"><div class="metric-fill" style="width:85%;background:var(--green);"></div></div>
+                <span class="metric-value">4.3</span>
+            </div>
+            <div class="metric-bar">
+                <span class="metric-label">Relevance</span>
+                <div class="metric-track"><div class="metric-fill" style="width:88%;background:var(--blue);"></div></div>
+                <span class="metric-value">4.4</span>
+            </div>
+            <div class="metric-bar">
+                <span class="metric-label">Coherence</span>
+                <div class="metric-track"><div class="metric-fill" style="width:90%;background:var(--cyan);"></div></div>
+                <span class="metric-value">4.5</span>
+            </div>
+            <div class="metric-bar">
+                <span class="metric-label">Fluency</span>
+                <div class="metric-track"><div class="metric-fill" style="width:92%;background:var(--accent);"></div></div>
+                <span class="metric-value">4.6</span>
+            </div>
+            <div class="metric-bar">
+                <span class="metric-label">Retrieval Score</span>
+                <div class="metric-track"><div class="metric-fill" style="width:78%;background:var(--orange);"></div></div>
+                <span class="metric-value">3.9</span>
+            </div>
+        </div>
+        <div class="highlight-box" style="margin-top:1.5rem;">
+            <div class="hb-title">Quality Gate</div>
+            <p>Set minimum thresholds: Groundedness ≥ 4.0, Relevance ≥ 4.0, Coherence ≥ 4.0. Block deployment if any metric falls below threshold.</p>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 12: EVALUATION CODE ===== -->
+    <div class="slide" data-slide="12">
+        <h2><span class="icon">🧪</span> Running Evaluations</h2>
+        <div class="code-slide" style="font-size:0.82rem;">
+<span class="hl-kw">from</span> <span class="hl-var">azure.ai.evaluation</span> <span class="hl-kw">import</span> <span class="hl-tp">evaluate</span>, <span class="hl-tp">GroundednessEvaluator</span>,
+    <span class="hl-tp">RelevanceEvaluator</span>, <span class="hl-tp">CoherenceEvaluator</span>
+
+<span class="hl-var">results</span> = <span class="hl-fn">evaluate</span>(
+    <span class="hl-var">data</span>=<span class="hl-str">"test_dataset.jsonl"</span>,
+    <span class="hl-var">evaluators</span>={
+        <span class="hl-str">"groundedness"</span>: <span class="hl-tp">GroundednessEvaluator</span>(<span class="hl-var">model_config</span>),
+        <span class="hl-str">"relevance"</span>:     <span class="hl-tp">RelevanceEvaluator</span>(<span class="hl-var">model_config</span>),
+        <span class="hl-str">"coherence"</span>:     <span class="hl-tp">CoherenceEvaluator</span>(<span class="hl-var">model_config</span>),
+    },
+    <span class="hl-var">evaluator_config</span>={<span class="hl-str">"default"</span>: {
+        <span class="hl-str">"query"</span>: <span class="hl-str">"${data.query}"</span>,
+        <span class="hl-str">"context"</span>: <span class="hl-str">"${data.context}"</span>,
+        <span class="hl-str">"response"</span>: <span class="hl-str">"${data.response}"</span>,
+    }},
+    <span class="hl-var">azure_ai_project</span>=<span class="hl-var">project_client</span>.<span class="hl-fn">scope</span>,
+)
+
+<span class="hl-kw">for</span> <span class="hl-var">metric</span>, <span class="hl-var">score</span> <span class="hl-kw">in</span> <span class="hl-var">results</span>[<span class="hl-str">"metrics"</span>].<span class="hl-fn">items</span>():
+    <span class="hl-kw">print</span>(<span class="hl-str">f"  {metric}: {score:.2f}"</span>)
+        </div>
+        <p style="margin-top:1rem;">Results are automatically logged to your Azure AI Foundry project for trend analysis and comparison across runs.</p>
+    </div>
+
+    <!-- ===== SLIDE 13: MINI HACK ===== -->
+    <div class="slide" data-slide="13">
+        <h2><span class="icon">🏆</span> Mini Hack Challenge</h2>
+        <p>Build a complete, working RAG pipeline from scratch</p>
+        <div class="two-col">
+            <div>
+                <h3>Requirements</h3>
+                <ul class="checklist">
+                    <li>AI Foundry project with connected resources</li>
+                    <li>5+ documents in multiple formats</li>
+                    <li>Vector store with chunking + overlap</li>
+                    <li>Embedding + generation models deployed</li>
+                    <li>Agent-based RAG with file_search</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Validation</h3>
+                <ul class="checklist">
+                    <li>Custom RAG with hybrid search</li>
+                    <li>10+ evaluation test cases (JSONL)</li>
+                    <li>All evaluator scores ≥ 4.0</li>
+                    <li>Agent vs custom comparison</li>
+                    <li>Documented architecture</li>
+                </ul>
+                <div class="highlight-box" style="margin-top:1rem;">
+                    <div class="hb-title">⏱️ Time</div>
+                    <p>90–120 minutes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 14: KEY TAKEAWAYS ===== -->
+    <div class="slide" data-slide="14">
+        <h2><span class="icon">📌</span> Key Takeaways</h2>
+        <div style="margin-top:1rem;">
+            <ul>
+                <li><strong>Data quality drives RAG quality</strong> — invest in chunking strategy and overlap configuration</li>
+                <li><strong>Agents API with file_search</strong> — simplest path to production RAG in Azure AI Foundry</li>
+                <li><strong>Hybrid search (vector + keyword)</strong> — 10–15% better recall than vector-only search</li>
+                <li><strong>Evaluation is mandatory</strong> — groundedness, relevance, and coherence are your quality gates</li>
+                <li><strong>Match model to requirements</strong> — balance latency, cost, quality, and context window</li>
+                <li><strong>Continuous evaluation</strong> — integrate evaluations into CI/CD with automated quality gates</li>
+            </ul>
+        </div>
+        <div class="highlight-box" style="margin-top:2rem;">
+            <div class="hb-title">Remember</div>
+            <p>A RAG pipeline is only as good as its weakest link. Test every stage independently, then test the full pipeline end-to-end.</p>
+        </div>
+    </div>
+
+    <!-- ===== SLIDE 15: NEXT STEPS ===== -->
+    <div class="slide slide-title" data-slide="15">
+        <div class="arc-badge">🏆 ARC 9 · CAPSTONE &amp; MASTERY</div>
+        <h1>What's Next?</h1>
+        <p class="subtitle">Module 43 continues the Capstone arc with advanced pipeline optimization, production hardening, and deployment patterns</p>
+        <p class="module-info" style="margin-top:2rem;">
+            📺 Watch: "Building RAG Solutions with Azure AI Foundry" — Microsoft Reactor<br>
+            🔗 <span style="color:var(--accent-light);">youtube.com/watch?v=IXGrwWcLJuE</span>
+        </p>
+        <p class="module-info" style="margin-top:1.5rem; font-size: 1rem; color: var(--text-secondary);">
+            ← Module 41 &nbsp; | &nbsp; Module 43 →
+        </p>
+    </div>
+
+</div>
+
+<!-- ====== CONTROLS ====== -->
+<div class="slide-counter" id="slideCounter">1 / 15</div>
+<div class="progress-line" id="progressLine" style="width: 6.67%;"></div>
+
+<div class="controls">
+    <button class="ctrl-btn" onclick="changeSlide(-1)" title="Previous">◀</button>
+    <button class="ctrl-btn" onclick="changeSlide(1)" title="Next">▶</button>
+</div>
+
+<script>
+    let current = 1;
+    const total = 15;
+
+    function showSlide(n) {
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        const target = document.querySelector(`[data-slide="${n}"]`);
+        if (target) {
+            target.classList.add('active');
+            document.getElementById('slideCounter').textContent = `${n} / ${total}`;
+            document.getElementById('progressLine').style.width = `${(n / total) * 100}%`;
+        }
+    }
+
+    function changeSlide(dir) {
+        current = Math.max(1, Math.min(total, current + dir));
+        showSlide(current);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); changeSlide(1); }
+        if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); changeSlide(-1); }
+        if (e.key === 'Home') { current = 1; showSlide(1); }
+        if (e.key === 'End') { current = total; showSlide(total); }
+    });
+</script>
+
+</body>
+</html>

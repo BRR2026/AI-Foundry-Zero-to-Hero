@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 27: CI/CD Pipelines for AI — Slide Deck</title>
+    <style>
+        :root {
+            --bg: #0D1117;
+            --bg-slide: #161B22;
+            --bg-code: #1E252E;
+            --accent: #E74856;
+            --accent2: #FF8C00;
+            --blue: #58A6FF;
+            --green: #3FB950;
+            --purple: #BC8CFF;
+            --text: #E6EDF3;
+            --text-dim: #8B949E;
+            --border: #30363D;
+            --font: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Slide container */
+        .deck { position: relative; width: 100vw; height: 100vh; }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            background: var(--bg-slide);
+        }
+        .slide.active { display: flex; }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 14px;
+            color: var(--text-dim);
+            z-index: 100;
+            font-family: var(--mono);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width 0.3s;
+            z-index: 100;
+        }
+
+        /* Navigation hint */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 30px;
+            font-size: 12px;
+            color: var(--text-dim);
+            z-index: 100;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: clamp(2rem, 4.5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--blue);
+        }
+        p {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            max-width: 800px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Arc badge */
+        .arc-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        /* Lists */
+        ul, ol {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-left: 24px;
+            color: var(--text);
+        }
+        li { margin-bottom: 8px; }
+        li::marker { color: var(--accent); }
+
+        /* Code blocks */
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            font-family: var(--mono);
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 16px 0;
+            max-height: 50vh;
+        }
+        code {
+            font-family: var(--mono);
+        }
+        .hl-kw { color: #FF7B72; }
+        .hl-str { color: #A5D6FF; }
+        .hl-cm { color: #8B949E; }
+        .hl-fn { color: #D2A8FF; }
+        .hl-num { color: #79C0FF; }
+        .hl-attr { color: #FFA657; }
+
+        /* Grid layouts */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-top: 20px;
+        }
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+        }
+        .card h3 { margin-bottom: 12px; }
+        .card.green { border-color: var(--green); }
+        .card.red { border-color: var(--accent); }
+        .card.blue { border-color: var(--blue); }
+
+        /* Pipeline visual */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .pipe-stage {
+            background: rgba(255,255,255,.07);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 110px;
+        }
+        .pipe-stage .icon { font-size: 28px; display: block; margin-bottom: 6px; }
+        .pipe-arrow { color: var(--text-dim); font-size: 20px; }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 15px;
+        }
+        th {
+            background: rgba(231,72,86,.2);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--accent);
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Centered slide */
+        .center-content {
+            text-align: center;
+            align-items: center;
+        }
+
+        /* Emoji icon */
+        .icon-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px; height: 48px;
+            background: rgba(231,72,86,.15);
+            border-radius: 50%;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .slide { padding: 40px; }
+            .two-col, .three-col { grid-template-columns: 1fr; }
+            .pipeline { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+    <!-- ═══════════ SLIDE 1: Title ═══════════ -->
+    <div class="slide active center-content">
+        <div class="arc-badge">ARC 6 · DEPLOYMENT &amp; MLOps</div>
+        <h1>CI/CD Pipelines<br><span class="gradient-text">for AI</span></h1>
+        <p style="text-align:center; max-width:600px;">Automate deployments, enforce quality gates, and manage AI infrastructure as code with Azure AI Foundry.</p>
+        <p style="font-size:14px; color:var(--text-dim); margin-top:24px; text-align:center;">Module 27 of 45 · Azure AI Foundry: Zero to Hero · April 2026</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 2: Agenda ═══════════ -->
+    <div class="slide">
+        <h2>📋 Agenda</h2>
+        <ol>
+            <li>Why CI/CD for AI Matters</li>
+            <li>GitHub Actions for AI Foundry</li>
+            <li>Azure DevOps Pipeline Integration</li>
+            <li>Infrastructure as Code (Bicep &amp; Terraform)</li>
+            <li>Automated Testing &amp; Evaluation Gates</li>
+            <li>End-to-End Pipeline Architecture</li>
+            <li>Best Practices &amp; Anti-Patterns</li>
+            <li>Mini Hack: Deploy &amp; Evaluate</li>
+        </ol>
+    </div>
+
+    <!-- ═══════════ SLIDE 3: Why CI/CD ═══════════ -->
+    <div class="slide">
+        <h2>🤔 Why CI/CD for AI?</h2>
+        <div class="two-col">
+            <div class="card red">
+                <h3>⚠️ Without CI/CD</h3>
+                <ul>
+                    <li>Manual portal deployments</li>
+                    <li>No reproducibility</li>
+                    <li>Configuration drift</li>
+                    <li>No quality gates</li>
+                    <li>"Works on my machine"</li>
+                </ul>
+            </div>
+            <div class="card green">
+                <h3>✅ With CI/CD</h3>
+                <ul>
+                    <li>Automated on every merge</li>
+                    <li>IaC ensures consistency</li>
+                    <li>Environment parity</li>
+                    <li>Evaluation gates block bad deploys</li>
+                    <li>Full audit trail via Git</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ SLIDE 4: Pipeline Overview ═══════════ -->
+    <div class="slide center-content">
+        <h2>🏗️ AI CI/CD Pipeline Architecture</h2>
+        <div class="pipeline">
+            <div class="pipe-stage"><span class="icon">📝</span>Code Push</div>
+            <span class="pipe-arrow">→</span>
+            <div class="pipe-stage"><span class="icon">🔍</span>Lint &amp; Test</div>
+            <span class="pipe-arrow">→</span>
+            <div class="pipe-stage"><span class="icon">✅</span>IaC Validate</div>
+            <span class="pipe-arrow">→</span>
+            <div class="pipe-stage"><span class="icon">🏗️</span>Deploy Staging</div>
+            <span class="pipe-arrow">→</span>
+            <div class="pipe-stage"><span class="icon">🧪</span>Evaluate</div>
+            <span class="pipe-arrow">→</span>
+            <div class="pipe-stage"><span class="icon">👤</span>Approve</div>
+            <span class="pipe-arrow">→</span>
+            <div class="pipe-stage"><span class="icon">🚀</span>Production</div>
+        </div>
+        <p style="text-align:center;">Every stage is automated — except the manual approval gate before production.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 5: GitHub Actions Auth ═══════════ -->
+    <div class="slide">
+        <h2>🔐 GitHub Actions — OIDC Authentication</h2>
+        <p>Workload Identity Federation: no stored secrets, short-lived tokens per run.</p>
+<pre>
+<span class="hl-cm"># Permissions for OIDC token</span>
+<span class="hl-kw">permissions:</span>
+  <span class="hl-attr">id-token:</span> <span class="hl-str">write</span>
+  <span class="hl-attr">contents:</span> <span class="hl-str">read</span>
+
+<span class="hl-kw">steps:</span>
+  - <span class="hl-kw">name:</span> <span class="hl-str">Azure Login (OIDC)</span>
+    <span class="hl-kw">uses:</span> <span class="hl-str">azure/login@v2</span>
+    <span class="hl-kw">with:</span>
+      <span class="hl-attr">client-id:</span> <span class="hl-str">${{ secrets.AZURE_CLIENT_ID }}</span>
+      <span class="hl-attr">tenant-id:</span> <span class="hl-str">${{ secrets.AZURE_TENANT_ID }}</span>
+      <span class="hl-attr">subscription-id:</span> <span class="hl-str">${{ secrets.AZURE_SUBSCRIPTION_ID }}</span>
+</pre>
+        <p>💡 <strong>No client secrets or certificates needed</strong> — GitHub generates a JWT that Azure trusts via federated credentials.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 6: GH Actions Deploy ═══════════ -->
+    <div class="slide">
+        <h2>🚀 GitHub Actions — Deploy AI Foundry</h2>
+<pre>
+<span class="hl-cm"># Deploy infrastructure + model</span>
+- <span class="hl-kw">name:</span> <span class="hl-str">Deploy Infrastructure</span>
+  <span class="hl-kw">run:</span> |
+    az deployment group create \
+      --resource-group rg-ai-foundry-staging \
+      --template-file infra/main.bicep \
+      --parameters env=staging
+
+- <span class="hl-kw">name:</span> <span class="hl-str">Deploy Model</span>
+  <span class="hl-kw">run:</span> |
+    pip install azure-ai-projects azure-identity
+    python scripts/deploy_model.py \
+      --project-name proj-contoso-staging \
+      --resource-group rg-ai-foundry-staging \
+      --deployment-name gpt-4o-staging
+</pre>
+        <p>Two-phase deploy: <strong>Infrastructure (Bicep)</strong> then <strong>Model (Python SDK)</strong>.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 7: Azure DevOps ═══════════ -->
+    <div class="slide">
+        <h2>🔧 Azure DevOps — Multi-Stage Pipeline</h2>
+<pre>
+<span class="hl-kw">stages:</span>
+  - <span class="hl-kw">stage:</span> <span class="hl-str">Validate</span>       <span class="hl-cm"># Bicep lint + what-if</span>
+  - <span class="hl-kw">stage:</span> <span class="hl-str">DeployStaging</span>  <span class="hl-cm"># Deploy to staging env</span>
+    <span class="hl-attr">dependsOn:</span> <span class="hl-str">Validate</span>
+  - <span class="hl-kw">stage:</span> <span class="hl-str">Evaluate</span>       <span class="hl-cm"># Run AI quality evals</span>
+    <span class="hl-attr">dependsOn:</span> <span class="hl-str">DeployStaging</span>
+  - <span class="hl-kw">stage:</span> <span class="hl-str">DeployProd</span>     <span class="hl-cm"># Production (approval gate)</span>
+    <span class="hl-attr">dependsOn:</span> <span class="hl-str">Evaluate</span>
+</pre>
+        <p>Key difference: Azure DevOps uses <strong>service connections</strong> for auth and <strong>environments</strong> for approval gates.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 8: Bicep IaC ═══════════ -->
+    <div class="slide">
+        <h2>📐 Infrastructure as Code — Bicep</h2>
+<pre>
+<span class="hl-cm">// AI Foundry Hub</span>
+<span class="hl-kw">resource</span> hub <span class="hl-str">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
+  name: hubName
+  location: location
+  kind: <span class="hl-str">'Hub'</span>
+  sku: { name: <span class="hl-str">'Basic'</span>; tier: <span class="hl-str">'Basic'</span> }
+  identity: { type: <span class="hl-str">'SystemAssigned'</span> }
+}
+
+<span class="hl-cm">// AI Foundry Project (child of Hub)</span>
+<span class="hl-kw">resource</span> project <span class="hl-str">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
+  name: projectName
+  location: location
+  kind: <span class="hl-str">'Project'</span>
+  properties: { hubResourceId: hub.id }
+}
+</pre>
+        <p>Parameterize with <code>env</code> for dev / staging / production parity.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 9: Terraform IaC ═══════════ -->
+    <div class="slide">
+        <h2>📐 Infrastructure as Code — Terraform</h2>
+<pre>
+<span class="hl-kw">resource</span> <span class="hl-str">"azurerm_ai_foundry"</span> <span class="hl-str">"hub"</span> {
+  name                = <span class="hl-str">"hub-contoso-${var.environment}"</span>
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  sku_name            = <span class="hl-str">"Basic"</span>
+  identity { type = <span class="hl-str">"SystemAssigned"</span> }
+}
+
+<span class="hl-kw">resource</span> <span class="hl-str">"azurerm_ai_foundry_project"</span> <span class="hl-str">"project"</span> {
+  name               = <span class="hl-str">"proj-contoso-${var.environment}"</span>
+  ai_services_hub_id = azurerm_ai_foundry.hub.id
+  identity { type = <span class="hl-str">"SystemAssigned"</span> }
+}
+</pre>
+        <p><strong>Bicep vs. Terraform:</strong> Bicep is Azure-native (no state file). Terraform works multi-cloud with remote state.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 10: Testing Layers ═══════════ -->
+    <div class="slide">
+        <h2>🧪 Testing Layers in AI CI/CD</h2>
+        <div class="three-col">
+            <div class="card">
+                <div class="icon-circle">🧩</div>
+                <h3>Unit Tests</h3>
+                <ul>
+                    <li>Prompt template rendering</li>
+                    <li>Schema validation</li>
+                    <li>Data preprocessing</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="icon-circle">🔗</div>
+                <h3>Integration Tests</h3>
+                <ul>
+                    <li>API connectivity</li>
+                    <li>Deployment health</li>
+                    <li>E2E request flow</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="icon-circle">📊</div>
+                <h3>AI Evaluations</h3>
+                <ul>
+                    <li>Groundedness ≥ 4.0</li>
+                    <li>Relevance ≥ 4.0</li>
+                    <li>Safety scoring</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ SLIDE 11: Evaluation Gate ═══════════ -->
+    <div class="slide">
+        <h2>🚦 Evaluation as a Quality Gate</h2>
+<pre>
+<span class="hl-kw">from</span> azure.ai.evaluation <span class="hl-kw">import</span> evaluate, GroundednessEvaluator
+
+result = <span class="hl-fn">evaluate</span>(
+    data=<span class="hl-str">"data/evaluation_dataset.jsonl"</span>,
+    evaluators={<span class="hl-str">"groundedness"</span>: GroundednessEvaluator(model_config)},
+)
+
+<span class="hl-cm"># Enforce threshold — fail pipeline if below 4.0</span>
+score = result[<span class="hl-str">"metrics"</span>][<span class="hl-str">"groundedness.groundedness"</span>]
+<span class="hl-kw">if</span> score < <span class="hl-num">4.0</span>:
+    sys.exit(<span class="hl-num">1</span>)  <span class="hl-cm"># ❌ Pipeline fails</span>
+</pre>
+        <p>The evaluation gate acts as an <strong>automated quality checkpoint</strong> — bad models never reach production.</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 12: Best Practices ═══════════ -->
+    <div class="slide">
+        <h2>✅ Best Practices</h2>
+        <div class="two-col">
+            <div>
+                <h3>Do ✅</h3>
+                <ul>
+                    <li>Use OIDC — no stored secrets</li>
+                    <li>Run <code>what-if</code> / <code>plan</code> on PRs</li>
+                    <li>Enforce evaluation gates</li>
+                    <li>Version prompts with code</li>
+                    <li>Cache dependencies</li>
+                    <li>Tag deploys with commit SHA</li>
+                    <li>Use environments + approvals</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Don't ❌</h3>
+                <ul>
+                    <li>Store secrets in workflow files</li>
+                    <li>Skip staging environment</li>
+                    <li>Deploy without evaluation</li>
+                    <li>Hardcode resource names</li>
+                    <li>Use portal for production</li>
+                    <li>Mix SDK versions</li>
+                    <li>Ignore pipeline costs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ SLIDE 13: Comparison Table ═══════════ -->
+    <div class="slide">
+        <h2>⚖️ GitHub Actions vs. Azure DevOps</h2>
+        <table>
+            <tr><th>Feature</th><th>GitHub Actions</th><th>Azure DevOps</th></tr>
+            <tr><td>Auth Method</td><td>OIDC / Federated credentials</td><td>Service connections</td></tr>
+            <tr><td>Pipeline Format</td><td>YAML (workflow files)</td><td>YAML (azure-pipelines.yml)</td></tr>
+            <tr><td>Approval Gates</td><td>GitHub Environments</td><td>Environment approvals</td></tr>
+            <tr><td>Marketplace</td><td>10,000+ Actions</td><td>Extensions marketplace</td></tr>
+            <tr><td>Free Tier</td><td>2,000 min/month (private)</td><td>1,800 min/month</td></tr>
+            <tr><td>Best For</td><td>GitHub-native teams</td><td>Enterprise / Azure-heavy orgs</td></tr>
+        </table>
+    </div>
+
+    <!-- ═══════════ SLIDE 14: Mini Hack ═══════════ -->
+    <div class="slide">
+        <h2>🏆 Mini Hack: Deploy &amp; Evaluate</h2>
+        <p><strong>Build a complete GitHub Actions pipeline:</strong></p>
+        <ol>
+            <li>Create repo structure: <code>.github/workflows/</code>, <code>infra/</code>, <code>scripts/</code>, <code>data/</code></li>
+            <li>Configure OIDC auth with federated credentials</li>
+            <li>Write Bicep template for AI Foundry Hub + Project</li>
+            <li>Create deployment script using Python SDK</li>
+            <li>Add evaluation gate with quality thresholds</li>
+            <li>Push to <code>main</code> and watch pipeline run end-to-end</li>
+        </ol>
+        <p style="margin-top:20px;"><strong>Success:</strong> Evaluation passes ≥ 4.0 → staging deploys → manual approval → production deploys 🚀</p>
+    </div>
+
+    <!-- ═══════════ SLIDE 15: Thank You ═══════════ -->
+    <div class="slide center-content">
+        <div class="arc-badge">MODULE 27 COMPLETE</div>
+        <h1>Key Takeaways</h1>
+        <ul style="list-style:none; margin:0; text-align:left; display:inline-block;">
+            <li style="margin-bottom:12px;">🔐 Use <strong>OIDC</strong> for passwordless CI/CD authentication</li>
+            <li style="margin-bottom:12px;">🏗️ Define all AI resources as <strong>Infrastructure as Code</strong></li>
+            <li style="margin-bottom:12px;">🧪 <strong>Evaluation gates</strong> prevent bad models from reaching production</li>
+            <li style="margin-bottom:12px;">🔄 <strong>Multi-stage pipelines</strong> with staging → evaluate → approve → deploy</li>
+            <li style="margin-bottom:12px;">📊 Version prompts, data, and config alongside application code</li>
+        </ul>
+        <p style="margin-top:30px; text-align:center;">
+            <strong>Next:</strong> Module 28 — Monitoring AI in Production →
+        </p>
+    </div>
+
+</div>
+
+<!-- Slide counter + progress -->
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="counter"></div>
+<div class="nav-hint">← → Arrow keys or click to navigate</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    let current = 0;
+
+    function showSlide(n) {
+        slides[current].classList.remove('active');
+        current = (n + slides.length) % slides.length;
+        slides[current].classList.add('active');
+        document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+        document.getElementById('progressBar').style.width = `${((current + 1) / slides.length) * 100}%`;
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); showSlide(current + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide(current - 1); }
+        if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+        if (e.key === 'End') { e.preventDefault(); showSlide(slides.length - 1); }
+    });
+
+    document.addEventListener('click', e => {
+        const x = e.clientX / window.innerWidth;
+        if (x > 0.5) showSlide(current + 1);
+        else showSlide(current - 1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

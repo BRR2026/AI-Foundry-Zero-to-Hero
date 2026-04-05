@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 43: Deploy & Integrate with Agents/Copilot — Azure AI Foundry Zero to Hero Training Series. Build agents on RAG pipelines, integrate with Copilot Studio and Teams, expose API endpoints, and run end-to-end tests.">
+    <meta name="keywords" content="Azure AI Foundry, AI Agents, Copilot Studio, Teams Integration, RAG Pipeline, API Endpoints, Deployment, Microsoft Foundry">
+    <meta name="author" content="Azure AI Foundry Training Series">
+    <title>Module 43: Deploy & Integrate with Agents/Copilot — Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --primary-light: #deecf9;
+            --accent: #e74856;
+            --accent-warm: #ff8c00;
+            --success: #107c10;
+            --surface: #ffffff;
+            --surface-alt: #f6f8fa;
+            --surface-elevated: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a5568;
+            --text-muted: #6b7280;
+            --border: #e2e8f0;
+            --border-light: #f0f0f0;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #0078d4 50%, #005a9e 100%);
+            --gradient-capstone: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #7c3aed 100%);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+            --shadow-xl: 0 20px 60px rgba(0,0,0,0.15);
+            --radius: 8px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --max-width: 880px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background: var(--surface-alt);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ─── Top Navigation Bar ─── */
+        .top-nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .top-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .top-nav-brand svg { width: 28px; height: 28px; }
+        .top-nav-links { display: flex; gap: 24px; align-items: center; }
+        .top-nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+        .top-nav-links a:hover { color: var(--primary); }
+
+        /* ─── Hero Section ─── */
+        .hero {
+            background: var(--gradient-hero);
+            padding: 80px 24px 70px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(255,140,0,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.2) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-capstone);
+        }
+        .hero-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.9), rgba(239,68,68,0.9));
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(245,158,11,0.3);
+        }
+        .hero-badge .badge-icon { font-size: 1rem; }
+        .hero-series {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .hero h1 {
+            color: #fff;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 680px;
+            margin-bottom: 28px;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+        }
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ─── Content Shell ─── */
+        .content-wrapper {
+            max-width: var(--max-width);
+            margin: -40px auto 0;
+            padding: 0 24px 60px;
+            position: relative;
+            z-index: 10;
+        }
+
+        article {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 48px clamp(24px, 5vw, 56px);
+            border: 1px solid var(--border-light);
+        }
+
+        /* ─── Typography ─── */
+        h2 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 48px 0 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            letter-spacing: -0.3px;
+        }
+        h2:first-of-type { margin-top: 0; }
+
+        h3 {
+            font-size: 1.35rem;
+            font-weight: 650;
+            color: var(--text-primary);
+            margin: 36px 0 12px;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 24px 0 8px;
+        }
+
+        p { margin-bottom: 16px; color: var(--text-secondary); }
+
+        a { color: var(--primary); text-decoration: none; transition: color var(--transition); }
+        a:hover { color: var(--primary-dark); text-decoration: underline; }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+
+        ul, ol { margin: 0 0 20px 24px; color: var(--text-secondary); }
+        li { margin-bottom: 8px; }
+        li::marker { color: var(--primary); }
+
+        /* ─── Table of Contents ─── */
+        .toc {
+            background: linear-gradient(135deg, var(--primary-light), #eef2ff);
+            border: 1px solid #c7d2fe;
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            margin-bottom: 40px;
+        }
+        .toc h3 {
+            margin: 0 0 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .toc ol {
+            margin: 0;
+            padding-left: 20px;
+            counter-reset: toc-counter;
+        }
+        .toc li {
+            counter-increment: toc-counter;
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+        .toc a {
+            color: var(--primary-dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .toc a:hover { color: var(--accent); }
+
+        /* ─── Info / Callout Boxes ─── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            font-size: 0.95rem;
+        }
+        .callout-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .callout-info {
+            background: #eff6ff;
+            border-color: var(--primary);
+        }
+        .callout-info .callout-title { color: var(--primary); }
+        .callout-warning {
+            background: #fff7ed;
+            border-color: var(--accent-warm);
+        }
+        .callout-warning .callout-title { color: #c2410c; }
+        .callout-success {
+            background: #f0fdf4;
+            border-color: var(--success);
+        }
+        .callout-success .callout-title { color: var(--success); }
+        .callout-capstone {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-color: #f59e0b;
+            border-width: 3px;
+        }
+        .callout-capstone .callout-title { color: #92400e; }
+        .callout p:last-child { margin-bottom: 0; }
+
+        /* ─── Code Blocks ─── */
+        pre {
+            background: var(--code-bg);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.65;
+            color: var(--code-text);
+            border: 1px solid #333;
+            position: relative;
+        }
+        pre .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: var(--font-sans);
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.875em;
+        }
+        :not(pre) > code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #c7254e;
+            font-size: 0.85em;
+        }
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .ty { color: #4ec9b0; }
+        .op { color: #d4d4d4; }
+        .param { color: #9cdcfe; }
+        .dec { color: #d7ba7d; }
+
+        /* ─── Video Container ─── */
+        .video-container {
+            margin: 32px 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            background: #000;
+        }
+        .video-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .video-header .play-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .video-header-text h4 {
+            color: #fff;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .video-header-text span {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+        }
+        .video-responsive {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+        .video-responsive iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ─── Architecture Diagram ─── */
+        .arch-diagram {
+            margin: 32px 0;
+            padding: 32px;
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            border-radius: var(--radius-lg);
+            border: 1px solid #c7d2fe;
+            text-align: center;
+        }
+        .arch-diagram h4 {
+            color: var(--primary-dark);
+            margin-bottom: 24px;
+            font-size: 1.1rem;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .arch-node {
+            background: var(--surface);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            box-shadow: var(--shadow-sm);
+            min-width: 110px;
+        }
+        .arch-node.highlight {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary-dark);
+        }
+        .arch-node.capstone {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: #fff;
+            border-color: #d97706;
+        }
+        .arch-arrow {
+            font-size: 1.3rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ─── Feature Grid ─── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 28px 0;
+        }
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: all var(--transition);
+        }
+        .feature-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 14px;
+        }
+        .feature-card h4 {
+            font-size: 0.95rem;
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+        .feature-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* ─── Steps / Process ─── */
+        .steps {
+            margin: 24px 0;
+            position: relative;
+        }
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .step-num {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .step-content {
+            flex: 1;
+            padding-top: 6px;
+        }
+        .step-content h4 {
+            margin: 0 0 6px;
+            color: var(--text-primary);
+        }
+        .step-content p {
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        /* ─── Comparison Table ─── */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .comparison-table thead th {
+            background: var(--primary);
+            color: #fff;
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .comparison-table tbody td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .comparison-table tbody tr:nth-child(even) {
+            background: var(--surface-alt);
+        }
+        .comparison-table tbody tr:hover {
+            background: var(--primary-light);
+        }
+
+        /* ─── Checklist ─── */
+        .checklist {
+            list-style: none;
+            margin: 20px 0;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0 8px 32px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* ─── Mini Hack Box ─── */
+        .mini-hack {
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            margin: 36px 0;
+            color: #fff;
+            border: 2px solid #6366f1;
+            position: relative;
+            overflow: hidden;
+        }
+        .mini-hack::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .mini-hack h3 {
+            color: #fbbf24;
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+        .mini-hack p { color: rgba(255,255,255,0.85); }
+        .mini-hack ol, .mini-hack ul {
+            color: rgba(255,255,255,0.85);
+            margin-left: 20px;
+        }
+        .mini-hack li { margin-bottom: 10px; }
+        .mini-hack code {
+            background: rgba(255,255,255,0.12);
+            color: #fbbf24;
+        }
+
+        /* ─── Progress Tracker ─── */
+        .progress-tracker {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin: 32px 0;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .progress-bar {
+            background: var(--border);
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: var(--gradient-capstone);
+            transition: width 1s ease;
+        }
+        .progress-modules {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── Bottom Navigation ─── */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 2px solid var(--border);
+            gap: 16px;
+        }
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all var(--transition);
+        }
+        .nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        .nav-btn-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+            font-weight: 400;
+        }
+
+        /* ─── Footer ─── */
+        .site-footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+        .site-footer a { color: var(--primary); }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .hero { padding: 48px 20px 40px; }
+            article { padding: 28px 20px; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+            .bottom-nav { flex-direction: column; }
+            .nav-btn { width: 100%; justify-content: center; }
+            .mini-hack { padding: 24px; }
+        }
+
+        /* ─── Print ─── */
+        @media print {
+            .top-nav, .video-container, .bottom-nav { display: none; }
+            body { background: #fff; }
+            article { box-shadow: none; border: none; }
+            .hero { background: #f0f0f0 !important; color: #000 !important; }
+            .hero h1 .highlight { -webkit-text-fill-color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ TOP NAVIGATION ═══════════════════ -->
+<nav class="top-nav" role="navigation" aria-label="Site navigation">
+    <div class="top-nav-inner">
+        <a href="#" class="top-nav-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                <line x1="12" y1="22" x2="12" y2="15.5"/>
+                <polyline points="22 8.5 12 15.5 2 8.5"/>
+            </svg>
+            Azure AI Foundry: Zero to Hero
+        </a>
+        <div class="top-nav-links">
+            <a href="#">All Modules</a>
+            <a href="#">ARC 9</a>
+            <a href="#">Resources</a>
+            <a href="#">GitHub</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ═══════════════════ HERO SECTION ═══════════════════ -->
+<header class="hero">
+    <div class="hero-inner">
+        <span class="hero-badge">
+            <span class="badge-icon">🏆</span> ARC 9 · CAPSTONE &amp; MASTERY
+        </span>
+        <p class="hero-series">Azure AI Foundry: Zero to Hero — Module 43 of 45</p>
+        <h1>Deploy &amp; Integrate with <span class="highlight">Agents/Copilot</span></h1>
+        <p class="hero-subtitle">
+            Build intelligent agents on top of your RAG pipeline, integrate with Copilot Studio and Teams, 
+            expose API endpoints for external consumers, and validate everything with end-to-end testing.
+        </p>
+        <div class="hero-meta">
+            <span class="hero-meta-item">📅 April 2026</span>
+            <span class="hero-meta-item">⏱ 90 min read</span>
+            <span class="hero-meta-item">🎯 Advanced / Capstone</span>
+            <span class="hero-meta-item">🧪 Hands-On Lab Included</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<div class="content-wrapper">
+    <article>
+
+        <!-- Progress Tracker -->
+        <div class="progress-tracker">
+            <div class="progress-header">
+                <span>Course Progress</span>
+                <span>Module 43 / 45 — 96%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 96%;"></div>
+            </div>
+            <div class="progress-modules">
+                <span>Module 1</span>
+                <span>ARC 9: Capstone</span>
+                <span>Module 45</span>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <nav class="toc" aria-label="Table of Contents">
+            <h3>📋 In This Module</h3>
+            <ol>
+                <li><a href="#overview">Overview &amp; Learning Objectives</a></li>
+                <li><a href="#agents-on-rag">Building Agents on Your RAG Pipeline</a></li>
+                <li><a href="#copilot-studio">Integrating with Copilot Studio</a></li>
+                <li><a href="#teams-integration">Teams &amp; M365 Integration</a></li>
+                <li><a href="#api-endpoints">API Endpoints for External Consumers</a></li>
+                <li><a href="#e2e-testing">End-to-End Testing Strategies</a></li>
+                <li><a href="#video">Featured Video Walkthrough</a></li>
+                <li><a href="#mini-hack">Mini Hack: Deploy Your Integrated Solution</a></li>
+                <li><a href="#recap">Key Takeaways &amp; Next Steps</a></li>
+            </ol>
+        </nav>
+
+        <!-- ─── Section 1: Overview ─── -->
+        <section id="overview">
+            <h2>1. Overview &amp; Learning Objectives</h2>
+
+            <div class="callout callout-capstone">
+                <div class="callout-title">🏆 Capstone Module</div>
+                <p>
+                    This is part of <strong>ARC 9: Capstone &amp; Mastery</strong>. You will bring together everything 
+                    you've learned throughout the entire Azure AI Foundry training series — from prompt engineering 
+                    and RAG pipelines to security, monitoring, and deployment — into a fully integrated, 
+                    production-ready AI agent solution.
+                </p>
+            </div>
+
+            <p>
+                In Module 43, you transition from building individual AI components to orchestrating them into 
+                a cohesive, production-grade intelligent agent. By the end of this module, you will have deployed 
+                an AI agent that leverages your RAG pipeline, is accessible through Copilot Studio, Teams, and 
+                custom API endpoints, and is validated through comprehensive end-to-end testing.
+            </p>
+
+            <h3>Learning Objectives</h3>
+            <ul>
+                <li>Architect and build AI agents on top of existing RAG pipelines using Azure AI Foundry</li>
+                <li>Integrate agents with <strong>Microsoft Copilot Studio</strong> for low-code extensibility</li>
+                <li>Publish agents into <strong>Microsoft Teams</strong> and M365 channels</li>
+                <li>Design and expose RESTful <strong>API endpoints</strong> for external consumer access</li>
+                <li>Implement comprehensive <strong>end-to-end testing</strong> for agent reliability</li>
+                <li>Deploy a fully integrated solution as a capstone project</li>
+            </ul>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>Completed Modules 1–42, especially Modules 28–35 (RAG pipeline)</li>
+                <li>Active Azure subscription with AI Foundry project provisioned</li>
+                <li>Familiarity with Azure AI Agent Service and model deployments</li>
+                <li>Basic understanding of Microsoft Teams app development</li>
+                <li>Python 3.10+ and Azure CLI installed</li>
+            </ul>
+        </section>
+
+        <!-- ─── Section 2: Agents on RAG ─── -->
+        <section id="agents-on-rag">
+            <h2>2. Building Agents on Your RAG Pipeline</h2>
+
+            <p>
+                Azure AI Foundry's Agent Service enables you to create intelligent agents that orchestrate 
+                tools, knowledge, and reasoning over your grounded data. Rather than building a simple 
+                chat endpoint, agents can plan multi-step tasks, invoke functions, and use your RAG-indexed 
+                knowledge base to deliver precise, contextual answers.
+            </p>
+
+            <div class="arch-diagram">
+                <h4>🏗️ Agent-on-RAG Architecture</h4>
+                <div class="arch-flow">
+                    <div class="arch-node">User Query</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node highlight">AI Agent</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node">Planner / Router</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node capstone">RAG Pipeline</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node">Grounded Response</div>
+                </div>
+            </div>
+
+            <h3>2.1 Creating an Agent with Azure AI Foundry SDK</h3>
+            <p>
+                Use the <code>azure-ai-projects</code> SDK to create an agent that leverages your existing 
+                Azure AI Search index as a knowledge base. The agent automatically retrieves relevant chunks 
+                and synthesizes answers with citations.
+            </p>
+
+<pre><span class="code-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="ty">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    <span class="ty">AzureAISearchTool</span>,
+    <span class="ty">AzureAISearchQueryType</span>,
+)
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="ty">DefaultAzureCredential</span>
+
+<span class="cm"># Connect to your AI Foundry project</span>
+<span class="param">client</span> = <span class="ty">AIProjectClient</span>(
+    <span class="param">credential</span>=<span class="ty">DefaultAzureCredential</span>(),
+    <span class="param">endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>,
+)
+
+<span class="cm"># Configure RAG tool with your search index</span>
+<span class="param">search_tool</span> = <span class="ty">AzureAISearchTool</span>(
+    <span class="param">index_connection_id</span>=<span class="str">"&lt;your-search-connection-id&gt;"</span>,
+    <span class="param">index_name</span>=<span class="str">"product-knowledge-base"</span>,
+    <span class="param">query_type</span>=<span class="ty">AzureAISearchQueryType</span>.SEMANTIC,
+    <span class="param">top_k</span>=<span class="num">5</span>,
+)
+
+<span class="cm"># Create the agent with grounded knowledge</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"product-support-agent"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a product support specialist.
+Use the search tool to find relevant information before answering.
+Always cite your sources. If unsure, say so honestly."""</span>,
+    <span class="param">tools</span>=[search_tool],
+)
+<span class="fn">print</span>(<span class="str">f"Agent created: </span>{agent.id}<span class="str">"</span>)
+</pre>
+
+            <h3>2.2 Adding Custom Function Tools</h3>
+            <p>
+                Beyond RAG retrieval, agents can invoke custom functions for actions like creating tickets, 
+                looking up order status, or triggering workflows. Define your functions as tool definitions 
+                and handle the invocations in your orchestration loop.
+            </p>
+
+<pre><span class="code-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="ty">FunctionTool</span>, <span class="ty">ToolSet</span>
+
+<span class="cm"># Define custom functions for the agent</span>
+<span class="kw">def</span> <span class="fn">create_support_ticket</span>(<span class="param">title</span>: <span class="ty">str</span>, <span class="param">priority</span>: <span class="ty">str</span>, <span class="param">description</span>: <span class="ty">str</span>) -> <span class="ty">dict</span>:
+    <span class="str">"""Create a support ticket in the ticketing system."""</span>
+    <span class="cm"># Integration with your ticketing API</span>
+    <span class="kw">return</span> {<span class="str">"ticket_id"</span>: <span class="str">"TKT-2026-4301"</span>, <span class="str">"status"</span>: <span class="str">"created"</span>}
+
+<span class="kw">def</span> <span class="fn">check_order_status</span>(<span class="param">order_id</span>: <span class="ty">str</span>) -> <span class="ty">dict</span>:
+    <span class="str">"""Look up the current status of a customer order."""</span>
+    <span class="kw">return</span> {<span class="str">"order_id"</span>: order_id, <span class="str">"status"</span>: <span class="str">"shipped"</span>, <span class="str">"eta"</span>: <span class="str">"2026-04-18"</span>}
+
+<span class="cm"># Register functions as tools</span>
+<span class="param">functions</span> = <span class="ty">FunctionTool</span>(functions=[create_support_ticket, check_order_status])
+<span class="param">toolset</span> = <span class="ty">ToolSet</span>()
+toolset.<span class="fn">add</span>(functions)
+toolset.<span class="fn">add</span>(search_tool)
+
+<span class="cm"># Create agent with combined toolset</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"full-support-agent"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a support agent that can:
+1. Search the knowledge base for product information
+2. Create support tickets for unresolved issues
+3. Check order status for customers"""</span>,
+    <span class="param">toolset</span>=toolset,
+)
+</pre>
+
+            <h3>2.3 Conversational Agent Loop</h3>
+            <p>
+                The agent loop manages the conversation lifecycle: create a thread, post messages, 
+                process runs, handle tool calls, and stream responses back to the user.
+            </p>
+
+<pre><span class="code-label">Python</span>
+<span class="cm"># Create a conversation thread</span>
+<span class="param">thread</span> = client.agents.<span class="fn">create_thread</span>()
+
+<span class="cm"># Post a user message</span>
+client.agents.<span class="fn">create_message</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">role</span>=<span class="str">"user"</span>,
+    <span class="param">content</span>=<span class="str">"My order #ORD-9921 hasn't arrived. What's the status?"</span>,
+)
+
+<span class="cm"># Process with the agent (auto-handles tool calls)</span>
+<span class="param">run</span> = client.agents.<span class="fn">create_and_process_run</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">agent_id</span>=agent.id,
+)
+
+<span class="cm"># Retrieve the agent's response</span>
+<span class="param">messages</span> = client.agents.<span class="fn">list_messages</span>(<span class="param">thread_id</span>=thread.id)
+<span class="kw">for</span> msg <span class="kw">in</span> messages:
+    <span class="kw">if</span> msg.role == <span class="str">"assistant"</span>:
+        <span class="fn">print</span>(msg.content[<span class="num">0</span>].text.value)
+</pre>
+
+            <div class="callout callout-info">
+                <div class="callout-title">ℹ️ Agent vs. Chat Completion</div>
+                <p>
+                    Unlike a simple chat completion call, <strong>agents</strong> maintain state across turns, 
+                    autonomously plan tool usage, and handle complex multi-step reasoning. This makes them 
+                    ideal for scenarios requiring context continuity, action execution, and grounded responses.
+                </p>
+            </div>
+        </section>
+
+        <!-- ─── Section 3: Copilot Studio ─── -->
+        <section id="copilot-studio">
+            <h2>3. Integrating with Copilot Studio</h2>
+
+            <p>
+                <strong>Microsoft Copilot Studio</strong> provides a low-code/no-code platform to extend and 
+                customize Microsoft Copilot experiences. By connecting your Azure AI Foundry agent to Copilot Studio, 
+                you enable business users to interact with your AI solution through a familiar interface while 
+                preserving the advanced capabilities of your Foundry-built agent.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #eff6ff;">🔌</div>
+                    <h4>Connector Setup</h4>
+                    <p>Register your agent API as a custom connector in Copilot Studio for seamless integration.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #fef3c7;">🎨</div>
+                    <h4>Topic Authoring</h4>
+                    <p>Create conversation topics that route to your Foundry agent for domain-specific queries.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #f0fdf4;">🔐</div>
+                    <h4>Authentication</h4>
+                    <p>Configure OAuth 2.0 and Entra ID authentication for secure agent access.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #fdf2f8;">📊</div>
+                    <h4>Analytics</h4>
+                    <p>Monitor usage patterns, satisfaction scores, and escalation rates via built-in dashboards.</p>
+                </div>
+            </div>
+
+            <h3>3.1 Publishing Your Agent to Copilot Studio</h3>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Expose Your Agent as an API</h4>
+                        <p>Deploy your agent behind a FastAPI or Azure Functions endpoint that accepts conversation payloads and returns structured responses.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Create a Custom Connector</h4>
+                        <p>In Copilot Studio, navigate to <strong>Settings → Custom connectors</strong> and register your API endpoint with its OpenAPI specification.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Build a Topic with Agent Handoff</h4>
+                        <p>Create a topic that triggers when user queries match your agent's domain. Route the conversation to your custom connector action.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>Test &amp; Publish</h4>
+                        <p>Use the Copilot Studio test pane to validate responses, then publish to your desired channels (Web, Teams, Slack).</p>
+                    </div>
+                </div>
+            </div>
+
+<pre><span class="code-label">Python — FastAPI Agent Endpoint</span>
+<span class="kw">from</span> fastapi <span class="kw">import</span> <span class="ty">FastAPI</span>, <span class="ty">HTTPException</span>
+<span class="kw">from</span> pydantic <span class="kw">import</span> <span class="ty">BaseModel</span>
+
+<span class="param">app</span> = <span class="ty">FastAPI</span>(<span class="param">title</span>=<span class="str">"AI Agent API"</span>, <span class="param">version</span>=<span class="str">"1.0"</span>)
+
+<span class="kw">class</span> <span class="ty">ChatRequest</span>(<span class="ty">BaseModel</span>):
+    <span class="param">message</span>: <span class="ty">str</span>
+    <span class="param">session_id</span>: <span class="ty">str</span> | <span class="ty">None</span> = <span class="kw">None</span>
+
+<span class="kw">class</span> <span class="ty">ChatResponse</span>(<span class="ty">BaseModel</span>):
+    <span class="param">reply</span>: <span class="ty">str</span>
+    <span class="param">session_id</span>: <span class="ty">str</span>
+    <span class="param">citations</span>: <span class="ty">list</span>[<span class="ty">dict</span>] = []
+
+<span class="dec">@app.post</span>(<span class="str">"/api/chat"</span>, <span class="param">response_model</span>=<span class="ty">ChatResponse</span>)
+<span class="kw">async def</span> <span class="fn">chat</span>(<span class="param">request</span>: <span class="ty">ChatRequest</span>):
+    <span class="cm"># Create or retrieve thread</span>
+    <span class="param">thread_id</span> = request.session_id <span class="kw">or</span> client.agents.<span class="fn">create_thread</span>().id
+
+    <span class="cm"># Send message and process</span>
+    client.agents.<span class="fn">create_message</span>(
+        <span class="param">thread_id</span>=thread_id, <span class="param">role</span>=<span class="str">"user"</span>, <span class="param">content</span>=request.message
+    )
+    <span class="param">run</span> = client.agents.<span class="fn">create_and_process_run</span>(
+        <span class="param">thread_id</span>=thread_id, <span class="param">agent_id</span>=agent.id
+    )
+
+    <span class="cm"># Extract response</span>
+    <span class="param">msgs</span> = client.agents.<span class="fn">list_messages</span>(<span class="param">thread_id</span>=thread_id)
+    <span class="param">reply</span> = msgs.data[<span class="num">0</span>].content[<span class="num">0</span>].text.value
+    <span class="kw">return</span> <span class="ty">ChatResponse</span>(<span class="param">reply</span>=reply, <span class="param">session_id</span>=thread_id)
+</pre>
+        </section>
+
+        <!-- ─── Section 4: Teams Integration ─── -->
+        <section id="teams-integration">
+            <h2>4. Teams &amp; M365 Integration</h2>
+
+            <p>
+                Deploying your AI agent into Microsoft Teams brings intelligence directly into the 
+                workspace where teams collaborate. Users can interact with your agent through chat, 
+                adaptive cards, and message extensions — no context switching required.
+            </p>
+
+            <h3>4.1 Integration Approaches</h3>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th>Complexity</th>
+                        <th>Best For</th>
+                        <th>Key Technology</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Copilot Studio → Teams</strong></td>
+                        <td>Low</td>
+                        <td>Quick deployment, business users</td>
+                        <td>Copilot Studio publish</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Teams Bot Framework</strong></td>
+                        <td>Medium</td>
+                        <td>Custom UX, adaptive cards</td>
+                        <td>Bot Framework SDK</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Teams AI Library</strong></td>
+                        <td>Medium</td>
+                        <td>AI-native Teams apps</td>
+                        <td>Teams AI Library + Foundry</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Message Extension</strong></td>
+                        <td>High</td>
+                        <td>Inline search, compose actions</td>
+                        <td>Teams Toolkit + Foundry</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>4.2 Deploying via Copilot Studio to Teams</h3>
+            <p>
+                The simplest path to Teams is through Copilot Studio. Once your agent is connected 
+                via a custom connector (Section 3), you can publish directly to Teams:
+            </p>
+            <ol>
+                <li>In Copilot Studio, go to <strong>Channels → Microsoft Teams</strong></li>
+                <li>Configure the bot name, icon, and description</li>
+                <li>Select the <strong>Availability</strong> scope (specific users, security group, or entire tenant)</li>
+                <li>Click <strong>Publish</strong> — your agent appears in the Teams app catalog</li>
+                <li>Users install it from the Teams app store and begin chatting</li>
+            </ol>
+
+            <h3>4.3 Teams AI Library Integration</h3>
+            <p>
+                For deeper control, use the <strong>Teams AI Library</strong> to build a native Teams 
+                bot that routes messages to your Azure AI Foundry agent:
+            </p>
+
+<pre><span class="code-label">TypeScript — Teams Bot with Foundry Agent</span>
+<span class="kw">import</span> { <span class="ty">Application</span>, <span class="ty">TurnState</span> } <span class="kw">from</span> <span class="str">'@microsoft/teams-ai'</span>;
+<span class="kw">import</span> { <span class="ty">MemoryStorage</span> } <span class="kw">from</span> <span class="str">'botbuilder'</span>;
+
+<span class="kw">const</span> <span class="param">app</span> = <span class="kw">new</span> <span class="ty">Application</span>&lt;<span class="ty">TurnState</span>&gt;({
+    <span class="param">storage</span>: <span class="kw">new</span> <span class="ty">MemoryStorage</span>(),
+});
+
+<span class="cm">// Route all messages to the Foundry agent</span>
+app.<span class="fn">activity</span>(<span class="str">'message'</span>, <span class="kw">async</span> (<span class="param">context</span>, <span class="param">state</span>) =&gt; {
+    <span class="kw">const</span> <span class="param">userMessage</span> = context.activity.text;
+    <span class="kw">const</span> <span class="param">sessionId</span> = context.activity.conversation.id;
+
+    <span class="cm">// Call your Foundry agent API</span>
+    <span class="kw">const</span> <span class="param">response</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://your-agent-api.azurewebsites.net/api/chat'</span>, {
+        <span class="param">method</span>: <span class="str">'POST'</span>,
+        <span class="param">headers</span>: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+        <span class="param">body</span>: JSON.<span class="fn">stringify</span>({ <span class="param">message</span>: userMessage, <span class="param">session_id</span>: sessionId }),
+    });
+
+    <span class="kw">const</span> <span class="param">data</span> = <span class="kw">await</span> response.<span class="fn">json</span>();
+    <span class="kw">await</span> context.<span class="fn">sendActivity</span>(data.reply);
+});
+</pre>
+
+            <div class="callout callout-warning">
+                <div class="callout-title">⚠️ Authentication in Teams</div>
+                <p>
+                    When deploying agents to Teams, always use <strong>Entra ID SSO</strong> for authentication. 
+                    The Teams platform provides a seamless single sign-on experience. Configure your agent's 
+                    API to validate the Teams token and map it to your application's identity model. Never 
+                    expose unauthenticated agent endpoints.
+                </p>
+            </div>
+        </section>
+
+        <!-- ─── Section 5: API Endpoints ─── -->
+        <section id="api-endpoints">
+            <h2>5. API Endpoints for External Consumers</h2>
+
+            <p>
+                For third-party integrations, mobile apps, or partner systems, expose your AI agent through 
+                well-designed API endpoints. Azure API Management (APIM) provides a production-grade gateway 
+                with rate limiting, authentication, versioning, and analytics.
+            </p>
+
+            <h3>5.1 API Gateway Architecture</h3>
+
+            <div class="arch-diagram">
+                <h4>🌐 External API Architecture</h4>
+                <div class="arch-flow">
+                    <div class="arch-node">External Client</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node highlight">API Management</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node">Azure Functions</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-node capstone">AI Foundry Agent</div>
+                </div>
+            </div>
+
+            <h3>5.2 Azure Functions Agent Wrapper</h3>
+            <p>
+                Wrap your agent invocation in an Azure Function for serverless scaling and 
+                easy integration with API Management:
+            </p>
+
+<pre><span class="code-label">Python — Azure Function (HTTP Trigger)</span>
+<span class="kw">import</span> azure.functions <span class="kw">as</span> func
+<span class="kw">import</span> json, logging
+<span class="kw">from</span> agent_service <span class="kw">import</span> <span class="fn">invoke_agent</span>
+
+<span class="param">app</span> = func.<span class="ty">FunctionApp</span>()
+
+<span class="dec">@app.route</span>(<span class="param">route</span>=<span class="str">"agent/chat"</span>, <span class="param">methods</span>=[<span class="str">"POST"</span>], <span class="param">auth_level</span>=func.<span class="ty">AuthLevel</span>.FUNCTION)
+<span class="kw">async def</span> <span class="fn">agent_chat</span>(<span class="param">req</span>: func.<span class="ty">HttpRequest</span>) -> func.<span class="ty">HttpResponse</span>:
+    <span class="kw">try</span>:
+        <span class="param">body</span> = req.<span class="fn">get_json</span>()
+        <span class="param">message</span> = body.<span class="fn">get</span>(<span class="str">"message"</span>)
+        <span class="param">session_id</span> = body.<span class="fn">get</span>(<span class="str">"session_id"</span>)
+
+        <span class="kw">if not</span> message:
+            <span class="kw">return</span> func.<span class="ty">HttpResponse</span>(
+                json.<span class="fn">dumps</span>({<span class="str">"error"</span>: <span class="str">"'message' is required"</span>}),
+                <span class="param">status_code</span>=<span class="num">400</span>,
+            )
+
+        <span class="param">result</span> = <span class="kw">await</span> <span class="fn">invoke_agent</span>(message, session_id)
+
+        <span class="kw">return</span> func.<span class="ty">HttpResponse</span>(
+            json.<span class="fn">dumps</span>(result),
+            <span class="param">mimetype</span>=<span class="str">"application/json"</span>,
+        )
+    <span class="kw">except</span> <span class="ty">Exception</span> <span class="kw">as</span> e:
+        logging.<span class="fn">error</span>(<span class="str">f"Agent error: </span>{e}<span class="str">"</span>)
+        <span class="kw">return</span> func.<span class="ty">HttpResponse</span>(
+            json.<span class="fn">dumps</span>({<span class="str">"error"</span>: <span class="str">"Internal server error"</span>}),
+            <span class="param">status_code</span>=<span class="num">500</span>,
+        )
+</pre>
+
+            <h3>5.3 API Management Configuration</h3>
+            <p>
+                Configure APIM to protect, rate-limit, and version your agent API:
+            </p>
+
+<pre><span class="code-label">Bicep — APIM Agent API</span>
+<span class="kw">resource</span> <span class="param">agentApi</span> <span class="str">'Microsoft.ApiManagement/service/apis@2023-09-01-preview'</span> = {
+  <span class="param">name</span>: <span class="str">'ai-agent-api'</span>
+  <span class="param">parent</span>: apimService
+  <span class="param">properties</span>: {
+    <span class="param">displayName</span>: <span class="str">'AI Agent API'</span>
+    <span class="param">path</span>: <span class="str">'agent'</span>
+    <span class="param">protocols</span>: [<span class="str">'https'</span>]
+    <span class="param">subscriptionRequired</span>: <span class="kw">true</span>
+    <span class="param">serviceUrl</span>: <span class="str">'https://your-function-app.azurewebsites.net/api'</span>
+    <span class="param">apiVersion</span>: <span class="str">'v1'</span>
+  }
+}
+
+<span class="kw">resource</span> <span class="param">rateLimit</span> <span class="str">'Microsoft.ApiManagement/service/policies@2023-09-01-preview'</span> = {
+  <span class="param">parent</span>: agentApi
+  <span class="param">properties</span>: {
+    <span class="param">value</span>: <span class="str">'&lt;policies&gt;
+  &lt;inbound&gt;
+    &lt;rate-limit calls="100" renewal-period="60" /&gt;
+    &lt;validate-jwt header-name="Authorization"&gt;
+      &lt;openid-config url="https://login.microsoftonline.com/{tenant}/.well-known/openid-configuration" /&gt;
+    &lt;/validate-jwt&gt;
+  &lt;/inbound&gt;
+&lt;/policies&gt;'</span>
+  }
+}
+</pre>
+
+            <div class="callout callout-success">
+                <div class="callout-title">✅ API Design Best Practices</div>
+                <p>
+                    <strong>Versioning:</strong> Use URL path versioning (<code>/v1/agent/chat</code>).<br>
+                    <strong>Idempotency:</strong> Include a request ID header for retry-safe operations.<br>
+                    <strong>Pagination:</strong> For conversation history endpoints, use cursor-based pagination.<br>
+                    <strong>Health check:</strong> Expose <code>/health</code> and <code>/ready</code> endpoints for monitoring.
+                </p>
+            </div>
+        </section>
+
+        <!-- ─── Section 6: E2E Testing ─── -->
+        <section id="e2e-testing">
+            <h2>6. End-to-End Testing Strategies</h2>
+
+            <p>
+                End-to-end (E2E) testing validates that your entire agent pipeline — from user input 
+                through agent reasoning, tool calls, RAG retrieval, and response generation — works 
+                correctly as an integrated system. This is essential for production confidence.
+            </p>
+
+            <h3>6.1 Testing Pyramid for AI Agents</h3>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #fef3c7;">🔬</div>
+                    <h4>Unit Tests</h4>
+                    <p>Test individual functions, tool handlers, and prompt templates in isolation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #eff6ff;">🔗</div>
+                    <h4>Integration Tests</h4>
+                    <p>Validate agent + RAG pipeline, agent + tools, and API endpoint contracts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #f0fdf4;">🌐</div>
+                    <h4>E2E Tests</h4>
+                    <p>Full conversation flows through deployed endpoints with real data.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: #fdf2f8;">📈</div>
+                    <h4>Evaluation</h4>
+                    <p>LLM-as-judge quality scoring for groundedness, relevance, and coherence.</p>
+                </div>
+            </div>
+
+            <h3>6.2 Automated E2E Test Suite</h3>
+
+<pre><span class="code-label">Python — pytest E2E Test Suite</span>
+<span class="kw">import</span> pytest
+<span class="kw">import</span> httpx
+
+<span class="param">BASE_URL</span> = <span class="str">"https://your-agent-api.azurewebsites.net"</span>
+
+<span class="kw">class</span> <span class="ty">TestAgentE2E</span>:
+    <span class="str">"""End-to-end tests for the deployed AI agent."""</span>
+
+    <span class="dec">@pytest.fixture</span>
+    <span class="kw">def</span> <span class="fn">client</span>(<span class="param">self</span>):
+        <span class="kw">return</span> httpx.<span class="ty">Client</span>(<span class="param">base_url</span>=BASE_URL, <span class="param">timeout</span>=<span class="num">30</span>)
+
+    <span class="kw">def</span> <span class="fn">test_health_check</span>(<span class="param">self</span>, <span class="param">client</span>):
+        <span class="param">response</span> = client.<span class="fn">get</span>(<span class="str">"/health"</span>)
+        <span class="kw">assert</span> response.status_code == <span class="num">200</span>
+        <span class="kw">assert</span> response.<span class="fn">json</span>()[<span class="str">"status"</span>] == <span class="str">"healthy"</span>
+
+    <span class="kw">def</span> <span class="fn">test_simple_query</span>(<span class="param">self</span>, <span class="param">client</span>):
+        <span class="param">response</span> = client.<span class="fn">post</span>(<span class="str">"/api/chat"</span>, <span class="param">json</span>={<span class="str">"message"</span>: <span class="str">"What is your return policy?"</span>})
+        <span class="kw">assert</span> response.status_code == <span class="num">200</span>
+        <span class="param">data</span> = response.<span class="fn">json</span>()
+        <span class="kw">assert</span> <span class="str">"reply"</span> <span class="kw">in</span> data
+        <span class="kw">assert</span> <span class="fn">len</span>(data[<span class="str">"reply"</span>]) > <span class="num">20</span>  <span class="cm"># Non-trivial response</span>
+
+    <span class="kw">def</span> <span class="fn">test_session_continuity</span>(<span class="param">self</span>, <span class="param">client</span>):
+        <span class="cm"># First turn</span>
+        <span class="param">r1</span> = client.<span class="fn">post</span>(<span class="str">"/api/chat"</span>, <span class="param">json</span>={<span class="str">"message"</span>: <span class="str">"I need help with product X."</span>})
+        <span class="param">session_id</span> = r1.<span class="fn">json</span>()[<span class="str">"session_id"</span>]
+
+        <span class="cm"># Second turn (same session)</span>
+        <span class="param">r2</span> = client.<span class="fn">post</span>(<span class="str">"/api/chat"</span>, <span class="param">json</span>={
+            <span class="str">"message"</span>: <span class="str">"What about its warranty?"</span>,
+            <span class="str">"session_id"</span>: session_id,
+        })
+        <span class="kw">assert</span> r2.status_code == <span class="num">200</span>
+        <span class="cm"># Agent should recall context about product X</span>
+
+    <span class="kw">def</span> <span class="fn">test_tool_invocation</span>(<span class="param">self</span>, <span class="param">client</span>):
+        <span class="param">response</span> = client.<span class="fn">post</span>(<span class="str">"/api/chat"</span>, <span class="param">json</span>={
+            <span class="str">"message"</span>: <span class="str">"Check order status for ORD-1234"</span>
+        })
+        <span class="param">data</span> = response.<span class="fn">json</span>()
+        <span class="kw">assert</span> <span class="str">"ORD-1234"</span> <span class="kw">in</span> data[<span class="str">"reply"</span>]
+
+    <span class="kw">def</span> <span class="fn">test_error_handling</span>(<span class="param">self</span>, <span class="param">client</span>):
+        <span class="param">response</span> = client.<span class="fn">post</span>(<span class="str">"/api/chat"</span>, <span class="param">json</span>={})
+        <span class="kw">assert</span> response.status_code == <span class="num">400</span>
+</pre>
+
+            <h3>6.3 AI Quality Evaluation with Azure AI Foundry</h3>
+            <p>
+                Use the Azure AI Evaluation SDK to score your agent's responses on quality metrics 
+                like <strong>groundedness</strong>, <strong>relevance</strong>, <strong>coherence</strong>, 
+                and <strong>fluency</strong>:
+            </p>
+
+<pre><span class="code-label">Python — AI Evaluation</span>
+<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> (
+    <span class="ty">GroundednessEvaluator</span>,
+    <span class="ty">RelevanceEvaluator</span>,
+    <span class="ty">CoherenceEvaluator</span>,
+    <span class="ty">evaluate</span>,
+)
+
+<span class="cm"># Define test dataset</span>
+<span class="param">test_data</span> = [
+    {
+        <span class="str">"query"</span>: <span class="str">"What is the return policy?"</span>,
+        <span class="str">"context"</span>: <span class="str">"Our return policy allows returns within 30 days..."</span>,
+        <span class="str">"response"</span>: agent_response,
+    },
+]
+
+<span class="cm"># Run evaluation</span>
+<span class="param">results</span> = <span class="fn">evaluate</span>(
+    <span class="param">data</span>=test_data,
+    <span class="param">evaluators</span>={
+        <span class="str">"groundedness"</span>: <span class="ty">GroundednessEvaluator</span>(model_config),
+        <span class="str">"relevance"</span>: <span class="ty">RelevanceEvaluator</span>(model_config),
+        <span class="str">"coherence"</span>: <span class="ty">CoherenceEvaluator</span>(model_config),
+    },
+)
+<span class="fn">print</span>(results.<span class="fn">to_dict</span>())
+</pre>
+        </section>
+
+        <!-- ─── Section 7: Video ─── -->
+        <section id="video">
+            <h2>7. Featured Video Walkthrough</h2>
+            <p>
+                Watch this hands-on walkthrough from <strong>Azure Innovation Station</strong> to see 
+                how to build an AI agent from scratch using Microsoft Foundry. The video covers agent 
+                creation, tool integration, testing, and deployment.
+            </p>
+            <div class="video-container">
+                <div class="video-header">
+                    <div class="play-icon">▶</div>
+                    <div class="video-header-text">
+                        <h4>Build An AI Agent From Scratch Using Microsoft Foundry</h4>
+                        <span>Azure Innovation Station</span>
+                    </div>
+                </div>
+                <div class="video-responsive">
+                    <iframe
+                        src="https://www.youtube.com/embed/wL8H0RySf6I"
+                        title="Build An AI Agent From Scratch Using Microsoft Foundry"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── Section 8: Mini Hack ─── -->
+        <section id="mini-hack">
+            <div class="mini-hack">
+                <h3>🧪 Mini Hack: Deploy Your Integrated Solution</h3>
+                <p>
+                    Put everything together! In this capstone mini hack, you will deploy a fully integrated 
+                    AI agent solution that combines RAG, custom tools, Copilot Studio, Teams, and external 
+                    API access — all validated with end-to-end tests.
+                </p>
+                <ol>
+                    <li><strong>Build the Agent:</strong> Create an Azure AI Foundry agent with your RAG index and at least two custom function tools (e.g., ticket creation, status lookup).</li>
+                    <li><strong>Deploy the API:</strong> Wrap your agent in a FastAPI or Azure Functions endpoint. Deploy to Azure App Service or Azure Container Apps.</li>
+                    <li><strong>Connect to Copilot Studio:</strong> Register your API as a custom connector in Copilot Studio. Create a topic that delegates to your agent for domain queries.</li>
+                    <li><strong>Publish to Teams:</strong> Publish your Copilot Studio bot to Microsoft Teams. Verify that users can chat with your agent in a Teams channel.</li>
+                    <li><strong>Expose via APIM:</strong> Create an API Management instance. Import your agent API with rate limiting and JWT validation.</li>
+                    <li><strong>Write E2E Tests:</strong> Create a pytest test suite with at least 5 test cases covering health checks, simple queries, multi-turn conversations, tool invocations, and error handling.</li>
+                    <li><strong>Run Quality Evaluation:</strong> Use the Azure AI Evaluation SDK to score your agent on groundedness, relevance, and coherence. Aim for scores above 4.0/5.0.</li>
+                    <li><strong>Document &amp; Demo:</strong> Record a 3-minute video demonstrating your integrated solution across all channels (API, Teams, Copilot Studio).</li>
+                </ol>
+                <p>
+                    <strong>Success Criteria:</strong> Agent responds accurately via all three channels, 
+                    E2E tests pass, and evaluation scores are above 4.0/5.0 on all quality metrics.
+                </p>
+            </div>
+        </section>
+
+        <!-- ─── Section 9: Recap ─── -->
+        <section id="recap">
+            <h2>9. Key Takeaways &amp; Next Steps</h2>
+
+            <h3>What You've Accomplished</h3>
+            <ul class="checklist">
+                <li>Built AI agents on top of RAG pipelines with Azure AI Foundry Agent Service</li>
+                <li>Integrated custom function tools for real-world actions (tickets, orders)</li>
+                <li>Connected agents to Copilot Studio via custom connectors</li>
+                <li>Published agents to Microsoft Teams for workplace accessibility</li>
+                <li>Designed and secured API endpoints with Azure API Management</li>
+                <li>Implemented comprehensive E2E testing and AI quality evaluation</li>
+                <li>Deployed a fully integrated solution across multiple channels</li>
+            </ul>
+
+            <h3>Key Concepts to Remember</h3>
+            <ul>
+                <li><strong>Agents ≠ Chat Completions:</strong> Agents maintain state, plan multi-step reasoning, and invoke tools autonomously</li>
+                <li><strong>Defense in Depth:</strong> Secure every layer — Entra ID for auth, APIM for rate limiting, RBAC for resource access</li>
+                <li><strong>Test at Every Level:</strong> Unit tests for functions, integration tests for pipelines, E2E tests for deployed systems, evaluation for quality</li>
+                <li><strong>Observability:</strong> Instrument with Application Insights and AI Foundry tracing for production monitoring</li>
+            </ul>
+
+            <div class="callout callout-info">
+                <div class="callout-title">📚 Additional Resources</div>
+                <p>
+                    <a href="https://learn.microsoft.com/azure/ai-services/agents/" target="_blank">Azure AI Agent Service documentation</a><br>
+                    <a href="https://learn.microsoft.com/microsoft-copilot-studio/" target="_blank">Copilot Studio documentation</a><br>
+                    <a href="https://learn.microsoft.com/microsoftteams/platform/" target="_blank">Teams platform documentation</a><br>
+                    <a href="https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk" target="_blank">Azure AI Evaluation SDK</a><br>
+                    <a href="https://learn.microsoft.com/azure/api-management/" target="_blank">Azure API Management documentation</a>
+                </p>
+            </div>
+
+            <h3>Looking Ahead</h3>
+            <p>
+                In <strong>Module 44</strong>, you'll tackle <em>Performance Optimization &amp; Cost Management</em>, 
+                learning how to fine-tune your deployed solution for production-scale performance while 
+                managing Azure costs effectively. This is the penultimate module before your final capstone!
+            </p>
+        </section>
+
+        <!-- ─── Bottom Navigation ─── -->
+        <nav class="bottom-nav" aria-label="Module navigation">
+            <a href="module-42/blog.html" class="nav-btn">
+                <span>←</span>
+                <span>
+                    <span class="nav-btn-label">Previous Module</span>
+                    Module 42
+                </span>
+            </a>
+            <a href="module-44/blog.html" class="nav-btn">
+                <span>
+                    <span class="nav-btn-label">Next Module</span>
+                    Module 44
+                </span>
+                <span>→</span>
+            </a>
+        </nav>
+
+    </article>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="site-footer">
+    <p>
+        <strong>Azure AI Foundry: Zero to Hero</strong> — Module 43 of 45<br>
+        Part of ARC 9: Capstone &amp; Mastery<br><br>
+        Built with ❤️ for the Azure AI community.
+        <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank">Azure AI Foundry</a> ·
+        <a href="https://github.com" target="_blank">GitHub</a><br><br>
+        &copy; 2026 Azure AI Foundry Training Series. For educational purposes.
+    </p>
+</footer>
+
+<!-- ─── Smooth Scroll & Interactive ─── -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Animate progress bar on scroll
+        const progressFill = document.querySelector('.progress-fill');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    progressFill.style.width = '96%';
+                }
+            });
+        }, { threshold: 0.5 });
+        if (progressFill) observer.observe(progressFill.parentElement);
+
+        // Add copy-to-clipboard for code blocks
+        document.querySelectorAll('pre').forEach(block => {
+            const btn = document.createElement('button');
+            btn.textContent = 'Copy';
+            btn.style.cssText = `
+                position: absolute; top: 8px; right: 60px;
+                background: #444; color: #ddd; border: none;
+                padding: 4px 10px; border-radius: 4px;
+                cursor: pointer; font-size: 0.72rem;
+                font-family: var(--font-sans);
+                opacity: 0; transition: opacity 0.2s;
+            `;
+            block.style.position = 'relative';
+            block.appendChild(btn);
+            block.addEventListener('mouseenter', () => btn.style.opacity = '1');
+            block.addEventListener('mouseleave', () => btn.style.opacity = '0');
+            btn.addEventListener('click', () => {
+                const code = block.innerText.replace('Copy', '').replace(block.querySelector('.code-label')?.textContent || '', '').trim();
+                navigator.clipboard.writeText(code).then(() => {
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = 'Copy', 2000);
+                });
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

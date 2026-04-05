@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 39: AI Foundry in CSP & Managed Services | Azure AI Foundry: Zero to Hero</title>
+    <meta name="description" content="Learn how to integrate Azure AI Foundry with Cloud Solution Provider (CSP) programs, manage multi-tenant AI workloads, enforce cross-tenant governance, and deliver enterprise SLAs for managed AI services.">
+    <meta name="keywords" content="Azure AI Foundry, CSP, Cloud Solution Provider, Managed Services, Multi-Tenant AI, Cross-Tenant Governance, SLA Management, Enterprise AI">
+    <meta name="author" content="Azure AI Foundry Training Series">
+    <meta name="date" content="2026-04-15">
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --primary-light: #deecf9;
+            --accent: #8b5cf6;
+            --accent-dark: #6d28d9;
+            --accent-light: #ede9fe;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-code: #1e1e2e;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --font-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --max-width: 860px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Hero Section ────────────────────────────────── */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #533483 100%);
+            color: #fff;
+            padding: 4rem 2rem 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,120,212,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 60% 80%, rgba(16,185,129,0.08) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(139,92,246,0.2);
+            border: 1px solid rgba(139,92,246,0.4);
+            color: #c4b5fd;
+            padding: 0.35rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .hero-badge .badge-dot {
+            width: 6px; height: 6px;
+            background: #a78bfa;
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+
+        .hero-series {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 640px;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.55);
+        }
+
+        .hero-meta span { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+        /* ── Main Container ──────────────────────────────── */
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* ── Typography ──────────────────────────────────── */
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 3rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 2rem 0 0.75rem;
+        }
+
+        h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-secondary); }
+
+        a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--primary-dark); text-decoration: underline; }
+
+        strong { color: var(--text-primary); }
+
+        /* ── Lists ────────────────────────────────────────── */
+        ul, ol {
+            margin: 0.75rem 0 1.25rem 1.5rem;
+            color: var(--text-secondary);
+        }
+        li { margin-bottom: 0.4rem; }
+        li::marker { color: var(--primary); }
+
+        /* ── Table of Contents ────────────────────────────── */
+        .toc {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 2rem;
+            margin: 0 0 2.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .toc-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .toc ol { margin: 0; padding-left: 1.25rem; }
+        .toc li { margin-bottom: 0.35rem; font-size: 0.95rem; }
+        .toc a { color: var(--primary); font-weight: 500; }
+
+        /* ── Cards ────────────────────────────────────────── */
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 42px; height: 42px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .card-icon.blue { background: var(--primary-light); }
+        .card-icon.purple { background: var(--accent-light); }
+        .card-icon.green { background: #d1fae5; }
+        .card-icon.orange { background: #fef3c7; }
+        .card-icon.red { background: #fee2e2; }
+        .card-icon.cyan { background: #cffafe; }
+
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+
+        /* ── Callout Boxes ────────────────────────────────── */
+        .callout {
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .callout.info { background: #eff6ff; border-color: var(--primary); }
+        .callout.info .callout-title { color: var(--primary); }
+
+        .callout.warning { background: #fffbeb; border-color: var(--warning); }
+        .callout.warning .callout-title { color: #b45309; }
+
+        .callout.success { background: #f0fdf4; border-color: var(--success); }
+        .callout.success .callout-title { color: #047857; }
+
+        .callout.danger { background: #fef2f2; border-color: var(--danger); }
+        .callout.danger .callout-title { color: #b91c1c; }
+
+        .callout.purple { background: #f5f3ff; border-color: var(--accent); }
+        .callout.purple .callout-title { color: var(--accent-dark); }
+
+        /* ── Code Blocks ──────────────────────────────────── */
+        pre {
+            background: var(--bg-code);
+            color: #e2e8f0;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            border: 1px solid #2d2d44;
+            position: relative;
+        }
+
+        pre .code-label {
+            position: absolute;
+            top: 0; right: 0;
+            background: rgba(139,92,246,0.3);
+            color: #c4b5fd;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.75rem;
+            border-radius: 0 var(--radius-lg) 0 var(--radius);
+            font-family: var(--font-sans);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.875em;
+        }
+
+        :not(pre) > code {
+            background: var(--bg-tertiary);
+            color: var(--accent-dark);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .kw { color: #c792ea; }
+        .fn { color: #82aaff; }
+        .st { color: #c3e88d; }
+        .cm { color: #676e95; font-style: italic; }
+        .nr { color: #f78c6c; }
+        .op { color: #89ddff; }
+        .at { color: #ffcb6b; }
+        .ty { color: #f07178; }
+        .param { color: #e2e8f0; }
+
+        /* ── Video Container ──────────────────────────────── */
+        .video-wrapper {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .video-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .video-header-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .video-header-dot.red { background: #ff5f57; }
+        .video-header-dot.yellow { background: #ffbd2e; }
+        .video-header-dot.green { background: #28ca42; }
+
+        .video-header-title {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+
+        /* ── Diagram / Architecture ───────────────────────── */
+        .architecture-diagram {
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            overflow-x: auto;
+        }
+
+        .architecture-diagram pre {
+            background: transparent;
+            color: var(--text-primary);
+            border: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            display: inline-block;
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+
+        /* ── Feature Grid ─────────────────────────────────── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .feature-item:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+        .feature-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .feature-name { font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem; }
+        .feature-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+        /* ── Comparison Table ─────────────────────────────── */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+        }
+
+        th {
+            padding: 0.85rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:hover { background: var(--bg-secondary); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Tier Badges ──────────────────────────────────── */
+        .tier-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .tier-badge.bronze { background: #fef3c7; color: #92400e; }
+        .tier-badge.silver { background: #f1f5f9; color: #475569; }
+        .tier-badge.gold { background: #fef9c3; color: #854d0e; }
+        .tier-badge.platinum { background: #ede9fe; color: #5b21b6; }
+
+        /* ── Process Steps ────────────────────────────────── */
+        .steps {
+            position: relative;
+            margin: 1.5rem 0 1.5rem 1.5rem;
+            padding-left: 2rem;
+            border-left: 2px solid var(--border);
+        }
+
+        .step {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: -3rem;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .step-desc {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── Mini Hack Section ────────────────────────────── */
+        .mini-hack {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #533483 100%);
+            color: #fff;
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            margin: 2.5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mini-hack::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(139,92,246,0.2) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .mini-hack-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.3rem 0.85rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1rem;
+        }
+
+        .mini-hack h3 {
+            color: #fff;
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mini-hack p { color: rgba(255,255,255,0.85); }
+
+        .mini-hack ul, .mini-hack ol {
+            color: rgba(255,255,255,0.85);
+        }
+
+        .mini-hack li::marker { color: #a78bfa; }
+
+        .mini-hack .hack-objective {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .mini-hack .hack-objective strong { color: #c4b5fd; }
+
+        /* ── Bottom Nav ───────────────────────────────────── */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            border-top: 2px solid var(--border);
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .nav-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            text-decoration: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-module-info {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: center;
+            flex: 1;
+        }
+
+        /* ── Footer ───────────────────────────────────────── */
+        .footer {
+            background: var(--text-primary);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.82rem;
+        }
+        .footer a { color: #a78bfa; }
+
+        /* ── Responsive ───────────────────────────────────── */
+        @media (max-width: 768px) {
+            .hero { padding: 2.5rem 1.25rem 2rem; }
+            .hero h1 { font-size: 1.7rem; }
+            .container { padding: 1.5rem 1rem 2.5rem; }
+            h2 { font-size: 1.4rem; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .mini-hack { padding: 1.5rem; }
+            .bottom-nav { flex-direction: column; }
+            .architecture-diagram { padding: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-meta { flex-direction: column; gap: 0.5rem; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 0.5rem 0.6rem; }
+        }
+
+        /* ── Print ────────────────────────────────────────── */
+        @media print {
+            .hero { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .video-wrapper, .bottom-nav { display: none; }
+            body { font-size: 11pt; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     HERO SECTION
+     ════════════════════════════════════════════════════════ -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            ARC 8 · ADVANCED PATTERNS &amp; ENTERPRISE
+        </div>
+        <div class="hero-series">Azure AI Foundry: Zero to Hero — Module 39 of 45</div>
+        <h1>AI Foundry in CSP &amp; Managed Services</h1>
+        <p class="hero-subtitle">
+            Architect multi-tenant AI solutions for Cloud Solution Provider scenarios — integrate Azure AI Foundry 
+            across customer tenants, enforce governance boundaries, manage SLAs, and build scalable managed AI 
+            service offerings.
+        </p>
+        <div class="hero-meta">
+            <span>📅 April 2026</span>
+            <span>⏱️ 55 min read</span>
+            <span>🎯 Advanced</span>
+            <span>🏗️ Architecture &amp; Operations</span>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ════════════════════════════════════════════════════════ -->
+<main class="container">
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <div class="toc-title">📑 Table of Contents</div>
+        <ol>
+            <li><a href="#introduction">Introduction: AI as a Managed Service</a></li>
+            <li><a href="#csp-integration">Cloud Solution Provider (CSP) Integration</a></li>
+            <li><a href="#multi-tenant-workloads">Managing AI Workloads for Multiple Customers</a></li>
+            <li><a href="#cross-tenant-governance">Cross-Tenant Governance &amp; Isolation</a></li>
+            <li><a href="#sla-management">SLA Management &amp; Support Tiers</a></li>
+            <li><a href="#architecture-patterns">Architecture Patterns for CSP AI Solutions</a></li>
+            <li><a href="#cost-management">Cost Management &amp; Chargeback Models</a></li>
+            <li><a href="#security-compliance">Security &amp; Compliance Across Tenants</a></li>
+            <li><a href="#video-resource">Video Resource</a></li>
+            <li><a href="#mini-hack">Mini Hack: Multi-Tenant CSP Architecture</a></li>
+            <li><a href="#summary">Summary &amp; Key Takeaways</a></li>
+        </ol>
+    </nav>
+
+    <!-- ── Section 1: Introduction ───────────────────────── -->
+    <h2 id="introduction">1. Introduction: AI as a Managed Service</h2>
+
+    <p>
+        Cloud Solution Providers (CSPs) and Managed Service Providers (MSPs) occupy a unique position in the 
+        Azure ecosystem. They don't just consume AI services — they <strong>resell, customize, and operate</strong> 
+        AI solutions on behalf of dozens or hundreds of end customers. Azure AI Foundry provides the platform 
+        foundation, but orchestrating it across multiple tenants at scale demands deliberate architecture decisions 
+        around governance, isolation, billing, and support.
+    </p>
+
+    <div class="callout info">
+        <div class="callout-title">ℹ️ Azure AI Foundry, Not Azure ML</div>
+        <p>
+            This module focuses exclusively on <strong>Azure AI Foundry</strong> — the unified platform for 
+            building, deploying, and managing AI agents and applications. Azure AI Foundry consolidates model 
+            catalog access, prompt engineering, evaluation, and agent orchestration into a single control plane. 
+            All references in this module pertain to Azure AI Foundry projects, hubs, and deployments.
+        </p>
+    </div>
+
+    <p>
+        The CSP model in Azure enables partners to provision, manage, and bill Azure subscriptions on behalf of 
+        their customers. When combined with AI Foundry, this creates powerful opportunities — and unique 
+        challenges. This module addresses both.
+    </p>
+
+    <div class="feature-grid">
+        <div class="feature-item">
+            <div class="feature-icon">🤝</div>
+            <div class="feature-name">CSP Integration</div>
+            <div class="feature-desc">Provision AI Foundry resources through the CSP billing and management model</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">🏢</div>
+            <div class="feature-name">Multi-Tenant Ops</div>
+            <div class="feature-desc">Manage AI workloads for multiple customers from a central control plane</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">🔒</div>
+            <div class="feature-name">Tenant Isolation</div>
+            <div class="feature-desc">Enforce data boundaries and governance across customer environments</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">📊</div>
+            <div class="feature-name">SLA &amp; Support</div>
+            <div class="feature-desc">Define and deliver tiered SLAs with support escalation paths</div>
+        </div>
+    </div>
+
+    <!-- ── Section 2: CSP Integration ────────────────────── -->
+    <h2 id="csp-integration">2. Cloud Solution Provider (CSP) Integration</h2>
+
+    <h3>2.1 Understanding the CSP Model</h3>
+    <p>
+        The <strong>Azure CSP program</strong> allows partners to act as the customer's primary point of contact 
+        for Azure services. Partners own the billing relationship, provide first-line support, and manage 
+        subscriptions through <strong>Partner Center</strong> or the Partner Center API.
+    </p>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon blue">🔗</div>
+            <div class="card-title">CSP Subscription Model for AI Foundry</div>
+        </div>
+        <p>In the CSP model, the partner provisions Azure subscriptions in the customer's tenant. AI Foundry 
+        resources — hubs, projects, model deployments, and agent configurations — live within these 
+        subscriptions. The CSP partner retains <strong>Admin on Behalf Of (AOBO)</strong> access by default.</p>
+        <ul>
+            <li><strong>Direct CSP (Tier 1):</strong> Partner transacts directly with Microsoft, bills customers, provides full support</li>
+            <li><strong>Indirect CSP (Tier 2):</strong> Partner works through an indirect provider for billing; manages the customer relationship</li>
+            <li><strong>Both tiers</strong> can provision and manage AI Foundry resources in customer subscriptions</li>
+        </ul>
+    </div>
+
+    <h3>2.2 Provisioning AI Foundry Resources via CSP</h3>
+
+    <pre><span class="code-label">Azure CLI</span>
+<span class="cm"># Step 1: Create customer subscription via Partner Center API</span>
+<span class="cm"># (Handled through Partner Center portal or API)</span>
+
+<span class="cm"># Step 2: As CSP admin, create AI Foundry Hub in customer subscription</span>
+<span class="fn">az</span> ai foundry hub create \
+  <span class="op">--name</span> <span class="st">"customer-acme-ai-hub"</span> \
+  <span class="op">--resource-group</span> <span class="st">"rg-acme-ai"</span> \
+  <span class="op">--subscription</span> <span class="st">"&lt;customer-subscription-id&gt;"</span> \
+  <span class="op">--location</span> <span class="st">"eastus2"</span> \
+  <span class="op">--display-name</span> <span class="st">"Acme Corp AI Hub"</span>
+
+<span class="cm"># Step 3: Create project within the hub</span>
+<span class="fn">az</span> ai foundry project create \
+  <span class="op">--name</span> <span class="st">"acme-customer-service-bot"</span> \
+  <span class="op">--hub-name</span> <span class="st">"customer-acme-ai-hub"</span> \
+  <span class="op">--resource-group</span> <span class="st">"rg-acme-ai"</span> \
+  <span class="op">--subscription</span> <span class="st">"&lt;customer-subscription-id&gt;"</span>
+
+<span class="cm"># Step 4: Deploy model for the customer</span>
+<span class="fn">az</span> ai foundry model deployment create \
+  <span class="op">--project-name</span> <span class="st">"acme-customer-service-bot"</span> \
+  <span class="op">--name</span> <span class="st">"gpt-4o-acme"</span> \
+  <span class="op">--model-id</span> <span class="st">"azureai://openai/gpt-4o/2026-02"</span> \
+  <span class="op">--sku-name</span> <span class="st">"GlobalStandard"</span> \
+  <span class="op">--sku-capacity</span> <span class="nr">50</span></pre>
+
+    <h3>2.3 Partner Center Integration Architecture</h3>
+
+    <div class="architecture-diagram">
+        <pre>
+┌─────────────────────────────────────────────────────────────────────┐
+│                     CSP PARTNER MANAGEMENT PLANE                     │
+│  ┌──────────────┐  ┌──────────────────┐  ┌───────────────────────┐  │
+│  │ Partner       │  │  CSP Automation   │  │  Billing &amp;           │  │
+│  │ Center        │──│  Engine (APIs)    │──│  Cost Allocation     │  │
+│  │ Portal        │  │                  │  │                       │  │
+│  └──────┬───────┘  └────────┬─────────┘  └───────────┬───────────┘  │
+│         │                   │                         │              │
+│         └───────────────────┼─────────────────────────┘              │
+│                             │ AOBO Access                            │
+└─────────────────────────────┼────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│  CUSTOMER A    │   │  CUSTOMER B    │   │  CUSTOMER C    │
+│  Tenant        │   │  Tenant        │   │  Tenant        │
+│ ┌────────────┐ │   │ ┌────────────┐ │   │ ┌────────────┐ │
+│ │ AI Foundry │ │   │ │ AI Foundry │ │   │ │ AI Foundry │ │
+│ │ Hub        │ │   │ │ Hub        │ │   │ │ Hub        │ │
+│ │ ┌────────┐ │ │   │ │ ┌────────┐ │ │   │ │ ┌────────┐ │ │
+│ │ │Projects│ │ │   │ │ │Projects│ │ │   │ │ │Projects│ │ │
+│ │ │Agents  │ │ │   │ │ │Agents  │ │ │   │ │ │Agents  │ │ │
+│ │ │Models  │ │ │   │ │ │Models  │ │ │   │ │ │Models  │ │ │
+│ │ └────────┘ │ │   │ │ └────────┘ │ │   │ │ └────────┘ │ │
+│ └────────────┘ │   │ └────────────┘ │   │ └────────────┘ │
+└───────────────┘   └───────────────┘   └───────────────┘
+        </pre>
+    </div>
+
+    <div class="callout warning">
+        <div class="callout-title">⚠️ AOBO Permissions Best Practice</div>
+        <p>
+            Admin on Behalf Of (AOBO) grants the CSP partner <strong>Owner</strong> role on customer 
+            subscriptions by default. For AI Foundry workloads handling sensitive data, consider implementing 
+            <strong>Azure Lighthouse</strong> for more granular, auditable delegated access instead of 
+            broad AOBO permissions. This follows the principle of least privilege.
+        </p>
+    </div>
+
+    <!-- ── Section 3: Multi-Tenant Workloads ─────────────── -->
+    <h2 id="multi-tenant-workloads">3. Managing AI Workloads for Multiple Customers</h2>
+
+    <h3>3.1 Deployment Topology Options</h3>
+    <p>
+        When managing AI Foundry workloads for multiple customers, the deployment topology defines how resources 
+        are isolated, shared, and managed. There are three primary patterns:
+    </p>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Pattern</th>
+                    <th>Isolation Level</th>
+                    <th>Cost Efficiency</th>
+                    <th>Complexity</th>
+                    <th>Best For</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Dedicated Hub per Customer</strong></td>
+                    <td>🔒 Full</td>
+                    <td>💰 Low</td>
+                    <td>📈 High</td>
+                    <td>Regulated industries, large enterprise</td>
+                </tr>
+                <tr>
+                    <td><strong>Shared Hub, Separate Projects</strong></td>
+                    <td>🔐 Moderate</td>
+                    <td>💰💰 Medium</td>
+                    <td>📊 Medium</td>
+                    <td>SMB customers, standard workloads</td>
+                </tr>
+                <tr>
+                    <td><strong>Fully Shared (Logical Isolation)</strong></td>
+                    <td>🔑 Basic</td>
+                    <td>💰💰💰 High</td>
+                    <td>📉 Low</td>
+                    <td>Dev/test, non-sensitive workloads</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>3.2 Centralized Operations Dashboard</h3>
+    <p>
+        CSP partners need visibility across all customer AI Foundry deployments. Build a centralized monitoring 
+        solution using <strong>Azure Lighthouse</strong> combined with <strong>Azure Monitor</strong> and 
+        <strong>Azure Resource Graph</strong>.
+    </p>
+
+    <pre><span class="code-label">KQL — Azure Resource Graph</span>
+<span class="cm">// Query all AI Foundry hubs across managed customer subscriptions</span>
+<span class="kw">resources</span>
+<span class="op">|</span> <span class="kw">where</span> type <span class="op">==</span> <span class="st">"microsoft.machinelearningservices/workspaces"</span>
+<span class="op">|</span> <span class="kw">where</span> kind <span class="op">==</span> <span class="st">"Hub"</span>
+<span class="op">|</span> <span class="kw">project</span> name, resourceGroup, subscriptionId, location,
+          properties.provisioningState, properties.friendlyName,
+          tags[<span class="st">"csp:customer"</span>], tags[<span class="st">"csp:tier"</span>]
+<span class="op">|</span> <span class="kw">order by</span> subscriptionId</pre>
+
+    <pre><span class="code-label">KQL — Azure Resource Graph</span>
+<span class="cm">// Monitor model deployment health across all customers</span>
+<span class="kw">resources</span>
+<span class="op">|</span> <span class="kw">where</span> type <span class="op">==</span> <span class="st">"microsoft.machinelearningservices/workspaces/onlineendpoints/deployments"</span>
+<span class="op">|</span> <span class="kw">project</span> name, resourceGroup, subscriptionId,
+          properties.provisioningState, properties.scaleSettings,
+          tags[<span class="st">"csp:customer"</span>]
+<span class="op">|</span> <span class="kw">where</span> properties.provisioningState <span class="op">!=</span> <span class="st">"Succeeded"</span></pre>
+
+    <h3>3.3 Automated Customer Onboarding</h3>
+    <p>
+        Automate the creation of AI Foundry resources for new CSP customers using infrastructure as code. 
+        The following Bicep template creates a complete AI Foundry environment for a new customer:
+    </p>
+
+    <pre><span class="code-label">Bicep</span>
+<span class="at">@description</span>(<span class="st">'CSP Customer AI Foundry Onboarding Template'</span>)
+<span class="kw">param</span> customerName <span class="ty">string</span>
+<span class="kw">param</span> location <span class="ty">string</span> = resourceGroup().location
+<span class="kw">param</span> cspTier <span class="ty">string</span> = <span class="st">'silver'</span>  <span class="cm">// bronze | silver | gold | platinum</span>
+<span class="kw">param</span> modelSku <span class="ty">string</span> = <span class="st">'GlobalStandard'</span>
+<span class="kw">param</span> tpuCapacity <span class="ty">int</span> = <span class="nr">30</span>
+
+<span class="cm">// AI Services account (shared backing for the hub)</span>
+<span class="kw">resource</span> aiServices <span class="st">'Microsoft.CognitiveServices/accounts@2024-10-01'</span> = {
+  name: <span class="st">'ais-${customerName}'</span>
+  location: location
+  kind: <span class="st">'AIServices'</span>
+  sku: { name: <span class="st">'S0'</span> }
+  properties: {
+    customSubDomainName: <span class="st">'ais-${customerName}'</span>
+    publicNetworkAccess: <span class="st">'Disabled'</span>
+    networkAcls: { defaultAction: <span class="st">'Deny'</span> }
+  }
+  tags: {
+    <span class="st">'csp:customer'</span>: customerName
+    <span class="st">'csp:tier'</span>: cspTier
+    <span class="st">'csp:managed'</span>: <span class="st">'true'</span>
+  }
+}
+
+<span class="cm">// AI Foundry Hub</span>
+<span class="kw">resource</span> aiHub <span class="st">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
+  name: <span class="st">'hub-${customerName}'</span>
+  location: location
+  kind: <span class="st">'Hub'</span>
+  sku: { name: <span class="st">'Basic'</span>; tier: <span class="st">'Basic'</span> }
+  identity: { type: <span class="st">'SystemAssigned'</span> }
+  properties: {
+    friendlyName: <span class="st">'${customerName} AI Hub'</span>
+    publicNetworkAccess: <span class="st">'Disabled'</span>
+  }
+  tags: {
+    <span class="st">'csp:customer'</span>: customerName
+    <span class="st">'csp:tier'</span>: cspTier
+    <span class="st">'csp:managed'</span>: <span class="st">'true'</span>
+  }
+}
+
+<span class="cm">// Default AI Foundry Project</span>
+<span class="kw">resource</span> aiProject <span class="st">'Microsoft.MachineLearningServices/workspaces@2024-10-01'</span> = {
+  name: <span class="st">'proj-${customerName}-default'</span>
+  location: location
+  kind: <span class="st">'Project'</span>
+  sku: { name: <span class="st">'Basic'</span>; tier: <span class="st">'Basic'</span> }
+  identity: { type: <span class="st">'SystemAssigned'</span> }
+  properties: {
+    friendlyName: <span class="st">'${customerName} Default Project'</span>
+    hubResourceId: aiHub.id
+  }
+  tags: {
+    <span class="st">'csp:customer'</span>: customerName
+    <span class="st">'csp:tier'</span>: cspTier
+  }
+}</pre>
+
+    <!-- ── Section 4: Cross-Tenant Governance ────────────── -->
+    <h2 id="cross-tenant-governance">4. Cross-Tenant Governance &amp; Isolation</h2>
+
+    <h3>4.1 Azure Lighthouse for Delegated Management</h3>
+    <p>
+        <strong>Azure Lighthouse</strong> is the recommended mechanism for CSP partners to manage customer 
+        AI Foundry resources with fine-grained, auditable access. Unlike AOBO, Lighthouse provides:
+    </p>
+
+    <ul>
+        <li><strong>Granular RBAC:</strong> Assign specific roles (e.g., <code>Cognitive Services Contributor</code>) rather than Owner</li>
+        <li><strong>Just-in-Time elevation:</strong> Combine with Eligible Authorizations for time-bound privileged access</li>
+        <li><strong>Audit trail:</strong> All actions are logged in the customer's activity log with the partner's identity</li>
+        <li><strong>Customer visibility:</strong> Customers can see and revoke delegations at any time</li>
+    </ul>
+
+    <pre><span class="code-label">JSON — Lighthouse Delegation Template</span>
+{
+  <span class="st">"$schema"</span>: <span class="st">"https://schema.management.azure.com/schemas/2019-08-01/..."</span>,
+  <span class="st">"contentVersion"</span>: <span class="st">"1.0.0.0"</span>,
+  <span class="st">"parameters"</span>: {},
+  <span class="st">"resources"</span>: [{
+    <span class="st">"type"</span>: <span class="st">"Microsoft.ManagedServices/registrationDefinitions"</span>,
+    <span class="st">"apiVersion"</span>: <span class="st">"2022-10-01"</span>,
+    <span class="st">"name"</span>: <span class="st">"[guid('CSP-AIFoundry-Delegation')]"</span>,
+    <span class="st">"properties"</span>: {
+      <span class="st">"registrationDefinitionName"</span>: <span class="st">"CSP AI Foundry Management"</span>,
+      <span class="st">"managedByTenantId"</span>: <span class="st">"&lt;csp-partner-tenant-id&gt;"</span>,
+      <span class="st">"authorizations"</span>: [
+        {
+          <span class="st">"principalId"</span>: <span class="st">"&lt;ai-ops-group-id&gt;"</span>,
+          <span class="st">"roleDefinitionId"</span>: <span class="st">"b24988ac-6180-42a0-ab88-20f7382dd24c"</span>,
+          <span class="cm">// Contributor — manage AI Foundry resources</span>
+          <span class="st">"principalIdDisplayName"</span>: <span class="st">"CSP AI Operations Team"</span>
+        },
+        {
+          <span class="st">"principalId"</span>: <span class="st">"&lt;ai-reader-group-id&gt;"</span>,
+          <span class="st">"roleDefinitionId"</span>: <span class="st">"acdd72a7-3385-48ef-bd42-f606fba81ae7"</span>,
+          <span class="cm">// Reader — monitoring and audit</span>
+          <span class="st">"principalIdDisplayName"</span>: <span class="st">"CSP Monitoring Team"</span>
+        }
+      ]
+    }
+  }]
+}</pre>
+
+    <h3>4.2 Data Isolation Strategies</h3>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon purple">🛡️</div>
+            <div class="card-title">Network-Level Isolation</div>
+        </div>
+        <ul>
+            <li><strong>Private Endpoints:</strong> Each customer AI Foundry hub uses dedicated private endpoints within their VNet</li>
+            <li><strong>NSG Rules:</strong> Network Security Groups restrict traffic between customer environments</li>
+            <li><strong>Private DNS Zones:</strong> Separate DNS zones prevent cross-tenant name resolution leaks</li>
+            <li><strong>Hub-Spoke VNet Topology:</strong> CSP management VNet peers with customer VNets via controlled gateways</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon green">🗝️</div>
+            <div class="card-title">Identity &amp; Access Isolation</div>
+        </div>
+        <ul>
+            <li><strong>Managed Identity per Customer:</strong> Each AI Foundry hub uses its own system-assigned identity</li>
+            <li><strong>Customer-Managed Keys (CMK):</strong> Customers retain control of encryption keys via their own Key Vault</li>
+            <li><strong>Conditional Access:</strong> Enforce MFA and compliant device policies on CSP admin access</li>
+            <li><strong>Cross-tenant Access Policies:</strong> Explicitly define which partner identities can access which resources</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon orange">💾</div>
+            <div class="card-title">Data Residency &amp; Storage Isolation</div>
+        </div>
+        <ul>
+            <li><strong>Separate Storage Accounts:</strong> Each customer's AI Foundry data resides in their own storage account</li>
+            <li><strong>Geo-Restriction:</strong> Enforce Azure Policy to keep resources within required regions</li>
+            <li><strong>Data Classification Tags:</strong> Automated tagging for data sensitivity levels</li>
+            <li><strong>Purge Protection:</strong> Enable soft-delete and purge protection on all customer key vaults</li>
+        </ul>
+    </div>
+
+    <h3>4.3 Governance Policies at Scale</h3>
+    <p>
+        Use <strong>Azure Policy</strong> to enforce governance rules across all managed customer subscriptions:
+    </p>
+
+    <pre><span class="code-label">JSON — Azure Policy Definition</span>
+{
+  <span class="st">"displayName"</span>: <span class="st">"Require CSP tags on AI Foundry resources"</span>,
+  <span class="st">"policyType"</span>: <span class="st">"Custom"</span>,
+  <span class="st">"mode"</span>: <span class="st">"Indexed"</span>,
+  <span class="st">"parameters"</span>: {},
+  <span class="st">"policyRule"</span>: {
+    <span class="st">"if"</span>: {
+      <span class="st">"allOf"</span>: [
+        {
+          <span class="st">"field"</span>: <span class="st">"type"</span>,
+          <span class="st">"equals"</span>: <span class="st">"Microsoft.MachineLearningServices/workspaces"</span>
+        },
+        {
+          <span class="st">"anyOf"</span>: [
+            { <span class="st">"field"</span>: <span class="st">"tags['csp:customer']"</span>, <span class="st">"exists"</span>: <span class="kw">false</span> },
+            { <span class="st">"field"</span>: <span class="st">"tags['csp:tier']"</span>,     <span class="st">"exists"</span>: <span class="kw">false</span> },
+            { <span class="st">"field"</span>: <span class="st">"tags['csp:managed']"</span>,  <span class="st">"exists"</span>: <span class="kw">false</span> }
+          ]
+        }
+      ]
+    },
+    <span class="st">"then"</span>: { <span class="st">"effect"</span>: <span class="st">"deny"</span> }
+  }
+}</pre>
+
+    <!-- ── Section 5: SLA Management ─────────────────────── -->
+    <h2 id="sla-management">5. SLA Management &amp; Support Tiers</h2>
+
+    <h3>5.1 Defining CSP Support Tiers for AI Services</h3>
+    <p>
+        CSP partners typically offer tiered support to their customers. For AI Foundry managed services, 
+        structure your SLA tiers around <strong>availability</strong>, <strong>response times</strong>, 
+        <strong>model performance</strong>, and <strong>capacity guarantees</strong>.
+    </p>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Dimension</th>
+                    <th><span class="tier-badge bronze">🥉 Bronze</span></th>
+                    <th><span class="tier-badge silver">🥈 Silver</span></th>
+                    <th><span class="tier-badge gold">🥇 Gold</span></th>
+                    <th><span class="tier-badge platinum">💎 Platinum</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Availability SLA</strong></td>
+                    <td>99.5%</td>
+                    <td>99.9%</td>
+                    <td>99.95%</td>
+                    <td>99.99%</td>
+                </tr>
+                <tr>
+                    <td><strong>Incident Response (Sev-1)</strong></td>
+                    <td>4 hours</td>
+                    <td>1 hour</td>
+                    <td>30 min</td>
+                    <td>15 min</td>
+                </tr>
+                <tr>
+                    <td><strong>Model Deployment</strong></td>
+                    <td>Shared PTU</td>
+                    <td>Standard PTU</td>
+                    <td>Dedicated PTU</td>
+                    <td>Reserved PTU + Burst</td>
+                </tr>
+                <tr>
+                    <td><strong>Throughput Guarantee</strong></td>
+                    <td>Best effort</td>
+                    <td>30 TPM baseline</td>
+                    <td>100 TPM guaranteed</td>
+                    <td>500 TPM dedicated</td>
+                </tr>
+                <tr>
+                    <td><strong>Backup &amp; DR</strong></td>
+                    <td>Daily backup</td>
+                    <td>6-hour RPO</td>
+                    <td>1-hour RPO</td>
+                    <td>Near-zero RPO, hot standby</td>
+                </tr>
+                <tr>
+                    <td><strong>Dedicated Support Engineer</strong></td>
+                    <td>❌</td>
+                    <td>❌</td>
+                    <td>✅ Shared</td>
+                    <td>✅ Named</td>
+                </tr>
+                <tr>
+                    <td><strong>Prompt/Agent Optimization</strong></td>
+                    <td>❌</td>
+                    <td>Quarterly review</td>
+                    <td>Monthly review</td>
+                    <td>Continuous optimization</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>5.2 SLA Monitoring &amp; Enforcement</h3>
+
+    <pre><span class="code-label">KQL — Log Analytics</span>
+<span class="cm">// SLA compliance dashboard query: Measure AI Foundry endpoint availability</span>
+<span class="kw">let</span> sla_window = <span class="nr">30d</span>;
+AzureDiagnostics
+<span class="op">|</span> <span class="kw">where</span> TimeGenerated > ago(sla_window)
+<span class="op">|</span> <span class="kw">where</span> ResourceProvider <span class="op">==</span> <span class="st">"MICROSOFT.MACHINELEARNINGSERVICES"</span>
+<span class="op">|</span> <span class="kw">where</span> OperationName <span class="op">contains</span> <span class="st">"inference"</span>
+<span class="op">|</span> <span class="kw">summarize</span>
+    TotalRequests   = count(),
+    SuccessCount    = countif(ResultType <span class="op">==</span> <span class="st">"Success"</span>),
+    FailedCount     = countif(ResultType <span class="op">!=</span> <span class="st">"Success"</span>),
+    AvgLatencyMs    = avg(DurationMs),
+    P99LatencyMs    = percentile(DurationMs, <span class="nr">99</span>)
+    <span class="kw">by</span> Resource, bin(TimeGenerated, <span class="nr">1h</span>)
+<span class="op">|</span> <span class="kw">extend</span> AvailabilityPct = round(toreal(SuccessCount) / TotalRequests * <span class="nr">100</span>, <span class="nr">3</span>)
+<span class="op">|</span> <span class="kw">where</span> AvailabilityPct < <span class="nr">99.9</span>
+<span class="op">|</span> <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></pre>
+
+    <h3>5.3 Escalation &amp; Incident Management Flow</h3>
+
+    <div class="steps">
+        <div class="step" data-step="1">
+            <div class="step-title">Detection &amp; Alert</div>
+            <div class="step-desc">Azure Monitor detects SLA breach → fires alert rule → creates incident in ITSM tool (e.g., ServiceNow)</div>
+        </div>
+        <div class="step" data-step="2">
+            <div class="step-title">Triage &amp; Classification</div>
+            <div class="step-desc">CSP L1 team classifies severity based on impact to customer AI workloads and their SLA tier</div>
+        </div>
+        <div class="step" data-step="3">
+            <div class="step-title">Investigation</div>
+            <div class="step-desc">L2 AI engineers use AI Foundry diagnostics, Azure Monitor logs, and Resource Health to identify root cause</div>
+        </div>
+        <div class="step" data-step="4">
+            <div class="step-title">Resolution &amp; Communication</div>
+            <div class="step-desc">Apply fix, validate via automated health checks, notify customer with RCA within SLA timeframe</div>
+        </div>
+        <div class="step" data-step="5">
+            <div class="step-title">Post-Incident Review</div>
+            <div class="step-desc">Conduct blameless post-mortem, update runbooks, apply preventative measures across all customer environments</div>
+        </div>
+    </div>
+
+    <!-- ── Section 6: Architecture Patterns ──────────────── -->
+    <h2 id="architecture-patterns">6. Architecture Patterns for CSP AI Solutions</h2>
+
+    <h3>6.1 Pattern A: Fully Isolated (Enterprise/Regulated)</h3>
+
+    <div class="architecture-diagram">
+        <pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                    CSP MANAGEMENT TENANT                         │
+│   ┌─────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│   │ Monitoring   │  │ Automation   │  │ Security Operations  │  │
+│   │ (Sentinel)   │  │ (Runbooks)   │  │ (Defender for Cloud) │  │
+│   └──────┬──────┘  └──────┬───────┘  └──────────┬───────────┘  │
+└──────────┼─────────────────┼────────────────────┼───────────────┘
+           │    Azure Lighthouse Delegation        │
+    ┌──────┴──────────────────┴────────────────────┴──────┐
+    │                                                      │
+    ▼                                                      ▼
+┌──────────────────────────┐      ┌──────────────────────────┐
+│  CUSTOMER A TENANT        │      │  CUSTOMER B TENANT        │
+│  (Healthcare — HIPAA)     │      │  (Finance — SOC2)         │
+│                           │      │                           │
+│  Subscription A           │      │  Subscription B           │
+│  ┌──────────────────────┐ │      │  ┌──────────────────────┐ │
+│  │ AI Foundry Hub A      │ │      │  │ AI Foundry Hub B      │ │
+│  │ • CMK via KV-A        │ │      │  │ • CMK via KV-B        │ │
+│  │ • Private Endpoints   │ │      │  │ • Private Endpoints   │ │
+│  │ • Dedicated PTU       │ │      │  │ • Dedicated PTU       │ │
+│  │ • Storage Account A   │ │      │  │ • Storage Account B   │ │
+│  └──────────────────────┘ │      │  └──────────────────────┘ │
+│  VNet-A (10.1.0.0/16)    │      │  VNet-B (10.2.0.0/16)    │
+└──────────────────────────┘      └──────────────────────────┘
+        </pre>
+    </div>
+
+    <h3>6.2 Pattern B: Shared Infrastructure (Cost-Optimized)</h3>
+
+    <div class="architecture-diagram">
+        <pre>
+┌───────────────────────────────────────────────────────────────┐
+│              CSP SHARED AI PLATFORM SUBSCRIPTION               │
+│                                                                │
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │                   AI Foundry Hub                        │   │
+│  │                 (Shared Infrastructure)                 │   │
+│  │                                                        │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐     │   │
+│  │  │  Project:    │ │  Project:    │ │  Project:    │     │   │
+│  │  │  Customer A  │ │  Customer B  │ │  Customer C  │     │   │
+│  │  │             │ │             │ │             │     │   │
+│  │  │  Agent: CS   │ │  Agent: HR   │ │  Agent: Sales│     │   │
+│  │  │  Bot         │ │  Assistant   │ │  Copilot     │     │   │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘     │   │
+│  │                                                        │   │
+│  │  Shared Model Deployments:                             │   │
+│  │  ┌───────────┐ ┌───────────┐ ┌───────────────┐       │   │
+│  │  │ GPT-4o    │ │ GPT-4o    │ │ text-embedding │       │   │
+│  │  │ (Std PTU) │ │ mini      │ │ -3-large       │       │   │
+│  │  └───────────┘ └───────────┘ └───────────────┘       │   │
+│  └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│  RBAC: Customer A group → Project A scope only                 │
+│  RBAC: Customer B group → Project B scope only                 │
+│  RBAC: Customer C group → Project C scope only                 │
+└───────────────────────────────────────────────────────────────┘
+        </pre>
+    </div>
+
+    <div class="callout success">
+        <div class="callout-title">✅ When to Use Each Pattern</div>
+        <p>
+            <strong>Pattern A</strong> — Use when customers have regulatory requirements (HIPAA, PCI-DSS, SOC2), 
+            need dedicated model capacity, or require customer-managed encryption keys.<br>
+            <strong>Pattern B</strong> — Use for SMB customers, standardized AI solutions, or when cost efficiency 
+            is the primary concern. Ensure RBAC boundaries and data access controls are rigorously enforced.
+        </p>
+    </div>
+
+    <!-- ── Section 7: Cost Management ────────────────────── -->
+    <h2 id="cost-management">7. Cost Management &amp; Chargeback Models</h2>
+
+    <h3>7.1 Cost Allocation Strategies</h3>
+    <p>
+        CSP partners need accurate cost attribution to bill customers correctly and maintain healthy margins. 
+        AI Foundry costs span compute, model inference (tokens), storage, and networking.
+    </p>
+
+    <div class="feature-grid">
+        <div class="feature-item">
+            <div class="feature-icon">🏷️</div>
+            <div class="feature-name">Tag-Based Allocation</div>
+            <div class="feature-desc">Enforce <code>csp:customer</code> tags on all resources; use Azure Cost Management tag filtering</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">📊</div>
+            <div class="feature-name">Subscription-Level Billing</div>
+            <div class="feature-desc">Dedicated subscriptions per customer for the cleanest cost separation</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">🔢</div>
+            <div class="feature-name">Token Metering</div>
+            <div class="feature-desc">Track inference tokens per project/agent using AI Foundry metrics and custom dashboards</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">💹</div>
+            <div class="feature-name">Margin Management</div>
+            <div class="feature-desc">Apply partner margin on top of Azure consumption using Partner Center billing APIs</div>
+        </div>
+    </div>
+
+    <pre><span class="code-label">Python</span>
+<span class="cm"># Token usage tracking per customer for chargeback</span>
+<span class="kw">from</span> azure.monitor.query <span class="kw">import</span> LogsQueryClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> datetime <span class="kw">import</span> timedelta
+
+credential = DefaultAzureCredential()
+client = LogsQueryClient(credential)
+
+<span class="cm"># Query token usage across all managed AI Foundry projects</span>
+query = <span class="st">"""
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.MACHINELEARNINGSERVICES"
+| where Category == "RequestResponse"
+| extend CustomerTag = tostring(tags_s["csp:customer"])
+| extend PromptTokens = toint(properties_s["promptTokens"])
+| extend CompletionTokens = toint(properties_s["completionTokens"])
+| summarize
+    TotalPromptTokens = sum(PromptTokens),
+    TotalCompletionTokens = sum(CompletionTokens),
+    TotalRequests = count()
+    by CustomerTag, bin(TimeGenerated, 1d)
+| order by CustomerTag, TimeGenerated
+"""</span>
+
+result = client.query_workspace(
+    workspace_id=<span class="st">"&lt;log-analytics-workspace-id&gt;"</span>,
+    query=query,
+    timespan=timedelta(days=<span class="nr">30</span>)
+)
+
+<span class="kw">for</span> row <span class="kw">in</span> result.tables[<span class="nr">0</span>].rows:
+    customer, date, prompt_tk, completion_tk, requests = row
+    cost = (prompt_tk * <span class="nr">0.000005</span>) + (completion_tk * <span class="nr">0.000015</span>)
+    <span class="fn">print</span>(<span class="st">f"</span>{customer} | {date} | ${cost:<span class="nr">.4f</span>} | {requests} requests<span class="st">"</span>)</pre>
+
+    <!-- ── Section 8: Security & Compliance ──────────────── -->
+    <h2 id="security-compliance">8. Security &amp; Compliance Across Tenants</h2>
+
+    <h3>8.1 Security Baseline for CSP AI Foundry Deployments</h3>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon red">🔐</div>
+            <div class="card-title">CSP Security Checklist</div>
+        </div>
+        <ol>
+            <li><strong>Network isolation:</strong> All AI Foundry hubs behind private endpoints; no public network access</li>
+            <li><strong>Identity:</strong> Managed identities for all service-to-service auth; no credential storage</li>
+            <li><strong>Encryption:</strong> Customer-managed keys (CMK) for Gold/Platinum tiers; platform keys for Bronze/Silver</li>
+            <li><strong>Monitoring:</strong> Microsoft Sentinel workspace with cross-tenant data connectors</li>
+            <li><strong>Compliance:</strong> Azure Policy initiative enforcing CIS benchmarks on all managed subscriptions</li>
+            <li><strong>Content Safety:</strong> Azure AI Content Safety enabled on all model deployments</li>
+            <li><strong>Audit:</strong> Diagnostic settings forwarding to CSP's central Log Analytics workspace</li>
+            <li><strong>DR:</strong> Geo-redundant deployments for Gold/Platinum tiers with automated failover</li>
+        </ol>
+    </div>
+
+    <h3>8.2 Compliance Matrix</h3>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Compliance Standard</th>
+                    <th>AI Foundry Coverage</th>
+                    <th>CSP Partner Responsibility</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>SOC 2 Type II</strong></td>
+                    <td>Azure platform certified</td>
+                    <td>Document AI-specific controls, access reviews, incident management</td>
+                </tr>
+                <tr>
+                    <td><strong>HIPAA BAA</strong></td>
+                    <td>Supported with eligible services</td>
+                    <td>Execute BAA chain: Microsoft → CSP → Customer; enforce PHI isolation</td>
+                </tr>
+                <tr>
+                    <td><strong>GDPR</strong></td>
+                    <td>Data residency controls available</td>
+                    <td>Data processing agreements, right-to-erasure workflows, regional deployment</td>
+                </tr>
+                <tr>
+                    <td><strong>ISO 27001</strong></td>
+                    <td>Azure platform certified</td>
+                    <td>Extend ISMS to cover AI workload management, model lifecycle</td>
+                </tr>
+                <tr>
+                    <td><strong>EU AI Act</strong></td>
+                    <td>Transparency notes, model cards</td>
+                    <td>Risk classification of customer AI systems, documentation, human oversight</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Section 9: Video Resource ─────────────────────── -->
+    <h2 id="video-resource">9. Video Resource</h2>
+
+    <div class="video-wrapper">
+        <div class="video-header">
+            <span class="video-header-dot red"></span>
+            <span class="video-header-dot yellow"></span>
+            <span class="video-header-dot green"></span>
+            <span class="video-header-title">Microsoft Foundry — AI App &amp; Agent Factory | MS Mechanics</span>
+        </div>
+        <div class="video-container">
+            <iframe 
+                src="https://www.youtube.com/embed/C6rxEGJay70"
+                title="Microsoft Foundry - AI app & agent factory"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+
+    <div class="callout purple">
+        <div class="callout-title">🎬 Video Context</div>
+        <p>
+            This MS Mechanics video provides an overview of <strong>Microsoft Foundry</strong> as the unified AI 
+            application and agent factory. For CSP partners, pay special attention to how Foundry orchestrates 
+            the lifecycle from model selection through agent deployment — this is the platform capability you'll 
+            be packaging and delivering as a managed service to your customers.
+        </p>
+    </div>
+
+    <!-- ── Section 10: Mini Hack ─────────────────────────── -->
+    <div class="mini-hack" id="mini-hack">
+        <div class="mini-hack-badge">🛠️ Mini Hack</div>
+        <h3>Design a Multi-Tenant AI Architecture for a CSP Scenario</h3>
+
+        <div class="hack-objective">
+            <strong>Scenario:</strong> You are a CSP partner launching "AI-as-a-Service" for your customer base. 
+            You have three customer segments: (1) a healthcare provider needing HIPAA compliance, (2) five 
+            mid-market retail companies wanting AI-powered customer service bots, and (3) a financial services 
+            firm requiring SOC 2 compliance with dedicated capacity.
+        </div>
+
+        <p><strong>Your challenge — design the architecture addressing:</strong></p>
+
+        <ol>
+            <li><strong>Resource Topology:</strong> Choose the deployment pattern (isolated vs. shared) for each customer segment and justify your decision</li>
+            <li><strong>Governance Model:</strong> Define the RBAC strategy, Azure Policy initiatives, and Lighthouse delegations needed</li>
+            <li><strong>SLA Mapping:</strong> Assign a support tier (Bronze/Silver/Gold/Platinum) to each customer segment with specific commitments</li>
+            <li><strong>Cost Model:</strong> Design the billing approach — subscription-level, tag-based, or hybrid — with margin calculation</li>
+            <li><strong>Security Controls:</strong> Specify network isolation, encryption, and compliance controls per segment</li>
+            <li><strong>Operational Runbook:</strong> Outline the monitoring, alerting, and incident response flow</li>
+        </ol>
+
+        <p><strong>Deliverables:</strong></p>
+        <ul>
+            <li>Architecture diagram (Visio, draw.io, or ASCII art) showing all three segments</li>
+            <li>RBAC matrix mapping roles to resources per customer</li>
+            <li>Bicep/Terraform template for one segment's onboarding automation</li>
+            <li>SLA dashboard KQL query set</li>
+            <li>One-page executive summary suitable for a CSP partner business review</li>
+        </ul>
+
+        <p><em>⏱️ Estimated time: 90–120 minutes</em></p>
+    </div>
+
+    <!-- ── Section 11: Summary ───────────────────────────── -->
+    <h2 id="summary">11. Summary &amp; Key Takeaways</h2>
+
+    <div class="callout success">
+        <div class="callout-title">✅ Key Takeaways</div>
+        <ol>
+            <li><strong>CSP + AI Foundry</strong> enables partners to deliver managed AI services at scale, leveraging Partner Center for provisioning and billing</li>
+            <li><strong>Azure Lighthouse</strong> is preferred over AOBO for granular, auditable cross-tenant management of AI resources</li>
+            <li><strong>Deployment topology</strong> (dedicated vs. shared) should match customer compliance, capacity, and cost requirements</li>
+            <li><strong>Tiered SLAs</strong> differentiate your offering — map Bronze through Platinum to specific availability, throughput, and support commitments</li>
+            <li><strong>Tag-based cost allocation</strong> and token metering enable accurate chargeback and margin management</li>
+            <li><strong>Security baselines</strong> must be enforced uniformly via Azure Policy, with enhanced controls (CMK, dedicated PTU) for premium tiers</li>
+            <li><strong>Compliance is shared</strong> — understand the Microsoft vs. CSP vs. customer responsibility boundaries for each framework</li>
+        </ol>
+    </div>
+
+    <div class="callout info">
+        <div class="callout-title">📚 Further Reading</div>
+        <ul>
+            <li><a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank">Azure AI Foundry Documentation</a></li>
+            <li><a href="https://learn.microsoft.com/partner-center/csp-overview" target="_blank">Cloud Solution Provider Program Overview</a></li>
+            <li><a href="https://learn.microsoft.com/azure/lighthouse/" target="_blank">Azure Lighthouse Documentation</a></li>
+            <li><a href="https://learn.microsoft.com/azure/ai-services/content-safety/" target="_blank">Azure AI Content Safety</a></li>
+            <li><a href="https://learn.microsoft.com/azure/governance/policy/" target="_blank">Azure Policy Documentation</a></li>
+        </ul>
+    </div>
+
+    <!-- ── Bottom Navigation ─────────────────────────────── -->
+    <nav class="bottom-nav">
+        <a href="../module-38/blog.html" class="nav-btn">← Module 38</a>
+        <div class="nav-module-info">
+            Module 39 of 45 · ARC 8: Advanced Patterns &amp; Enterprise<br>
+            <strong>AI Foundry in CSP &amp; Managed Services</strong>
+        </div>
+        <a href="../module-40/blog.html" class="nav-btn">Module 40 →</a>
+    </nav>
+
+</main>
+
+<!-- ════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════ -->
+<footer class="footer">
+    <p>
+        <strong>Azure AI Foundry: Zero to Hero</strong> — Module 39 of 45<br>
+        ARC 8: Advanced Patterns &amp; Enterprise · April 2026<br>
+        Built for the Azure AI Foundry community ·
+        <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank">Azure AI Foundry Docs</a>
+    </p>
+</footer>
+
+</body>
+</html>

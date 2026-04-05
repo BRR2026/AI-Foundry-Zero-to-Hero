@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 14: Advanced RAG Patterns — Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --bg-dark: #1a1a2e;
+            --bg-slide: #16213e;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b8;
+            --accent: #00d4ff;
+            --code-bg: #0d1117;
+            --success: #2ea043;
+            --warning: #d29922;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+            background: var(--bg-slide);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .arc-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--accent);
+        }
+
+        h3 {
+            font-size: 1.4em;
+            color: var(--ms-blue);
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            padding: 10px 0 10px 30px;
+            position: relative;
+            font-size: 1.15em;
+            line-height: 1.6;
+        }
+
+        ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--ms-blue);
+            font-weight: bold;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .column {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--accent);
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .highlight { color: var(--accent); }
+        .emphasis { color: var(--warning); font-weight: 600; }
+
+        .diagram-box {
+            background: rgba(0, 120, 212, 0.08);
+            border: 2px solid var(--ms-blue);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 1.05em;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-dark-blue));
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .flow-arrow {
+            color: var(--accent);
+            font-size: 1.4em;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 0.95em;
+        }
+
+        .comparison-table th {
+            background: var(--ms-dark-blue);
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 2px solid var(--ms-blue);
+        }
+
+        .comparison-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .comparison-table tr:hover td {
+            background: rgba(0, 120, 212, 0.08);
+        }
+
+        .key-point {
+            background: linear-gradient(135deg, rgba(0, 120, 212, 0.12), rgba(92, 45, 145, 0.12));
+            border-left: 4px solid var(--ms-blue);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 12px 0;
+            font-size: 1.1em;
+        }
+
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: rgba(0, 120, 212, 0.3);
+            border: 1px solid var(--ms-blue);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--ms-blue);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            transition: width 0.4s ease;
+            z-index: 100;
+        }
+
+        .slide-title-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            z-index: 99;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .slide-title-bar .logo {
+            font-weight: 700;
+            color: var(--ms-blue);
+            margin-right: 16px;
+        }
+
+        /* Title slide special */
+        .slide.title-slide {
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-slide) 0%, #1a1040 100%);
+        }
+
+        .slide.title-slide h1 { font-size: 3.2em; }
+
+        .module-info {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+        /* Keyboard hint */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-title-bar">
+        <span class="logo">Azure AI Foundry</span>
+        <span>Zero to Hero · Module 14 · Advanced RAG Patterns</span>
+    </div>
+
+    <div class="slide-container" id="slideContainer">
+
+        <!-- Slide 1: Title -->
+        <div class="slide title-slide active" data-slide="1">
+            <div class="arc-badge">ARC 3 · DATA & RAG</div>
+            <h1>Advanced RAG Patterns</h1>
+            <p class="subtitle">Chunking, Reranking, Multi-Index & Agentic RAG</p>
+            <div class="module-info">
+                Module 14 of 45 · Azure AI Foundry: Zero to Hero<br>
+                April 2026
+            </div>
+            <div class="slide-number">1 / 14</div>
+        </div>
+
+        <!-- Slide 2: Beyond Basic RAG -->
+        <div class="slide" data-slide="2">
+            <h2>Beyond Basic RAG</h2>
+            <div class="key-point">
+                Basic RAG: retrieve chunks → stuff into prompt → generate.<br>
+                <span class="emphasis">What goes wrong?</span> Context loss, hallucinations, poor relevance, missed information.
+            </div>
+            <ul>
+                <li>Naive chunking splits content mid-sentence or mid-thought</li>
+                <li>Single retrieval pass misses nuanced queries</li>
+                <li>No re-scoring means irrelevant results pollute the context</li>
+                <li>Single index can't handle heterogeneous data</li>
+            </ul>
+            <div class="key-point">
+                <span class="highlight">Advanced RAG</span> = smarter chunking + better retrieval + reranking + orchestration
+            </div>
+            <div class="slide-number">2 / 14</div>
+        </div>
+
+        <!-- Slide 3: The RAG Pipeline -->
+        <div class="slide" data-slide="3">
+            <h2>The Advanced RAG Pipeline</h2>
+            <div class="diagram-box">
+                <div class="flow-row">
+                    <span class="flow-step">📄 Document</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">✂️ Smart Chunking</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">🧮 Embedding</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">📦 Index</span>
+                </div>
+                <br>
+                <div class="flow-row">
+                    <span class="flow-step">❓ Query</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">🔍 Hybrid Search</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">🎯 Reranker</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">🤖 LLM</span>
+                </div>
+            </div>
+            <div class="key-point">
+                Every stage is an optimization opportunity. Azure AI Foundry provides native support for each component.
+            </div>
+            <div class="slide-number">3 / 14</div>
+        </div>
+
+        <!-- Slide 4: Chunking Strategies -->
+        <div class="slide" data-slide="4">
+            <h2>Chunking Strategies</h2>
+            <table class="comparison-table">
+                <tr>
+                    <th>Strategy</th>
+                    <th>How It Works</th>
+                    <th>Best For</th>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Fixed-Size</span></td>
+                    <td>Split at every N tokens with overlap</td>
+                    <td>Uniform content, logs</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Semantic</span></td>
+                    <td>Split at topic/sentence boundaries</td>
+                    <td>Articles, documentation</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Sliding Window</span></td>
+                    <td>Overlapping windows for context</td>
+                    <td>Narrative text, transcripts</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Recursive</span></td>
+                    <td>Hierarchical: sections → paragraphs → sentences</td>
+                    <td>Structured documents</td>
+                </tr>
+            </table>
+            <div class="key-point">
+                💡 <span class="emphasis">Rule of thumb:</span> Use semantic chunking for docs, recursive for structured content, fixed-size for uniform data.
+            </div>
+            <div class="slide-number">4 / 14</div>
+        </div>
+
+        <!-- Slide 5: Semantic Chunking Deep Dive -->
+        <div class="slide" data-slide="5">
+            <h2>Semantic Chunking in Practice</h2>
+            <div class="two-column">
+                <div class="column">
+                    <h3>❌ Fixed-Size Result</h3>
+                    <pre><code>...model deployment process in
+Azure AI Foundry. You can al
+---
+so configure auto-scaling by
+setting the min and max repli</code></pre>
+                    <p style="color:#f85149; margin-top:8px;">Splits mid-sentence, loses context</p>
+                </div>
+                <div class="column">
+                    <h3>✅ Semantic Result</h3>
+                    <pre><code>## Model Deployment
+The model deployment process
+in Azure AI Foundry allows you
+to configure auto-scaling by
+setting min and max replicas.</code></pre>
+                    <p style="color:var(--success); margin-top:8px;">Preserves meaning and structure</p>
+                </div>
+            </div>
+            <div class="key-point">
+                Semantic chunking uses <code>RecursiveCharacterTextSplitter</code> with hierarchy: headers → paragraphs → sentences
+            </div>
+            <div class="slide-number">5 / 14</div>
+        </div>
+
+        <!-- Slide 6: Embedding Models -->
+        <div class="slide" data-slide="6">
+            <h2>Embedding Model Selection</h2>
+            <table class="comparison-table">
+                <tr>
+                    <th>Model</th>
+                    <th>Dimensions</th>
+                    <th>Performance</th>
+                    <th>Cost</th>
+                </tr>
+                <tr>
+                    <td><code>text-embedding-3-small</code></td>
+                    <td>1536</td>
+                    <td>Good</td>
+                    <td>Lower</td>
+                </tr>
+                <tr>
+                    <td><code>text-embedding-3-large</code></td>
+                    <td>3072</td>
+                    <td>Best</td>
+                    <td>Higher</td>
+                </tr>
+            </table>
+            <ul>
+                <li>Higher dimensions = better semantic capture, but more storage & compute</li>
+                <li>Azure OpenAI supports <span class="highlight">dimension reduction</span> — use 1024 dims with the large model for a good balance</li>
+                <li>Always use the <span class="emphasis">same model</span> for indexing and querying</li>
+            </ul>
+            <div class="slide-number">6 / 14</div>
+        </div>
+
+        <!-- Slide 7: Reranking -->
+        <div class="slide" data-slide="7">
+            <h2>Reranking & Relevance Tuning</h2>
+            <div class="diagram-box">
+                <div class="flow-row">
+                    <span class="flow-step">Initial Retrieval<br>(top 50)</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">🎯 Cross-Encoder<br>Reranker</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">Re-scored<br>(top 5)</span>
+                </div>
+            </div>
+            <ul>
+                <li><span class="highlight">Bi-encoder</span> (embeddings): fast but approximate similarity</li>
+                <li><span class="highlight">Cross-encoder</span> (reranker): slower but much more accurate relevance</li>
+                <li>Azure AI Search <span class="emphasis">Semantic Ranker</span> provides built-in cross-encoder reranking</li>
+                <li>Typical improvement: <span class="emphasis">15–35%</span> better top-result relevance</li>
+            </ul>
+            <div class="key-point">
+                Reranking is the <span class="emphasis">highest-ROI optimization</span> you can add to a RAG pipeline.
+            </div>
+            <div class="slide-number">7 / 14</div>
+        </div>
+
+        <!-- Slide 8: Hybrid Search -->
+        <div class="slide" data-slide="8">
+            <h2>Hybrid Search & Score Fusion</h2>
+            <div class="two-column">
+                <div class="column">
+                    <h3>Keyword Search (BM25)</h3>
+                    <ul>
+                        <li>Exact term matching</li>
+                        <li>Great for proper nouns, codes</li>
+                        <li>Misses semantic similarity</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3>Vector Search (Embeddings)</h3>
+                    <ul>
+                        <li>Semantic understanding</li>
+                        <li>Handles paraphrases</li>
+                        <li>Can miss exact matches</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="diagram-box" style="margin-top: 20px;">
+                <div class="flow-row">
+                    <span class="flow-step">BM25 Results</span>
+                    <span class="flow-arrow">+</span>
+                    <span class="flow-step">Vector Results</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">RRF Fusion</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">Unified Ranking</span>
+                </div>
+            </div>
+            <div class="slide-number">8 / 14</div>
+        </div>
+
+        <!-- Slide 9: Multi-Index RAG -->
+        <div class="slide" data-slide="9">
+            <h2>Multi-Index RAG</h2>
+            <div class="diagram-box">
+                <div class="flow-row">
+                    <span class="flow-step">📚 Product Docs Index</span>
+                    <span class="flow-step">🎫 Support Tickets Index</span>
+                    <span class="flow-step">📋 FAQ Index</span>
+                </div>
+                <br>
+                <div class="flow-row">
+                    <span class="flow-arrow">↓</span>
+                </div>
+                <div class="flow-row">
+                    <span class="flow-step">🔀 Query Router</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">📊 Result Merger</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">🤖 LLM</span>
+                </div>
+            </div>
+            <ul>
+                <li>Different indexes for different data types and schemas</li>
+                <li><span class="highlight">Query routing</span>: classify intent → select relevant index(es)</li>
+                <li><span class="highlight">Score normalization</span>: essential when merging across indexes</li>
+                <li>In Azure AI Foundry: connect multiple data sources to your project</li>
+            </ul>
+            <div class="slide-number">9 / 14</div>
+        </div>
+
+        <!-- Slide 10: Tables & Structured Data -->
+        <div class="slide" data-slide="10">
+            <h2>Handling Tables & Structured Data</h2>
+            <ul>
+                <li><span class="highlight">Azure Document Intelligence</span> extracts tables, key-value pairs, and layout</li>
+                <li>Convert tables to multiple formats for better retrieval:
+                    <ul style="margin-left:20px; margin-top:8px;">
+                        <li>Markdown table representation</li>
+                        <li>Natural language summaries of table contents</li>
+                        <li>Row-level chunks with column headers as context</li>
+                    </ul>
+                </li>
+                <li><span class="emphasis">Hybrid approach</span>: SQL queries for structured data + vector search for text</li>
+            </ul>
+            <div class="key-point">
+                💡 Don't just flatten tables to text — preserve structure and add column context to each row chunk.
+            </div>
+            <div class="slide-number">10 / 14</div>
+        </div>
+
+        <!-- Slide 11: Agentic RAG -->
+        <div class="slide" data-slide="11">
+            <h2>Agentic RAG Patterns</h2>
+            <div class="diagram-box">
+                <div class="flow-row">
+                    <span class="flow-step">🤖 AI Agent</span>
+                </div>
+                <br>
+                <div class="flow-row">
+                    <span class="flow-step">🔍 Search Tool</span>
+                    <span class="flow-step">📊 SQL Tool</span>
+                    <span class="flow-step">🌐 Web Tool</span>
+                    <span class="flow-step">📁 File Tool</span>
+                </div>
+            </div>
+            <ul>
+                <li><span class="highlight">Query decomposition</span>: agent breaks complex questions into sub-queries</li>
+                <li><span class="highlight">Iterative retrieval</span>: retrieve → evaluate → retrieve more if needed</li>
+                <li><span class="highlight">Tool selection</span>: agent chooses the right retrieval method per sub-query</li>
+                <li><span class="highlight">Self-reflection</span>: agent validates retrieved context before answering</li>
+            </ul>
+            <div class="key-point">
+                Agentic RAG = the agent <span class="emphasis">decides</span> what to retrieve, when, and how — not a fixed pipeline.
+            </div>
+            <div class="slide-number">11 / 14</div>
+        </div>
+
+        <!-- Slide 12: Performance Optimization -->
+        <div class="slide" data-slide="12">
+            <h2>Performance Optimization</h2>
+            <div class="two-column">
+                <div class="column">
+                    <h3>Latency Reduction</h3>
+                    <ul>
+                        <li>Cache frequent queries & embeddings</li>
+                        <li>Use smaller embedding dimensions</li>
+                        <li>Limit top-k to what the LLM needs</li>
+                        <li>Async parallel retrieval</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3>Quality Monitoring</h3>
+                    <ul>
+                        <li>Track retrieval precision & recall</li>
+                        <li>Monitor reranker score distributions</li>
+                        <li>A/B test chunking strategies</li>
+                        <li>Use AI Foundry evaluations</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="key-point">
+                Optimize for the <span class="emphasis">right balance</span> of latency, cost, and quality for your use case.
+            </div>
+            <div class="slide-number">12 / 14</div>
+        </div>
+
+        <!-- Slide 13: Mini Hack -->
+        <div class="slide" data-slide="13">
+            <h2>🛠️ Mini Hack</h2>
+            <p class="subtitle">Optimize Your RAG App with Semantic Chunking + Reranking</p>
+            <ul>
+                <li><span class="emphasis">Step 1:</span> Build baseline RAG with fixed-size chunks → record scores</li>
+                <li><span class="emphasis">Step 2:</span> Switch to semantic chunking → measure improvement</li>
+                <li><span class="emphasis">Step 3:</span> Enable Azure AI Search semantic ranker → compare reranker scores</li>
+                <li><span class="emphasis">Step 4:</span> Configure hybrid search (keyword + vector + reranking)</li>
+                <li><span class="emphasis">Step 5:</span> Build comparison table across all approaches</li>
+            </ul>
+            <div class="key-point">
+                🎯 Target: demonstrate measurable improvement at each optimization stage
+            </div>
+            <div class="slide-number">13 / 14</div>
+        </div>
+
+        <!-- Slide 14: Key Takeaways -->
+        <div class="slide" data-slide="14">
+            <h2>Key Takeaways</h2>
+            <ul>
+                <li><span class="highlight">Chunking is the foundation</span> — semantic > fixed-size for most document types</li>
+                <li><span class="highlight">Reranking is highest-ROI</span> — 15-35% improvement with minimal code</li>
+                <li><span class="highlight">Hybrid search</span> combines precision of keywords + understanding of vectors</li>
+                <li><span class="highlight">Multi-index</span> unlocks cross-source retrieval for complex scenarios</li>
+                <li><span class="highlight">Agentic RAG</span> is the future — agents that orchestrate their own retrieval</li>
+            </ul>
+            <div class="key-point" style="margin-top: 24px;">
+                <strong>Next → Module 15:</strong> Evaluation & Quality Metrics — measuring and improving RAG quality systematically.
+            </div>
+            <div class="module-info" style="margin-top: 24px; text-align: center; color: var(--text-secondary);">
+                Azure AI Foundry: Zero to Hero · Module 14 of 45 · ARC 3: DATA & RAG
+            </div>
+            <div class="slide-number">14 / 14</div>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+    </div>
+    <div class="keyboard-hint">Use ← → arrow keys or click to navigate</div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+
+        function showSlide(n) {
+            if (n < 1 || n > totalSlides) return;
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const target = document.querySelector(`[data-slide="${n}"]`);
+            if (target) {
+                target.classList.add('active');
+                currentSlide = n;
+            }
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+            document.getElementById('progressBar').style.width = ((currentSlide / totalSlides) * 100) + '%';
+        }
+
+        function navigate(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+                e.preventDefault();
+                navigate(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                navigate(-1);
+            } else if (e.key === 'Home') {
+                showSlide(1);
+            } else if (e.key === 'End') {
+                showSlide(totalSlides);
+            }
+        });
+
+        // Initialize
+        showSlide(1);
+    </script>
+</body>
+</html>

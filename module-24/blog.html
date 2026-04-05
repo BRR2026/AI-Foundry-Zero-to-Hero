@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 24: Integrating with Microsoft 365 Copilot — Zero to Hero Training</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-bg: #ffffff;
+            --ms-text: #1a1a1a;
+            --ms-text-secondary: #505050;
+            --ms-border: #e1e1e1;
+            --ms-code-bg: #1e1e1e;
+            --ms-callout-blue: #f0f8ff;
+            --ms-callout-yellow: #fffbeb;
+            --ms-callout-green: #f0fdf4;
+            --ms-callout-red: #fef2f2;
+            --ms-success: #107c10;
+            --ms-warning: #ff8c00;
+            --ms-error: #d13438;
+            --content-width: 780px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ms-text);
+            background: #f5f5f5;
+            line-height: 1.75;
+            font-size: 16px;
+        }
+
+        /* ── Progress Bar ── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+
+        /* ── Top Nav ── */
+        .top-nav {
+            background: #1a1a1a;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .top-nav .ms-logo {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-nav .ms-logo svg { width: 20px; height: 20px; }
+        .top-nav .blog-title {
+            color: #b3b3b3;
+            font-size: 14px;
+            padding-left: 24px;
+            border-left: 1px solid #444;
+        }
+        .top-nav .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+        }
+        .top-nav .nav-links a {
+            color: #b3b3b3;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-links a:hover { color: #fff; }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, #0078d4 0%, #5c2d91 50%, #8661c5 100%);
+            padding: 60px 24px 50px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            max-width: var(--content-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero .series-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .hero .arc-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            margin-left: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .hero h1 {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+        .hero .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .hero .meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero .meta .avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .hero .meta .author-info .name { font-weight: 600; }
+        .hero .meta .divider { opacity: 0.4; }
+        .hero .meta .reading-time { display: flex; align-items: center; gap: 4px; }
+
+        /* ── Main Layout ── */
+        .main-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 40px;
+        }
+
+        /* ── Sidebar TOC ── */
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            align-self: start;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .toc {
+            border-left: 2px solid var(--ms-border);
+            padding-left: 16px;
+        }
+        .toc h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--ms-text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .toc a {
+            display: block;
+            color: var(--ms-text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 4px 0;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .toc a:hover { color: var(--ms-blue); }
+        .toc a.active {
+            color: var(--ms-blue);
+            font-weight: 600;
+            border-left: 2px solid var(--ms-blue);
+            margin-left: -17px;
+            padding-left: 15px;
+        }
+
+        /* ── Article Content ── */
+        .article-content {
+            background: var(--ms-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 48px 52px;
+            max-width: var(--content-width);
+        }
+        .article-content h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-top: 24px;
+            border-top: 1px solid var(--ms-border);
+        }
+        .article-content h2:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+        .article-content h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 32px 0 12px;
+        }
+        .article-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ms-text);
+            margin: 24px 0 8px;
+        }
+        .article-content p {
+            margin: 12px 0;
+            color: var(--ms-text);
+        }
+        .article-content ul, .article-content ol {
+            margin: 12px 0 12px 24px;
+        }
+        .article-content li {
+            margin: 6px 0;
+        }
+        .article-content strong { font-weight: 600; }
+        .article-content a {
+            color: var(--ms-blue);
+            text-decoration: none;
+        }
+        .article-content a:hover { text-decoration: underline; }
+
+        /* ── Callouts ── */
+        .callout {
+            padding: 20px 24px;
+            border-radius: 6px;
+            margin: 24px 0;
+            border-left: 4px solid;
+        }
+        .callout-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .callout-blue {
+            background: var(--ms-callout-blue);
+            border-color: var(--ms-blue);
+        }
+        .callout-yellow {
+            background: var(--ms-callout-yellow);
+            border-color: var(--ms-warning);
+        }
+        .callout-green {
+            background: var(--ms-callout-green);
+            border-color: var(--ms-success);
+        }
+        .callout-red {
+            background: var(--ms-callout-red);
+            border-color: var(--ms-error);
+        }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--ms-code-bg);
+            color: #d4d4d4;
+            border-radius: 6px;
+            padding: 20px 24px;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px 0;
+            position: relative;
+        }
+        pre .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 11px;
+            color: #808080;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            font-size: 14px;
+        }
+        p code, li code {
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #d63384;
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        th {
+            background: var(--ms-dark-blue);
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--ms-border);
+        }
+        tr:nth-child(even) { background: #f9f9f9; }
+        tr:hover { background: var(--ms-light-blue); }
+
+        /* ── Video Embed ── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 24px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ── Architecture Diagram ── */
+        .architecture-diagram {
+            background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+            border: 2px solid #d0d7e8;
+            border-radius: 12px;
+            padding: 32px;
+            margin: 28px 0;
+            text-align: center;
+        }
+        .architecture-diagram h4 {
+            color: var(--ms-dark-blue);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .arch-box {
+            background: #fff;
+            border: 2px solid var(--ms-blue);
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            min-width: 130px;
+            box-shadow: 0 2px 8px rgba(0,120,212,0.1);
+        }
+        .arch-box.purple {
+            border-color: var(--ms-purple);
+            color: var(--ms-purple);
+        }
+        .arch-box.green {
+            border-color: var(--ms-success);
+            color: var(--ms-success);
+        }
+        .arch-box.orange {
+            border-color: var(--ms-warning);
+            color: #b35900;
+        }
+        .arch-arrow {
+            font-size: 24px;
+            color: var(--ms-blue);
+            font-weight: bold;
+        }
+
+        /* ── Feature Grid ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: linear-gradient(135deg, #f9fafe 0%, #f0f4ff 100%);
+            border: 1px solid #d8e2f3;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .feature-card .icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .feature-card h4 {
+            font-size: 15px;
+            color: var(--ms-dark-blue);
+            margin: 0 0 6px 0;
+        }
+        .feature-card p {
+            font-size: 13px;
+            color: var(--ms-text-secondary);
+            margin: 0;
+        }
+
+        /* ── Step Boxes ── */
+        .step-container {
+            margin: 24px 0;
+        }
+        .step {
+            display: flex;
+            gap: 16px;
+            margin: 16px 0;
+            padding: 16px;
+            background: #fafbff;
+            border-radius: 8px;
+            border: 1px solid #e8ecf4;
+        }
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: var(--ms-blue);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .step-content h4 { margin: 0 0 4px; font-size: 15px; }
+        .step-content p { margin: 0; font-size: 14px; color: var(--ms-text-secondary); }
+
+        /* ── Comparison Box ── */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .comparison-card {
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid;
+        }
+        .comparison-card.do { border-color: var(--ms-success); background: #f0fdf4; }
+        .comparison-card.dont { border-color: var(--ms-error); background: #fef2f2; }
+        .comparison-card h4 { margin: 0 0 8px; font-size: 15px; }
+        .comparison-card ul { margin: 8px 0 0 20px; font-size: 14px; }
+
+        /* ── Tags ── */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 32px 0;
+        }
+        .tag {
+            background: var(--ms-light-blue);
+            color: var(--ms-dark-blue);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* ── Author Box ── */
+        .author-box {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 24px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin: 32px 0;
+        }
+        .author-avatar {
+            width: 56px;
+            height: 56px;
+            background: var(--ms-blue);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .author-box .author-info h4 { margin: 0 0 4px; }
+        .author-box .author-info p { margin: 0; font-size: 14px; color: var(--ms-text-secondary); }
+
+        /* ── Series Navigation ── */
+        .series-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin: 32px 0;
+            border-top: 2px solid var(--ms-border);
+            border-bottom: 2px solid var(--ms-border);
+        }
+        .series-nav a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .series-nav a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
+        .series-nav .current {
+            font-size: 13px;
+            color: var(--ms-text-secondary);
+            font-weight: 500;
+        }
+
+        /* ── Related Posts ── */
+        .related-posts { margin: 32px 0; }
+        .related-posts h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--ms-dark-blue);
+        }
+        .related-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .related-card {
+            border: 1px solid var(--ms-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--ms-text);
+            transition: all 0.2s;
+        }
+        .related-card:hover {
+            border-color: var(--ms-blue);
+            box-shadow: 0 4px 12px rgba(0,120,212,0.12);
+            transform: translateY(-2px);
+        }
+        .related-card .module-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ms-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .related-card h4 { font-size: 16px; margin: 0 0 6px; }
+        .related-card p { font-size: 13px; color: var(--ms-text-secondary); margin: 0; }
+
+        /* ── Back to Top ── */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            z-index: 900;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); }
+        .back-to-top:hover { background: var(--ms-dark-blue); }
+
+        /* ── Section Divider ── */
+        .section-divider {
+            text-align: center;
+            margin: 40px 0;
+            color: var(--ms-border);
+            font-size: 24px;
+            letter-spacing: 16px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .sidebar { display: none; }
+            .article-content { padding: 32px 20px; }
+            .hero h1 { font-size: 28px; }
+            .feature-grid, .comparison-grid, .related-grid { grid-template-columns: 1fr; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+    <div class="top-nav-inner">
+        <div class="ms-logo">
+            <svg viewBox="0 0 23 23"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
+            Microsoft
+        </div>
+        <span class="blog-title">AI Foundry · Zero to Hero</span>
+        <div class="nav-links">
+            <a href="../module-01/blog.html">Start</a>
+            <a href="../module-23/blog.html">Previous</a>
+            <a href="../module-25/blog.html">Next</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ── Hero Section ── -->
+<header class="hero">
+    <div class="hero-inner">
+        <span class="series-badge">Module 24 of 45</span>
+        <span class="arc-badge">ARC 5 · Orchestration &amp; Integration</span>
+        <h1>Integrating with Microsoft 365 Copilot</h1>
+        <p class="subtitle">Extend M365 Copilot with custom plugins and message extensions powered by Azure AI Foundry — bringing your intelligent knowledge bases directly into Teams, Word, Outlook, and the entire Microsoft 365 ecosystem.</p>
+        <div class="meta">
+            <div class="avatar">🔌</div>
+            <div class="author-info">
+                <div class="name">AI Foundry Training Team</div>
+                <div>April 2026 · Azure AI Foundry</div>
+            </div>
+            <span class="divider">|</span>
+            <span class="reading-time">📖 25 min read</span>
+            <span class="divider">|</span>
+            <span>🧪 Hands-on Lab Included</span>
+        </div>
+    </div>
+</header>
+
+<!-- ── Main Content ── -->
+<div class="main-wrapper">
+
+    <!-- Sidebar TOC -->
+    <aside class="sidebar">
+        <nav class="toc">
+            <h3>On This Page</h3>
+            <a href="#overview" class="active">1. Overview</a>
+            <a href="#extensibility-model">2. M365 Copilot Extensibility</a>
+            <a href="#message-extensions">3. Message Extensions & Plugins</a>
+            <a href="#connecting-foundry">4. Connecting AI Foundry</a>
+            <a href="#plugin-architecture">5. Plugin Architecture</a>
+            <a href="#copilot-studio">6. Copilot Studio Integration</a>
+            <a href="#compliance">7. Compliance & Data Residency</a>
+            <a href="#security-model">8. Security & Authentication</a>
+            <a href="#video-walkthrough">9. Video Walkthrough</a>
+            <a href="#mini-hack">10. Mini Hack</a>
+            <a href="#best-practices">11. Best Practices</a>
+            <a href="#next-steps">12. Next Steps</a>
+        </nav>
+    </aside>
+
+    <!-- Article -->
+    <article class="article-content">
+
+        <!-- ══════════════ SECTION 1: OVERVIEW ══════════════ -->
+        <h2 id="overview">1. Why Integrate AI Foundry with Microsoft 365 Copilot?</h2>
+
+        <p>Microsoft 365 Copilot is reshaping how people work across Word, Excel, PowerPoint, Outlook, Teams, and more. Out of the box, it leverages organizational data in the Microsoft Graph. But the real power emerges when you <strong>extend</strong> Copilot with your own domain-specific intelligence — and that's where Azure AI Foundry comes in.</p>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">💡 Key Insight</div>
+            M365 Copilot extensibility lets you inject <strong>custom AI intelligence</strong> — built and managed in Azure AI Foundry — directly into the applications your users already work in every day. No context switching, no separate apps.
+        </div>
+
+        <p>By the end of this module, you will be able to:</p>
+        <ul>
+            <li>Explain the M365 Copilot extensibility model and its three extension types</li>
+            <li>Build message extensions and declarative agents as Copilot plugins</li>
+            <li>Connect Azure AI Foundry endpoints (RAG, agents, prompt flows) to Office apps</li>
+            <li>Implement compliance and data residency requirements for enterprise deployments</li>
+            <li>Create a working M365 Copilot plugin that queries an AI Foundry knowledge base</li>
+        </ul>
+
+        <h3>Where Module 24 Fits</h3>
+
+        <p>In <strong>Arc 5: Orchestration &amp; Integration</strong>, we're connecting your AI Foundry solutions to the broader Microsoft ecosystem. Module 23 covered orchestration fundamentals; this module focuses on the integration surface that <em>every knowledge worker</em> uses: Microsoft 365.</p>
+
+        <div class="architecture-diagram">
+            <h4>Module 24 — Integration Architecture</h4>
+            <div class="arch-flow">
+                <div class="arch-box purple">Azure AI Foundry<br><small>Models · RAG · Agents</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">API Layer<br><small>REST · Bot Framework</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box green">M365 Copilot<br><small>Plugins · Extensions</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box orange">Office Apps<br><small>Teams · Word · Outlook</small></div>
+            </div>
+        </div>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 2: EXTENSIBILITY MODEL ══════════════ -->
+        <h2 id="extensibility-model">2. The M365 Copilot Extensibility Model</h2>
+
+        <p>Microsoft 365 Copilot supports three primary extensibility patterns. Understanding which pattern to use is critical for building effective integrations with Azure AI Foundry.</p>
+
+        <h3>Three Extension Types</h3>
+
+        <table>
+            <tr><th>Extension Type</th><th>Description</th><th>Best For</th><th>Complexity</th></tr>
+            <tr>
+                <td><strong>Declarative Agents</strong></td>
+                <td>Custom Copilot agents with instructions, knowledge, and actions defined via manifest</td>
+                <td>Domain-specific Q&amp;A, scoped assistants</td>
+                <td>Low–Medium</td>
+            </tr>
+            <tr>
+                <td><strong>API Plugins</strong></td>
+                <td>OpenAPI-described REST endpoints that Copilot can invoke during conversations</td>
+                <td>Real-time data, transactional operations</td>
+                <td>Medium</td>
+            </tr>
+            <tr>
+                <td><strong>Message Extensions</strong></td>
+                <td>Teams-based search/action extensions surfaced in the Copilot compose experience</td>
+                <td>Teams-centric search, card-based results</td>
+                <td>Medium–High</td>
+            </tr>
+        </table>
+
+        <div class="callout callout-yellow">
+            <div class="callout-title">⚠️ Important Distinction</div>
+            <strong>Declarative Agents</strong> are the newest and most powerful extensibility pattern. They allow you to define custom instructions, ground knowledge in external data (like an AI Foundry index), and configure specific actions — all without writing backend code. <strong>API Plugins</strong> provide more flexibility for custom logic but require a hosted service.
+        </div>
+
+        <h3>Extensibility Decision Framework</h3>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h4>Declarative Agent</h4>
+                <p>Choose when you need a scoped Copilot persona with access to specific data sources and pre-defined conversation instructions. Ideal for connecting to AI Foundry knowledge bases.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⚡</div>
+                <h4>API Plugin</h4>
+                <p>Choose when Copilot needs to call your custom API for real-time data retrieval, execute business logic, or perform transactional operations via AI Foundry agents.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💬</div>
+                <h4>Message Extension</h4>
+                <p>Choose when the primary interaction model is Teams-based and you need rich Adaptive Card responses with search and action capabilities.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔗</div>
+                <h4>Graph Connectors</h4>
+                <p>Choose when you want to ingest external data into the Microsoft Graph so Copilot can reason over it natively alongside M365 content.</p>
+            </div>
+        </div>
+
+        <h3>The Plugin Manifest</h3>
+
+        <p>Every Copilot extension starts with a <strong>manifest file</strong> that describes its capabilities. For declarative agents, this includes instructions, knowledge sources, and actions:</p>
+
+<pre><span class="code-label">JSON</span>
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.2/schema.json",
+  "version": "v1.2",
+  "name": "Knowledge Base Assistant",
+  "description": "Queries the enterprise knowledge base powered by Azure AI Foundry",
+  "instructions": "You are a helpful assistant that answers questions using the enterprise
+    knowledge base. Always cite your sources. If unsure, say so.",
+  "conversation_starters": [
+    { "text": "What is our return policy?" },
+    { "text": "Find documentation about API authentication" },
+    { "text": "Summarize recent product updates" }
+  ],
+  "capabilities": [
+    {
+      "name": "OneDriveAndSharePoint",
+      "items_by_url": [
+        { "url": "https://contoso.sharepoint.com/sites/KnowledgeBase" }
+      ]
+    }
+  ],
+  "actions": [
+    { "$ref": "ai-foundry-search-plugin.json" }
+  ]
+}
+</pre>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 3: MESSAGE EXTENSIONS ══════════════ -->
+        <h2 id="message-extensions">3. Building Message Extensions and Plugins</h2>
+
+        <p>Message extensions are a powerful way to surface AI Foundry intelligence in Microsoft Teams and M365 Copilot. They enable <strong>search-based</strong> and <strong>action-based</strong> interactions directly in the compose box.</p>
+
+        <h3>Search-Based Message Extension</h3>
+
+        <p>A search-based message extension lets users query your AI Foundry knowledge base from within Teams or Copilot. The flow is:</p>
+
+        <div class="step-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>User Invokes the Extension</h4>
+                    <p>The user types a query in the Copilot compose box or selects the extension from the app flyout.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Query Routed to Your Backend</h4>
+                    <p>Teams sends the query to your bot endpoint hosted on Azure (App Service, Functions, or Container Apps).</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>AI Foundry Processes the Query</h4>
+                    <p>Your backend calls the AI Foundry endpoint — either a deployed RAG pipeline, prompt flow, or AI agent — to generate results.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Results Returned as Adaptive Cards</h4>
+                    <p>Formatted results are sent back as Adaptive Cards that render inline in Teams or Copilot.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Bot Framework Implementation</h3>
+
+<pre><span class="code-label">TypeScript</span>
+import { TeamsActivityHandler, CardFactory, TurnContext } from 'botbuilder';
+import { AzureAIFoundryClient } from '@azure/ai-foundry';
+
+export class KnowledgeSearchBot extends TeamsActivityHandler {
+  private foundryClient: AzureAIFoundryClient;
+
+  constructor() {
+    super();
+    this.foundryClient = new AzureAIFoundryClient({
+      endpoint: process.env.AI_FOUNDRY_ENDPOINT!,
+      credential: new DefaultAzureCredential()
+    });
+  }
+
+  async handleTeamsMessagingExtensionQuery(
+    context: TurnContext,
+    query: any
+  ) {
+    const searchQuery = query.parameters[0]?.value || '';
+
+    // Call AI Foundry RAG endpoint
+    const response = await this.foundryClient.agents.run({
+      agentId: process.env.KNOWLEDGE_AGENT_ID!,
+      messages: [{ role: 'user', content: searchQuery }],
+      tools: [{ type: 'azure_ai_search' }]
+    });
+
+    // Transform to Adaptive Cards
+    const attachments = response.choices.map(choice =&gt;
+      CardFactory.heroCard(
+        choice.title,
+        choice.content.substring(0, 200),
+        [],
+        [{ type: 'openUrl', title: 'View Source', value: choice.sourceUrl }]
+      )
+    );
+
+    return {
+      composeExtension: {
+        type: 'result',
+        attachmentLayout: 'list',
+        attachments
+      }
+    };
+  }
+}
+</pre>
+
+        <h3>API Plugin (OpenAPI-Based)</h3>
+
+        <p>For API plugins, you define your AI Foundry endpoint using an OpenAPI specification that Copilot can invoke:</p>
+
+<pre><span class="code-label">YAML</span>
+openapi: 3.0.3
+info:
+  title: AI Foundry Knowledge Base API
+  version: 1.0.0
+  description: Query the enterprise knowledge base powered by Azure AI Foundry
+servers:
+  - url: https://my-api.azurewebsites.net
+paths:
+  /api/knowledge/search:
+    post:
+      operationId: searchKnowledgeBase
+      summary: Search the enterprise knowledge base
+      description: |
+        Searches indexed documents using AI Foundry RAG pipeline.
+        Returns relevant passages with source citations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: The user's search query
+                top_k:
+                  type: integer
+                  default: 5
+                  description: Number of results to return
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        content:
+                          type: string
+                        confidence:
+                          type: number
+                        source_url:
+                          type: string
+</pre>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 4: CONNECTING AI FOUNDRY ══════════════ -->
+        <h2 id="connecting-foundry">4. Connecting AI Foundry Intelligence to Office Apps</h2>
+
+        <p>The core value proposition of this module is bridging <strong>Azure AI Foundry's intelligent capabilities</strong> with the <strong>M365 surface area</strong>. Here's how each Office application can benefit:</p>
+
+        <table>
+            <tr><th>Office App</th><th>Integration Pattern</th><th>AI Foundry Capability</th><th>Example Use Case</th></tr>
+            <tr>
+                <td><strong>Teams</strong></td>
+                <td>Message Extension / Bot</td>
+                <td>RAG Agent, Prompt Flow</td>
+                <td>Search internal docs, summarize tickets</td>
+            </tr>
+            <tr>
+                <td><strong>Outlook</strong></td>
+                <td>Copilot Plugin</td>
+                <td>Email Analysis Agent</td>
+                <td>Classify emails, draft responses from KB</td>
+            </tr>
+            <tr>
+                <td><strong>Word</strong></td>
+                <td>Declarative Agent</td>
+                <td>Document Generation</td>
+                <td>Generate reports from structured data</td>
+            </tr>
+            <tr>
+                <td><strong>Excel</strong></td>
+                <td>API Plugin</td>
+                <td>Data Analysis Agent</td>
+                <td>Analyze datasets, generate insights</td>
+            </tr>
+            <tr>
+                <td><strong>PowerPoint</strong></td>
+                <td>Declarative Agent</td>
+                <td>Content Summarization</td>
+                <td>Create slides from meeting transcripts</td>
+            </tr>
+        </table>
+
+        <h3>End-to-End Integration Pattern</h3>
+
+        <div class="architecture-diagram">
+            <h4>AI Foundry → M365 Copilot Integration Flow</h4>
+            <div class="arch-flow">
+                <div class="arch-box purple">AI Foundry Project<br><small>RAG Pipeline</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box purple">Deployed Endpoint<br><small>Managed Online</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">Azure App Service<br><small>Bot / API Host</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box green">Teams App /<br>Copilot Plugin</div>
+            </div>
+            <div class="arch-flow" style="margin-top: 12px;">
+                <div class="arch-box orange">Azure AI Search<br><small>Vector Index</small></div>
+                <span class="arch-arrow">↗</span>
+                <div class="arch-box">Microsoft Graph<br><small>Connector</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box green">M365 Copilot<br><small>Grounded Answers</small></div>
+            </div>
+        </div>
+
+        <h3>Connecting via Prompt Flow</h3>
+
+        <p>One of the cleanest integration patterns uses <strong>Prompt Flow</strong> as the orchestration layer between AI Foundry and M365 Copilot:</p>
+
+<pre><span class="code-label">Python</span>
+# prompt_flow/knowledge_search/flow.py
+from promptflow import tool
+from azure.search.documents import SearchClient
+from azure.identity import DefaultAzureCredential
+from openai import AzureOpenAI
+
+@tool
+def search_and_respond(query: str, top_k: int = 5) -&gt; dict:
+    """Search knowledge base and generate grounded response."""
+
+    # 1. Vector search in Azure AI Search
+    search_client = SearchClient(
+        endpoint=os.environ["SEARCH_ENDPOINT"],
+        index_name="knowledge-index",
+        credential=DefaultAzureCredential()
+    )
+
+    results = search_client.search(
+        search_text=query,
+        query_type="semantic",
+        semantic_configuration_name="default",
+        top=top_k,
+        select=["title", "content", "source_url"]
+    )
+
+    # 2. Build context from search results
+    context_parts = []
+    sources = []
+    for r in results:
+        context_parts.append(f"[{r['title']}]: {r['content']}")
+        sources.append({"title": r["title"], "url": r["source_url"]})
+
+    context = "\n\n".join(context_parts)
+
+    # 3. Generate grounded response with Azure OpenAI
+    client = AzureOpenAI(
+        azure_endpoint=os.environ["AOAI_ENDPOINT"],
+        azure_deployment="gpt-4o",
+        api_version="2025-01-01-preview"
+    )
+
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": f"""Answer using ONLY the context below.
+            Cite sources using [Source Title] notation.
+
+            Context:
+            {context}"""},
+            {"role": "user", "content": query}
+        ],
+        temperature=0.3
+    )
+
+    return {
+        "answer": completion.choices[0].message.content,
+        "sources": sources,
+        "confidence": results.get_count() / top_k if results.get_count() else 0
+    }
+</pre>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 5: PLUGIN ARCHITECTURE ══════════════ -->
+        <h2 id="plugin-architecture">5. Plugin Architecture Deep Dive</h2>
+
+        <p>A well-architected M365 Copilot plugin that leverages AI Foundry follows several important design principles.</p>
+
+        <h3>Manifest Structure</h3>
+
+        <p>Every Teams app / Copilot extension requires two key files:</p>
+
+        <table>
+            <tr><th>File</th><th>Purpose</th><th>Key Properties</th></tr>
+            <tr>
+                <td><code>manifest.json</code></td>
+                <td>Teams app manifest with Copilot extensions</td>
+                <td>Bot ID, compose extensions, permissions</td>
+            </tr>
+            <tr>
+                <td><code>declarativeAgent.json</code></td>
+                <td>Copilot agent definition (for declarative agents)</td>
+                <td>Instructions, capabilities, actions</td>
+            </tr>
+            <tr>
+                <td><code>ai-plugin.json</code></td>
+                <td>Plugin definition (for API plugins)</td>
+                <td>OpenAPI ref, auth config, function defs</td>
+            </tr>
+            <tr>
+                <td><code>adaptive-card.json</code></td>
+                <td>Response card templates</td>
+                <td>Layout, data binding, actions</td>
+            </tr>
+        </table>
+
+        <h3>Teams App Manifest for Copilot</h3>
+
+<pre><span class="code-label">JSON</span>
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.19",
+  "version": "1.0.0",
+  "id": "{{APP_ID}}",
+  "name": { "short": "KB Search", "full": "Knowledge Base Search" },
+  "description": {
+    "short": "Search the AI Foundry knowledge base",
+    "full": "Query enterprise documents using AI-powered semantic search."
+  },
+  "icons": { "color": "color.png", "outline": "outline.png" },
+  "developer": {
+    "name": "Contoso",
+    "websiteUrl": "https://contoso.com",
+    "privacyUrl": "https://contoso.com/privacy",
+    "termsOfUseUrl": "https://contoso.com/terms"
+  },
+  "copilotExtensions": {
+    "declarativeCopilots": [
+      {
+        "id": "knowledgeBaseAgent",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "composeExtensions": [
+    {
+      "botId": "{{BOT_ID}}",
+      "commands": [
+        {
+          "id": "searchKB",
+          "type": "query",
+          "title": "Search Knowledge Base",
+          "description": "Find answers from the enterprise knowledge base",
+          "parameters": [
+            {
+              "name": "query",
+              "title": "Search Query",
+              "description": "What would you like to know?",
+              "inputType": "text"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": ["my-api.azurewebsites.net"]
+}
+</pre>
+
+        <div class="callout callout-green">
+            <div class="callout-title">✅ Pro Tip</div>
+            Use <strong>Teams Toolkit</strong> in VS Code (or the <code>teamsapp</code> CLI) to scaffold, debug, and deploy your Copilot extensions. It handles manifest generation, Azure provisioning, and local tunnel setup automatically.
+        </div>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 6: COPILOT STUDIO ══════════════ -->
+        <h2 id="copilot-studio">6. Copilot Studio Integration</h2>
+
+        <p><strong>Microsoft Copilot Studio</strong> provides a low-code/no-code environment for building custom copilots and extending M365 Copilot. It can orchestrate multiple AI agents — including those powered by Azure AI Foundry.</p>
+
+        <h3>Multi-Agent Orchestration</h3>
+
+        <p>Copilot Studio enables <strong>multi-agent orchestration</strong> where different specialized agents handle different aspects of a user's request:</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">🧠</div>
+                <h4>Orchestrator Agent</h4>
+                <p>The central Copilot Studio agent that receives user queries and routes them to specialized sub-agents based on intent.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📚</div>
+                <h4>Knowledge Agent</h4>
+                <p>An AI Foundry-powered RAG agent that searches indexed documents and returns grounded answers with citations.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h4>Analytics Agent</h4>
+                <p>An AI Foundry agent that queries structured data, runs calculations, and generates charts or summaries.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔧</div>
+                <h4>Action Agent</h4>
+                <p>An agent that performs transactional operations — creating tickets, updating records, or triggering workflows.</p>
+            </div>
+        </div>
+
+        <h3>Connecting AI Foundry to Copilot Studio</h3>
+
+        <div class="step-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Deploy Your AI Foundry Agent</h4>
+                    <p>Create and deploy a RAG pipeline or AI agent in Azure AI Foundry. Note the endpoint URL and API key.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Create a Custom Connector in Copilot Studio</h4>
+                    <p>In Copilot Studio, create a custom connector that points to your AI Foundry endpoint using the OpenAPI spec.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Add as a Plugin Action</h4>
+                    <p>Register the connector as a plugin action in your copilot's topic flow, mapping input/output parameters.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Publish to M365 Copilot</h4>
+                    <p>Publish the copilot to Microsoft 365 Copilot so it appears as an available extension for licensed users.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 7: COMPLIANCE ══════════════ -->
+        <h2 id="compliance">7. Compliance and Data Residency Considerations</h2>
+
+        <p>When connecting AI Foundry to M365 Copilot in enterprise environments, compliance and data residency are <strong>non-negotiable requirements</strong>. Understanding the data flow is essential.</p>
+
+        <h3>Data Flow Architecture</h3>
+
+        <div class="architecture-diagram">
+            <h4>Data Flow: User Query → AI Foundry → Response</h4>
+            <div class="arch-flow">
+                <div class="arch-box green">User (M365)<br><small>EU Data Boundary</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">M365 Copilot<br><small>Tenant Region</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box purple">AI Foundry<br><small>Matched Region</small></div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box orange">AI Search Index<br><small>Same Region</small></div>
+            </div>
+        </div>
+
+        <h3>Key Compliance Areas</h3>
+
+        <table>
+            <tr><th>Area</th><th>Requirement</th><th>Implementation</th></tr>
+            <tr>
+                <td><strong>Data Residency</strong></td>
+                <td>Data must stay within geographic boundaries</td>
+                <td>Deploy AI Foundry and Search in matching Azure regions</td>
+            </tr>
+            <tr>
+                <td><strong>Data Classification</strong></td>
+                <td>Sensitivity labels must be honored</td>
+                <td>Use Microsoft Purview integration for label-aware filtering</td>
+            </tr>
+            <tr>
+                <td><strong>Access Control</strong></td>
+                <td>Users can only access data they're authorized to see</td>
+                <td>Implement OBO (On-Behalf-Of) token flow with Azure AD</td>
+            </tr>
+            <tr>
+                <td><strong>Audit Logging</strong></td>
+                <td>All plugin invocations must be logged</td>
+                <td>Enable Application Insights and M365 Unified Audit Log</td>
+            </tr>
+            <tr>
+                <td><strong>Data Loss Prevention</strong></td>
+                <td>Prevent sensitive data from leaking via AI responses</td>
+                <td>Configure DLP policies in Microsoft Purview</td>
+            </tr>
+            <tr>
+                <td><strong>Responsible AI</strong></td>
+                <td>Content filtering and safety guardrails</td>
+                <td>Use AI Foundry content filters and system message controls</td>
+            </tr>
+        </table>
+
+        <h3>EU Data Boundary Compliance</h3>
+
+        <div class="callout callout-red">
+            <div class="callout-title">🔒 Critical for EU Customers</div>
+            If your M365 tenant is in the EU Data Boundary, ensure your AI Foundry project is deployed in an EU Azure region (e.g., <code>westeurope</code>, <code>northeurope</code>, <code>francecentral</code>). Cross-region API calls that transfer personal data <strong>outside the EU boundary</strong> can violate GDPR and the EU Data Boundary commitment.
+        </div>
+
+<pre><span class="code-label">Bicep</span>
+// Ensure AI Foundry resources match M365 tenant geography
+resource aiFoundryProject 'Microsoft.MachineLearningServices/workspaces@2024-10-01' = {
+  name: 'ai-foundry-eu'
+  location: 'westeurope'  // Must match M365 tenant region
+  kind: 'Project'
+  properties: {
+    friendlyName: 'EU-Compliant AI Foundry Project'
+    hubResourceId: aiFoundryHub.id
+    publicNetworkAccess: 'Disabled'  // Private endpoint only
+  }
+}
+
+resource searchService 'Microsoft.Search/searchServices@2024-06-01-preview' = {
+  name: 'search-eu'
+  location: 'westeurope'  // Co-located with AI Foundry
+  sku: { name: 'standard' }
+  properties: {
+    publicNetworkAccess: 'disabled'
+    encryptionWithCmk: { enforcement: 'Enabled' }
+  }
+}
+</pre>
+
+        <h3>Access Control with On-Behalf-Of Flow</h3>
+
+        <p>The <strong>OBO (On-Behalf-Of)</strong> token flow ensures that your AI Foundry endpoint respects the calling user's permissions — not a service account's permissions:</p>
+
+<pre><span class="code-label">TypeScript</span>
+import { ConfidentialClientApplication } from '@azure/msal-node';
+
+async function getOBOToken(userToken: string): Promise&lt;string&gt; {
+  const msalClient = new ConfidentialClientApplication({
+    auth: {
+      clientId: process.env.AAD_APP_CLIENT_ID!,
+      clientSecret: process.env.AAD_APP_CLIENT_SECRET!,
+      authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`
+    }
+  });
+
+  const result = await msalClient.acquireTokenOnBehalfOf({
+    oboAssertion: userToken,
+    scopes: ['https://cognitiveservices.azure.com/.default']
+  });
+
+  return result!.accessToken;
+}
+
+// Use OBO token to call AI Foundry with user's identity
+async function queryWithUserContext(userToken: string, query: string) {
+  const oboToken = await getOBOToken(userToken);
+
+  const response = await fetch(process.env.AI_FOUNDRY_ENDPOINT!, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${oboToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: query }]
+    })
+  });
+
+  return response.json();
+}
+</pre>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 8: SECURITY ══════════════ -->
+        <h2 id="security-model">8. Security and Authentication Model</h2>
+
+        <p>Securing the integration between M365 Copilot and AI Foundry involves multiple layers:</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">🔑</div>
+                <h4>Azure AD SSO</h4>
+                <p>Single sign-on ensures users authenticate once via their M365 identity. The bot/API receives tokens automatically.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🛡️</div>
+                <h4>Managed Identity</h4>
+                <p>Use system-assigned managed identity for your App Service to call AI Foundry — no secrets in code.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔐</div>
+                <h4>Private Endpoints</h4>
+                <p>Deploy AI Foundry behind private endpoints so data never traverses the public internet.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h4>App Consent</h4>
+                <p>Admin consent workflows ensure IT approves which Copilot extensions can access organizational data.</p>
+            </div>
+        </div>
+
+        <h3>Security Checklist</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card do">
+                <h4>✅ Do</h4>
+                <ul>
+                    <li>Use managed identity for service-to-service calls</li>
+                    <li>Implement OBO flow for user-context queries</li>
+                    <li>Store secrets in Azure Key Vault</li>
+                    <li>Enable content filtering in AI Foundry</li>
+                    <li>Validate user permissions before returning results</li>
+                    <li>Log all plugin invocations to Application Insights</li>
+                </ul>
+            </div>
+            <div class="comparison-card dont">
+                <h4>❌ Don't</h4>
+                <ul>
+                    <li>Hardcode API keys in manifest or code</li>
+                    <li>Use service account tokens for user queries</li>
+                    <li>Expose AI Foundry endpoints publicly without auth</li>
+                    <li>Skip input validation on user queries</li>
+                    <li>Return raw AI Foundry responses without filtering</li>
+                    <li>Ignore sensitivity labels on indexed documents</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 9: VIDEO ══════════════ -->
+        <h2 id="video-walkthrough">9. Video Walkthrough</h2>
+
+        <p>Watch this deep dive into multi-agent orchestration in Microsoft Copilot Studio — demonstrating how to connect multiple AI-powered agents (including those built with Azure AI Foundry) into a unified conversational experience:</p>
+
+        <div class="video-container">
+            <iframe
+                src="https://www.youtube.com/embed/WKKdBC2zM3k"
+                title="Multi-agent Orchestration in Microsoft Copilot Studio"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">🎬 Video: Multi-agent Orchestration in Microsoft Copilot Studio</div>
+            This session covers how Copilot Studio routes conversations across specialized agents, manages context handoff, and integrates external AI services like Azure AI Foundry endpoints. Pay special attention to the agent registration and plugin action configuration steps.
+        </div>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 10: MINI HACK ══════════════ -->
+        <h2 id="mini-hack">10. Mini Hack: Create a M365 Copilot Plugin</h2>
+
+        <p>In this hands-on exercise, you'll build a <strong>declarative agent</strong> with an <strong>API plugin</strong> that queries an Azure AI Foundry knowledge base — surfacing results directly in M365 Copilot.</p>
+
+        <div class="callout callout-green">
+            <div class="callout-title">🧪 Lab Prerequisites</div>
+            <ul>
+                <li>Microsoft 365 E3/E5 license with Copilot add-on</li>
+                <li>Azure AI Foundry project with a deployed RAG endpoint</li>
+                <li>Node.js 20+ and Teams Toolkit CLI (<code>npm install -g @microsoft/teamsapp-cli</code>)</li>
+                <li>VS Code with Teams Toolkit extension</li>
+            </ul>
+        </div>
+
+        <h3>Step-by-Step Overview</h3>
+
+        <div class="step-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Scaffold the Project</h4>
+                    <p>Use Teams Toolkit to create a new "Declarative Agent" project with an API plugin action.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Configure AI Foundry Backend</h4>
+                    <p>Create an Azure Functions API that proxies queries to your AI Foundry RAG endpoint using managed identity.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Define the OpenAPI Specification</h4>
+                    <p>Write the OpenAPI spec for your search endpoint, including parameter descriptions for Copilot's orchestrator.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Create the Declarative Agent Manifest</h4>
+                    <p>Configure instructions, conversation starters, and the API plugin reference in <code>declarativeAgent.json</code>.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h4>Test in Copilot</h4>
+                    <p>Use Teams Toolkit's F5 experience to sideload and test your agent directly in M365 Copilot.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Key Code: Azure Function Backend</h3>
+
+<pre><span class="code-label">TypeScript</span>
+// api/src/functions/knowledgeSearch.ts
+import { app, HttpRequest, HttpResponseInit } from '@azure/functions';
+import { DefaultAzureCredential } from '@azure/identity';
+
+app.http('knowledgeSearch', {
+  methods: ['POST'],
+  authLevel: 'anonymous', // Auth handled by EasyAuth / AAD
+  handler: async (request: HttpRequest): Promise&lt;HttpResponseInit&gt; =&gt; {
+    const { query, top_k = 5 } = await request.json() as any;
+
+    // Get token via managed identity
+    const credential = new DefaultAzureCredential();
+    const token = await credential.getToken(
+      'https://cognitiveservices.azure.com/.default'
+    );
+
+    // Call AI Foundry endpoint
+    const aiResponse = await fetch(process.env.AI_FOUNDRY_ENDPOINT!, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: 'system',
+            content: `You are a knowledge base assistant. Answer questions
+              using only the provided context. Cite sources.`
+          },
+          { role: 'user', content: query }
+        ],
+        data_sources: [{
+          type: 'azure_search',
+          parameters: {
+            endpoint: process.env.SEARCH_ENDPOINT,
+            index_name: 'knowledge-index',
+            authentication: { type: 'system_assigned_managed_identity' },
+            top_n_documents: top_k
+          }
+        }]
+      })
+    });
+
+    const result = await aiResponse.json();
+
+    return {
+      status: 200,
+      jsonBody: {
+        answer: result.choices[0].message.content,
+        citations: result.choices[0].message.context?.citations || [],
+        query_used: query
+      }
+    };
+  }
+});
+</pre>
+
+        <p>📋 <strong>Full lab instructions</strong> are available in the <a href="lab/hands-on-lab.md">Hands-on Lab Guide</a>.</p>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 11: BEST PRACTICES ══════════════ -->
+        <h2 id="best-practices">11. Best Practices</h2>
+
+        <h3>Plugin Design Guidelines</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card do">
+                <h4>✅ Effective Plugin Design</h4>
+                <ul>
+                    <li>Write clear, descriptive <code>operationId</code> names — Copilot uses these for intent matching</li>
+                    <li>Provide detailed parameter descriptions — they guide Copilot's parameter extraction</li>
+                    <li>Return structured JSON with consistent schemas</li>
+                    <li>Include source citations in every response</li>
+                    <li>Handle errors gracefully with user-friendly messages</li>
+                    <li>Keep response times under 10 seconds</li>
+                </ul>
+            </div>
+            <div class="comparison-card dont">
+                <h4>❌ Common Mistakes</h4>
+                <ul>
+                    <li>Vague operation descriptions that confuse Copilot's routing</li>
+                    <li>Returning unstructured text blobs instead of JSON</li>
+                    <li>No error handling — plugin silently fails</li>
+                    <li>Ignoring Adaptive Card rendering guidelines</li>
+                    <li>Not testing with Copilot's orchestrator (only testing the API)</li>
+                    <li>Skipping admin consent configuration</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Performance Optimization</h3>
+
+        <table>
+            <tr><th>Technique</th><th>Impact</th><th>Implementation</th></tr>
+            <tr>
+                <td><strong>Response Caching</strong></td>
+                <td>Reduce latency for repeated queries</td>
+                <td>Azure Redis Cache with 5-minute TTL for common queries</td>
+            </tr>
+            <tr>
+                <td><strong>Async Processing</strong></td>
+                <td>Handle long-running operations</td>
+                <td>Return partial results immediately, complete via proactive messages</td>
+            </tr>
+            <tr>
+                <td><strong>Connection Pooling</strong></td>
+                <td>Reduce overhead on AI Foundry calls</td>
+                <td>Reuse HTTP clients and SDK instances across requests</td>
+            </tr>
+            <tr>
+                <td><strong>Index Optimization</strong></td>
+                <td>Faster search results</td>
+                <td>Use semantic ranking + vector search in Azure AI Search</td>
+            </tr>
+        </table>
+
+        <div class="section-divider">· · ·</div>
+
+        <!-- ══════════════ SECTION 12: NEXT STEPS ══════════════ -->
+        <h2 id="next-steps">12. Next Steps</h2>
+
+        <p>You've learned how to extend M365 Copilot with AI Foundry intelligence — from declarative agents and API plugins to compliance-ready enterprise deployments. Here's what comes next in the series:</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">📖</div>
+                <h4>Explore Further</h4>
+                <p>Review the <a href="lab/hands-on-lab.md">hands-on lab</a>, try the <a href="quiz/assessment.md">assessment quiz</a>, and experiment with the Copilot Studio connector workflow.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔮</div>
+                <h4>Module 25 Preview</h4>
+                <p>Continue your integration journey with Power Platform connectors and custom AI-powered business workflows.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-blue">
+            <div class="callout-title">📚 Additional Resources</div>
+            <ul>
+                <li><a href="https://learn.microsoft.com/microsoft-365-copilot/extensibility/">M365 Copilot Extensibility Documentation</a></li>
+                <li><a href="https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/build-bot-based-message-extension">Building Bot-Based Message Extensions</a></li>
+                <li><a href="https://learn.microsoft.com/microsoft-copilot-studio/overview">Microsoft Copilot Studio Overview</a></li>
+                <li><a href="https://learn.microsoft.com/azure/ai-studio/">Azure AI Foundry Documentation</a></li>
+                <li><a href="training-guide.md">Module 24 Training Guide</a></li>
+            </ul>
+        </div>
+
+        <!-- Tags -->
+        <div class="tags">
+            <span class="tag">M365 Copilot</span>
+            <span class="tag">Azure AI Foundry</span>
+            <span class="tag">Plugins</span>
+            <span class="tag">Message Extensions</span>
+            <span class="tag">Copilot Studio</span>
+            <span class="tag">Declarative Agents</span>
+            <span class="tag">Compliance</span>
+            <span class="tag">Integration</span>
+            <span class="tag">Orchestration</span>
+        </div>
+
+        <!-- Author Box -->
+        <div class="author-box">
+            <div class="author-avatar">AI</div>
+            <div class="author-info">
+                <h4>AI Foundry Training Team</h4>
+                <p>Building the comprehensive 45-Module Zero to Hero training program for Azure AI Foundry. From absolute beginner to production-ready AI engineer.</p>
+            </div>
+        </div>
+
+        <!-- Series Navigation -->
+        <div class="series-nav">
+            <a href="../module-23/blog.html">← Module 23: Orchestration Fundamentals</a>
+            <span class="current">Module 24 of 45</span>
+            <a href="../module-25/blog.html">Module 25: Power Platform Integration →</a>
+        </div>
+
+        <!-- Related Posts -->
+        <div class="related-posts">
+            <h3>Related Posts in This Series</h3>
+            <div class="related-grid">
+                <a class="related-card" href="../module-23/blog.html">
+                    <div class="module-badge">Module 23 — Previous</div>
+                    <h4>Orchestration Fundamentals</h4>
+                    <p>Multi-agent orchestration patterns, workflow design, and conversation management in AI Foundry.</p>
+                </a>
+                <a class="related-card" href="../module-25/blog.html">
+                    <div class="module-badge">Module 25 — Next</div>
+                    <h4>Power Platform Integration</h4>
+                    <p>Connecting AI Foundry to Power Automate, Power Apps, and custom business workflows.</p>
+                </a>
+            </div>
+        </div>
+
+    </article>
+</div>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+    // Progress bar
+    window.addEventListener('scroll', () => {
+        const winH = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = (window.scrollY / winH) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+
+        // Back to top visibility
+        const btn = document.getElementById('backToTop');
+        if (window.scrollY > 400) btn.classList.add('visible');
+        else btn.classList.remove('visible');
+    });
+
+    // TOC active highlighting
+    const tocLinks = document.querySelectorAll('.toc a');
+    const sections = [];
+    tocLinks.forEach(link => {
+        const id = link.getAttribute('href').substring(1);
+        const el = document.getElementById(id);
+        if (el) sections.push({ el, link });
+    });
+
+    function updateTOC() {
+        let current = sections[0];
+        for (const s of sections) {
+            if (s.el.getBoundingClientRect().top <= 80) current = s;
+        }
+        tocLinks.forEach(l => l.classList.remove('active'));
+        if (current) current.link.classList.add('active');
+    }
+    window.addEventListener('scroll', updateTOC);
+    updateTOC();
+</script>
+
+</body>
+</html>

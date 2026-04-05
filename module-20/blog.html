@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 20: Agent Evaluation, Tracing & Debugging — Azure AI Foundry Zero to Hero Training Series. Master agent quality evaluation, App Insights tracing, OpenTelemetry conventions, and end-to-end observability for AI agents.">
+    <meta name="keywords" content="Azure AI Foundry, Agent Evaluation, App Insights, OpenTelemetry, Tracing, Debugging, Observability, AI Agents, Microsoft Foundry">
+    <meta name="author" content="Azure AI Foundry Training">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Module 20: Agent Evaluation, Tracing & Debugging | Azure AI Foundry">
+    <meta property="og:description" content="Evaluate agent quality, integrate App Insights tracing, debug failures, and set up end-to-end observability for your AI agents on Azure AI Foundry.">
+    <meta property="og:type" content="article">
+    <title>Module 20: Agent Evaluation, Tracing &amp; Debugging | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #50e6ff;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --ms-red: #d13438;
+            --ms-yellow: #fce100;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-60: #a19f9d;
+            --ms-gray-90: #605e5c;
+            --ms-gray-130: #323130;
+            --ms-gray-150: #252423;
+            --ms-gray-160: #1b1a19;
+            --surface: #ffffff;
+            --text-primary: #323130;
+            --text-secondary: #605e5c;
+            --code-bg: #f6f8fa;
+            --code-border: #d0d7de;
+            --max-width: 780px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.7;
+            background: var(--ms-gray-10);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Progress Bar ─── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10001;
+            transition: width 0.15s ease-out;
+        }
+
+        /* ─── Top Navigation ─── */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--ms-gray-160);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 10000;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .top-nav .ms-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .top-nav .ms-logo svg { width: 108px; height: 24px; }
+        .top-nav .nav-divider {
+            width: 1px; height: 24px; background: rgba(255,255,255,0.2);
+            margin: 0 16px;
+        }
+        .top-nav .nav-title {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .top-nav .nav-breadcrumb {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .top-nav .nav-breadcrumb a {
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-breadcrumb a:hover { color: #fff; }
+        .top-nav .nav-breadcrumb span { color: rgba(255,255,255,0.4); }
+
+        /* ─── Hero Section ─── */
+        .hero {
+            margin-top: 48px;
+            background: linear-gradient(135deg, var(--ms-dark-blue) 0%, var(--ms-blue) 40%, var(--ms-purple) 100%);
+            padding: 80px 24px 60px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(92,45,145,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-content { max-width: var(--max-width); margin: 0 auto; position: relative; z-index: 1; }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .hero-badge .badge-dot {
+            width: 8px; height: 8px;
+            background: var(--ms-light-blue);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 620px;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 32px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+        .hero-meta-item svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* ─── Main Layout ─── */
+        .main-layout {
+            max-width: calc(var(--max-width) + 280px);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+            align-items: start;
+        }
+
+        /* ─── Sticky TOC ─── */
+        .toc-sidebar {
+            position: sticky;
+            top: 68px;
+            max-height: calc(100vh - 88px);
+            overflow-y: auto;
+            padding-right: 16px;
+        }
+        .toc-sidebar::-webkit-scrollbar { width: 3px; }
+        .toc-sidebar::-webkit-scrollbar-thumb { background: var(--ms-gray-40); border-radius: 3px; }
+        .toc-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-gray-90);
+            margin-bottom: 16px;
+        }
+        .toc-list { list-style: none; }
+        .toc-list li { margin-bottom: 2px; }
+        .toc-list a {
+            display: block;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .toc-list a:hover { color: var(--ms-blue); background: rgba(0,120,212,0.05); }
+        .toc-list a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            background: rgba(0,120,212,0.08);
+            font-weight: 600;
+        }
+
+        /* ─── Article Content ─── */
+        .article-content { min-width: 0; }
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 48px;
+            border: 1px solid var(--ms-gray-30);
+        }
+
+        .content-card h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--ms-gray-30);
+            scroll-margin-top: 100px;
+        }
+        .content-card h2:first-of-type { margin-top: 0; }
+        .content-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 32px 0 12px;
+        }
+        .content-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 24px 0 8px;
+        }
+        .content-card p { margin-bottom: 16px; color: var(--text-primary); }
+        .content-card ul, .content-card ol { margin: 0 0 16px 24px; }
+        .content-card li { margin-bottom: 8px; }
+        .content-card a { color: var(--ms-blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+        .content-card a:hover { border-bottom-color: var(--ms-blue); }
+        .content-card strong { font-weight: 600; }
+
+        /* ─── Code Blocks ─── */
+        pre {
+            background: var(--ms-gray-150);
+            color: #e6e6e6;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+            position: relative;
+            border: 1px solid var(--ms-gray-130);
+        }
+        pre .lang-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 11px;
+            color: var(--ms-gray-60);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        p code, li code {
+            background: var(--code-bg);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--code-border);
+            font-size: 0.85em;
+            color: var(--ms-dark-blue);
+        }
+
+        /* Syntax Highlighting */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+        .op { color: #d4d4d4; }
+        .dec { color: #c586c0; }
+
+        /* ─── Callouts ─── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .callout-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .callout-content { flex: 1; }
+        .callout-content strong { display: block; margin-bottom: 4px; }
+        .callout-content p { margin-bottom: 8px; }
+        .callout-content p:last-child { margin-bottom: 0; }
+
+        .callout-info {
+            background: rgba(0,120,212,0.06);
+            border-color: var(--ms-blue);
+        }
+        .callout-info .callout-icon { color: var(--ms-blue); }
+
+        .callout-tip {
+            background: rgba(16,124,16,0.06);
+            border-color: var(--ms-green);
+        }
+        .callout-tip .callout-icon { color: var(--ms-green); }
+
+        .callout-warning {
+            background: rgba(255,140,0,0.06);
+            border-color: var(--ms-orange);
+        }
+        .callout-warning .callout-icon { color: var(--ms-orange); }
+
+        .callout-important {
+            background: rgba(92,45,145,0.06);
+            border-color: var(--ms-purple);
+        }
+        .callout-important .callout-icon { color: var(--ms-purple); }
+
+        /* ─── Video Embed ─── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            margin: 24px 0;
+            box-shadow: var(--shadow-md);
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ─── Feature Cards ─── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: var(--ms-gray-10);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .feature-card .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .feature-card h4 { margin: 0 0 8px; font-size: 0.95rem; }
+        .feature-card p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; }
+
+        /* ─── Architecture Diagram ─── */
+        .arch-diagram {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-diagram .diagram-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--ms-dark-blue);
+            margin-bottom: 20px;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .arch-node {
+            background: white;
+            border: 2px solid var(--ms-blue);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            box-shadow: var(--shadow-sm);
+        }
+        .arch-node.purple { border-color: var(--ms-purple); color: var(--ms-purple); }
+        .arch-node.green { border-color: var(--ms-green); color: var(--ms-green); }
+        .arch-node.orange { border-color: var(--ms-orange); color: var(--ms-orange); }
+        .arch-arrow { font-size: 1.5rem; color: var(--ms-gray-60); }
+
+        /* ─── Comparison Table ─── */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.9rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--ms-gray-30);
+        }
+        .comparison-table thead {
+            background: var(--ms-dark-blue);
+            color: white;
+        }
+        .comparison-table th {
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .comparison-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table tbody tr:nth-child(even) { background: var(--ms-gray-10); }
+        .comparison-table tbody tr:hover { background: rgba(0,120,212,0.04); }
+
+        /* ─── Step List ─── */
+        .step-list { counter-reset: step-counter; list-style: none; margin-left: 0; padding: 0; }
+        .step-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 48px;
+            margin-bottom: 24px;
+        }
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--ms-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .step-list li h4 { margin-top: 4px; }
+
+        /* ─── Module Navigation ─── */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 16px;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 2px solid var(--ms-gray-30);
+        }
+        .module-nav a {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px 24px;
+            background: var(--ms-gray-10);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .module-nav a:hover {
+            border-color: var(--ms-blue);
+            background: rgba(0,120,212,0.04);
+            transform: translateY(-1px);
+        }
+        .module-nav a .nav-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--ms-blue);
+        }
+        .module-nav a .nav-module {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .module-nav a.next { text-align: right; }
+
+        /* ─── Back to Top ─── */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+        .back-to-top svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* ─── Footer ─── */
+        .site-footer {
+            background: var(--ms-gray-160);
+            color: rgba(255,255,255,0.7);
+            padding: 40px 24px;
+            margin-top: 48px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .site-footer a { color: var(--ms-light-blue); text-decoration: none; }
+        .site-footer a:hover { text-decoration: underline; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                padding: 24px 16px;
+            }
+            .toc-sidebar {
+                position: static;
+                max-height: none;
+                border-bottom: 1px solid var(--ms-gray-30);
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+            }
+            .content-card { padding: 24px; }
+            .hero { padding: 60px 16px 40px; }
+            .top-nav .nav-breadcrumb { display: none; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero-meta { flex-direction: column; gap: 8px; }
+            .module-nav { flex-direction: column; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+
+        /* ─── Print ─── */
+        @media print {
+            .top-nav, .progress-bar, .back-to-top, .toc-sidebar, .video-container { display: none !important; }
+            .main-layout { display: block; }
+            .hero { background: none !important; color: #000 !important; padding: 20px 0; }
+            .hero-badge { border: 1px solid #000; }
+            .content-card { box-shadow: none; border: none; padding: 0; }
+            pre { background: #f5f5f5 !important; color: #333 !important; border: 1px solid #ccc; }
+            .module-nav a { border: 1px solid #ccc; }
+            body { background: #fff; }
+            .callout { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav" role="navigation" aria-label="Global navigation">
+        <a href="https://devblogs.microsoft.com" class="ms-logo" aria-label="Microsoft Developer Blogs">
+            <svg viewBox="0 0 108 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#f25022" d="M0 0h10.931v10.931H0z"/>
+                <path fill="#7fba00" d="M12.069 0H23v10.931H12.069z"/>
+                <path fill="#00a4ef" d="M0 12.069h10.931V23H0z"/>
+                <path fill="#ffb900" d="M12.069 12.069H23V23H12.069z"/>
+                <text x="28" y="17" fill="#fff" font-family="Segoe UI, sans-serif" font-size="14" font-weight="600">Developer Blogs</text>
+            </svg>
+        </a>
+        <div class="nav-divider"></div>
+        <span class="nav-title">Azure AI Foundry Training</span>
+        <div class="nav-breadcrumb">
+            <a href="#">Zero to Hero</a>
+            <span>›</span>
+            <a href="#">Arc 4: AI Agents</a>
+            <span>›</span>
+            <a href="#" aria-current="page">Module 20</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                ARC 4 · AI AGENTS
+            </div>
+            <h1>Agent Evaluation, Tracing &amp; Debugging</h1>
+            <p class="subtitle">Evaluate agent quality with task-completion metrics, integrate Application Insights for end-to-end tracing, debug failures with OpenTelemetry conventions, and build observable AI agent systems.</p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM8.5 4h-1v4.5l3.5 2.1.5-.82-3-1.78V4z"/></svg>
+                    90 min
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm11.28-1.78L7.5 9.94 4.72 7.16 3.66 8.22l3.84 3.84 4.84-4.84-1.06-1z"/></svg>
+                    Module 20 of 45
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M2 4a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2-.5a.5.5 0 00-.5.5v8a.5.5 0 00.5.5h8a.5.5 0 00.5-.5V4a.5.5 0 00-.5-.5H4z"/></svg>
+                    April 2026
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M3.5 2A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14h9a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0012.5 2h-9zM5 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4.5-1.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
+                    Intermediate–Advanced
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sticky TOC Sidebar -->
+        <aside class="toc-sidebar" aria-label="Table of Contents">
+            <div class="toc-title">On this page</div>
+            <ul class="toc-list">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#video">Video Tutorial</a></li>
+                <li><a href="#why-observability">Why Observability</a></li>
+                <li><a href="#evaluation">Agent Evaluation</a></li>
+                <li><a href="#app-insights">App Insights Integration</a></li>
+                <li><a href="#opentelemetry">OpenTelemetry Conventions</a></li>
+                <li><a href="#debugging">Debugging Failures</a></li>
+                <li><a href="#trace-analysis">Trace Analysis</a></li>
+                <li><a href="#mini-hack">Mini Hack</a></li>
+                <li><a href="#best-practices">Best Practices</a></li>
+                <li><a href="#summary">Summary</a></li>
+            </ul>
+        </aside>
+
+        <!-- Article Content -->
+        <main class="article-content">
+            <article class="content-card">
+
+                <!-- Overview -->
+                <h2 id="overview">Overview</h2>
+                <p>AI agents are powerful but inherently unpredictable. Unlike deterministic code, agents make autonomous decisions about tool usage, reasoning paths, and response generation. Without proper evaluation and observability, failures become invisible, quality degrades silently, and debugging is nearly impossible.</p>
+                <p>In this module, you'll learn to build a comprehensive evaluation and observability stack for your Azure AI Foundry agents — from measuring task completion accuracy to tracing every LLM call, tool invocation, and reasoning step through Application Insights and OpenTelemetry.</p>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5v1m0 3v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    <div class="callout-content">
+                        <strong>Prerequisites</strong>
+                        <p>You should have completed Module 17–19 (building and orchestrating agents). You'll need an Azure AI Foundry project with a deployed agent and an Application Insights resource connected to your workspace.</p>
+                    </div>
+                </div>
+
+                <div class="arch-diagram">
+                    <div class="diagram-title">Agent Observability Architecture</div>
+                    <div class="arch-flow">
+                        <div class="arch-node">Agent Execution</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node purple">OpenTelemetry SDK</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node green">Application Insights</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node orange">Dashboards &amp; Alerts</div>
+                    </div>
+                </div>
+
+                <!-- Video Tutorial -->
+                <h2 id="video">Video Tutorial</h2>
+                <p>Watch this deep dive on debugging AI agents with observability on Azure AI Foundry:</p>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/DpvR9ZgXK84"
+                            title="Debug Your AI Agents: Fix Failures Fast with Observability on Azure AI Foundry"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            loading="lazy">
+                    </iframe>
+                </div>
+
+                <!-- Why Observability -->
+                <h2 id="why-observability">Why Observability Matters for Agents</h2>
+                <p>Traditional software observability focuses on request/response cycles. AI agents introduce entirely new challenges because each "request" can spawn dozens of internal steps — tool calls, model invocations, retries, and branching decisions — all hidden from the caller.</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <span class="icon">🔍</span>
+                        <h4>Visibility</h4>
+                        <p>See every LLM call, tool invocation, and reasoning step in a single trace.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">📊</span>
+                        <h4>Quality Metrics</h4>
+                        <p>Measure task completion rate, accuracy, latency, and cost per interaction.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">🐛</span>
+                        <h4>Root Cause Analysis</h4>
+                        <p>Pinpoint exactly where and why an agent produced incorrect results.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">⚡</span>
+                        <h4>Performance</h4>
+                        <p>Identify bottlenecks in tool calls, token usage, and round-trip latency.</p>
+                    </div>
+                </div>
+
+                <h3>The Agent Observability Gap</h3>
+                <p>Without dedicated observability tooling, you face these critical blind spots:</p>
+                <ul>
+                    <li><strong>Silent failures</strong> — the agent returns a plausible-sounding but incorrect answer</li>
+                    <li><strong>Tool call loops</strong> — the agent calls the same tool repeatedly without progress</li>
+                    <li><strong>Token budget exhaustion</strong> — complex reasoning paths consume excessive tokens</li>
+                    <li><strong>Hallucinated actions</strong> — the agent fabricates tool outputs or skips required steps</li>
+                    <li><strong>Latency spikes</strong> — some conversations take 10× longer without visible cause</li>
+                </ul>
+
+                <!-- Agent Evaluation -->
+                <h2 id="evaluation">Evaluating Agent Quality</h2>
+                <p>Agent evaluation goes beyond simple accuracy metrics. You need to assess whether the agent completes tasks correctly, follows instructions, uses tools appropriately, and handles edge cases gracefully.</p>
+
+                <h3>Evaluation Dimensions</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Dimension</th>
+                            <th>What It Measures</th>
+                            <th>Example Metric</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Task Completion</strong></td>
+                            <td>Did the agent achieve the user's goal?</td>
+                            <td>Completion rate (%)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Accuracy</strong></td>
+                            <td>Were the agent's outputs factually correct?</td>
+                            <td>Groundedness score (0–5)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tool Usage</strong></td>
+                            <td>Did the agent call the right tools with correct parameters?</td>
+                            <td>Tool precision/recall</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Efficiency</strong></td>
+                            <td>Did the agent use resources wisely?</td>
+                            <td>Tokens per task, latency</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Safety</strong></td>
+                            <td>Did the agent stay within safety guardrails?</td>
+                            <td>Violation rate</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Instruction Adherence</strong></td>
+                            <td>Did the agent follow its configured persona and rules?</td>
+                            <td>Adherence score (0–5)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Built-in Evaluation with Azure AI Foundry</h3>
+                <p>Azure AI Foundry provides built-in evaluators for agent quality assessment. Use the <code>azure-ai-evaluation</code> SDK to run automated evaluations against ground-truth datasets.</p>
+
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> AgentEvaluator
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="cm"># Initialize the evaluator</span>
+<span class="param">evaluator</span> = <span class="type">AgentEvaluator</span>(
+    azure_ai_project={
+        <span class="str">"subscription_id"</span>: <span class="str">"&lt;subscription-id&gt;"</span>,
+        <span class="str">"resource_group_name"</span>: <span class="str">"&lt;resource-group&gt;"</span>,
+        <span class="str">"project_name"</span>: <span class="str">"&lt;project-name&gt;"</span>,
+    },
+    credential=<span class="type">DefaultAzureCredential</span>()
+)
+
+<span class="cm"># Define evaluation dataset</span>
+<span class="param">eval_dataset</span> = [
+    {
+        <span class="str">"query"</span>: <span class="str">"What is the current stock price of MSFT?"</span>,
+        <span class="str">"expected_tool_calls"</span>: [<span class="str">"bing_search"</span>],
+        <span class="str">"ground_truth"</span>: <span class="str">"The current stock price should be retrieved from a live source."</span>
+    },
+    {
+        <span class="str">"query"</span>: <span class="str">"Summarize Q3 earnings from the uploaded PDF."</span>,
+        <span class="str">"expected_tool_calls"</span>: [<span class="str">"file_search"</span>],
+        <span class="str">"ground_truth"</span>: <span class="str">"Revenue was $56.5B, up 13% YoY."</span>
+    }
+]
+
+<span class="cm"># Run evaluation</span>
+<span class="param">results</span> = evaluator.<span class="fn">evaluate</span>(
+    data=eval_dataset,
+    evaluators={
+        <span class="str">"task_completion"</span>: <span class="str">"task_completion"</span>,
+        <span class="str">"groundedness"</span>: <span class="str">"groundedness"</span>,
+        <span class="str">"tool_call_accuracy"</span>: <span class="str">"tool_call_accuracy"</span>,
+    }
+)
+
+<span class="fn">print</span>(<span class="str">f"Task Completion: </span>{results.metrics[<span class="str">'task_completion'</span>]:<span class="str">.2%</span>}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Groundedness:    </span>{results.metrics[<span class="str">'groundedness'</span>]:<span class="str">.2f</span>}<span class="str">/5"</span>)
+<span class="fn">print</span>(<span class="str">f"Tool Accuracy:   </span>{results.metrics[<span class="str">'tool_call_accuracy'</span>]:<span class="str">.2%</span>}<span class="str">"</span>)</pre>
+
+                <h3>Creating Evaluation Datasets</h3>
+                <p>A high-quality evaluation dataset should cover:</p>
+                <ul>
+                    <li><strong>Happy-path scenarios</strong> — common tasks the agent handles daily</li>
+                    <li><strong>Edge cases</strong> — ambiguous queries, missing data, conflicting instructions</li>
+                    <li><strong>Multi-step tasks</strong> — workflows requiring multiple tool calls in sequence</li>
+                    <li><strong>Adversarial inputs</strong> — prompt injection attempts, off-topic requests</li>
+                    <li><strong>Boundary conditions</strong> — very long inputs, empty inputs, special characters</li>
+                </ul>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a9 9 0 100 18 9 9 0 000-18zm1 13H9v-2h2v2zm0-4H9V5h2v5z" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Pro Tip: Dataset from Traces</strong>
+                        <p>Use production traces to build evaluation datasets. Export real user interactions from Application Insights, add ground-truth annotations, and create a living test suite that evolves with your agent's usage patterns.</p>
+                    </div>
+                </div>
+
+                <!-- App Insights Integration -->
+                <h2 id="app-insights">Application Insights Integration</h2>
+                <p>Application Insights is the primary telemetry backend for Azure AI Foundry agents. When connected to your AI Foundry project, it automatically captures traces for every agent run, including LLM calls, tool invocations, and token usage.</p>
+
+                <h3>Connecting App Insights to Your Project</h3>
+                <ol class="step-list">
+                    <li>
+                        <h4>Create an Application Insights Resource</h4>
+                        <p>If you don't have one, create an Application Insights resource in the Azure portal or use the Azure CLI:</p>
+                        <pre><span class="lang-label">Azure CLI</span>
+az monitor app-insights component create \
+  --app my-agent-insights \
+  --location eastus2 \
+  --resource-group my-rg \
+  --kind web \
+  --application-type web</pre>
+                    </li>
+                    <li>
+                        <h4>Link to Your AI Foundry Project</h4>
+                        <p>Connect the Application Insights resource to your Azure AI Foundry project through the project settings in the Azure portal or programmatically.</p>
+                    </li>
+                    <li>
+                        <h4>Enable Tracing in Your Agent Code</h4>
+                        <p>Configure the Azure AI Inference SDK to export telemetry:</p>
+                        <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.monitor.opentelemetry <span class="kw">import</span> configure_azure_monitor
+
+<span class="cm"># Enable Azure Monitor / App Insights export</span>
+<span class="fn">configure_azure_monitor</span>(
+    connection_string=<span class="str">"InstrumentationKey=&lt;key&gt;;..."</span>
+)
+
+<span class="cm"># Create project client — traces are now auto-collected</span>
+<span class="param">client</span> = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=<span class="str">"https://&lt;project&gt;.services.ai.azure.com"</span>,
+)
+
+<span class="cm"># Enable additional instrumentation for agent internals</span>
+client.<span class="fn">telemetry</span>.<span class="fn">enable</span>()</pre>
+                    </li>
+                    <li>
+                        <h4>Verify Traces in the Portal</h4>
+                        <p>Open your Application Insights resource → <strong>Transaction search</strong> to view captured traces. Each agent run appears as a distributed trace with child spans for tool calls and LLM invocations.</p>
+                    </li>
+                </ol>
+
+                <h3>What Gets Traced Automatically</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Span Type</th>
+                            <th>Information Captured</th>
+                            <th>Attributes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Agent Run</strong></td>
+                            <td>Top-level agent execution</td>
+                            <td>agent.id, thread.id, run.id, status, duration</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LLM Call</strong></td>
+                            <td>Each model invocation</td>
+                            <td>model, prompt_tokens, completion_tokens, finish_reason</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tool Call</strong></td>
+                            <td>Each tool invocation</td>
+                            <td>tool.name, tool.input, tool.output, duration</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Token Usage</strong></td>
+                            <td>Token consumption per call</td>
+                            <td>prompt_tokens, completion_tokens, total_tokens</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exceptions</strong></td>
+                            <td>Errors and failures</td>
+                            <td>exception.type, exception.message, stack_trace</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- OpenTelemetry Conventions -->
+                <h2 id="opentelemetry">OpenTelemetry Semantic Conventions</h2>
+                <p>Azure AI Foundry follows the <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OpenTelemetry Semantic Conventions for Generative AI</a>. Understanding these conventions lets you query traces effectively and build custom dashboards.</p>
+
+                <h3>Key Semantic Attributes</h3>
+                <pre><span class="lang-label">Attributes</span>
+<span class="cm"># GenAI Span Attributes (OpenTelemetry Semantic Conventions)</span>
+
+<span class="cm"># Model-level attributes</span>
+<span class="param">gen_ai.system</span>          = <span class="str">"az.ai.agents"</span>
+<span class="param">gen_ai.request.model</span>   = <span class="str">"gpt-4o"</span>
+<span class="param">gen_ai.response.model</span>  = <span class="str">"gpt-4o-2024-08-06"</span>
+
+<span class="cm"># Token usage attributes</span>
+<span class="param">gen_ai.usage.input_tokens</span>    = <span class="num">1250</span>
+<span class="param">gen_ai.usage.output_tokens</span>   = <span class="num">340</span>
+
+<span class="cm"># Operation-level attributes</span>
+<span class="param">gen_ai.operation.name</span>  = <span class="str">"chat"</span>
+<span class="param">gen_ai.request.temperature</span> = <span class="num">0.7</span>
+<span class="param">gen_ai.request.top_p</span>       = <span class="num">0.95</span>
+<span class="param">gen_ai.response.finish_reasons</span> = [<span class="str">"stop"</span>]
+
+<span class="cm"># Agent-specific attributes</span>
+<span class="param">gen_ai.agent.id</span>     = <span class="str">"asst_abc123"</span>
+<span class="param">gen_ai.thread.id</span>    = <span class="str">"thread_xyz789"</span>
+<span class="param">gen_ai.thread.run.id</span> = <span class="str">"run_def456"</span></pre>
+
+                <h3>Custom Span Enrichment</h3>
+                <p>Add your own attributes to traces for business-specific observability:</p>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> opentelemetry <span class="kw">import</span> trace
+
+<span class="param">tracer</span> = trace.<span class="fn">get_tracer</span>(<span class="str">"my-agent-app"</span>)
+
+<span class="kw">with</span> tracer.<span class="fn">start_as_current_span</span>(<span class="str">"process_customer_request"</span>) <span class="kw">as</span> span:
+    <span class="cm"># Add business context to the trace</span>
+    span.<span class="fn">set_attribute</span>(<span class="str">"customer.id"</span>, customer_id)
+    span.<span class="fn">set_attribute</span>(<span class="str">"request.type"</span>, <span class="str">"refund_inquiry"</span>)
+    span.<span class="fn">set_attribute</span>(<span class="str">"request.priority"</span>, <span class="str">"high"</span>)
+
+    <span class="cm"># Run the agent — child spans auto-captured</span>
+    <span class="param">response</span> = agent_client.<span class="fn">run</span>(
+        agent_id=agent_id,
+        thread_id=thread_id
+    )
+
+    <span class="cm"># Record outcome</span>
+    span.<span class="fn">set_attribute</span>(<span class="str">"agent.task_completed"</span>, <span class="kw">True</span>)
+    span.<span class="fn">set_attribute</span>(<span class="str">"agent.tools_used"</span>, <span class="num">3</span>)
+    span.<span class="fn">set_attribute</span>(<span class="str">"agent.total_tokens"</span>, response.usage.total_tokens)</pre>
+
+                <div class="callout callout-important">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a9 9 0 100 18 9 9 0 000-18zm1 13H9v-2h2v2zm0-4H9V5h2v5z" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Azure AI Foundry — Not Azure ML</strong>
+                        <p>This module covers Azure AI Foundry's native observability stack. Azure AI Foundry  is the platform for building generative AI applications with agents. It is the unified platform for building, deploying, and managing AI solutions.</p>
+                    </div>
+                </div>
+
+                <!-- Debugging Agent Failures -->
+                <h2 id="debugging">Debugging Agent Failures</h2>
+                <p>When an agent fails or produces incorrect results, a systematic debugging approach is essential. Use traces as your primary investigation tool.</p>
+
+                <h3>Common Failure Patterns</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Failure Pattern</th>
+                            <th>Symptoms</th>
+                            <th>Root Cause</th>
+                            <th>Fix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Tool Call Loop</strong></td>
+                            <td>Agent calls same tool 5+ times, high latency</td>
+                            <td>Ambiguous instructions or tool output not actionable</td>
+                            <td>Clarify instructions, improve tool error messages</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Wrong Tool Selected</strong></td>
+                            <td>Agent uses File Search instead of Bing Search</td>
+                            <td>Tool descriptions too similar or vague</td>
+                            <td>Make tool descriptions distinct and specific</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hallucinated Output</strong></td>
+                            <td>Response contains fabricated data</td>
+                            <td>Tool output was empty or agent skipped tool call</td>
+                            <td>Add guardrails requiring tool verification</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Token Exhaustion</strong></td>
+                            <td>Response truncated or incomplete</td>
+                            <td>Thread history too long, excessive tool outputs</td>
+                            <td>Implement conversation summarization, truncate tool outputs</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Timeout</strong></td>
+                            <td>Agent run times out after max duration</td>
+                            <td>External tool call hangs or model is slow</td>
+                            <td>Add timeout configs, implement circuit breakers</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Step-by-Step Debugging Workflow</h3>
+                <ol class="step-list">
+                    <li>
+                        <h4>Identify the Failed Run</h4>
+                        <p>Find the specific run ID from your logs or user report. Query Application Insights:</p>
+                        <pre><span class="lang-label">KQL</span>
+<span class="cm">// Find failed agent runs in the last 24 hours</span>
+<span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">24h</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">where</span> success == <span class="kw">false</span>
+| <span class="kw">project</span> timestamp, id, name, duration, resultCode
+| <span class="kw">order by</span> timestamp <span class="kw">desc</span></pre>
+                    </li>
+                    <li>
+                        <h4>Inspect the Full Trace</h4>
+                        <p>Open the distributed trace to see the complete execution flow: which tools were called, what the model generated at each step, and where the failure occurred.</p>
+                        <pre><span class="lang-label">KQL</span>
+<span class="cm">// Get the complete trace for a specific operation</span>
+<span class="kw">union</span> dependencies, requests, traces, exceptions
+| <span class="kw">where</span> operation_Id == <span class="str">"&lt;operation-id&gt;"</span>
+| <span class="kw">order by</span> timestamp <span class="kw">asc</span>
+| <span class="kw">project</span> timestamp, itemType, name,
+         duration, success,
+         customDimensions</pre>
+                    </li>
+                    <li>
+                        <h4>Analyze Tool Call Sequences</h4>
+                        <p>Check whether the agent called tools in the expected order with correct parameters.</p>
+                    </li>
+                    <li>
+                        <h4>Review Token Usage</h4>
+                        <p>Compare actual token consumption against expected ranges to detect reasoning loops or context overflow.</p>
+                    </li>
+                    <li>
+                        <h4>Test the Fix</h4>
+                        <p>After modifying instructions or tool configurations, replay the same conversation to verify the fix.</p>
+                    </li>
+                </ol>
+
+                <h3>Programmatic Debugging</h3>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="param">client</span> = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=<span class="str">"https://&lt;project&gt;.services.ai.azure.com"</span>,
+)
+
+<span class="cm"># Retrieve run steps to inspect agent's reasoning</span>
+<span class="param">run_steps</span> = client.agents.<span class="fn">list_run_steps</span>(
+    thread_id=<span class="str">"thread_xyz789"</span>,
+    run_id=<span class="str">"run_def456"</span>
+)
+
+<span class="kw">for</span> step <span class="kw">in</span> run_steps.data:
+    <span class="fn">print</span>(<span class="str">f"Step: </span>{step.type}<span class="str"> | Status: </span>{step.status}<span class="str">"</span>)
+    <span class="kw">if</span> step.type == <span class="str">"tool_calls"</span>:
+        <span class="kw">for</span> tool_call <span class="kw">in</span> step.step_details.tool_calls:
+            <span class="fn">print</span>(<span class="str">f"  Tool: </span>{tool_call.type}<span class="str">"</span>)
+            <span class="fn">print</span>(<span class="str">f"  Input: </span>{tool_call.function.arguments}<span class="str">"</span>)
+    <span class="kw">elif</span> step.type == <span class="str">"message_creation"</span>:
+        <span class="param">msg_id</span> = step.step_details.message_creation.message_id
+        <span class="param">msg</span> = client.agents.<span class="fn">get_message</span>(
+            thread_id=<span class="str">"thread_xyz789"</span>,
+            message_id=msg_id
+        )
+        <span class="fn">print</span>(<span class="str">f"  Response: </span>{msg.content[<span class="num">0</span>].text.value[:<span class="num">200</span>]}<span class="str">"</span>)</pre>
+
+                <!-- Trace Analysis -->
+                <h2 id="trace-analysis">Logging, Observability &amp; Trace Analysis</h2>
+                <p>Beyond debugging individual failures, trace analysis enables you to identify systemic patterns, optimize agent performance, and build dashboards that give stakeholders confidence in your agent's reliability.</p>
+
+                <h3>Key KQL Queries for Agent Monitoring</h3>
+                <h4>Agent Success Rate Over Time</h4>
+                <pre><span class="lang-label">KQL</span>
+<span class="cm">// Agent success rate by hour</span>
+<span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">7d</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">summarize</span>
+    total = <span class="fn">count</span>(),
+    succeeded = <span class="fn">countif</span>(success == <span class="kw">true</span>),
+    failed = <span class="fn">countif</span>(success == <span class="kw">false</span>)
+    <span class="kw">by</span> <span class="fn">bin</span>(timestamp, <span class="num">1h</span>)
+| <span class="kw">extend</span> success_rate = <span class="fn">round</span>(<span class="num">100.0</span> * succeeded / total, <span class="num">2</span>)
+| <span class="kw">render</span> timechart</pre>
+
+                <h4>Token Usage Analysis</h4>
+                <pre><span class="lang-label">KQL</span>
+<span class="cm">// Average token usage per agent run</span>
+<span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">7d</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">extend</span> input_tokens = <span class="fn">toint</span>(customDimensions[<span class="str">"gen_ai.usage.input_tokens"</span>])
+| <span class="kw">extend</span> output_tokens = <span class="fn">toint</span>(customDimensions[<span class="str">"gen_ai.usage.output_tokens"</span>])
+| <span class="kw">summarize</span>
+    avg_input = <span class="fn">avg</span>(input_tokens),
+    avg_output = <span class="fn">avg</span>(output_tokens),
+    p95_total = <span class="fn">percentile</span>(input_tokens + output_tokens, <span class="num">95</span>)
+    <span class="kw">by</span> <span class="fn">bin</span>(timestamp, <span class="num">1d</span>)
+| <span class="kw">render</span> timechart</pre>
+
+                <h4>Slowest Agent Runs</h4>
+                <pre><span class="lang-label">KQL</span>
+<span class="cm">// Top 20 slowest agent runs</span>
+<span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(<span class="num">24h</span>)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">top</span> <span class="num">20</span> <span class="kw">by</span> duration <span class="kw">desc</span>
+| <span class="kw">project</span> timestamp, operation_Id, duration,
+         customDimensions[<span class="str">"gen_ai.agent.id"</span>],
+         customDimensions[<span class="str">"gen_ai.usage.input_tokens"</span>]</pre>
+
+                <h3>Setting Up Alerts</h3>
+                <p>Configure Azure Monitor alerts to catch agent issues before users report them:</p>
+                <ul>
+                    <li><strong>Success rate drops below 95%</strong> in any 1-hour window</li>
+                    <li><strong>P95 latency exceeds 30 seconds</strong> for agent runs</li>
+                    <li><strong>Token usage spikes above 2× the daily average</strong></li>
+                    <li><strong>Error rate for a specific tool exceeds 10%</strong></li>
+                </ul>
+
+                <div class="callout callout-warning">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a9 9 0 100 18 9 9 0 000-18zm1 13H9v-2h2v2zm0-4H9V5h2v5z" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Cost Consideration</strong>
+                        <p>Tracing generates telemetry data that is ingested by Application Insights. For high-volume agents, configure sampling to control costs. Use <code>OTEL_TRACES_SAMPLER=parentbased_traceidratio</code> and <code>OTEL_TRACES_SAMPLER_ARG=0.1</code> to sample 10% of traces in production.</p>
+                    </div>
+                </div>
+
+                <!-- Mini Hack -->
+                <h2 id="mini-hack">Mini Hack: End-to-End Agent Tracing</h2>
+                <p>In this hands-on exercise, you'll set up complete observability for an agent — from OpenTelemetry instrumentation through Application Insights to a live dashboard.</p>
+
+                <h3>Challenge</h3>
+                <p>Instrument an existing Azure AI Foundry agent with Application Insights tracing, add custom business-context attributes, run a batch of test conversations, then build a KQL dashboard showing success rates, latency, and token usage.</p>
+
+                <h3>Implementation</h3>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">import</span> os
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+<span class="kw">from</span> azure.monitor.opentelemetry <span class="kw">import</span> configure_azure_monitor
+<span class="kw">from</span> opentelemetry <span class="kw">import</span> trace
+
+<span class="cm"># ── Step 1: Configure Azure Monitor telemetry export ──</span>
+<span class="fn">configure_azure_monitor</span>(
+    connection_string=os.environ[<span class="str">"APPLICATIONINSIGHTS_CONNECTION_STRING"</span>]
+)
+
+<span class="cm"># ── Step 2: Initialize the project client with telemetry ──</span>
+<span class="param">client</span> = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=os.environ[<span class="str">"PROJECT_ENDPOINT"</span>],
+)
+client.telemetry.<span class="fn">enable</span>()
+
+<span class="cm"># ── Step 3: Set up custom tracer ──</span>
+<span class="param">tracer</span> = trace.<span class="fn">get_tracer</span>(<span class="str">"agent-observability-hack"</span>)
+
+<span class="cm"># ── Step 4: Run agent with full tracing ──</span>
+<span class="param">test_queries</span> = [
+    <span class="str">"What are the top 3 trending stocks today?"</span>,
+    <span class="str">"Summarize the attached earnings report."</span>,
+    <span class="str">"Calculate the compound interest on $10,000 at 5% for 10 years."</span>,
+    <span class="str">"Compare revenue growth between MSFT and AAPL."</span>,
+    <span class="str">"What was the S&amp;P 500 performance last quarter?"</span>,
+]
+
+<span class="param">agent</span> = client.agents.<span class="fn">get_agent</span>(agent_id=os.environ[<span class="str">"AGENT_ID"</span>])
+
+<span class="kw">for</span> i, query <span class="kw">in</span> <span class="fn">enumerate</span>(test_queries):
+    <span class="kw">with</span> tracer.<span class="fn">start_as_current_span</span>(<span class="str">f"test_query_</span>{i}<span class="str">"</span>) <span class="kw">as</span> span:
+        span.<span class="fn">set_attribute</span>(<span class="str">"test.query_index"</span>, i)
+        span.<span class="fn">set_attribute</span>(<span class="str">"test.query_text"</span>, query)
+
+        <span class="cm"># Create a fresh thread for each test</span>
+        <span class="param">thread</span> = client.agents.<span class="fn">create_thread</span>()
+
+        <span class="cm"># Send the test query</span>
+        client.agents.<span class="fn">create_message</span>(
+            thread_id=thread.id,
+            role=<span class="str">"user"</span>,
+            content=query
+        )
+
+        <span class="cm"># Execute the agent run</span>
+        <span class="param">run</span> = client.agents.<span class="fn">create_and_process_run</span>(
+            thread_id=thread.id,
+            agent_id=agent.id
+        )
+
+        <span class="cm"># Record results</span>
+        span.<span class="fn">set_attribute</span>(<span class="str">"agent.run.status"</span>, run.status)
+        span.<span class="fn">set_attribute</span>(<span class="str">"agent.run.id"</span>, run.id)
+        <span class="kw">if</span> run.usage:
+            span.<span class="fn">set_attribute</span>(<span class="str">"agent.tokens.total"</span>, run.usage.total_tokens)
+
+        <span class="fn">print</span>(<span class="str">f"Query {i+1}: {run.status} "</span>
+              <span class="str">f"(tokens: {run.usage.total_tokens if run.usage else 'N/A'})"</span>)
+
+<span class="fn">print</span>(<span class="str">"\n✅ All test queries complete. Check Application Insights for traces."</span>)</pre>
+
+                <h3>Dashboard KQL</h3>
+                <p>After running the test batch, use this KQL query in Application Insights → Logs to create your dashboard:</p>
+                <pre><span class="lang-label">KQL</span>
+<span class="cm">// Mini Hack Dashboard: Agent Observability Overview</span>
+<span class="kw">let</span> timeRange = <span class="num">1h</span>;
+<span class="kw">dependencies</span>
+| <span class="kw">where</span> timestamp > ago(timeRange)
+| <span class="kw">where</span> type == <span class="str">"az.ai.agents"</span>
+| <span class="kw">summarize</span>
+    TotalRuns = <span class="fn">count</span>(),
+    SuccessRate = <span class="fn">round</span>(<span class="num">100.0</span> * <span class="fn">countif</span>(success) / <span class="fn">count</span>(), <span class="num">1</span>),
+    AvgLatencyMs = <span class="fn">round</span>(<span class="fn">avg</span>(duration), <span class="num">0</span>),
+    P95LatencyMs = <span class="fn">round</span>(<span class="fn">percentile</span>(duration, <span class="num">95</span>), <span class="num">0</span>),
+    AvgTokens = <span class="fn">round</span>(<span class="fn">avg</span>(<span class="fn">toint</span>(
+        customDimensions[<span class="str">"gen_ai.usage.input_tokens"</span>]) +
+        <span class="fn">toint</span>(customDimensions[<span class="str">"gen_ai.usage.output_tokens"</span>])), <span class="num">0</span>)</pre>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a9 9 0 100 18 9 9 0 000-18zm1 13H9v-2h2v2zm0-4H9V5h2v5z" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Stretch Goal</strong>
+                        <p>Pin your KQL queries to an Azure Dashboard and set up an alert rule that fires when the agent success rate drops below 90%. Share the dashboard with your team using Azure RBAC.</p>
+                    </div>
+                </div>
+
+                <!-- Best Practices -->
+                <h2 id="best-practices">Best Practices</h2>
+
+                <h3>Evaluation Best Practices</h3>
+                <ul>
+                    <li><strong>Automate evaluations in CI/CD</strong> — run your evaluation suite on every agent configuration change</li>
+                    <li><strong>Use production data</strong> — curate evaluation datasets from real user interactions, not just synthetic examples</li>
+                    <li><strong>Track metrics over time</strong> — establish baselines and detect regressions early</li>
+                    <li><strong>Combine AI and human evaluation</strong> — use AI evaluators for scale, human reviewers for nuanced quality</li>
+                </ul>
+
+                <h3>Tracing Best Practices</h3>
+                <ul>
+                    <li><strong>Always enable tracing in production</strong> — the cost of missed insights far exceeds telemetry costs</li>
+                    <li><strong>Use sampling for high-volume agents</strong> — 10–25% sampling captures enough data for analysis</li>
+                    <li><strong>Add business context</strong> — enrich spans with customer ID, request type, and priority</li>
+                    <li><strong>Set up alerts from day one</strong> — don't wait for the first production incident</li>
+                    <li><strong>Implement log correlation</strong> — use trace IDs to connect agent traces with your application's logs</li>
+                </ul>
+
+                <h3>Debugging Best Practices</h3>
+                <ul>
+                    <li><strong>Reproduce before fixing</strong> — use the thread ID to replay conversations in the playground</li>
+                    <li><strong>Check tool outputs first</strong> — most agent failures stem from unexpected tool responses</li>
+                    <li><strong>Compare fast vs. slow runs</strong> — use trace analysis to identify what makes some runs take 10× longer</li>
+                    <li><strong>Version your agent instructions</strong> — track changes to instructions alongside performance metrics</li>
+                </ul>
+
+                <!-- Summary -->
+                <h2 id="summary">Summary</h2>
+                <p>In this module, you learned how to build a complete observability stack for your Azure AI Foundry agents:</p>
+                <ul>
+                    <li><strong>Evaluation</strong> — measure task completion, accuracy, tool usage, and safety with built-in evaluators</li>
+                    <li><strong>Tracing</strong> — integrate Application Insights to capture every LLM call, tool invocation, and token usage</li>
+                    <li><strong>OpenTelemetry</strong> — leverage semantic conventions for consistent, queryable telemetry data</li>
+                    <li><strong>Debugging</strong> — use KQL queries and distributed traces to systematically diagnose agent failures</li>
+                    <li><strong>Monitoring</strong> — build dashboards and alerts for proactive agent health management</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5v1m0 3v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    <div class="callout-content">
+                        <strong>Next Steps</strong>
+                        <p>In Module 21, you'll learn about <strong>Agent Security &amp; Responsible AI</strong> — implementing guardrails, content filtering, and safety policies to ensure your agents operate within defined boundaries in production.</p>
+                    </div>
+                </div>
+
+                <!-- Module Navigation -->
+                <nav class="module-nav" aria-label="Module navigation">
+                    <a href="../module-19/blog.html" class="prev">
+                        <span class="nav-label">← Previous</span>
+                        <span class="nav-module">Module 19: Multi-Agent Orchestration</span>
+                    </a>
+                    <a href="../module-21/blog.html" class="next">
+                        <span class="nav-label">Next →</span>
+                        <span class="nav-module">Module 21: Agent Security &amp; Responsible AI</span>
+                    </a>
+                </nav>
+
+            </article>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>Azure AI Foundry: Zero to Hero — Module 20 of 45</p>
+        <p style="margin-top: 8px;">
+            <a href="https://learn.microsoft.com/azure/ai-services/agents/">Azure AI Agent Service Docs</a> ·
+            <a href="https://learn.microsoft.com/azure/ai-studio/">Azure AI Foundry Docs</a> ·
+            <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OpenTelemetry GenAI Conventions</a>
+        </p>
+        <p style="margin-top: 8px; opacity: 0.6;">© 2026 Microsoft. Training content for educational purposes.</p>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">
+        <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+    </button>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Progress Bar ──
+        const progressBar = document.getElementById('progressBar');
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            progressBar.style.width = progress + '%';
+        }
+
+        // ── Back to Top ──
+        const backToTop = document.getElementById('backToTop');
+        function toggleBackToTop() {
+            backToTop.classList.toggle('visible', window.scrollY > 400);
+        }
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Sticky TOC with IntersectionObserver ──
+        const tocLinks = document.querySelectorAll('.toc-list a');
+        const sections = [];
+        tocLinks.forEach(link => {
+            const id = link.getAttribute('href').substring(1);
+            const section = document.getElementById(id);
+            if (section) sections.push({ id, el: section, link });
+        });
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        tocLinks.forEach(l => l.classList.remove('active'));
+                        const active = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
+                        if (active) active.classList.add('active');
+                    }
+                });
+            },
+            { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
+        );
+        sections.forEach(s => observer.observe(s.el));
+
+        // ── Scroll Event Listeners ──
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    updateProgress();
+                    toggleBackToTop();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // ── Smooth scroll for TOC ──
+        tocLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Initial state
+        updateProgress();
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 15: Evaluation Datasets & Quality Measurement — Learn to build golden evaluation datasets, implement automated quality pipelines, and track AI quality metrics over time in Azure AI Foundry.">
+    <meta name="author" content="Zero to Hero Training Team">
+    <meta name="date" content="2026-04">
+    <title>Module 15: Evaluation Datasets & Quality Measurement | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #deecf9;
+            --ms-light-purple: #f3eaf9;
+            --ms-green: #107c10;
+            --ms-light-green: #dff6dd;
+            --ms-yellow: #ffb900;
+            --ms-light-yellow: #fff4ce;
+            --ms-red: #d13438;
+            --ms-light-red: #fde7e9;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-60: #a19f9d;
+            --ms-gray-90: #605e5c;
+            --ms-gray-130: #323130;
+            --ms-gray-150: #252423;
+            --ms-gray-160: #1b1a19;
+            --font-primary: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            --content-width: 780px;
+            --sidebar-width: 220px;
+            --nav-height: 48px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.12);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
+            --radius: 8px;
+            --transition: 0.3s ease;
+        }
+
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+        body {
+            font-family: var(--font-primary);
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--ms-gray-130);
+            background: var(--ms-gray-10);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== SCROLL PROGRESS BAR ===== */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* ===== TOP NAV ===== */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: var(--ms-gray-160);
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-left: auto;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #c8c6c4;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+
+        .nav-links a:hover { color: #fff; }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background: linear-gradient(135deg, #0078d4, #5c2d91);
+            color: #fff;
+            padding: 72px 24px 64px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            padding: 6px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 16px;
+        }
+
+        .hero-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            background: rgba(16,124,16,0.25);
+            border: 1px solid rgba(16,124,16,0.5);
+            border-radius: 12px;
+            padding: 2px 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ===== LAYOUT ===== */
+        .page-wrapper {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            gap: 48px;
+        }
+
+        /* ===== TOC SIDEBAR ===== */
+        .toc-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + 24px);
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            max-height: calc(100vh - var(--nav-height) - 48px);
+            overflow-y: auto;
+            align-self: flex-start;
+            padding-right: 16px;
+        }
+
+        .toc-sidebar::-webkit-scrollbar { width: 3px; }
+        .toc-sidebar::-webkit-scrollbar-thumb { background: var(--ms-gray-40); border-radius: 3px; }
+
+        .toc-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-gray-90);
+            margin-bottom: 12px;
+            padding-left: 12px;
+        }
+
+        .toc-list { list-style: none; }
+
+        .toc-list a {
+            display: block;
+            padding: 5px 12px;
+            font-size: 13px;
+            color: var(--ms-gray-90);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: all var(--transition);
+            line-height: 1.4;
+        }
+
+        .toc-list a:hover {
+            color: var(--ms-blue);
+            background: var(--ms-light-blue);
+            border-left-color: var(--ms-blue);
+        }
+
+        .toc-list a.active {
+            color: var(--ms-blue);
+            font-weight: 600;
+            border-left-color: var(--ms-blue);
+            background: var(--ms-light-blue);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            max-width: var(--content-width);
+            min-width: 0;
+        }
+
+        .main-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--ms-gray-150);
+            margin-top: 56px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--ms-blue);
+            scroll-margin-top: 80px;
+        }
+
+        .main-content h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin-top: 36px;
+            margin-bottom: 12px;
+            scroll-margin-top: 80px;
+        }
+
+        .main-content h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+
+        .main-content p {
+            margin-bottom: 16px;
+            color: var(--ms-gray-130);
+        }
+
+        .main-content ul, .main-content ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .main-content li { margin-bottom: 6px; }
+
+        .main-content a {
+            color: var(--ms-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color var(--transition);
+        }
+
+        .main-content a:hover { border-bottom-color: var(--ms-blue); }
+
+        .main-content img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            margin: 16px 0;
+        }
+
+        /* ===== VIDEO EMBED ===== */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            margin: 24px 0 32px;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ===== CALLOUT BOXES ===== */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            font-size: 15px;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .callout-blue { background: var(--ms-light-blue); border-color: var(--ms-blue); }
+        .callout-blue .callout-title { color: var(--ms-blue); }
+
+        .callout-yellow { background: var(--ms-light-yellow); border-color: var(--ms-yellow); }
+        .callout-yellow .callout-title { color: #8a6914; }
+
+        .callout-green { background: var(--ms-light-green); border-color: var(--ms-green); }
+        .callout-green .callout-title { color: var(--ms-green); }
+
+        .callout-red { background: var(--ms-light-red); border-color: var(--ms-red); }
+        .callout-red .callout-title { color: var(--ms-red); }
+
+        /* ===== CODE BLOCKS ===== */
+        pre {
+            background: var(--ms-gray-150);
+            color: #e8e6e3;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        pre .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #c8c6c4;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        pre .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        p code, li code {
+            background: var(--ms-gray-20);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--ms-dark-blue);
+            font-size: 0.88em;
+        }
+
+        .code-label {
+            display: inline-block;
+            background: var(--ms-gray-130);
+            color: var(--ms-gray-40);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: -4px;
+            font-family: var(--font-primary);
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== TABLES ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead { background: var(--ms-gray-150); color: #fff; }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+
+        tbody tr { background: #fff; }
+        tbody tr:nth-child(even) { background: var(--ms-gray-10); }
+        tbody tr:hover { background: var(--ms-light-blue); }
+
+        /* ===== STEP BLOCKS ===== */
+        .step {
+            display: flex;
+            gap: 16px;
+            margin: 24px 0;
+            padding: 20px;
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--ms-gray-30);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .step-content h4 { margin-top: 0; }
+
+        /* ===== DIAGRAM / FLOW ===== */
+        .diagram-box {
+            background: #fff;
+            border: 2px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            padding: 32px 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .diagram-box .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .diagram-box .flow .node {
+            background: var(--ms-light-blue);
+            border: 1px solid var(--ms-blue);
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: var(--ms-dark-blue);
+        }
+
+        .diagram-box .flow .arrow {
+            color: var(--ms-gray-60);
+            font-size: 20px;
+        }
+
+        /* ===== MINI HACK SECTION ===== */
+        .mini-hack {
+            background: linear-gradient(135deg, rgba(92,45,145,0.06), rgba(0,120,212,0.06));
+            border: 2px solid var(--ms-purple);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin: 32px 0;
+        }
+
+        .mini-hack h3 {
+            color: var(--ms-purple);
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+
+        /* ===== CHECKLIST ===== */
+        .checklist { list-style: none; padding-left: 0; }
+
+        .checklist li {
+            padding: 6px 0 6px 28px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--ms-blue);
+            font-size: 16px;
+        }
+
+        /* ===== KEY TAKEAWAYS ===== */
+        .takeaways {
+            background: linear-gradient(135deg, rgba(0,120,212,0.06), rgba(92,45,145,0.06));
+            border-radius: var(--radius);
+            padding: 32px;
+            margin: 32px 0;
+        }
+
+        .takeaways h3 { margin-top: 0; color: var(--ms-blue); }
+
+        .takeaways ul { list-style: none; padding-left: 0; }
+
+        .takeaways li {
+            padding: 8px 0 8px 32px;
+            position: relative;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+
+        .takeaways li:last-child { border-bottom: none; }
+
+        .takeaways li::before {
+            content: '✓';
+            position: absolute;
+            left: 4px;
+            color: var(--ms-green);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ===== MODULE NAV ===== */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 16px;
+            margin: 48px 0 32px;
+        }
+
+        .module-nav a {
+            display: flex;
+            flex-direction: column;
+            padding: 20px 24px;
+            background: #fff;
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: all var(--transition);
+            flex: 1;
+            max-width: 48%;
+        }
+
+        .module-nav a:hover {
+            border-color: var(--ms-blue);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .module-nav .nav-direction {
+            font-size: 12px;
+            color: var(--ms-gray-90);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .module-nav .nav-title {
+            font-size: 15px;
+            color: var(--ms-blue);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .module-nav .next { text-align: right; margin-left: auto; }
+
+        /* ===== NEXT MODULE PREVIEW ===== */
+        .next-preview {
+            background: linear-gradient(135deg, rgba(255,185,0,0.1), rgba(0,120,212,0.05));
+            border: 2px solid var(--ms-yellow);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            margin: 32px 0;
+        }
+
+        .next-preview h3 { color: #8a6914; margin-top: 0; }
+
+        .celebration-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--ms-green), #2ecc71);
+            color: #fff;
+            border-radius: 24px;
+            padding: 8px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* ===== RESOURCES GRID ===== */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .resource-card {
+            background: #fff;
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: all var(--transition);
+        }
+
+        .resource-card:hover {
+            border-color: var(--ms-blue);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .resource-card h4 {
+            margin-top: 0;
+            font-size: 14px;
+            color: var(--ms-blue);
+        }
+
+        .resource-card p {
+            font-size: 13px;
+            color: var(--ms-gray-90);
+            margin-bottom: 0;
+        }
+
+        /* ===== BACK TO TOP ===== */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--ms-blue);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition);
+            z-index: 100;
+        }
+
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            background: var(--ms-gray-160);
+            color: var(--ms-gray-60);
+            padding: 40px 24px;
+            margin-top: 48px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-links { display: flex; gap: 24px; list-style: none; }
+
+        .footer-links a {
+            color: var(--ms-gray-60);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color var(--transition);
+        }
+
+        .footer-links a:hover { color: #fff; }
+
+        .footer-copy { font-size: 13px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .toc-sidebar { display: none; }
+            .page-wrapper { padding: 24px 16px; }
+        }
+
+        @media (max-width: 768px) {
+            .hero { padding: 48px 16px 40px; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero-meta { flex-direction: column; align-items: center; gap: 8px; }
+            .main-content h2 { font-size: 1.4rem; margin-top: 40px; }
+            .main-content h3 { font-size: 1.15rem; }
+            .module-nav { flex-direction: column; }
+            .module-nav a { max-width: 100%; }
+            pre { padding: 16px; font-size: 12.5px; }
+            .step { flex-direction: column; gap: 12px; }
+            .resources-grid { grid-template-columns: 1fr; }
+            .nav-links { gap: 16px; }
+            .footer-content { flex-direction: column; text-align: center; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.5rem; }
+            .nav-links { display: none; }
+            .callout, .mini-hack, .takeaways, .next-preview { padding: 16px; }
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            .top-nav, .toc-sidebar, .scroll-progress, .back-to-top, .copy-btn { display: none !important; }
+            .hero { background: #f0f0f0 !important; color: #000 !important; padding: 24px !important; }
+            .hero-badge { border-color: #000 !important; }
+            .page-wrapper { display: block; padding: 0; }
+            .main-content { max-width: 100%; }
+            body { font-size: 12pt; line-height: 1.5; }
+            .module-nav a { border: 1px solid #ccc; }
+            pre { background: #f5f5f5 !important; color: #000 !important; border: 1px solid #ccc; }
+            .callout, .mini-hack, .takeaways, .next-preview { break-inside: avoid; }
+            a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="#" class="nav-brand">
+            <!-- Microsoft Logo SVG -->
+            <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="10" height="10" fill="#f25022"/>
+                <rect x="11" y="0" width="10" height="10" fill="#7fba00"/>
+                <rect x="0" y="11" width="10" height="10" fill="#00a4ef"/>
+                <rect x="11" y="11" width="10" height="10" fill="#ffb900"/>
+            </svg>
+            AI Foundry Training Blog
+        </a>
+        <ul class="nav-links">
+            <li><a href="#">Curriculum</a></li>
+            <li><a href="#">Resources</a></li>
+            <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-badge">ARC 3 · DATA &amp; RAG</div>
+        <h1>Evaluation Datasets &amp; Quality Measurement</h1>
+        <p style="font-size:1.1rem; max-width:600px; margin:0 auto; opacity:0.92;">
+            Build golden evaluation datasets, implement automated quality pipelines, and track your AI's performance over time in Azure AI Foundry.
+        </p>
+        <div class="hero-meta">
+            <span>📘 Module 15 of 45</span>
+            <span>✍️ Zero to Hero Training Team</span>
+            <span>📅 April 2026</span>
+            <span>⏱️ 28 min read</span>
+            <span class="tier-badge">🟢 Beginner Tier — Final Module</span>
+        </div>
+    </header>
+
+    <!-- Page Layout -->
+    <div class="page-wrapper">
+
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-title">On This Page</div>
+            <ul class="toc-list" id="tocList">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#featured-video">Featured Video</a></li>
+                <li><a href="#why-eval-datasets">Why Evaluation Datasets Matter</a></li>
+                <li><a href="#golden-datasets">Building Golden Datasets</a></li>
+                <li><a href="#ground-truth">Ground Truth &amp; Reference Answers</a></li>
+                <li><a href="#automated-pipelines">Automated Evaluation Pipelines</a></li>
+                <li><a href="#llm-as-judge">LLM-as-a-Judge Patterns</a></li>
+                <li><a href="#quality-dashboard">Quality Metrics Dashboard</a></li>
+                <li><a href="#tracking-quality">Tracking Quality Over Time</a></li>
+                <li><a href="#regression-detection">Regression Detection</a></li>
+                <li><a href="#azure-ai-eval-sdk">azure-ai-evaluation SDK</a></li>
+                <li><a href="#mini-hack">Mini Hack</a></li>
+                <li><a href="#key-takeaways">Key Takeaways</a></li>
+                <li><a href="#next-module">Module 16 Preview</a></li>
+                <li><a href="#resources">Resources</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Introduction -->
+            <section id="introduction">
+                <h2>Introduction: Measure What Matters</h2>
+                <p>
+                    You've built your first RAG pipeline. You've connected data sources and deployed an AI assistant. But how do you know if it's actually <em>good</em>? How do you know it's getting <em>better</em> over time? And how do you know when a change <em>breaks</em> something?
+                </p>
+                <p>
+                    The answer lies in <strong>evaluation datasets</strong> and <strong>quality measurement</strong> — the systematic practice of creating test cases from real conversations, establishing ground truth, and running automated evaluations against every change.
+                </p>
+                <p>
+                    In this module — the <strong>final module of the Beginner tier</strong> — you'll learn to build evaluation systems that give you confidence in your AI applications. You'll graduate from "it seems to work" to "we have metrics proving it works."
+                </p>
+
+                <div class="callout callout-green">
+                    <div class="callout-title">🎓 Beginner Tier Capstone</div>
+                    <p>
+                        This is Module 15, the last module of the Beginner tier (🟢). You've journeyed through ARC 1 (Foundations), ARC 2 (Prompt Engineering), and ARC 3 (Data &amp; RAG). Quality measurement ties everything together — ensuring every technique you've learned produces <em>measurable</em> results.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Featured Video -->
+            <section id="featured-video">
+                <h2>Featured Video</h2>
+                <p>
+                    Watch this deep dive on LLM evaluation in Azure AI Foundry — covering evaluation frameworks, metric selection, and building evaluation workflows.
+                </p>
+                <div class="video-container">
+                    <iframe
+                        src="https://www.youtube.com/embed/BFY6czQykMU"
+                        title="Which LLM??? LLM Evaluation in Azure AI Foundry"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+
+                <div class="callout callout-blue">
+                    <div class="callout-title">📺 Video Summary</div>
+                    <p>
+                        <strong>"Which LLM??? LLM Evaluation in Azure AI Foundry"</strong> walks through how to compare models, set up evaluation runs, and use built-in evaluators to measure relevance, groundedness, fluency, and coherence across different LLM deployments.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Why Evaluation Datasets Matter -->
+            <section id="why-eval-datasets">
+                <h2>Why Evaluation Datasets Matter</h2>
+                <p>
+                    Without evaluation datasets, AI development is guesswork. You're testing with ad hoc queries, relying on subjective impressions, and discovering quality regressions from user complaints. Evaluation datasets transform this into a systematic, measurable discipline.
+                </p>
+
+                <h3>The Cost of Not Measuring</h3>
+                <ul>
+                    <li><strong>Silent regressions:</strong> A model update quietly degrades answers for 20% of queries — nobody notices until users churn.</li>
+                    <li><strong>Prompt drift:</strong> Well-intentioned prompt tweaks fix one scenario while breaking three others.</li>
+                    <li><strong>Data source rot:</strong> An index update introduces stale or conflicting information, but there's no automated check.</li>
+                    <li><strong>Anecdotal quality:</strong> "It seems better" doesn't hold up in production reviews or compliance audits.</li>
+                </ul>
+
+                <h3>What Good Evaluation Provides</h3>
+                <div class="diagram-box">
+                    <div class="flow">
+                        <span class="node">Eval Dataset</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Automated Pipeline</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Quality Metrics</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Trend Dashboard</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Regression Alerts</span>
+                    </div>
+                </div>
+
+                <ul>
+                    <li><strong>Confidence in deployments:</strong> Every release is validated against a known set of test cases.</li>
+                    <li><strong>Data-driven decisions:</strong> Compare prompts, models, and configurations with hard numbers.</li>
+                    <li><strong>Compliance evidence:</strong> Provide auditors with documented quality metrics over time.</li>
+                    <li><strong>Team alignment:</strong> Everyone agrees on what "good" looks like.</li>
+                </ul>
+            </section>
+
+            <!-- Building Golden Datasets -->
+            <section id="golden-datasets">
+                <h2>Building Golden Datasets</h2>
+                <p>
+                    A <strong>golden dataset</strong> (also called a "gold set" or "benchmark set") is a curated collection of input-output pairs that define the expected behavior of your AI application. Think of it as unit tests for your AI.
+                </p>
+
+                <h3>Sources for Golden Dataset Questions</h3>
+                <ol>
+                    <li><strong>Real user conversations:</strong> Mine production logs for common queries, edge cases, and failure modes.</li>
+                    <li><strong>Subject matter experts:</strong> Have domain experts craft questions that cover critical knowledge areas.</li>
+                    <li><strong>Historical support tickets:</strong> Extract Q&amp;A pairs from resolved support cases.</li>
+                    <li><strong>Adversarial testing:</strong> Deliberately include tricky, ambiguous, and out-of-scope queries.</li>
+                    <li><strong>Synthetic generation:</strong> Use LLMs to generate diverse question variants (with human review).</li>
+                </ol>
+
+                <h3>Dataset Structure</h3>
+                <p>A well-structured evaluation dataset in Azure AI Foundry typically follows this format:</p>
+
+                <span class="code-label">eval_dataset.jsonl</span>
+<pre><code>{"query": "What is the SLA for Azure OpenAI Service?", "context": "Azure OpenAI Service offers a 99.9% uptime SLA for standard deployments...", "ground_truth": "Azure OpenAI Service provides a 99.9% uptime SLA for standard deployments.", "category": "factual", "difficulty": "easy"}
+{"query": "How do I configure managed identity for my Foundry project?", "context": "Managed identities eliminate the need for credential management...", "ground_truth": "Navigate to your AI Foundry project settings, select Identity, enable System-assigned managed identity, then grant it appropriate RBAC roles.", "category": "how-to", "difficulty": "medium"}
+{"query": "Compare GPT-4o and GPT-4o-mini for summarization tasks", "context": "GPT-4o offers superior reasoning and comprehension...", "ground_truth": "GPT-4o excels in complex summarization requiring nuanced understanding, while GPT-4o-mini is cost-effective for straightforward summaries with comparable quality for simple texts.", "category": "comparison", "difficulty": "hard"}</code></pre>
+
+                <h3>How Many Examples Do You Need?</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Stage</th>
+                                <th>Dataset Size</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Prototyping</td>
+                                <td>20–50 examples</td>
+                                <td>Quick sanity checks during development</td>
+                            </tr>
+                            <tr>
+                                <td>Pre-production</td>
+                                <td>100–300 examples</td>
+                                <td>Coverage of major scenarios and edge cases</td>
+                            </tr>
+                            <tr>
+                                <td>Production</td>
+                                <td>500+ examples</td>
+                                <td>Comprehensive regression testing with statistical significance</td>
+                            </tr>
+                            <tr>
+                                <td>Enterprise</td>
+                                <td>1,000+ examples</td>
+                                <td>Multi-domain coverage, compliance, A/B testing baselines</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="callout callout-yellow">
+                    <div class="callout-title">⚠️ Quality Over Quantity</div>
+                    <p>
+                        50 carefully curated examples with expert-validated ground truth will outperform 5,000 auto-generated examples with sloppy answers. Invest in quality annotations — they're the foundation of your entire evaluation system.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Ground Truth & Reference Answers -->
+            <section id="ground-truth">
+                <h2>Ground Truth &amp; Reference Answers</h2>
+                <p>
+                    <strong>Ground truth</strong> is the "correct" or "ideal" answer against which your AI's output is compared. Establishing reliable ground truth is one of the most challenging — and most important — steps in building an evaluation system.
+                </p>
+
+                <h3>Types of Ground Truth</h3>
+                <ul>
+                    <li><strong>Exact match:</strong> Used for factual lookups — "What is the capital of France?" → "Paris"</li>
+                    <li><strong>Semantic equivalence:</strong> The answer must convey the same meaning, even if worded differently.</li>
+                    <li><strong>Key-point coverage:</strong> The answer must address specific points (e.g., "mentions three security benefits").</li>
+                    <li><strong>Rubric-based:</strong> A scoring guide defines levels of quality (excellent, adequate, insufficient).</li>
+                    <li><strong>Constraint-based:</strong> The answer must satisfy conditions (e.g., "under 200 words," "includes a code example").</li>
+                </ul>
+
+                <h3>Creating High-Quality Ground Truth</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Expert Annotation</h4>
+                        <p>Have 2–3 domain experts independently write reference answers. Use consensus or adjudication for disagreements. This is the gold standard for quality.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Inter-Annotator Agreement</h4>
+                        <p>Measure agreement between annotators using metrics like Cohen's Kappa or Krippendorff's Alpha. Low agreement indicates ambiguous questions that need refinement.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Version Control</h4>
+                        <p>Ground truth evolves as products change. Maintain versioned datasets and track when ground truth is updated, by whom, and why.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Coverage Mapping</h4>
+                        <p>Map evaluation examples to knowledge domains, question types, and difficulty levels. Identify gaps and over-represented areas in your dataset.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Automated Evaluation Pipelines -->
+            <section id="automated-pipelines">
+                <h2>Automated Evaluation Pipelines</h2>
+                <p>
+                    Manual evaluation doesn't scale. Azure AI Foundry provides the tools to build automated evaluation pipelines that run on every deployment, every prompt change, or on a schedule.
+                </p>
+
+                <h3>Pipeline Architecture</h3>
+                <div class="diagram-box">
+                    <div class="flow">
+                        <span class="node">Trigger (CI/CD, Schedule)</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Load Dataset</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Run Inference</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Score Outputs</span>
+                        <span class="arrow">→</span>
+                        <span class="node">Report &amp; Alert</span>
+                    </div>
+                </div>
+
+                <h3>Setting Up an Evaluation Pipeline</h3>
+                <span class="code-label">Python — Automated Evaluation Pipeline</span>
+<pre><code>from azure.ai.evaluation import evaluate
+from azure.ai.evaluation import (
+    GroundednessEvaluator,
+    RelevanceEvaluator,
+    CoherenceEvaluator,
+    FluencyEvaluator,
+    SimilarityEvaluator
+)
+from azure.identity import DefaultAzureCredential
+
+# Initialize evaluators with your Azure AI Foundry project
+credential = DefaultAzureCredential()
+azure_ai_project = {
+    "subscription_id": "your-sub-id",
+    "resource_group_name": "your-rg",
+    "project_name": "your-foundry-project"
+}
+
+# Configure evaluators
+groundedness_eval = GroundednessEvaluator(
+    credential=credential,
+    azure_ai_project=azure_ai_project
+)
+relevance_eval = RelevanceEvaluator(
+    credential=credential,
+    azure_ai_project=azure_ai_project
+)
+coherence_eval = CoherenceEvaluator(
+    credential=credential,
+    azure_ai_project=azure_ai_project
+)
+fluency_eval = FluencyEvaluator(
+    credential=credential,
+    azure_ai_project=azure_ai_project
+)
+
+# Run evaluation against your dataset
+results = evaluate(
+    data="eval_dataset.jsonl",
+    evaluators={
+        "groundedness": groundedness_eval,
+        "relevance": relevance_eval,
+        "coherence": coherence_eval,
+        "fluency": fluency_eval
+    },
+    evaluator_config={
+        "groundedness": {
+            "query": "${data.query}",
+            "context": "${data.context}",
+            "response": "${data.response}"
+        },
+        "relevance": {
+            "query": "${data.query}",
+            "response": "${data.response}"
+        },
+        "coherence": {
+            "response": "${data.response}"
+        },
+        "fluency": {
+            "response": "${data.response}"
+        }
+    },
+    azure_ai_project=azure_ai_project
+)
+
+print(f"Groundedness: {results['metrics']['groundedness.groundedness']:.2f}")
+print(f"Relevance:    {results['metrics']['relevance.relevance']:.2f}")
+print(f"Coherence:    {results['metrics']['coherence.coherence']:.2f}")
+print(f"Fluency:      {results['metrics']['fluency.fluency']:.2f}")</code></pre>
+
+                <div class="callout callout-blue">
+                    <div class="callout-title">💡 AI Foundry Tip</div>
+                    <p>
+                        Azure AI Foundry's Evaluation feature in the portal lets you run these same evaluators through a visual interface — perfect for non-developers who want to review evaluation results and approve deployments.
+                    </p>
+                </div>
+
+                <h3>Built-in Evaluators</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Evaluator</th>
+                                <th>What It Measures</th>
+                                <th>Scale</th>
+                                <th>Requires Ground Truth</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>GroundednessEvaluator</code></td>
+                                <td>Are claims supported by the context?</td>
+                                <td>1–5</td>
+                                <td>No (uses context)</td>
+                            </tr>
+                            <tr>
+                                <td><code>RelevanceEvaluator</code></td>
+                                <td>Does the answer address the query?</td>
+                                <td>1–5</td>
+                                <td>No</td>
+                            </tr>
+                            <tr>
+                                <td><code>CoherenceEvaluator</code></td>
+                                <td>Is the response well-organized and logical?</td>
+                                <td>1–5</td>
+                                <td>No</td>
+                            </tr>
+                            <tr>
+                                <td><code>FluencyEvaluator</code></td>
+                                <td>Is the language natural and grammatically correct?</td>
+                                <td>1–5</td>
+                                <td>No</td>
+                            </tr>
+                            <tr>
+                                <td><code>SimilarityEvaluator</code></td>
+                                <td>How close is the response to the ground truth?</td>
+                                <td>1–5</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr>
+                                <td><code>F1ScoreEvaluator</code></td>
+                                <td>Token-level overlap with ground truth</td>
+                                <td>0–1</td>
+                                <td>Yes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- LLM-as-a-Judge Patterns -->
+            <section id="llm-as-judge">
+                <h2>LLM-as-a-Judge Patterns</h2>
+                <p>
+                    Traditional NLP metrics like BLEU and ROUGE fail to capture the nuances of generative AI output. <strong>LLM-as-a-Judge</strong> uses a powerful language model to evaluate another model's output, providing human-like quality assessments at scale.
+                </p>
+
+                <h3>How LLM-as-a-Judge Works</h3>
+                <ol>
+                    <li><strong>Define criteria:</strong> What aspects of quality matter? (accuracy, completeness, tone, format)</li>
+                    <li><strong>Craft a judging prompt:</strong> Instruct the judge model on how to evaluate, with a clear rubric.</li>
+                    <li><strong>Present the evidence:</strong> Provide the query, context, response, and optionally ground truth.</li>
+                    <li><strong>Collect structured scores:</strong> The judge returns a numeric score and reasoning.</li>
+                </ol>
+
+                <h3>Custom LLM-as-a-Judge Evaluator</h3>
+                <span class="code-label">Python — Custom Judge Evaluator</span>
+<pre><code>from azure.ai.evaluation import evaluate
+
+# Define a custom LLM-as-a-Judge prompt
+judge_prompt = """
+You are an expert evaluator for an AI assistant that answers
+questions about Azure AI Foundry.
+
+## Evaluation Criteria
+Score the response on ACCURACY (1-5):
+- 5: Completely accurate, all technical details correct
+- 4: Mostly accurate, minor imprecisions
+- 3: Partially accurate, some incorrect claims
+- 2: Mostly inaccurate, significant errors
+- 1: Completely inaccurate or fabricated
+
+## Input
+Query: {{query}}
+Context: {{context}}
+Response: {{response}}
+Ground Truth: {{ground_truth}}
+
+## Output Format
+Return ONLY a JSON object:
+{"score": <1-5>, "reasoning": "<brief explanation>"}
+"""
+
+# Use the custom evaluator in a pipeline
+from azure.ai.evaluation import ContentSafetyEvaluator
+
+# Azure AI Foundry built-in evaluators already use
+# LLM-as-a-Judge under the hood.
+# You can also build custom evaluators using prompty files:
+
+# custom_evaluator.prompty defines the judge prompt
+# and scoring rubric as a reusable asset</code></pre>
+
+                <h3>Best Practices for LLM-as-a-Judge</h3>
+                <div class="callout callout-green">
+                    <div class="callout-title">✅ Recommended Practices</div>
+                    <ul>
+                        <li><strong>Use a stronger model as judge:</strong> GPT-4o judging GPT-4o-mini output is more reliable than self-evaluation.</li>
+                        <li><strong>Calibrate with human labels:</strong> Compare judge scores with human ratings on 50–100 examples to validate alignment.</li>
+                        <li><strong>Use structured output:</strong> Request JSON responses from the judge to ensure parseable results.</li>
+                        <li><strong>Include reasoning:</strong> Ask the judge to explain its score — this helps debug evaluation failures.</li>
+                        <li><strong>Test for position bias:</strong> Swap response order to check if the judge is biased toward first/last responses.</li>
+                    </ul>
+                </div>
+
+                <div class="callout callout-red">
+                    <div class="callout-title">⚠️ Common Pitfalls</div>
+                    <ul>
+                        <li><strong>Self-evaluation bias:</strong> Models tend to rate their own outputs more favorably.</li>
+                        <li><strong>Verbosity bias:</strong> Longer answers often get higher scores regardless of quality.</li>
+                        <li><strong>Judge model drift:</strong> Updates to the judge model can shift scores — pin model versions.</li>
+                        <li><strong>Circular reasoning:</strong> If both the application and the judge use the same model, errors may be invisible.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Quality Metrics Dashboard -->
+            <section id="quality-dashboard">
+                <h2>Quality Metrics Dashboard</h2>
+                <p>
+                    Azure AI Foundry provides a built-in evaluation dashboard in the portal, but you can also build custom dashboards to track the metrics that matter most to your team.
+                </p>
+
+                <h3>Key Metrics to Track</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric Category</th>
+                                <th>Metrics</th>
+                                <th>Target Range</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Quality</strong></td>
+                                <td>Groundedness, Relevance, Coherence, Fluency</td>
+                                <td>≥ 4.0 / 5.0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Safety</strong></td>
+                                <td>Violence, Sexual, Hate/Fairness, Self-Harm</td>
+                                <td>Defect rate &lt; 1%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Performance</strong></td>
+                                <td>Latency (P50, P95, P99), Token usage</td>
+                                <td>P95 &lt; 5s</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Accuracy</strong></td>
+                                <td>Similarity, F1 Score, Exact Match rate</td>
+                                <td>≥ 0.8 F1</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Coverage</strong></td>
+                                <td>Answerable rate, Retrieval hit rate</td>
+                                <td>≥ 90%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Viewing Results in AI Foundry Portal</h3>
+                <p>
+                    After running an evaluation, navigate to <strong>AI Foundry Portal → Your Project → Evaluation</strong> to see results. The portal provides:
+                </p>
+                <ul>
+                    <li><strong>Run-level summaries:</strong> Average scores across all evaluators for each run.</li>
+                    <li><strong>Row-level details:</strong> Drill into individual examples to see scores and judge reasoning.</li>
+                    <li><strong>Run comparison:</strong> Compare two evaluation runs side by side.</li>
+                    <li><strong>Export capabilities:</strong> Download results as CSV/JSON for custom analysis.</li>
+                </ul>
+            </section>
+
+            <!-- Tracking Quality Over Time -->
+            <section id="tracking-quality">
+                <h2>Tracking Quality Over Time</h2>
+                <p>
+                    A single evaluation snapshot tells you where you are. A <strong>quality trend</strong> tells you where you're going. Tracking metrics over time is essential for detecting gradual degradation and proving continuous improvement.
+                </p>
+
+                <h3>Building a Quality Timeline</h3>
+                <span class="code-label">Python — Track Evaluation History</span>
+<pre><code>import json
+from datetime import datetime
+from pathlib import Path
+
+class EvalTracker:
+    """Track evaluation results over time for trend analysis."""
+
+    def __init__(self, history_file="eval_history.jsonl"):
+        self.history_file = Path(history_file)
+
+    def record_run(self, run_name, metrics, metadata=None):
+        """Record an evaluation run with its metrics."""
+        entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "run_name": run_name,
+            "metrics": metrics,
+            "metadata": metadata or {}
+        }
+        with open(self.history_file, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+
+    def get_trend(self, metric_name, last_n=10):
+        """Get the trend for a specific metric."""
+        entries = []
+        with open(self.history_file) as f:
+            for line in f:
+                entry = json.loads(line)
+                if metric_name in entry["metrics"]:
+                    entries.append({
+                        "timestamp": entry["timestamp"],
+                        "value": entry["metrics"][metric_name],
+                        "run": entry["run_name"]
+                    })
+        return entries[-last_n:]
+
+    def detect_regression(self, metric_name, threshold=0.1):
+        """Detect if latest run regressed beyond threshold."""
+        trend = self.get_trend(metric_name, last_n=2)
+        if len(trend) < 2:
+            return False, 0
+        delta = trend[-1]["value"] - trend[-2]["value"]
+        return delta < -threshold, delta
+
+# Usage
+tracker = EvalTracker()
+tracker.record_run(
+    run_name="v2.3-prompt-update",
+    metrics={
+        "groundedness": 4.2,
+        "relevance": 4.5,
+        "coherence": 4.7,
+        "fluency": 4.8,
+        "similarity": 0.85
+    },
+    metadata={
+        "model": "gpt-4o",
+        "prompt_version": "v2.3",
+        "dataset_version": "gold-v5"
+    }
+)
+
+# Check for regressions
+regressed, delta = tracker.detect_regression("groundedness")
+if regressed:
+    print(f"⚠️ Groundedness regressed by {abs(delta):.2f}!")</code></pre>
+
+                <h3>When to Re-evaluate</h3>
+                <ul>
+                    <li><strong>Model changes:</strong> Switching models or model versions</li>
+                    <li><strong>Prompt updates:</strong> Any modification to system prompts or templates</li>
+                    <li><strong>Data source changes:</strong> New documents indexed, schema changes, data refreshes</li>
+                    <li><strong>Configuration changes:</strong> Temperature, top-p, max tokens, chunk size</li>
+                    <li><strong>Scheduled cadence:</strong> Weekly or bi-weekly even without changes (to catch external drift)</li>
+                </ul>
+            </section>
+
+            <!-- Regression Detection -->
+            <section id="regression-detection">
+                <h2>Regression Detection</h2>
+                <p>
+                    Regression detection is the practice of automatically flagging when quality metrics drop below acceptable thresholds or decline significantly from baseline.
+                </p>
+
+                <h3>Regression Detection Strategies</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Absolute Thresholds</h4>
+                        <p>Set minimum acceptable scores. If groundedness drops below 3.5, block deployment. Simple and predictable.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Relative Delta</h4>
+                        <p>Flag if any metric drops more than 0.3 points from the previous run. Catches sudden degradation regardless of absolute level.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Rolling Averages</h4>
+                        <p>Compare against the 5-run rolling average. This smooths out noise and catches gradual decline that individual comparisons might miss.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Category-Level Analysis</h4>
+                        <p>Break down regressions by question category. A model might improve overall but regress on "how-to" questions specifically — aggregate metrics would hide this.</p>
+                    </div>
+                </div>
+
+                <span class="code-label">Python — CI/CD Gate with Regression Check</span>
+<pre><code>import sys
+
+def evaluation_gate(results, thresholds, previous_results=None):
+    """
+    CI/CD gate that blocks deployment on quality regressions.
+    Returns exit code 0 (pass) or 1 (fail).
+    """
+    failures = []
+
+    # Check absolute thresholds
+    for metric, min_score in thresholds.items():
+        score = results["metrics"].get(metric, 0)
+        if score < min_score:
+            failures.append(
+                f"❌ {metric}: {score:.2f} < {min_score} (threshold)"
+            )
+
+    # Check relative regression
+    if previous_results:
+        for metric in results["metrics"]:
+            current = results["metrics"][metric]
+            previous = previous_results["metrics"].get(metric, current)
+            delta = current - previous
+            if delta < -0.3:
+                failures.append(
+                    f"📉 {metric}: dropped {abs(delta):.2f} from previous"
+                )
+
+    if failures:
+        print("🚫 EVALUATION GATE: FAILED")
+        for f in failures:
+            print(f"   {f}")
+        return 1
+    else:
+        print("✅ EVALUATION GATE: PASSED")
+        return 0
+
+# Usage in CI/CD
+thresholds = {
+    "groundedness.groundedness": 3.5,
+    "relevance.relevance": 3.5,
+    "coherence.coherence": 3.5,
+    "fluency.fluency": 3.5
+}
+
+exit_code = evaluation_gate(results, thresholds, previous_results)
+sys.exit(exit_code)</code></pre>
+            </section>
+
+            <!-- azure-ai-evaluation SDK -->
+            <section id="azure-ai-eval-sdk">
+                <h2>azure-ai-evaluation SDK</h2>
+                <p>
+                    The <code>azure-ai-evaluation</code> Python package is your primary tool for programmatic evaluation in Azure AI Foundry. It provides pre-built evaluators, custom evaluator support, and integration with the AI Foundry portal.
+                </p>
+
+                <h3>Installation &amp; Setup</h3>
+                <span class="code-label">Terminal</span>
+<pre><code>pip install azure-ai-evaluation azure-identity</code></pre>
+
+                <h3>Core Concepts</h3>
+                <ul>
+                    <li><strong>Evaluators:</strong> Classes that score model outputs on specific criteria (groundedness, relevance, etc.).</li>
+                    <li><strong><code>evaluate()</code> function:</strong> Orchestrates running multiple evaluators against a dataset.</li>
+                    <li><strong>Evaluation data:</strong> JSONL files or pandas DataFrames with query, context, response, and optional ground truth columns.</li>
+                    <li><strong>Results:</strong> Returned as dictionaries with per-row scores and aggregate metrics.</li>
+                </ul>
+
+                <h3>Running a Complete Evaluation</h3>
+                <span class="code-label">Python — Full Evaluation Workflow</span>
+<pre><code>from azure.ai.evaluation import evaluate
+from azure.ai.evaluation import (
+    GroundednessEvaluator,
+    RelevanceEvaluator,
+    CoherenceEvaluator,
+    FluencyEvaluator,
+    SimilarityEvaluator,
+    F1ScoreEvaluator,
+    ContentSafetyEvaluator
+)
+from azure.identity import DefaultAzureCredential
+import pandas as pd
+
+credential = DefaultAzureCredential()
+project = {
+    "subscription_id": "...",
+    "resource_group_name": "...",
+    "project_name": "my-foundry-project"
+}
+
+# Run the evaluation
+results = evaluate(
+    data="golden_dataset.jsonl",
+    evaluators={
+        "groundedness": GroundednessEvaluator(
+            credential=credential, azure_ai_project=project
+        ),
+        "relevance": RelevanceEvaluator(
+            credential=credential, azure_ai_project=project
+        ),
+        "coherence": CoherenceEvaluator(
+            credential=credential, azure_ai_project=project
+        ),
+        "fluency": FluencyEvaluator(
+            credential=credential, azure_ai_project=project
+        ),
+        "similarity": SimilarityEvaluator(
+            credential=credential, azure_ai_project=project
+        ),
+        "f1": F1ScoreEvaluator()
+    },
+    evaluator_config={
+        "groundedness": {
+            "query": "${data.query}",
+            "context": "${data.context}",
+            "response": "${data.response}"
+        },
+        "relevance": {
+            "query": "${data.query}",
+            "response": "${data.response}"
+        },
+        "coherence": {
+            "response": "${data.response}"
+        },
+        "fluency": {
+            "response": "${data.response}"
+        },
+        "similarity": {
+            "query": "${data.query}",
+            "response": "${data.response}",
+            "ground_truth": "${data.ground_truth}"
+        },
+        "f1": {
+            "response": "${data.response}",
+            "ground_truth": "${data.ground_truth}"
+        }
+    },
+    azure_ai_project=project,
+    output_path="./eval_results"
+)
+
+# Access aggregate metrics
+print("=== Aggregate Metrics ===")
+for metric, value in results["metrics"].items():
+    print(f"  {metric}: {value:.3f}")
+
+# Access per-row results
+df = pd.DataFrame(results["rows"])
+print(f"\n=== Low-scoring examples (groundedness < 3) ===")
+low_ground = df[df["outputs.groundedness.groundedness"] < 3]
+for _, row in low_ground.iterrows():
+    print(f"  Query: {row['inputs.query'][:80]}...")
+    print(f"  Score: {row['outputs.groundedness.groundedness']}")
+    print()</code></pre>
+
+                <div class="callout callout-blue">
+                    <div class="callout-title">💡 Portal Integration</div>
+                    <p>
+                        When you pass <code>azure_ai_project</code> to the <code>evaluate()</code> function, results are automatically logged to the AI Foundry portal. Navigate to <strong>Evaluation</strong> in your project to view results, compare runs, and drill into individual examples.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Mini Hack -->
+            <section id="mini-hack">
+                <h2>Mini Hack</h2>
+                <div class="mini-hack">
+                    <h3>🧪 Mini Hack: Create an Eval Dataset &amp; Run a Quality Benchmark</h3>
+                    <p>
+                        In this hands-on exercise, you'll create a golden evaluation dataset from scratch and run a quality benchmark using the <code>azure-ai-evaluation</code> SDK.
+                    </p>
+
+                    <h4>Challenge Steps</h4>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Create Your Dataset (20 min)</h4>
+                            <p>Build a JSONL evaluation dataset with at least 20 examples covering: factual questions, how-to guides, comparison queries, and out-of-scope questions. Each entry needs a query, context, ground truth, and category.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Generate Responses (10 min)</h4>
+                            <p>Use your AI Foundry deployment to generate responses for each query. Save the responses back into your dataset file.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Run Evaluators (10 min)</h4>
+                            <p>Configure and run at least four evaluators: Groundedness, Relevance, Coherence, and Similarity. Use the <code>evaluate()</code> function with your dataset.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Analyze Results (10 min)</h4>
+                            <p>Identify the lowest-scoring examples. What went wrong? Fix the prompt or context, re-run, and compare. Document the improvement.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Stretch Goal: Build a Judge (15 min)</h4>
+                            <p>Create a custom LLM-as-a-Judge evaluator using a prompty file. Define a rubric for "helpfulness" specific to your domain and run it alongside the built-in evaluators.</p>
+                        </div>
+                    </div>
+
+                    <h4>Success Criteria</h4>
+                    <ul class="checklist">
+                        <li>Created a JSONL dataset with 20+ examples across 4 categories</li>
+                        <li>Successfully ran 4 evaluators against the dataset</li>
+                        <li>Identified at least 3 low-scoring examples and documented root causes</li>
+                        <li>Improved at least one metric by modifying prompts or context</li>
+                        <li>Results visible in the AI Foundry portal Evaluation tab</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Key Takeaways -->
+            <section id="key-takeaways">
+                <h2>Key Takeaways</h2>
+                <div class="takeaways">
+                    <h3>What You've Learned</h3>
+                    <ul>
+                        <li><strong>Golden datasets</strong> are the foundation of systematic AI quality measurement — invest in expert-curated examples with validated ground truth.</li>
+                        <li><strong>Automated evaluation pipelines</strong> eliminate manual testing and provide consistent, reproducible quality assessments on every change.</li>
+                        <li><strong>LLM-as-a-Judge</strong> enables nuanced evaluation at scale, but requires careful calibration against human labels and awareness of biases.</li>
+                        <li><strong>The <code>azure-ai-evaluation</code> SDK</strong> provides pre-built evaluators for groundedness, relevance, coherence, fluency, and similarity.</li>
+                        <li><strong>Quality tracking over time</strong> catches gradual degradation and provides evidence of continuous improvement.</li>
+                        <li><strong>Regression detection gates</strong> in CI/CD pipelines prevent quality regressions from reaching production.</li>
+                        <li><strong>Category-level analysis</strong> reveals hidden regressions that aggregate metrics would mask.</li>
+                        <li><strong>Evaluation is not a one-time activity</strong> — it's a continuous practice that should run on every prompt change, model update, and data refresh.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Module 16 Preview -->
+            <section id="next-module">
+                <h2>Module 16 Preview</h2>
+
+                <div class="next-preview">
+                    <span class="celebration-badge">🎉 Congratulations!</span>
+                    <h3>🟡 You've Completed the Beginner Tier!</h3>
+                    <p>
+                        <strong>Congratulations!</strong> You've completed the Beginner tier of the Azure AI Foundry: Zero to Hero training course. Over 15 modules, you've built a solid foundation — from your first AI Foundry project to RAG pipelines, prompt engineering, and now quality measurement.
+                    </p>
+                    <p>
+                        <strong>Module 16 begins the Intermediate tier (🟡) with ARC 4: AI Agents!</strong> You'll move beyond simple chat interactions into the world of autonomous agents — building AI systems that can reason, plan, use tools, and take actions on behalf of users.
+                    </p>
+                    <p>
+                        Get ready to explore:
+                    </p>
+                    <ul>
+                        <li>Introduction to AI Agents in Azure AI Foundry</li>
+                        <li>Agent architectures and design patterns</li>
+                        <li>Tool use and function calling</li>
+                        <li>Planning and reasoning loops</li>
+                        <li>Building your first autonomous agent</li>
+                    </ul>
+                    <p style="margin-top:16px; font-weight:600; color: var(--ms-dark-blue);">
+                        The Beginner tier gave you the building blocks. The Intermediate tier teaches you to build intelligent systems. Let's go! 🚀
+                    </p>
+                </div>
+            </section>
+
+            <!-- Resources -->
+            <section id="resources">
+                <h2>Resources</h2>
+                <div class="resources-grid">
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/evaluate-generative-ai-app" target="_blank" rel="noopener" class="resource-card">
+                        <h4>📖 Evaluate with AI Foundry</h4>
+                        <p>Official documentation for evaluating generative AI applications in Azure AI Foundry.</p>
+                    </a>
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/evaluate-sdk" target="_blank" rel="noopener" class="resource-card">
+                        <h4>🔧 azure-ai-evaluation SDK</h4>
+                        <p>Developer guide for the Python evaluation SDK with API reference and examples.</p>
+                    </a>
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/concepts/evaluation-metrics-built-in" target="_blank" rel="noopener" class="resource-card">
+                        <h4>📊 Built-in Evaluation Metrics</h4>
+                        <p>Reference for all built-in evaluators: groundedness, relevance, coherence, fluency, and more.</p>
+                    </a>
+                    <a href="https://ai.azure.com" target="_blank" rel="noopener" class="resource-card">
+                        <h4>🌐 Azure AI Foundry Portal</h4>
+                        <p>Access the Evaluation tab in your AI Foundry project to view and compare evaluation runs.</p>
+                    </a>
+                    <a href="https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/simulator-interaction-data" target="_blank" rel="noopener" class="resource-card">
+                        <h4>🤖 Synthetic Data Generation</h4>
+                        <p>Generate synthetic evaluation datasets using the AI Foundry simulator tools.</p>
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=BFY6czQykMU" target="_blank" rel="noopener" class="resource-card">
+                        <h4>🎬 LLM Evaluation Video</h4>
+                        <p>Deep dive video on LLM evaluation strategies and the AI Foundry evaluation workflow.</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Module Navigation -->
+            <nav class="module-nav" aria-label="Module navigation">
+                <a href="../module-14/blog.html" class="prev">
+                    <span class="nav-direction">← Previous</span>
+                    <span class="nav-title">Module 14</span>
+                </a>
+                <a href="../module-16/blog.html" class="next">
+                    <span class="nav-direction">Next →</span>
+                    <span class="nav-title">Module 16: 🟡 Intermediate Tier Begins!</span>
+                </a>
+            </nav>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-copy">
+                &copy; 2026 Azure AI Foundry: Zero to Hero Training. Module 15 of 45.
+            </div>
+            <ul class="footer-links">
+                <li><a href="#">Privacy</a></li>
+                <li><a href="#">Terms</a></li>
+                <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+                <li><a href="#">GitHub</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SCROLL PROGRESS BAR =====
+        const scrollProgress = document.getElementById('scrollProgress');
+        function updateScrollProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            scrollProgress.style.width = progress + '%';
+        }
+
+        // ===== BACK TO TOP BUTTON =====
+        const backToTop = document.getElementById('backToTop');
+        function updateBackToTop() {
+            if (window.scrollY > 400) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ===== SCROLL EVENT LISTENER =====
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    updateScrollProgress();
+                    updateBackToTop();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // ===== TOC INTERSECTION OBSERVER =====
+        const tocLinks = document.querySelectorAll('.toc-list a');
+        const sections = [];
+
+        tocLinks.forEach(link => {
+            const id = link.getAttribute('href').substring(1);
+            const section = document.getElementById(id);
+            if (section) sections.push({ id, element: section, link });
+        });
+
+        const observerOptions = {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    const activeLink = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(({ element }) => observer.observe(element));
+
+        // ===== COPY BUTTONS FOR CODE BLOCKS =====
+        document.querySelectorAll('pre').forEach(block => {
+            if (block.querySelector('code')) {
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                btn.addEventListener('click', async () => {
+                    const code = block.querySelector('code').textContent;
+                    try {
+                        await navigator.clipboard.writeText(code);
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                    } catch (err) {
+                        btn.textContent = 'Failed';
+                        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                    }
+                });
+                block.appendChild(btn);
+            }
+        });
+
+        // ===== SMOOTH SCROLL FOR TOC LINKS =====
+        tocLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = link.getAttribute('href').substring(1);
+                const target = document.getElementById(id);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    history.pushState(null, null, `#${id}`);
+                }
+            });
+        });
+
+        // Initial updates
+        updateScrollProgress();
+        updateBackToTop();
+    </script>
+</body>
+</html>

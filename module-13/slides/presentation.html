@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 13: Building Your First RAG Application — Azure AI Foundry: Zero to Hero</title>
+<style>
+    :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-tertiary: #21262d;
+        --text-primary: #e6edf3;
+        --text-secondary: #8b949e;
+        --text-muted: #6e7681;
+        --ms-blue: #0078d4;
+        --ms-dark-blue: #004578;
+        --ms-purple: #5c2d91;
+        --ms-green: #107c10;
+        --ms-yellow: #ffb900;
+        --ms-red: #d83b01;
+        --accent-gradient: linear-gradient(135deg, #0078d4, #5c2d91);
+        --code-bg: #1a1e24;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .slide-deck {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .slide {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 80px;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        transform: translateX(40px);
+    }
+
+    .slide.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    .slide.exit-left {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+
+    /* Slide Layouts */
+    .slide-title {
+        background: var(--accent-gradient);
+        text-align: center;
+    }
+
+    .slide-title h1 {
+        font-size: 3.2em;
+        font-weight: 700;
+        margin-bottom: 16px;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .slide-title .subtitle {
+        font-size: 1.5em;
+        opacity: 0.9;
+        margin-bottom: 24px;
+    }
+
+    .slide-title .badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 8px 24px;
+        border-radius: 20px;
+        font-size: 0.95em;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .slide-content {
+        background: var(--bg-primary);
+        align-items: flex-start;
+    }
+
+    .slide-content h2 {
+        font-size: 2.2em;
+        margin-bottom: 32px;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .slide-content ul {
+        list-style: none;
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .slide-content ul li {
+        font-size: 1.3em;
+        padding: 12px 0;
+        padding-left: 32px;
+        position: relative;
+        line-height: 1.5;
+        color: var(--text-primary);
+    }
+
+    .slide-content ul li::before {
+        content: '▸';
+        position: absolute;
+        left: 0;
+        color: var(--ms-blue);
+        font-weight: bold;
+    }
+
+    .slide-split {
+        background: var(--bg-primary);
+        flex-direction: row;
+        padding: 40px 60px;
+        gap: 40px;
+    }
+
+    .slide-split .left, .slide-split .right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .slide-split h2 {
+        font-size: 2em;
+        margin-bottom: 24px;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .slide-split ul li {
+        font-size: 1.15em;
+        padding: 8px 0;
+        padding-left: 24px;
+        position: relative;
+        line-height: 1.5;
+        list-style: none;
+    }
+
+    .slide-split ul li::before {
+        content: '▸';
+        position: absolute;
+        left: 0;
+        color: var(--ms-blue);
+    }
+
+    /* Diagram boxes */
+    .diagram-box {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 12px;
+        padding: 24px;
+        margin: 8px 0;
+        text-align: center;
+    }
+
+    .diagram-box.blue { border-left: 4px solid var(--ms-blue); }
+    .diagram-box.purple { border-left: 4px solid var(--ms-purple); }
+    .diagram-box.green { border-left: 4px solid var(--ms-green); }
+
+    .diagram-box h3 {
+        font-size: 1.2em;
+        margin-bottom: 8px;
+    }
+
+    .diagram-box p {
+        color: var(--text-secondary);
+        font-size: 0.95em;
+    }
+
+    .arrow-down {
+        text-align: center;
+        font-size: 1.5em;
+        color: var(--ms-blue);
+        padding: 4px 0;
+    }
+
+    /* Code blocks */
+    .code-block {
+        background: var(--code-bg);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 20px 24px;
+        font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 0.9em;
+        line-height: 1.6;
+        overflow-x: auto;
+        width: 100%;
+        max-width: 900px;
+        margin-top: 16px;
+        white-space: pre;
+    }
+
+    .code-block .keyword { color: #c586c0; }
+    .code-block .string { color: #ce9178; }
+    .code-block .comment { color: var(--text-muted); }
+    .code-block .function { color: #dcdcaa; }
+    .code-block .variable { color: #9cdcfe; }
+
+    /* Callout */
+    .callout {
+        background: var(--bg-secondary);
+        border-left: 4px solid var(--ms-blue);
+        padding: 16px 20px;
+        border-radius: 0 8px 8px 0;
+        margin-top: 16px;
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .callout.yellow { border-left-color: var(--ms-yellow); }
+    .callout.green { border-left-color: var(--ms-green); }
+
+    .callout p {
+        font-size: 1.1em;
+        line-height: 1.5;
+    }
+
+    /* Section slide */
+    .slide-section {
+        background: var(--bg-secondary);
+        text-align: center;
+    }
+
+    .slide-section h2 {
+        font-size: 2.8em;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+    }
+
+    .slide-section p {
+        font-size: 1.3em;
+        color: var(--text-secondary);
+    }
+
+    /* Navigation */
+    .nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--bg-tertiary);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 32px;
+        z-index: 100;
+    }
+
+    .nav-bar .slide-counter {
+        color: var(--text-secondary);
+        font-size: 0.95em;
+    }
+
+    .nav-bar .nav-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .nav-bar button {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--text-muted);
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .nav-bar button:hover {
+        background: var(--ms-blue);
+        border-color: var(--ms-blue);
+    }
+
+    .nav-bar button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--accent-gradient);
+        transition: width 0.3s ease;
+        z-index: 101;
+    }
+
+    /* Table */
+    .slide-table {
+        width: 100%;
+        max-width: 900px;
+        border-collapse: collapse;
+        margin-top: 16px;
+    }
+
+    .slide-table th, .slide-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--bg-tertiary);
+        font-size: 1.05em;
+    }
+
+    .slide-table th {
+        color: var(--ms-blue);
+        font-weight: 600;
+    }
+
+    .icon-large {
+        font-size: 3em;
+        margin-bottom: 16px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        width: 100%;
+        max-width: 1000px;
+        margin-top: 24px;
+    }
+
+    .grid-3 .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    .grid-3 .card h3 {
+        margin: 12px 0 8px;
+        font-size: 1.15em;
+    }
+
+    .grid-3 .card p {
+        color: var(--text-secondary);
+        font-size: 0.95em;
+        line-height: 1.4;
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        width: 100%;
+        max-width: 900px;
+        margin-top: 20px;
+    }
+
+    .grid-2 .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .grid-2 .card h3 {
+        color: var(--ms-blue);
+        margin-bottom: 8px;
+    }
+
+    .grid-2 .card p, .grid-2 .card li {
+        color: var(--text-secondary);
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+
+    .grid-2 .card ul { list-style: none; padding: 0; }
+    .grid-2 .card ul li { padding: 4px 0; }
+    .grid-2 .card ul li::before { content: '• '; color: var(--ms-blue); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck" id="slideDeck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide slide-title active" data-slide="1">
+        <div class="badge">ARC 3 · DATA &amp; RAG</div>
+        <h1 style="margin-top: 24px;">Building Your First<br>RAG Application</h1>
+        <p class="subtitle">Module 13 of 45 — Azure AI Foundry: Zero to Hero</p>
+        <p style="opacity:0.7; margin-top: 16px;">April 2026 · Zero to Hero Training Team</p>
+    </div>
+
+    <!-- Slide 2: Agenda -->
+    <div class="slide slide-content" data-slide="2">
+        <h2>📋 Today's Agenda</h2>
+        <ul>
+            <li>Why RAG? The hallucination problem</li>
+            <li>RAG architecture: Retrieve → Augment → Generate</li>
+            <li>Setting up Azure AI Search indexes</li>
+            <li>"On Your Data" feature in AI Foundry</li>
+            <li>Building a RAG pipeline with the Python SDK</li>
+            <li>Citation handling &amp; source attribution</li>
+            <li>System prompt design for grounded responses</li>
+            <li><strong>Mini Hack:</strong> Build a RAG chatbot over company docs</li>
+        </ul>
+    </div>
+
+    <!-- Slide 3: Why RAG? -->
+    <div class="slide slide-content" data-slide="3">
+        <h2>🤔 Why RAG?</h2>
+        <ul>
+            <li><strong>Hallucination Problem:</strong> LLMs generate plausible but incorrect answers from training data alone</li>
+            <li><strong>Stale Knowledge:</strong> Model training data has a cutoff date — your company data changes daily</li>
+            <li><strong>No Source of Truth:</strong> Without grounding, users can't verify where answers come from</li>
+            <li><strong>RAG Solution:</strong> Retrieve real documents at query time → ground every answer in facts</li>
+        </ul>
+        <div class="callout yellow" style="margin-top:24px;">
+            <p>💡 RAG doesn't change the model — it changes <em>what the model sees</em> at inference time.</p>
+        </div>
+    </div>
+
+    <!-- Slide 4: RAG Architecture -->
+    <div class="slide slide-content" data-slide="4">
+        <h2>🏗️ RAG Architecture</h2>
+        <div class="grid-3">
+            <div class="card">
+                <div class="icon-large">🔍</div>
+                <h3>1. Retrieve</h3>
+                <p>Query Azure AI Search to find relevant document chunks using vector/hybrid search</p>
+            </div>
+            <div class="card">
+                <div class="icon-large">🔗</div>
+                <h3>2. Augment</h3>
+                <p>Inject retrieved context into the prompt alongside the user's question</p>
+            </div>
+            <div class="card">
+                <div class="icon-large">✨</div>
+                <h3>3. Generate</h3>
+                <p>Model produces a grounded response with citations from retrieved documents</p>
+            </div>
+        </div>
+        <div class="callout green" style="margin-top:24px;">
+            <p>✅ The key insight: the model only answers from <strong>your data</strong>, not its training knowledge.</p>
+        </div>
+    </div>
+
+    <!-- Slide 5: Azure AI Search Setup -->
+    <div class="slide slide-content" data-slide="5">
+        <h2>🔎 Setting Up Azure AI Search</h2>
+        <ul>
+            <li><strong>Create Search Resource:</strong> Basic tier or above (supports vector search)</li>
+            <li><strong>Document Processing:</strong> Chunk documents into 500-token overlapping segments</li>
+            <li><strong>Vectorize Content:</strong> Generate embeddings with text-embedding-ada-002</li>
+            <li><strong>Index Schema:</strong> Content field + vector field + metadata (source, page number)</li>
+            <li><strong>Search Strategy:</strong> Hybrid search = keyword (BM25) + vector similarity</li>
+        </ul>
+        <div class="code-block"><span class="comment"># Index schema fields</span>
+fields = [
+    SimpleField(name=<span class="string">"id"</span>, type=<span class="string">String</span>, key=<span class="variable">True</span>),
+    SearchableField(name=<span class="string">"content"</span>, type=<span class="string">String</span>),
+    SimpleField(name=<span class="string">"source_file"</span>, type=<span class="string">String</span>),
+    SearchField(name=<span class="string">"content_vector"</span>, vector_search_dimensions=<span class="variable">1536</span>)
+]</div>
+    </div>
+
+    <!-- Slide 6: On Your Data Feature -->
+    <div class="slide slide-content" data-slide="6">
+        <h2>📡 "On Your Data" in AI Foundry</h2>
+        <ul>
+            <li>No-code RAG setup directly in the AI Foundry portal</li>
+            <li>Connect a deployed model → Azure AI Search index in clicks</li>
+            <li>Supports hybrid search, semantic ranking, and vector search</li>
+            <li>Built-in citation extraction and source attribution</li>
+            <li>Great for prototyping before building custom pipelines</li>
+        </ul>
+        <div class="callout" style="margin-top:24px;">
+            <p>🔗 Try it now: <strong>ai.azure.com</strong> → Your Project → Playgrounds → Chat → Add your data</p>
+        </div>
+    </div>
+
+    <!-- Slide 7: Python SDK Pipeline -->
+    <div class="slide slide-content" data-slide="7">
+        <h2>🐍 Building the RAG Pipeline (Python SDK)</h2>
+        <div class="code-block"><span class="variable">response</span> = client.chat.completions.<span class="function">create</span>(
+    model=<span class="string">"gpt-4o"</span>,
+    messages=messages,
+    extra_body={
+        <span class="string">"data_sources"</span>: [{
+            <span class="string">"type"</span>: <span class="string">"azure_search"</span>,
+            <span class="string">"parameters"</span>: {
+                <span class="string">"endpoint"</span>: SEARCH_ENDPOINT,
+                <span class="string">"index_name"</span>: <span class="string">"company-docs-index"</span>,
+                <span class="string">"query_type"</span>: <span class="string">"vector_simple_hybrid"</span>,
+                <span class="string">"in_scope"</span>: <span class="variable">True</span>,
+                <span class="string">"top_n_documents"</span>: <span class="variable">5</span>
+            }
+        }]
+    }
+)</div>
+    </div>
+
+    <!-- Slide 8: Citation Handling -->
+    <div class="slide slide-content" data-slide="8">
+        <h2>📚 Citation Handling &amp; Source Attribution</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>What You Get</h3>
+                <ul>
+                    <li>Inline citation markers: [doc1], [doc2]</li>
+                    <li>Source file paths and titles</li>
+                    <li>Content snippets from matched chunks</li>
+                    <li>Relevance scores per document</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Best Practices</h3>
+                <ul>
+                    <li>Parse the <code>context.citations</code> array</li>
+                    <li>Map indices to original documents</li>
+                    <li>Display clickable source links</li>
+                    <li>Verify citation accuracy in testing</li>
+                </ul>
+            </div>
+        </div>
+        <div class="callout yellow" style="margin-top:24px;">
+            <p>⚠️ Always verify citations — the model may occasionally mis-attribute content to the wrong source.</p>
+        </div>
+    </div>
+
+    <!-- Slide 9: System Prompt Design -->
+    <div class="slide slide-content" data-slide="9">
+        <h2>💬 System Prompt Design for RAG</h2>
+        <div class="code-block"><span class="variable">SYSTEM_PROMPT</span> = <span class="string">"""You are a helpful company assistant.
+Answer questions based ONLY on the provided documents.
+
+Rules:
+1. Only use information from retrieved documents.
+2. If documents don't contain the answer, say:
+   "I don't have enough information to answer."
+3. Always cite sources using [doc1], [doc2] notation.
+4. Synthesize from multiple sources when relevant.
+5. Never fabricate information."""</span></div>
+        <div class="callout green" style="margin-top: 16px;">
+            <p>✅ A strong system prompt is your first line of defense against hallucination in RAG apps.</p>
+        </div>
+    </div>
+
+    <!-- Slide 10: Error Handling -->
+    <div class="slide slide-content" data-slide="10">
+        <h2>⚠️ Error Handling &amp; Edge Cases</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Common Edge Cases</h3>
+                <ul>
+                    <li>No relevant documents found</li>
+                    <li>Conflicting information across sources</li>
+                    <li>Query too vague for meaningful retrieval</li>
+                    <li>Documents in multiple languages</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Mitigation Strategies</h3>
+                <ul>
+                    <li>Set <code>in_scope: true</code> to limit to indexed data</li>
+                    <li>Tune <code>top_n_documents</code> (3–5 optimal)</li>
+                    <li>Add retry logic with exponential backoff</li>
+                    <li>Log retrieval scores for monitoring</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: RAG vs Fine-tuning -->
+    <div class="slide slide-content" data-slide="11">
+        <h2>⚖️ RAG vs Fine-Tuning</h2>
+        <table class="slide-table">
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>RAG</th>
+                    <th>Fine-Tuning</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Knowledge Update</td>
+                    <td>Update search index (minutes)</td>
+                    <td>Retrain model (hours/days)</td>
+                </tr>
+                <tr>
+                    <td>Data Freshness</td>
+                    <td>Real-time with index updates</td>
+                    <td>Frozen at training time</td>
+                </tr>
+                <tr>
+                    <td>Citations</td>
+                    <td>Built-in source attribution</td>
+                    <td>Not natively supported</td>
+                </tr>
+                <tr>
+                    <td>Best For</td>
+                    <td>Dynamic, document-based Q&amp;A</td>
+                    <td>Style, tone, or format changes</td>
+                </tr>
+                <tr>
+                    <td>Cost</td>
+                    <td>Search + inference costs</td>
+                    <td>Training + inference costs</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Slide 12: Mini Hack -->
+    <div class="slide slide-section" data-slide="12">
+        <div class="icon-large">🛠️</div>
+        <h2>Mini Hack</h2>
+        <p>Build a RAG Chatbot Over Your Company Docs</p>
+        <div class="callout green" style="margin-top: 32px; text-align: left; max-width: 700px;">
+            <p><strong>Your Mission:</strong></p>
+            <p style="margin-top: 8px;">1. Index 5–10 company documents into Azure AI Search<br>
+            2. Connect your search index to a deployed model in AI Foundry<br>
+            3. Build a Python chatbot with citation handling<br>
+            4. Test with in-scope and out-of-scope questions<br>
+            5. Verify citations map to correct source documents</p>
+        </div>
+    </div>
+
+    <!-- Slide 13: Key Takeaways -->
+    <div class="slide slide-content" data-slide="13">
+        <h2>🎯 Key Takeaways</h2>
+        <ul>
+            <li><strong>RAG = Retrieve → Augment → Generate</strong> — the most important pattern for enterprise AI</li>
+            <li><strong>Azure AI Search</strong> provides vector/hybrid retrieval for RAG pipelines</li>
+            <li><strong>"On Your Data"</strong> enables no-code RAG prototyping in AI Foundry</li>
+            <li><strong>Citations matter</strong> — parse, display, and verify source attribution</li>
+            <li><strong>System prompts</strong> are your first defense against hallucination</li>
+            <li><strong>RAG ≠ Fine-tuning</strong> — choose based on your data update frequency</li>
+        </ul>
+    </div>
+
+    <!-- Slide 14: Module 14 Preview -->
+    <div class="slide slide-section" data-slide="14">
+        <div class="icon-large">🔮</div>
+        <h2>Up Next: Module 14</h2>
+        <p style="margin-top:12px; font-size:1.2em;">Advanced Retrieval Strategies</p>
+        <div class="callout" style="margin-top: 32px; text-align: left; max-width: 600px;">
+            <p>Topics include:</p>
+            <p style="margin-top: 8px; color: var(--text-secondary);">
+                • Hybrid search tuning &amp; semantic ranking<br>
+                • Multi-index federation<br>
+                • Query rewriting &amp; expansion<br>
+                • Evaluation metrics for retrieval quality
+            </p>
+        </div>
+    </div>
+
+    <!-- Slide 15: Resources & Thank You -->
+    <div class="slide slide-title" data-slide="15">
+        <div class="badge" style="margin-bottom: 24px;">Thank You!</div>
+        <h1 style="font-size: 2.4em;">Resources &amp; Links</h1>
+        <div style="text-align: left; margin-top: 32px; font-size: 1.1em; line-height: 2;">
+            <p>📺 <strong>Video:</strong> Building RAG Solutions with Azure AI Foundry</p>
+            <p>🌐 <strong>AI Foundry Portal:</strong> ai.azure.com</p>
+            <p>📖 <strong>Docs:</strong> learn.microsoft.com/azure/ai-studio</p>
+            <p>🔎 <strong>AI Search Docs:</strong> learn.microsoft.com/azure/search</p>
+            <p>🧪 <strong>Lab:</strong> module-13/lab/hands-on-lab.md</p>
+        </div>
+        <p style="margin-top: 32px; opacity: 0.7;">Module 13 of 45 · Azure AI Foundry: Zero to Hero · April 2026</p>
+    </div>
+
+</div>
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+    <span class="slide-counter" id="slideCounter">Slide 1 of 15</span>
+    <div class="nav-buttons">
+        <button id="prevBtn" onclick="prevSlide()" disabled>← Previous</button>
+        <button id="nextBtn" onclick="nextSlide()">Next →</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active', 'exit-left');
+            if (i < index) slide.classList.add('exit-left');
+        });
+        slides[index].classList.add('active');
+
+        document.getElementById('slideCounter').textContent = `Slide ${index + 1} of ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = index === 0;
+        document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((index + 1) / totalSlides * 100) + '%';
+    }
+
+    window.nextSlide = function() {
+        if (currentSlide < totalSlides - 1) {
+            currentSlide++;
+            showSlide(currentSlide);
+        }
+    };
+
+    window.prevSlide = function() {
+        if (currentSlide > 0) {
+            currentSlide--;
+            showSlide(currentSlide);
+        }
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            e.preventDefault();
+            nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            prevSlide();
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            currentSlide = 0;
+            showSlide(currentSlide);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            currentSlide = totalSlides - 1;
+            showSlide(currentSlide);
+        }
+    });
+
+    showSlide(0);
+})();
+</script>
+</body>
+</html>

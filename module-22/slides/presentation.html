@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 22 — Multi-Model Orchestration &amp; Routing | Azure AI Foundry: Zero to Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --ms-blue: #0078d4;
+    --ms-purple: #5c2d91;
+    --accent-green: #3fb950;
+    --accent-yellow: #d29922;
+    --accent-cyan: #39d2c0;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #484f58;
+    --border-color: #30363d;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Progress Bar */
+  #progressBarContainer {
+    position: fixed; top: 0; left: 0; width: 100%; height: 4px;
+    background: var(--bg-tertiary); z-index: 1000;
+  }
+  #progressBar {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple), var(--accent-cyan));
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Slide Counter */
+  #slideCounter {
+    position: fixed; bottom: 24px; right: 32px;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    color: var(--text-muted); z-index: 1000;
+  }
+
+  /* Nav Hint */
+  #navHint {
+    position: fixed; bottom: 24px; left: 32px;
+    font-size: 13px; color: var(--text-muted); z-index: 1000;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #navHint kbd {
+    background: var(--bg-tertiary); border: 1px solid var(--border-color);
+    border-radius: 4px; padding: 2px 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text-secondary);
+  }
+
+  /* Slides */
+  .slide {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 60px 80px;
+    opacity: 0; transform: translateX(60px);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1; transform: translateX(0); pointer-events: auto;
+  }
+  .slide.prev {
+    opacity: 0; transform: translateX(-60px);
+  }
+
+  .slide-content {
+    max-width: 1100px; width: 100%;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 6px 16px; border-radius: 20px;
+    background: rgba(0,120,212,0.12); color: var(--ms-blue);
+    border: 1px solid rgba(0,120,212,0.25);
+    margin-bottom: 24px;
+  }
+  .badge.purple { background: rgba(92,45,145,0.12); color: #a371f7; border-color: rgba(92,45,145,0.3); }
+  .badge.green  { background: rgba(63,185,80,0.12); color: var(--accent-green); border-color: rgba(63,185,80,0.25); }
+  .badge.yellow { background: rgba(210,153,34,0.12); color: var(--accent-yellow); border-color: rgba(210,153,34,0.25); }
+  .badge.cyan   { background: rgba(57,210,192,0.12); color: var(--accent-cyan); border-color: rgba(57,210,192,0.25); }
+
+  /* Typography */
+  .slide-title {
+    font-size: 44px; font-weight: 800; line-height: 1.15;
+    margin-bottom: 16px; letter-spacing: -0.5px;
+  }
+  .slide-title.gradient {
+    background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple), var(--accent-cyan));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .slide-subtitle {
+    font-size: 20px; color: var(--text-secondary); font-weight: 400;
+    line-height: 1.5; margin-bottom: 12px;
+  }
+  .slide-meta {
+    font-size: 14px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+    margin-top: 20px;
+  }
+  h2 {
+    font-size: 36px; font-weight: 800; margin-bottom: 28px;
+    letter-spacing: -0.3px;
+  }
+  h3 { font-size: 22px; font-weight: 700; margin-bottom: 14px; }
+
+  /* Agenda list */
+  .agenda-list { list-style: none; padding: 0; }
+  .agenda-list li {
+    font-size: 20px; padding: 16px 20px;
+    border-left: 3px solid transparent;
+    margin-bottom: 6px; border-radius: 0 8px 8px 0;
+    background: var(--bg-secondary);
+    transition: border-color 0.3s, background 0.3s;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .agenda-list li:nth-child(1) { border-left-color: var(--ms-blue); }
+  .agenda-list li:nth-child(2) { border-left-color: var(--ms-purple); }
+  .agenda-list li:nth-child(3) { border-left-color: var(--accent-cyan); }
+  .agenda-list li:nth-child(4) { border-left-color: var(--accent-green); }
+  .agenda-list li:nth-child(5) { border-left-color: var(--accent-yellow); }
+  .agenda-list .num {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+    color: var(--text-muted); min-width: 28px;
+  }
+
+  /* Flow Diagrams */
+  .flow-diagram {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 28px 0; flex-wrap: wrap;
+  }
+  .flow-node {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 14px 22px; text-align: center;
+    font-size: 15px; font-weight: 600;
+  }
+  .flow-node.highlight { border-color: var(--ms-blue); background: rgba(0,120,212,0.08); }
+  .flow-node.green     { border-color: var(--accent-green); background: rgba(63,185,80,0.08); }
+  .flow-node.purple    { border-color: var(--ms-purple); background: rgba(92,45,145,0.08); }
+  .flow-node.cyan      { border-color: var(--accent-cyan); background: rgba(57,210,192,0.08); }
+  .flow-node.yellow    { border-color: var(--accent-yellow); background: rgba(210,153,34,0.08); }
+  .flow-arrow {
+    font-size: 22px; color: var(--text-muted); margin: 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .flow-branch {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  /* Two Column Layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 16px; }
+  .col-card {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 28px;
+  }
+  .col-card h3 { margin-bottom: 16px; }
+  .col-card ul { list-style: none; padding: 0; }
+  .col-card ul li {
+    font-size: 16px; padding: 8px 0;
+    color: var(--text-secondary); display: flex; align-items: flex-start; gap: 10px;
+  }
+  .col-card ul li::before { font-size: 14px; flex-shrink: 0; }
+  .col-card.single ul li::before { content: "▪"; color: var(--accent-yellow); }
+  .col-card.multi ul li::before  { content: "▪"; color: var(--accent-green); }
+
+  /* Cards Row */
+  .cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 16px; }
+  .model-card {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 24px; text-align: center;
+  }
+  .model-card .icon { font-size: 36px; margin-bottom: 12px; }
+  .model-card .name { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .model-card .stat {
+    font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .model-card .stat span { color: var(--text-primary); font-weight: 600; }
+  .model-card .best-for {
+    font-size: 13px; color: var(--accent-cyan); margin-top: 12px;
+    padding-top: 12px; border-top: 1px solid var(--border-color);
+  }
+  .model-card .rating {
+    margin-top: 10px; font-size: 13px; color: var(--accent-yellow);
+    letter-spacing: 2px;
+  }
+
+  /* Code Block */
+  .code-block {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 24px 28px; margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    line-height: 1.7; overflow-x: auto;
+    position: relative;
+  }
+  .code-block .lang-tag {
+    position: absolute; top: 10px; right: 14px;
+    font-size: 11px; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .code-block .kw   { color: #ff7b72; }
+  .code-block .fn   { color: #d2a8ff; }
+  .code-block .str  { color: #a5d6ff; }
+  .code-block .cm   { color: #8b949e; font-style: italic; }
+  .code-block .var  { color: #ffa657; }
+  .code-block .op   { color: #79c0ff; }
+  .code-block .self { color: #ff7b72; }
+  .code-block .num  { color: #79c0ff; }
+
+  /* KV Table */
+  .kv-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    margin-top: 16px; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border-color);
+  }
+  .kv-table th {
+    background: var(--bg-tertiary); padding: 14px 18px;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-secondary); text-align: left; font-weight: 600;
+  }
+  .kv-table td {
+    background: var(--bg-secondary); padding: 14px 18px;
+    font-size: 15px; border-top: 1px solid var(--border-color);
+  }
+  .kv-table tr:hover td { background: rgba(0,120,212,0.04); }
+
+  /* Callout */
+  .callout {
+    background: rgba(0,120,212,0.06); border: 1px solid rgba(0,120,212,0.2);
+    border-left: 4px solid var(--ms-blue);
+    border-radius: 0 8px 8px 0; padding: 16px 20px; margin-top: 20px;
+    font-size: 15px; color: var(--text-secondary); line-height: 1.5;
+  }
+  .callout strong { color: var(--accent-green); }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
+  .step {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 20px; text-align: center;
+  }
+  .step .step-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, var(--ms-blue), var(--accent-cyan));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .step .step-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .step .step-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+
+  /* Resources */
+  .resource-list { list-style: none; padding: 0; margin-top: 12px; }
+  .resource-list li {
+    padding: 14px 18px; background: var(--bg-secondary);
+    border: 1px solid var(--border-color); border-radius: 8px;
+    margin-bottom: 10px; font-size: 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .resource-list li .r-icon { font-size: 20px; }
+  .resource-list li a { color: var(--ms-blue); text-decoration: none; }
+  .resource-list li a:hover { text-decoration: underline; }
+
+  .next-module {
+    margin-top: 28px; padding: 18px 24px;
+    background: linear-gradient(135deg, rgba(0,120,212,0.08), rgba(92,45,145,0.08));
+    border: 1px solid rgba(0,120,212,0.2);
+    border-radius: 10px; display: flex; align-items: center; gap: 14px;
+  }
+  .next-module .arrow { font-size: 24px; color: var(--ms-blue); }
+  .next-module .label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .next-module .title { font-size: 18px; font-weight: 700; }
+
+  /* Bullet points */
+  .bullet-list { list-style: none; padding: 0; margin-top: 8px; }
+  .bullet-list li {
+    font-size: 17px; padding: 8px 0; color: var(--text-secondary);
+    display: flex; align-items: flex-start; gap: 10px; line-height: 1.5;
+  }
+  .bullet-list li .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ms-blue); margin-top: 8px; flex-shrink: 0;
+  }
+
+  /* Savings highlight */
+  .savings-box {
+    display: inline-block; background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.3); border-radius: 8px;
+    padding: 10px 18px; margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: 20px;
+    font-weight: 700; color: var(--accent-green);
+  }
+
+  /* Task table */
+  .task-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    margin-top: 16px; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border-color);
+  }
+  .task-table th {
+    background: var(--bg-tertiary); padding: 12px 18px;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-secondary); text-align: left; font-weight: 600;
+  }
+  .task-table td {
+    background: var(--bg-secondary); padding: 12px 18px;
+    font-size: 15px; border-top: 1px solid var(--border-color);
+  }
+
+  /* Cascade specific */
+  .cascade-flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 24px 0; flex-wrap: wrap;
+  }
+  .cascade-node {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 16px 20px; text-align: center; min-width: 110px;
+  }
+  .cascade-node .model-name { font-weight: 700; font-size: 15px; }
+  .cascade-node .model-cost { font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+  .cascade-check {
+    display: flex; flex-direction: column; align-items: center;
+    margin: 0 6px; font-size: 13px; color: var(--text-muted);
+  }
+  .cascade-check .check-label { font-size: 11px; color: var(--accent-yellow); margin-bottom: 2px; }
+  .cascade-check .check-arrow { font-size: 18px; }
+
+  /* Architecture */
+  .arch-flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 24px 0; flex-wrap: wrap;
+  }
+  .arch-node {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 14px 18px; text-align: center;
+  }
+  .arch-node .arch-icon { font-size: 24px; margin-bottom: 6px; }
+  .arch-node .arch-label { font-size: 13px; font-weight: 600; }
+  .arch-arrow { font-size: 20px; color: var(--text-muted); margin: 0 6px; }
+
+  .description { font-size: 17px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progressBarContainer"><div id="progressBar"></div></div>
+
+<!-- Nav Hint -->
+<div id="navHint"><kbd>←</kbd><kbd>→</kbd> Navigate slides</div>
+
+<!-- Slide Counter -->
+<div id="slideCounter">1 / 13</div>
+
+<!-- ========== SLIDE 1: Title ========== -->
+<div class="slide active">
+  <div class="slide-content" style="text-align:center;">
+    <div class="badge purple">ARC 5 · ORCHESTRATION &amp; INTEGRATION</div>
+    <h1 class="slide-title gradient" style="font-size:52px;">Multi-Model Orchestration<br>&amp; Routing</h1>
+    <p class="slide-subtitle">Route intelligently across GPT-4o, Phi &amp; Llama in Azure AI Foundry</p>
+    <p class="slide-meta">Module 22 of 45 · April 2026 · Zero to Hero Training</p>
+  </div>
+</div>
+
+<!-- ========== SLIDE 2: Agenda ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge">Agenda</div>
+    <h2>What We'll Cover</h2>
+    <ul class="agenda-list">
+      <li><span class="num">01</span> Why Multi-Model?</li>
+      <li><span class="num">02</span> Router Patterns</li>
+      <li><span class="num">03</span> Orchestrating Models in Azure AI Foundry</li>
+      <li><span class="num">04</span> Cost vs Performance Trade-offs</li>
+      <li><span class="num">05</span> Mini Hack — Build a Smart Router</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ========== SLIDE 3: The Multi-Model Reality ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge cyan">Reality Check</div>
+    <h2>The Multi-Model Reality</h2>
+    <p class="description">No single model rules them all. Different models excel at different tasks — and smart routing lets you leverage each model's strengths while controlling costs.</p>
+    <ul class="bullet-list">
+      <li><span class="dot"></span>GPT-4o excels at complex reasoning &amp; creative generation</li>
+      <li><span class="dot"></span>Phi-4 delivers fast, cost-efficient results for simpler tasks</li>
+      <li><span class="dot" style="background:var(--accent-cyan);"></span>Llama 3.1 offers strong open-weight summarization &amp; extraction</li>
+    </ul>
+    <div class="flow-diagram" style="margin-top:28px;">
+      <div class="flow-node highlight">👤 User Request</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node purple" style="border-width:2px;">🧠 Smart Router</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-branch">
+        <div class="flow-node highlight" style="font-size:13px;">🔷 GPT-4o</div>
+        <div class="flow-node green" style="font-size:13px;">🟢 Phi-4</div>
+        <div class="flow-node cyan" style="font-size:13px;">🔶 Llama 3.1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 4: When to Use Multiple Models ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge yellow">Strategy</div>
+    <h2>When to Use Multiple Models</h2>
+    <div class="two-col">
+      <div class="col-card single">
+        <h3>🔹 Single Model</h3>
+        <ul>
+          <li>Simpler architecture &amp; deployment</li>
+          <li>Consistent response style</li>
+          <li>Easier debugging &amp; monitoring</li>
+          <li>Higher per-request cost at scale</li>
+          <li>One-size-fits-all trade-offs</li>
+        </ul>
+      </div>
+      <div class="col-card multi">
+        <h3>🔷 Multi-Model</h3>
+        <ul>
+          <li>Optimized cost per request type</li>
+          <li>Specialized quality per task</li>
+          <li>Resilience through fallback chains</li>
+          <li>Added routing complexity</li>
+          <li>Best for high-volume production</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:20px;">
+      💡 <strong>Rule of thumb:</strong> If you process &gt;10K requests/day with mixed complexity, multi-model routing pays for itself within weeks.
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 5: Router Pattern #1 — Cost-Based ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge green">Pattern #1</div>
+    <h2>Cost-Based Routing</h2>
+    <p class="description">Always pick the <strong style="color:var(--accent-green);">cheapest model</strong> that meets the quality bar for the request.</p>
+    <div class="flow-diagram">
+      <div class="flow-node highlight">Incoming Request</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node yellow">Classify Complexity</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node green">Pick Cheapest Capable</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node cyan">✅ Response</div>
+    </div>
+    <div class="callout">
+      <strong>Example:</strong> Simple Q&amp;A routed to Phi-4 (<span style="font-family:'JetBrains Mono',monospace;">$0.0002/1K tokens</span>) instead of GPT-4o (<span style="font-family:'JetBrains Mono',monospace;">$0.005/1K tokens</span>)
+    </div>
+    <div class="savings-box">= 25× cost savings per request</div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 6: Router Pattern #2 — Capability-Based ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge purple">Pattern #2</div>
+    <h2>Capability-Based Routing</h2>
+    <p class="description">Route each request to the model best suited for that specific task type.</p>
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Task Type</th>
+          <th>Routed Model</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>📊 Classification</td>
+          <td style="color:var(--accent-green);font-weight:600;">Phi-4</td>
+          <td style="color:var(--text-secondary);">Fast, low-cost, high accuracy on structured tasks</td>
+        </tr>
+        <tr>
+          <td>📝 Summarization</td>
+          <td style="color:var(--accent-cyan);font-weight:600;">Meta-Llama 3.1</td>
+          <td style="color:var(--text-secondary);">Strong extractive &amp; abstractive performance</td>
+        </tr>
+        <tr>
+          <td>🧠 Complex Reasoning</td>
+          <td style="color:var(--ms-blue);font-weight:600;">GPT-4o</td>
+          <td style="color:var(--text-secondary);">Best multi-step reasoning &amp; nuanced generation</td>
+        </tr>
+        <tr>
+          <td>💻 Code Generation</td>
+          <td style="color:var(--ms-blue);font-weight:600;">GPT-4o</td>
+          <td style="color:var(--text-secondary);">Superior code quality &amp; debugging ability</td>
+        </tr>
+        <tr>
+          <td>🔍 Entity Extraction</td>
+          <td style="color:var(--accent-green);font-weight:600;">Phi-4</td>
+          <td style="color:var(--text-secondary);">Efficient structured output at low cost</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== SLIDE 7: Router Pattern #3 — Fallback Cascade ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge yellow">Pattern #3</div>
+    <h2>Fallback Cascade</h2>
+    <p class="description">Try the cheapest model first. If it fails quality checks, escalate to the next tier.</p>
+    <div class="cascade-flow">
+      <div class="cascade-node" style="border-color:var(--accent-green);">
+        <div class="model-name" style="color:var(--accent-green);">Phi-4</div>
+        <div class="model-cost">$0.0002/1K</div>
+      </div>
+      <div class="cascade-check">
+        <span class="check-label">fail?</span>
+        <span class="check-arrow">→</span>
+      </div>
+      <div class="cascade-node" style="border-color:var(--accent-cyan);">
+        <div class="model-name" style="color:var(--accent-cyan);">Llama 3.1</div>
+        <div class="model-cost">$0.001/1K</div>
+      </div>
+      <div class="cascade-check">
+        <span class="check-label">fail?</span>
+        <span class="check-arrow">→</span>
+      </div>
+      <div class="cascade-node" style="border-color:var(--ms-blue);">
+        <div class="model-name" style="color:var(--ms-blue);">GPT-4o</div>
+        <div class="model-cost">$0.005/1K</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:16px;">
+      <strong>Benefit:</strong> Most requests (70-80%) are handled by Phi-4. Only complex edge cases escalate to GPT-4o. Average cost drops <strong>60–70%</strong> compared to GPT-4o-only.
+    </div>
+    <div class="flow-diagram" style="margin-top:20px;gap:16px;">
+      <div style="text-align:center;">
+        <div style="font-size:32px;font-weight:800;color:var(--accent-green);">~75%</div>
+        <div style="font-size:12px;color:var(--text-muted);">Handled by Phi-4</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:32px;font-weight:800;color:var(--accent-cyan);">~18%</div>
+        <div style="font-size:12px;color:var(--text-muted);">Handled by Llama</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:32px;font-weight:800;color:var(--ms-blue);">~7%</div>
+        <div style="font-size:12px;color:var(--text-muted);">Handled by GPT-4o</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 8: Model Comparison ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge">Comparison</div>
+    <h2>Model Comparison</h2>
+    <div class="cards-row">
+      <div class="model-card" style="border-top:3px solid var(--ms-blue);">
+        <div class="icon">🔷</div>
+        <div class="name">GPT-4o</div>
+        <div class="stat">Cost: <span>$0.005/1K tokens</span></div>
+        <div class="stat">Latency: <span>~800ms</span></div>
+        <div class="stat">Context: <span>128K tokens</span></div>
+        <div class="best-for">Best for: Complex reasoning, code gen, creative tasks</div>
+        <div class="rating">★★★★★</div>
+      </div>
+      <div class="model-card" style="border-top:3px solid var(--accent-green);">
+        <div class="icon">🟢</div>
+        <div class="name">Phi-4</div>
+        <div class="stat">Cost: <span>$0.0002/1K tokens</span></div>
+        <div class="stat">Latency: <span>~200ms</span></div>
+        <div class="stat">Context: <span>16K tokens</span></div>
+        <div class="best-for">Best for: Classification, extraction, simple Q&amp;A</div>
+        <div class="rating">★★★☆☆</div>
+      </div>
+      <div class="model-card" style="border-top:3px solid var(--accent-cyan);">
+        <div class="icon">🔶</div>
+        <div class="name">Meta-Llama-3.1-8B</div>
+        <div class="stat">Cost: <span>$0.001/1K tokens</span></div>
+        <div class="stat">Latency: <span>~350ms</span></div>
+        <div class="stat">Context: <span>128K tokens</span></div>
+        <div class="best-for">Best for: Summarization, translation, extraction</div>
+        <div class="rating">★★★★☆</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 9: Architecture Overview ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge cyan">Architecture</div>
+    <h2>End-to-End Pipeline</h2>
+    <p class="description">A production-grade multi-model orchestration pipeline in Azure AI Foundry.</p>
+    <div class="arch-flow">
+      <div class="arch-node" style="border-color:var(--text-muted);">
+        <div class="arch-icon">👤</div>
+        <div class="arch-label">User</div>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:var(--ms-blue);">
+        <div class="arch-icon">🌐</div>
+        <div class="arch-label">API Gateway</div>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:var(--ms-purple);border-width:2px;">
+        <div class="arch-icon">🧠</div>
+        <div class="arch-label">Smart Router</div>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:var(--accent-green);">
+        <div class="arch-icon">🗄️</div>
+        <div class="arch-label">Model Pool</div>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:var(--accent-yellow);">
+        <div class="arch-icon">✅</div>
+        <div class="arch-label">Validator</div>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:var(--text-muted);">
+        <div class="arch-icon">👤</div>
+        <div class="arch-label">User</div>
+      </div>
+    </div>
+    <div class="two-col" style="margin-top:20px;">
+      <div class="col-card" style="padding:18px;">
+        <h3 style="font-size:16px;">🧠 Smart Router</h3>
+        <ul style="font-size:14px;">
+          <li style="padding:4px 0;">Classifies request complexity</li>
+          <li style="padding:4px 0;">Applies cost &amp; latency constraints</li>
+          <li style="padding:4px 0;">Selects optimal model</li>
+        </ul>
+      </div>
+      <div class="col-card" style="padding:18px;">
+        <h3 style="font-size:16px;">✅ Response Validator</h3>
+        <ul style="font-size:14px;">
+          <li style="padding:4px 0;">Checks quality thresholds</li>
+          <li style="padding:4px 0;">Triggers fallback if needed</li>
+          <li style="padding:4px 0;">Logs metrics &amp; traces</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 10: Code — Smart Router ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge green">Code</div>
+    <h2>Smart Router Implementation</h2>
+    <div class="code-block">
+      <span class="lang-tag">Python</span>
+<span class="kw">class</span> <span class="fn">SmartModelRouter</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="self">self</span>):
+        <span class="self">self</span>.<span class="var">models</span> = {
+            <span class="str">"gpt-4o"</span>:    {<span class="str">"cost"</span>: <span class="num">0.005</span>, <span class="str">"capability"</span>: <span class="num">5</span>},
+            <span class="str">"llama-3.1"</span>: {<span class="str">"cost"</span>: <span class="num">0.001</span>, <span class="str">"capability"</span>: <span class="num">4</span>},
+            <span class="str">"phi-4"</span>:     {<span class="str">"cost"</span>: <span class="num">0.0002</span>, <span class="str">"capability"</span>: <span class="num">3</span>},
+        }
+
+    <span class="kw">def</span> <span class="fn">route</span>(<span class="self">self</span>, task_complexity, max_cost=<span class="kw">None</span>):
+        <span class="cm"># Filter models meeting the complexity requirement</span>
+        candidates = <span class="self">self</span>._filter_by_capability(task_complexity)
+        <span class="kw">if</span> max_cost:
+            candidates = [m <span class="kw">for</span> m <span class="kw">in</span> candidates
+                         <span class="kw">if</span> <span class="self">self</span>.<span class="var">models</span>[m][<span class="str">"cost"</span>] <span class="op">&lt;=</span> max_cost]
+        <span class="cm"># Return cheapest capable model</span>
+        <span class="kw">return</span> sorted(candidates,
+                      key=<span class="kw">lambda</span> m: <span class="self">self</span>.<span class="var">models</span>[m][<span class="str">"cost"</span>])[<span class="num">0</span>]
+
+    <span class="kw">def</span> <span class="fn">_filter_by_capability</span>(<span class="self">self</span>, required):
+        <span class="kw">return</span> [m <span class="kw">for</span> m, cfg <span class="kw">in</span> <span class="self">self</span>.<span class="var">models</span>.items()
+                <span class="kw">if</span> cfg[<span class="str">"capability"</span>] <span class="op">&gt;=</span> required]
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 11: Performance vs Cost ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge yellow">Benchmarks</div>
+    <h2>Performance vs Cost</h2>
+    <table class="kv-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Cost / 1K Tokens</th>
+          <th>Latency</th>
+          <th>Quality Score</th>
+          <th>Best Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;color:var(--ms-blue);">GPT-4o</td>
+          <td style="font-family:'JetBrains Mono',monospace;">$0.005</td>
+          <td>~800ms</td>
+          <td style="color:var(--accent-green);">95/100</td>
+          <td>Complex reasoning, code, creative</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--accent-green);">Phi-4</td>
+          <td style="font-family:'JetBrains Mono',monospace;">$0.0002</td>
+          <td>~200ms</td>
+          <td style="color:var(--accent-yellow);">78/100</td>
+          <td>Classification, extraction, Q&amp;A</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--accent-cyan);">Llama 3.1 8B</td>
+          <td style="font-family:'JetBrains Mono',monospace;">$0.001</td>
+          <td>~350ms</td>
+          <td style="color:var(--accent-yellow);">83/100</td>
+          <td>Summarization, translation</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:20px;">
+      💡 A well-designed router can reduce costs by <strong>60–80%</strong> while maintaining <strong>95%+</strong> quality across mixed workloads by routing only complex tasks to premium models.
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 12: Mini Hack Preview ========== -->
+<div class="slide">
+  <div class="slide-content" style="text-align:center;">
+    <div class="badge green">Hands-on</div>
+    <h2>🛠️ Mini Hack Preview</h2>
+    <p class="description" style="text-align:center;">Build a smart router that classifies incoming requests and picks the cheapest capable model from a pool of three deployed endpoints.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Deploy 3 Models</div>
+        <div class="step-desc">Deploy GPT-4o, Phi-4 &amp; Llama 3.1 in Azure AI Foundry</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Build Classifier</div>
+        <div class="step-desc">Create a lightweight task-complexity classifier</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Implement Router</div>
+        <div class="step-desc">Wire up cost-based &amp; capability-based routing logic</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Test &amp; Measure</div>
+        <div class="step-desc">Run mixed workload, compare cost &amp; quality metrics</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 13: Resources & Next Steps ========== -->
+<div class="slide">
+  <div class="slide-content">
+    <div class="badge">Resources</div>
+    <h2>Resources &amp; Next Steps</h2>
+    <ul class="resource-list">
+      <li>
+        <span class="r-icon">🎥</span>
+        <span>Video Playlist — <a href="https://aka.ms/ai-foundry-training" target="_blank">aka.ms/ai-foundry-training</a></span>
+      </li>
+      <li>
+        <span class="r-icon">📚</span>
+        <span>Azure AI Foundry Model Catalog — <a href="https://ai.azure.com/explore/models" target="_blank">ai.azure.com/explore/models</a></span>
+      </li>
+      <li>
+        <span class="r-icon">📖</span>
+        <span>Multi-Model Best Practices — <a href="https://learn.microsoft.com/azure/ai-foundry/" target="_blank">learn.microsoft.com/azure/ai-foundry</a></span>
+      </li>
+      <li>
+        <span class="r-icon">💻</span>
+        <span>GitHub Samples — <a href="https://github.com/azure-samples/ai-foundry-multi-model" target="_blank">azure-samples/ai-foundry-multi-model</a></span>
+      </li>
+    </ul>
+    <div class="next-module">
+      <span class="arrow">→</span>
+      <div>
+        <div class="label">Up Next</div>
+        <div class="title">Module 23 — Advanced Orchestration Patterns</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= slides.length) return;
+    const prev = current;
+    slides[current].classList.remove('active');
+    if (n > prev) {
+      slides[current].classList.add('prev');
+    }
+    current = n;
+    slides.forEach(function(s) { s.classList.remove('prev'); });
+    slides[current].classList.add('active');
+    document.getElementById('progressBar').style.width =
+      ((current + 1) / slides.length * 100) + '%';
+    document.getElementById('slideCounter').textContent =
+      (current + 1) + ' / ' + slides.length;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      goTo(current + 1);
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goTo(current - 1);
+    }
+  });
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>

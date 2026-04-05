@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 23: Connecting AI Foundry to Copilot Studio — Slide Deck</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #4db8ff;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --ms-red: #d13438;
+            --bg-dark: #0d1117;
+            --bg-slide: #161b22;
+            --bg-card: #1c2333;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-bright: #ffffff;
+            --border: #30363d;
+            --font-primary: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        /* ── Slide Container ── */
+        .deck { position: relative; width: 100vw; height: 100vh; }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 100px;
+            background: var(--bg-slide);
+            overflow: hidden;
+        }
+        .slide.active { display: flex; }
+
+        /* ── Slide Typography ── */
+        .slide h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--ms-light-blue), var(--ms-blue), var(--ms-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .slide h2 {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--ms-blue);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .slide h3 {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: var(--ms-light-blue);
+            margin-bottom: 16px;
+        }
+        .slide p {
+            font-size: 1.2em;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            max-width: 85%;
+        }
+        .slide ul, .slide ol {
+            font-size: 1.15em;
+            line-height: 1.8;
+            margin-left: 28px;
+            color: var(--text-primary);
+        }
+        .slide li { margin-bottom: 10px; }
+        .slide li strong { color: var(--ms-light-blue); }
+        .slide code {
+            font-family: var(--font-mono);
+            background: rgba(0,120,212,0.15);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--ms-light-blue);
+        }
+        .slide pre {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+            color: var(--text-primary);
+        }
+
+        /* ── Slide Badges ── */
+        .badge {
+            display: inline-block;
+            background: rgba(92,45,145,0.3);
+            border: 1px solid var(--ms-purple);
+            color: #c9b1e0;
+            border-radius: 20px;
+            padding: 5px 16px;
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        /* ── Title Slide ── */
+        .slide.title-slide {
+            background: linear-gradient(135deg, #0a0e1a 0%, #0d1b3e 30%, #1a0d2e 100%);
+            text-align: center;
+            align-items: center;
+        }
+        .slide.title-slide::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -15%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0,120,212,0.12), transparent 70%);
+            border-radius: 50%;
+        }
+        .slide.title-slide::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(92,45,145,0.12), transparent 70%);
+            border-radius: 50%;
+        }
+        .title-module {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+        .title-meta {
+            margin-top: 32px;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+
+        /* ── Diagram Containers ── */
+        .diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        .d-box {
+            background: var(--bg-card);
+            border: 2px solid var(--ms-blue);
+            border-radius: 10px;
+            padding: 16px 22px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95em;
+            min-width: 140px;
+        }
+        .d-box.purple { border-color: var(--ms-purple); color: #c9b1e0; }
+        .d-box.green { border-color: var(--ms-green); color: #6ccf6c; }
+        .d-box.orange { border-color: var(--ms-orange); color: var(--ms-orange); }
+        .d-box small { display: block; font-weight: 400; font-size: 0.8em; color: var(--text-secondary); margin-top: 4px; }
+        .d-arrow { font-size: 1.5em; color: var(--ms-blue); }
+
+        /* ── Cards Grid ── */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .card .icon { font-size: 1.8em; margin-bottom: 8px; }
+        .card h4 { color: var(--ms-light-blue); font-size: 1em; margin-bottom: 6px; }
+        .card p { font-size: 0.85em; color: var(--text-secondary); margin-bottom: 0; }
+
+        /* ── Comparison Table ── */
+        .cmp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.95em;
+        }
+        .cmp-table th {
+            background: rgba(0,120,212,0.2);
+            color: var(--ms-light-blue);
+            padding: 10px 16px;
+            text-align: left;
+            border-bottom: 2px solid var(--ms-blue);
+        }
+        .cmp-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        .cmp-table tr:hover td { background: rgba(0,120,212,0.05); }
+
+        /* ── Highlighted Box ── */
+        .highlight {
+            background: rgba(0,120,212,0.1);
+            border-left: 4px solid var(--ms-blue);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-size: 1.05em;
+        }
+        .highlight.purple {
+            background: rgba(92,45,145,0.1);
+            border-color: var(--ms-purple);
+        }
+        .highlight.green {
+            background: rgba(16,124,16,0.1);
+            border-color: var(--ms-green);
+        }
+
+        /* ── Two Column Layout ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        /* ── Slide Number ── */
+        .slide-num {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Slide Footer ── */
+        .slide-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* ── Navigation Controls ── */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        .controls button {
+            background: rgba(0,120,212,0.2);
+            border: 1px solid var(--ms-blue);
+            color: var(--text-bright);
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .controls button:hover { background: rgba(0,120,212,0.4); }
+        .controls .slide-counter { padding: 8px 16px; color: var(--text-secondary); font-size: 14px; }
+
+        /* ── Print ── */
+        @media print {
+            .slide { position: relative; display: flex !important; page-break-after: always; height: 100vh; }
+            .controls { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+    <!-- ════════════════════════════════════════
+         SLIDE 1 — TITLE
+         ════════════════════════════════════════ -->
+    <div class="slide title-slide active" data-slide="1">
+        <div class="badge">ARC 5 · ORCHESTRATION & INTEGRATION</div>
+        <h1>Connecting AI Foundry<br>to Copilot Studio</h1>
+        <p class="title-module">Module 23 of 45 — Azure AI Foundry: Zero to Hero</p>
+        <div class="title-meta">April 2026 &nbsp;·&nbsp; ~90 minutes &nbsp;·&nbsp; Intermediate–Advanced</div>
+        <div class="slide-num">1 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 2 — AGENDA
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="2">
+        <h2>Agenda</h2>
+        <ol>
+            <li><strong>Copilot Studio Overview</strong> — Platform capabilities and architecture</li>
+            <li><strong>Publishing AI Foundry Models</strong> — OpenAPI specs and plugin registration</li>
+            <li><strong>Building Conversations</strong> — Topics, generative orchestration, Adaptive Cards</li>
+            <li><strong>Authentication & Data Flow</strong> — Entra ID, RBAC, and compliance</li>
+            <li><strong>Video Deep Dive</strong> — Multi-agent orchestration patterns</li>
+            <li><strong>Mini Hack</strong> — Publish your RAG agent as a Copilot Studio bot</li>
+        </ol>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">2 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 3 — WHAT IS COPILOT STUDIO?
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="3">
+        <h2>What is Copilot Studio?</h2>
+        <p>Microsoft's low-code platform for building, customizing, and deploying AI-powered conversational agents across the enterprise.</p>
+        <div class="cards">
+            <div class="card">
+                <div class="icon">🎨</div>
+                <h4>Visual Authoring</h4>
+                <p>Drag-and-drop topic designer with branching logic</p>
+            </div>
+            <div class="card">
+                <div class="icon">🧠</div>
+                <h4>Generative AI</h4>
+                <p>Built-in GPT-powered answers with grounded knowledge</p>
+            </div>
+            <div class="card">
+                <div class="icon">🔌</div>
+                <h4>Plugin Ecosystem</h4>
+                <p>Custom connectors, AI Foundry endpoints, Power Automate</p>
+            </div>
+            <div class="card">
+                <div class="icon">🌐</div>
+                <h4>Omnichannel</h4>
+                <p>Teams, web, Dynamics 365, Slack, and custom channels</p>
+            </div>
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">3 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 4 — AI FOUNDRY + COPILOT STUDIO
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="4">
+        <h2>Where AI Foundry Fits In</h2>
+        <div class="two-col">
+            <div>
+                <h3>Copilot Studio = Front-End</h3>
+                <ul>
+                    <li>Conversational UI and UX</li>
+                    <li>Topic routing and orchestration</li>
+                    <li>Channel deployment (Teams, web)</li>
+                    <li>Analytics and CSAT tracking</li>
+                    <li>DLP policies and governance</li>
+                </ul>
+            </div>
+            <div>
+                <h3>AI Foundry = Back-End</h3>
+                <ul>
+                    <li>Custom fine-tuned models</li>
+                    <li>RAG pipelines with proprietary data</li>
+                    <li>Content safety and responsible AI</li>
+                    <li>Prompt flow orchestration</li>
+                    <li>Model evaluation and monitoring</li>
+                </ul>
+            </div>
+        </div>
+        <div class="highlight" style="margin-top:24px;">
+            💡 Together they deliver sophisticated AI through familiar chat interfaces — without rebuilding everything from scratch.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">4 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 5 — ARCHITECTURE
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="5">
+        <h2>Integration Architecture</h2>
+        <div class="diagram" style="margin-top:32px;">
+            <div class="d-box">End User<small>Teams / Web</small></div>
+            <span class="d-arrow">→</span>
+            <div class="d-box purple">Copilot Studio<small>Topic Router + AI</small></div>
+            <span class="d-arrow">→</span>
+            <div class="d-box orange">Custom Plugin<small>OpenAPI Spec</small></div>
+            <span class="d-arrow">→</span>
+            <div class="d-box green">AI Foundry<small>Model Endpoint</small></div>
+        </div>
+        <div style="margin-top:32px;">
+            <h3>Key Integration Points</h3>
+            <ul>
+                <li>Copilot Studio uses <strong>OpenAPI specifications</strong> to discover and invoke AI Foundry endpoints</li>
+                <li><strong>Generative orchestration</strong> decides when to call the plugin based on user intent</li>
+                <li>Auth tokens flow through <strong>custom connectors</strong> secured by Entra ID</li>
+            </ul>
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">5 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 6 — PLUGIN ARCHITECTURE
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="6">
+        <h2>Plugin Architecture</h2>
+        <p>AI Foundry endpoints are exposed to Copilot Studio via the plugin framework:</p>
+        <table class="cmp-table">
+            <tr><th>Component</th><th>Purpose</th><th>AI Foundry Mapping</th></tr>
+            <tr><td>OpenAPI Spec</td><td>Describes API contract</td><td>Inference endpoint definition</td></tr>
+            <tr><td>Authentication</td><td>Secures API calls</td><td>API Key or Entra ID</td></tr>
+            <tr><td>Description</td><td>Tells AI when to invoke</td><td>Model purpose/capabilities</td></tr>
+            <tr><td>Input Schema</td><td>Required parameters</td><td>Question, chat history</td></tr>
+            <tr><td>Output Schema</td><td>Response structure</td><td>Answer, citations</td></tr>
+        </table>
+        <div class="highlight purple">
+            ⚠️ The <code>description</code> field is critical — the AI orchestrator uses it to decide when to invoke your plugin.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">6 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 7 — OPENAPI SPEC
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="7">
+        <h2>Creating the OpenAPI Spec</h2>
+        <pre><code>openapi: "3.0.1"
+info:
+  title: "AI Foundry RAG Agent Plugin"
+  description: "Queries a RAG agent deployed on Azure
+    AI Foundry for grounded answers from the enterprise
+    knowledge base with source citations."
+  version: "1.0.0"
+servers:
+  - url: "https://{project}.{region}.inference.ml.azure.com"
+paths:
+  /score:
+    post:
+      operationId: queryRAGAgent
+      summary: "Query the enterprise RAG agent"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question: { type: string }
+                chat_history: { type: array }
+              required: [question]
+      responses:
+        "200":
+          description: "RAG response with citations"</code></pre>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">7 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 8 — REGISTRATION STEPS
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="8">
+        <h2>Plugin Registration Steps</h2>
+        <div class="cards" style="grid-template-columns: 1fr 1fr;">
+            <div class="card">
+                <div class="icon">①</div>
+                <h4>Navigate to Plugins</h4>
+                <p>Settings → Plugins → Add Plugin → Custom Connector</p>
+            </div>
+            <div class="card">
+                <div class="icon">②</div>
+                <h4>Upload OpenAPI Spec</h4>
+                <p>YAML or JSON format. Studio parses endpoints and schemas automatically.</p>
+            </div>
+            <div class="card">
+                <div class="icon">③</div>
+                <h4>Configure Authentication</h4>
+                <p>API Key (dev) or Entra ID OAuth 2.0 (production recommended).</p>
+            </div>
+            <div class="card">
+                <div class="icon">④</div>
+                <h4>Test & Publish</h4>
+                <p>Send sample queries in test panel, verify responses, then enable for copilot.</p>
+            </div>
+        </div>
+        <div class="highlight green" style="margin-top:20px;">
+            ✅ <strong>Pro Tip:</strong> Write plugin descriptions as if explaining to a colleague what your AI agent does — be specific about domains and query types.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">8 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 9 — CONVERSATION DESIGN
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="9">
+        <h2>Building Conversational Experiences</h2>
+        <div class="two-col">
+            <div>
+                <h3>Classic Topics</h3>
+                <ul>
+                    <li>Keyword trigger phrases</li>
+                    <li>Explicit action nodes</li>
+                    <li>Manual variable passing</li>
+                    <li>Best for deterministic workflows</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Generative Orchestration</h3>
+                <ul>
+                    <li>AI-powered intent classification</li>
+                    <li>Automatic plugin invocation</li>
+                    <li>Automatic conversation memory</li>
+                    <li>Best for open-ended Q&A</li>
+                </ul>
+            </div>
+        </div>
+        <div class="highlight" style="margin-top:28px;">
+            🧠 With generative orchestration, a well-described AI Foundry plugin can be invoked <strong>automatically</strong> — no manual topic configuration needed.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">9 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 10 — MULTI-TURN PATTERNS
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="10">
+        <h2>Multi-Turn Conversations</h2>
+        <p>Pass full conversation history to AI Foundry for contextual follow-ups:</p>
+        <div class="diagram" style="margin-top:24px;">
+            <div class="d-box">"What's our<br>refund policy?"</div>
+            <span class="d-arrow">→</span>
+            <div class="d-box purple">Copilot Studio<br><small>+ History</small></div>
+            <span class="d-arrow">→</span>
+            <div class="d-box green">AI Foundry<br><small>Full Answer</small></div>
+        </div>
+        <div class="diagram">
+            <div class="d-box">"What about for<br>digital products?"</div>
+            <span class="d-arrow">→</span>
+            <div class="d-box purple">Copilot Studio<br><small>+ Full History</small></div>
+            <span class="d-arrow">→</span>
+            <div class="d-box green">AI Foundry<br><small>Contextual Reply</small></div>
+        </div>
+        <div class="highlight purple" style="margin-top:20px;">
+            The <code>chat_history</code> parameter in your OpenAPI spec enables multi-turn context — the AI Foundry agent sees the full conversation.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">10 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 11 — AUTHENTICATION
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="11">
+        <h2>Authentication & Security</h2>
+        <div class="cards" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="card">
+                <div class="icon">🔑</div>
+                <h4>API Key</h4>
+                <p>Simple header-based auth. For dev/test only.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🛡️</div>
+                <h4>Entra ID OAuth</h4>
+                <p>Client credentials flow. Production recommended. No stored secrets.</p>
+            </div>
+            <div class="card">
+                <div class="icon">👤</div>
+                <h4>User Delegated</h4>
+                <p>On-behalf-of flow. Per-user content filtering and RLS.</p>
+            </div>
+        </div>
+        <div style="margin-top:24px;">
+            <h3>Secure Data Flow</h3>
+            <div class="diagram">
+                <div class="d-box">User Auth<small>Entra SSO</small></div>
+                <span class="d-arrow">→</span>
+                <div class="d-box purple">Copilot Studio<small>Token Acquire</small></div>
+                <span class="d-arrow">→</span>
+                <div class="d-box orange">Bearer Token<small>Authorization</small></div>
+                <span class="d-arrow">→</span>
+                <div class="d-box green">AI Foundry<small>RBAC Check</small></div>
+            </div>
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">11 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 12 — COMPLIANCE
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="12">
+        <h2>Compliance & Governance</h2>
+        <div class="two-col">
+            <div>
+                <h3>Copilot Studio Layer</h3>
+                <ul>
+                    <li>Power Platform DLP policies</li>
+                    <li>Environment-level access controls</li>
+                    <li>Conversation audit logging</li>
+                    <li>CSAT and session analytics</li>
+                </ul>
+            </div>
+            <div>
+                <h3>AI Foundry Layer</h3>
+                <ul>
+                    <li>Content safety filters (always active)</li>
+                    <li>RBAC on model endpoints</li>
+                    <li>Data residency controls</li>
+                    <li>Responsible AI dashboard</li>
+                </ul>
+            </div>
+        </div>
+        <div class="highlight" style="margin-top:24px;">
+            🔐 <strong>Defense-in-depth:</strong> Content safety filters on AI Foundry remain active even when called via Copilot Studio, providing dual-layer protection.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">12 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 13 — MINI HACK
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="13" style="background: linear-gradient(135deg, #1a0d2e 0%, #0d1b3e 100%);">
+        <div class="badge">🧪 HANDS-ON CHALLENGE</div>
+        <h2>Mini Hack: RAG Agent → Copilot Studio Bot</h2>
+        <div class="cards" style="grid-template-columns: 1fr 1fr 1fr; margin-top:16px;">
+            <div class="card">
+                <h4>① Verify Endpoint</h4>
+                <p>Confirm AI Foundry RAG agent is deployed and reachable</p>
+            </div>
+            <div class="card">
+                <h4>② Create OpenAPI Spec</h4>
+                <p>Define /score endpoint with question + chat_history inputs</p>
+            </div>
+            <div class="card">
+                <h4>③ Register Plugin</h4>
+                <p>Upload spec in Copilot Studio, configure API key auth</p>
+            </div>
+            <div class="card">
+                <h4>④ Build Topic</h4>
+                <p>Create topic with plugin action, format response + citations</p>
+            </div>
+            <div class="card">
+                <h4>⑤ Test Orchestration</h4>
+                <p>Enable generative mode, verify automatic plugin routing</p>
+            </div>
+            <div class="card">
+                <h4>⑥ Deploy to Teams</h4>
+                <p>Publish copilot, test in Teams with a colleague</p>
+            </div>
+        </div>
+        <div class="highlight green" style="margin-top:20px;">
+            ⏱️ <strong>45–60 minutes</strong> &nbsp;|&nbsp; 🎯 <strong>Intermediate</strong> &nbsp;|&nbsp; 👥 Individual or Pairs
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">13 / 14</div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SLIDE 14 — SUMMARY & NEXT
+         ════════════════════════════════════════ -->
+    <div class="slide" data-slide="14">
+        <h2>Key Takeaways</h2>
+        <ul>
+            <li><strong>Copilot Studio</strong> is the conversational front-end; <strong>AI Foundry</strong> is the intelligence back-end</li>
+            <li><strong>Plugins</strong> bridge the two via OpenAPI specs — descriptions drive intelligent routing</li>
+            <li><strong>Generative orchestration</strong> eliminates manual topic configuration for open-ended Q&A</li>
+            <li><strong>Entra ID authentication</strong> is required for production — API keys for dev only</li>
+            <li><strong>Multi-agent patterns</strong> let specialized AI Foundry agents serve different domains</li>
+            <li><strong>Defense-in-depth</strong> — Copilot Studio DLP + AI Foundry content safety</li>
+        </ul>
+        <div class="highlight" style="margin-top:24px;">
+            <strong>Next → Module 24:</strong> Advanced Orchestration Patterns — chaining AI Foundry endpoints with conditional logic and human-in-the-loop gates.
+        </div>
+        <div class="slide-footer">Module 23 — Connecting AI Foundry to Copilot Studio</div>
+        <div class="slide-num">14 / 14</div>
+    </div>
+
+</div>
+
+<!-- ── Navigation Controls ── -->
+<div class="controls">
+    <button onclick="prevSlide()" id="btnPrev">◀ Prev</button>
+    <span class="slide-counter" id="counter">1 / 14</span>
+    <button onclick="nextSlide()" id="btnNext">Next ▶</button>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    let current = 0;
+
+    function showSlide(n) {
+        slides[current].classList.remove('active');
+        current = (n + total) % total;
+        slides[current].classList.add('active');
+        document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    }
+
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+        if (e.key === 'End') { e.preventDefault(); showSlide(total - 1); }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+        const diff = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(diff) > 50) { diff < 0 ? nextSlide() : prevSlide(); }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 11: Connecting Data Sources — Azure AI Foundry: Zero to Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --ms-blue: #0078d4;
+    --ms-dark-blue: #004578;
+    --ms-purple: #5c2d91;
+    --accent-green: #3fb950;
+    --accent-yellow: #d29922;
+    --accent-red: #f85149;
+    --accent-cyan: #39d2c0;
+    --border-color: #30363d;
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-main);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .slide-deck {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateX(40px);
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  .slide.prev {
+    transform: translateX(-40px);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* Slide counter */
+  .slide-counter {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-muted);
+    z-index: 100;
+  }
+
+  /* Navigation hint */
+  .nav-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 30px;
+    font-size: 12px;
+    color: var(--text-muted);
+    z-index: 100;
+  }
+
+  /* Module badge */
+  .badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .badge-arc { background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple)); color: white; }
+  .badge-blue { background: rgba(0,120,212,0.15); color: var(--ms-blue); border: 1px solid rgba(0,120,212,0.3); }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-yellow { background: rgba(210,153,34,0.15); color: var(--accent-yellow); border: 1px solid rgba(210,153,34,0.3); }
+
+  /* Title slide */
+  .slide-title { text-align: center; }
+  .slide-title h1 {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .slide-title .subtitle {
+    font-size: 22px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 32px;
+  }
+  .slide-title .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  /* Section heading slides */
+  .slide-section {
+    text-align: center;
+    background: radial-gradient(ellipse at center, var(--bg-secondary) 0%, var(--bg-primary) 70%);
+  }
+  .slide-section h2 {
+    font-size: 44px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .slide-section p {
+    font-size: 20px;
+    color: var(--text-secondary);
+    max-width: 600px;
+  }
+
+  /* Content slides */
+  .slide-content { align-items: flex-start; justify-content: flex-start; padding-top: 80px; }
+  .slide-content h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: var(--text-primary);
+  }
+  .slide-content h2 .highlight {
+    color: var(--ms-blue);
+  }
+
+  .content-body {
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* Two-column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.3s ease;
+  }
+  .card:hover { border-color: var(--ms-blue); }
+  .card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+  .card p, .card li {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card .icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  /* Lists */
+  .content-list {
+    list-style: none;
+    padding: 0;
+  }
+  .content-list li {
+    font-size: 20px;
+    line-height: 1.6;
+    padding: 10px 0;
+    padding-left: 32px;
+    position: relative;
+    color: var(--text-secondary);
+  }
+  .content-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--ms-blue);
+    font-weight: bold;
+  }
+  .content-list li strong { color: var(--text-primary); }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent-cyan);
+    line-height: 1.8;
+    overflow-x: auto;
+    width: 100%;
+  }
+  .code-block .comment { color: var(--text-muted); }
+  .code-block .keyword { color: var(--ms-blue); }
+  .code-block .string { color: var(--accent-green); }
+  .code-block .number { color: var(--accent-yellow); }
+
+  /* Diagram-style flow */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    min-width: 140px;
+  }
+  .flow-box.accent { border-color: var(--ms-blue); color: var(--ms-blue); }
+  .flow-arrow { color: var(--text-muted); font-size: 24px; }
+
+  /* Key-value table */
+  .kv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+  .kv-table th, .kv-table td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 16px;
+  }
+  .kv-table th {
+    color: var(--ms-blue);
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .kv-table td { color: var(--text-secondary); }
+  .kv-table td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  /* Callout */
+  .callout {
+    background: rgba(0,120,212,0.08);
+    border-left: 4px solid var(--ms-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin-top: 24px;
+    width: 100%;
+  }
+  .callout p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .callout strong { color: var(--ms-blue); }
+
+  /* Video embed wrapper */
+  .video-wrapper {
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    margin-top: 20px;
+  }
+  .video-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  @media (max-width: 900px) {
+    .slide { padding: 30px 24px; }
+    .slide-title h1 { font-size: 32px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .content-list li { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="slideCounter"></div>
+<div class="nav-hint">← → Arrow keys to navigate</div>
+
+<div class="slide-deck" id="deck">
+
+  <!-- Slide 1: Title -->
+  <div class="slide slide-title active" data-slide="1">
+    <span class="badge badge-arc">ARC 3 · DATA &amp; RAG</span>
+    <h1>Connecting Data Sources</h1>
+    <p class="subtitle">Integrate Azure Blob, SQL, Cosmos DB, SharePoint &amp; OneLake with Azure AI Foundry</p>
+    <p class="meta">Module 11 of 45 · April 2026 · Zero to Hero Training</p>
+  </div>
+
+  <!-- Slide 2: Agenda -->
+  <div class="slide slide-content" data-slide="2">
+    <span class="badge badge-blue">Agenda</span>
+    <h2>What We'll <span class="highlight">Cover</span></h2>
+    <div class="content-body">
+      <ul class="content-list">
+        <li><strong>Supported Data Sources</strong> — Blob, SQL, Cosmos DB, SharePoint, OneLake</li>
+        <li><strong>Data Ingestion Patterns</strong> — Push, pull, batch, streaming</li>
+        <li><strong>Data Preparation</strong> — Formatting, cleaning, preprocessing</li>
+        <li><strong>Indexing Strategies</strong> — Vector, keyword, hybrid search</li>
+        <li><strong>Mini Hack</strong> — Upload and index PDF documents</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Slide 3: Why Data Connectivity Matters -->
+  <div class="slide slide-content" data-slide="3">
+    <span class="badge badge-blue">Foundation</span>
+    <h2>Why Data Connectivity <span class="highlight">Matters</span></h2>
+    <div class="content-body">
+      <div class="flow-row">
+        <div class="flow-box">Your Data Sources</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box accent">AI Foundry</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">Vector Index</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box accent">RAG Pipeline</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">Grounded AI</div>
+      </div>
+      <div class="callout" style="margin-top:32px;">
+        <p><strong>Key Insight:</strong> AI models are only as good as the data they can access. Connecting the right data sources with proper preparation is the foundation of every successful RAG application.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Supported Data Sources -->
+  <div class="slide slide-content" data-slide="4">
+    <span class="badge badge-green">Data Sources</span>
+    <h2>Supported <span class="highlight">Data Sources</span></h2>
+    <div class="content-body">
+      <table class="kv-table">
+        <thead>
+          <tr><th>Source</th><th>Type</th><th>Best For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Azure Blob Storage</td><td>Object Storage</td><td>PDFs, images, text files, unstructured data</td></tr>
+          <tr><td>Azure SQL Database</td><td>Relational</td><td>Structured business data, transactional records</td></tr>
+          <tr><td>Azure Cosmos DB</td><td>NoSQL</td><td>Document data, globally distributed apps</td></tr>
+          <tr><td>SharePoint Online</td><td>Collaboration</td><td>Enterprise docs, Microsoft 365 content</td></tr>
+          <tr><td>Microsoft OneLake</td><td>Data Lake</td><td>Unified analytics across Microsoft Fabric</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Slide 5: Azure Blob Storage -->
+  <div class="slide slide-content" data-slide="5">
+    <span class="badge badge-blue">Deep Dive</span>
+    <h2>Azure <span class="highlight">Blob Storage</span> Integration</h2>
+    <div class="two-col">
+      <div class="card">
+        <span class="icon">📦</span>
+        <h3>What It Stores</h3>
+        <ul class="content-list" style="margin-top:8px;">
+          <li>PDF documents &amp; reports</li>
+          <li>Text files (TXT, MD, CSV)</li>
+          <li>Office documents (DOCX, PPTX)</li>
+          <li>Images &amp; multimedia</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="icon">🔐</span>
+        <h3>Authentication</h3>
+        <ul class="content-list" style="margin-top:8px;">
+          <li><strong>Managed Identity</strong> (recommended)</li>
+          <li>Account keys (dev/test only)</li>
+          <li>SAS tokens (time-limited)</li>
+          <li>RBAC: Blob Data Reader role</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: SQL & Cosmos DB -->
+  <div class="slide slide-content" data-slide="6">
+    <span class="badge badge-blue">Deep Dive</span>
+    <h2>Azure SQL &amp; <span class="highlight">Cosmos DB</span></h2>
+    <div class="two-col">
+      <div class="card">
+        <span class="icon">🗃️</span>
+        <h3>Azure SQL Database</h3>
+        <p>Ideal for structured, relational data. Use SQL queries to extract specific datasets for indexing. Supports row-level filtering and joins for precise data selection.</p>
+        <div class="code-block" style="margin-top:16px;font-size:13px;">
+          <span class="keyword">SELECT</span> title, content<br>
+          <span class="keyword">FROM</span> knowledge_articles<br>
+          <span class="keyword">WHERE</span> status = <span class="string">'published'</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="icon">🌍</span>
+        <h3>Azure Cosmos DB</h3>
+        <p>Best for semi-structured and document data. Native JSON support makes it ideal for flexible schemas. Use change feed for real-time ingestion patterns.</p>
+        <div class="code-block" style="margin-top:16px;font-size:13px;">
+          <span class="keyword">SELECT</span> c.id, c.body<br>
+          <span class="keyword">FROM</span> c<br>
+          <span class="keyword">WHERE</span> c.type = <span class="string">"article"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: SharePoint & OneLake -->
+  <div class="slide slide-content" data-slide="7">
+    <span class="badge badge-blue">Deep Dive</span>
+    <h2>SharePoint &amp; <span class="highlight">OneLake</span></h2>
+    <div class="two-col">
+      <div class="card">
+        <span class="icon">📁</span>
+        <h3>SharePoint Online</h3>
+        <p>Connect to Microsoft 365 document libraries. Access enterprise content where teams already collaborate. Automatic metadata extraction from document properties.</p>
+        <ul class="content-list" style="margin-top:8px;">
+          <li>Site-level or library-level connections</li>
+          <li>Respects M365 permissions</li>
+          <li>Built-in document versioning</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="icon">🏞️</span>
+        <h3>Microsoft OneLake</h3>
+        <p>Unified data layer for Microsoft Fabric. One copy of data accessible across all analytics workloads. Ideal for organizations already invested in Fabric.</p>
+        <ul class="content-list" style="margin-top:8px;">
+          <li>Single data lake for all workloads</li>
+          <li>Shortcuts to external data</li>
+          <li>Built-in governance &amp; security</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Ingestion Patterns -->
+  <div class="slide slide-content" data-slide="8">
+    <span class="badge badge-yellow">Patterns</span>
+    <h2>Data <span class="highlight">Ingestion</span> Patterns</h2>
+    <div class="content-body">
+      <div class="three-col">
+        <div class="card">
+          <span class="icon">📥</span>
+          <h3>Batch</h3>
+          <p>Process large volumes of data at scheduled intervals. Best for static or infrequently updated content.</p>
+        </div>
+        <div class="card">
+          <span class="icon">⚡</span>
+          <h3>Real-time</h3>
+          <p>Stream data as it arrives using event-driven architectures. Ideal for frequently changing data.</p>
+        </div>
+        <div class="card">
+          <span class="icon">🔄</span>
+          <h3>Incremental</h3>
+          <p>Sync only new or modified data since last update. Balances freshness with processing efficiency.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:24px;">
+        <p><strong>Recommendation:</strong> Start with batch ingestion for your initial index, then add incremental refresh for production to keep data current without reprocessing everything.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Data Preparation -->
+  <div class="slide slide-content" data-slide="9">
+    <span class="badge badge-yellow">Preparation</span>
+    <h2>Data Preparation &amp; <span class="highlight">Cleaning</span></h2>
+    <div class="two-col">
+      <div>
+        <ul class="content-list">
+          <li><strong>Text Extraction</strong> — Parse PDFs, DOCX, HTML into clean text</li>
+          <li><strong>Chunking</strong> — Split documents into 512–2048 token segments</li>
+          <li><strong>Overlap</strong> — 10–15% overlap preserves context at boundaries</li>
+          <li><strong>Metadata</strong> — Enrich chunks with source, date, author info</li>
+          <li><strong>Deduplication</strong> — Remove redundant or near-duplicate content</li>
+        </ul>
+      </div>
+      <div>
+        <div class="code-block">
+          <span class="comment">// Chunking configuration</span><br>
+          {<br>
+          &nbsp;&nbsp;<span class="string">"chunk_size"</span>: <span class="number">1024</span>,<br>
+          &nbsp;&nbsp;<span class="string">"chunk_overlap"</span>: <span class="number">128</span>,<br>
+          &nbsp;&nbsp;<span class="string">"strategy"</span>: <span class="string">"sentence"</span>,<br>
+          &nbsp;&nbsp;<span class="string">"metadata"</span>: [<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"filename"</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"page_number"</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"file_path"</span><br>
+          &nbsp;&nbsp;]<br>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10: Indexing Strategies -->
+  <div class="slide slide-content" data-slide="10">
+    <span class="badge badge-green">Indexing</span>
+    <h2>Indexing <span class="highlight">Strategies</span></h2>
+    <div class="content-body">
+      <table class="kv-table">
+        <thead>
+          <tr><th>Strategy</th><th>How It Works</th><th>Strength</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Keyword Search</td><td>BM25 / TF-IDF text matching</td><td>Exact term matches, fast</td></tr>
+          <tr><td>Vector Search</td><td>Embedding similarity (cosine)</td><td>Semantic understanding</td></tr>
+          <tr><td>Hybrid Search</td><td>Keyword + vector combined</td><td>Best of both worlds ✨</td></tr>
+        </tbody>
+      </table>
+      <div class="flow-row" style="margin-top:32px;">
+        <div class="flow-box">Raw Documents</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">Chunking</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box accent">Embedding</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">Vector Index</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box accent">Hybrid Search</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: Featured Video -->
+  <div class="slide slide-content" data-slide="11" style="align-items:center;justify-content:center;">
+    <span class="badge badge-arc">Featured Video</span>
+    <h2 style="text-align:center;">Building RAG Solutions with <span class="highlight">Azure AI Foundry</span></h2>
+    <p style="color:var(--text-secondary);text-align:center;margin-bottom:12px;">Microsoft Reactor</p>
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/IXGrwWcLJuE" title="Building RAG Solutions with Azure AI Foundry" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <!-- Slide 12: Mini Hack -->
+  <div class="slide slide-content" data-slide="12">
+    <span class="badge badge-yellow">Mini Hack</span>
+    <h2>Upload &amp; Index <span class="highlight">PDF Documents</span></h2>
+    <div class="content-body">
+      <div class="three-col">
+        <div class="card">
+          <span class="icon">1️⃣</span>
+          <h3>Upload</h3>
+          <p>Create a Blob container and upload 5–10 PDF documents to Azure Blob Storage.</p>
+        </div>
+        <div class="card">
+          <span class="icon">2️⃣</span>
+          <h3>Connect</h3>
+          <p>Create a data connection in Azure AI Foundry pointing to your Blob container.</p>
+        </div>
+        <div class="card">
+          <span class="icon">3️⃣</span>
+          <h3>Index</h3>
+          <p>Configure chunking, select an embedding model, and create a hybrid search index.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:24px;">
+        <p><strong>Time:</strong> 60 minutes · <strong>Goal:</strong> Have a working vector index that you can query with keyword, vector, and hybrid search. See <code>lab/hands-on-lab.md</code> for detailed steps.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 13: Key Takeaways -->
+  <div class="slide slide-content" data-slide="13">
+    <span class="badge badge-green">Summary</span>
+    <h2>Key <span class="highlight">Takeaways</span></h2>
+    <div class="content-body">
+      <ul class="content-list">
+        <li><strong>Five data sources</strong> — Blob, SQL, Cosmos DB, SharePoint, OneLake</li>
+        <li><strong>Authentication</strong> — Use Managed Identity with RBAC for production</li>
+        <li><strong>Chunking matters</strong> — 1024 tokens with 128 overlap is a solid starting point</li>
+        <li><strong>Hybrid search</strong> — Combines keyword + vector for best retrieval quality</li>
+        <li><strong>Start batch, go incremental</strong> — Build your initial index, then keep it fresh</li>
+        <li><strong>Metadata enrichment</strong> — Always include source, page, and file info in chunks</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Slide 14: Next Module Preview -->
+  <div class="slide slide-section" data-slide="14">
+    <span class="badge badge-arc">Up Next</span>
+    <h2>Module 12</h2>
+    <p>Building RAG pipelines — connecting your indexed data to AI models for grounded, context-aware responses.</p>
+    <p style="margin-top:32px;font-family:var(--font-mono);font-size:14px;color:var(--text-muted);">ARC 3 · DATA &amp; RAG continues →</p>
+  </div>
+
+  <!-- Slide 15: Thank You -->
+  <div class="slide slide-title" data-slide="15">
+    <span class="badge badge-arc">Module 11 Complete</span>
+    <h1>Thank You!</h1>
+    <p class="subtitle">Questions? Visit the AI Foundry Portal at ai.azure.com</p>
+    <p class="meta">Azure AI Foundry: Zero to Hero · April 2026</p>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  const progressBar = document.getElementById('progressBar');
+  const counter = document.getElementById('slideCounter');
+
+  function updateUI() {
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'prev');
+      if (i === current) s.classList.add('active');
+      else if (i < current) s.classList.add('prev');
+    });
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+    counter.textContent = (current + 1) + ' / ' + total;
+  }
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    current = n;
+    updateUI();
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goTo(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goTo(total - 1);
+    }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { diff > 0 ? goTo(current + 1) : goTo(current - 1); }
+  });
+
+  updateUI();
+})();
+</script>
+</body>
+</html>

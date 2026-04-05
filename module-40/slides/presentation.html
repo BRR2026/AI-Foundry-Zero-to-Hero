@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Module 40 — Enterprise Case Studies &amp; Partner Success Patterns | Slides</title>
+    <style>
+        /* ============================================================
+           SLIDE DECK — DARK THEME
+           ============================================================ */
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a2e;
+            --surface-alt: #16213e;
+            --accent: #0078d4;
+            --accent-purple: #5c2d91;
+            --accent-green: #107c10;
+            --accent-orange: #ff8c00;
+            --accent-red: #d13438;
+            --text: #e8e8e8;
+            --text-dim: #a0a0a0;
+            --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); }
+
+        /* Slide Container */
+        .deck { position: relative; width: 100vw; height: 100vh; }
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .slide.active { display: flex; opacity: 1; }
+
+        /* Typography */
+        h1 { font-size: 2.8rem; font-weight: 700; line-height: 1.15; margin-bottom: 20px; }
+        h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 24px; color: var(--accent); }
+        h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
+        p, li { font-size: 1.25rem; line-height: 1.6; color: var(--text); }
+        ul { list-style: none; margin-left: 0; }
+        ul li { padding: 8px 0 8px 28px; position: relative; }
+        ul li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+        /* Badges & Tags */
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .badge-arc { background: rgba(92,45,145,0.3); color: #b380e0; border: 1px solid rgba(92,45,145,0.5); }
+        .badge-pattern { background: rgba(0,120,212,0.2); color: #60b0f4; border: 1px solid rgba(0,120,212,0.4); }
+
+        /* Metric Cards */
+        .metrics { display: flex; gap: 24px; margin: 28px 0; flex-wrap: wrap; }
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            flex: 1;
+            min-width: 140px;
+        }
+        .metric-card .value { font-size: 2.2rem; font-weight: 700; color: var(--accent); }
+        .metric-card .label { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
+
+        /* Code Blocks */
+        pre {
+            background: #0d1117;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: var(--mono);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        /* Pattern Grid */
+        .pattern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+        .pattern-box {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .pattern-box h4 { color: var(--accent); margin-bottom: 8px; font-size: 1.05rem; }
+        .pattern-box p { font-size: 0.95rem; color: var(--text-dim); }
+
+        /* Pitfall Cards */
+        .pitfall {
+            background: rgba(209,52,56,0.08);
+            border-left: 4px solid var(--accent-red);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 12px 0;
+        }
+        .pitfall h4 { color: var(--accent-red); margin-bottom: 4px; font-size: 1.05rem; }
+        .pitfall p { font-size: 0.95rem; color: var(--text-dim); }
+
+        /* Roadmap */
+        .roadmap-row { display: flex; gap: 16px; margin: 20px 0; }
+        .phase-card {
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            border-top: 3px solid var(--accent);
+        }
+        .phase-card h4 { font-size: 1rem; color: var(--accent); margin-bottom: 8px; }
+        .phase-card p { font-size: 0.88rem; color: var(--text-dim); }
+
+        /* Gradient backgrounds */
+        .slide-title { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%); }
+        .slide-section { background: linear-gradient(135deg, #0f0f2a 0%, #1a0a2e 100%); }
+
+        /* Slide Counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 32px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            z-index: 100;
+        }
+
+        /* Nav Hint */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 32px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        /* Two columns */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+        .two-col-narrow { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; align-items: start; }
+
+        /* Highlight box */
+        .highlight-box {
+            background: rgba(0,120,212,0.1);
+            border: 1px solid rgba(0,120,212,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        /* Takeaway list */
+        .takeaway-list li { padding: 10px 0 10px 32px; font-size: 1.15rem; }
+        .takeaway-list li::before { content: '✓'; color: var(--accent-green); }
+
+        @media (max-width: 900px) {
+            .slide { padding: 30px 24px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.6rem; }
+            .two-col, .pattern-grid { grid-template-columns: 1fr; }
+            .roadmap-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+    <!-- ===================== SLIDE 1: Title ===================== -->
+    <div class="slide slide-title active" data-slide="1">
+        <span class="badge badge-arc">ARC 8 · Advanced Patterns &amp; Enterprise</span>
+        <h1>Module 40<br>Enterprise Case Studies &amp;<br>Partner Success Patterns</h1>
+        <p style="color:var(--text-dim); font-size:1.1rem; margin-top:16px;">Azure AI Foundry: Zero to Hero · April 2026</p>
+        <p style="color:var(--text-dim); font-size:0.95rem; margin-top:8px;">Module 40 of 45</p>
+    </div>
+
+    <!-- ===================== SLIDE 2: Agenda ===================== -->
+    <div class="slide" data-slide="2">
+        <h2>Today's Agenda</h2>
+        <ul>
+            <li>Five Enterprise Case Studies across industries</li>
+            <li>Six Common Enterprise AI Patterns</li>
+            <li>Lessons Learned &amp; Top 5 Pitfalls to Avoid</li>
+            <li>Building Your AI Practice Roadmap</li>
+            <li>Enterprise Architecture Reference</li>
+            <li>🧪 Mini Hack: Present Your Own Case Study</li>
+        </ul>
+        <div class="highlight-box" style="margin-top:24px;">
+            <p style="font-size:1rem;">📹 <strong>Featured Video:</strong> "Microsoft Foundry: The AI app and agent factory" — MS Azure</p>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 3: Case Study 1 ===================== -->
+    <div class="slide" data-slide="3">
+        <span class="badge badge-pattern">Case Study 1</span>
+        <h2>🏦 Intelligent Customer Support</h2>
+        <p>Fortune 500 financial services · 40,000 employees · 12M customers · 30 countries</p>
+        <div class="metrics">
+            <div class="metric-card"><div class="value">73%</div><div class="label">Automated Resolution</div></div>
+            <div class="metric-card"><div class="value">4.2 min</div><div class="label">Avg Resolution Time</div></div>
+            <div class="metric-card"><div class="value">89%</div><div class="label">CSAT Score</div></div>
+            <div class="metric-card"><div class="value">$14M</div><div class="label">Annual Savings</div></div>
+        </div>
+        <ul>
+            <li>Multi-agent triage pattern: routing agent → specialist agents</li>
+            <li>Azure AI Search with 50K+ documents for knowledge retrieval</li>
+            <li>Content Safety guardrails for regulatory compliance</li>
+            <li>Seamless human escalation with full context preservation</li>
+        </ul>
+    </div>
+
+    <!-- ===================== SLIDE 4: Case Study 2 ===================== -->
+    <div class="slide" data-slide="4">
+        <span class="badge badge-pattern">Case Study 2</span>
+        <h2>📄 Intelligent Document Processing</h2>
+        <p>Insurance ISV · 200+ carriers · Claims document automation</p>
+        <div class="metrics">
+            <div class="metric-card"><div class="value">92%</div><div class="label">Extraction Accuracy</div></div>
+            <div class="metric-card"><div class="value">85%</div><div class="label">Straight-Through Rate</div></div>
+            <div class="metric-card"><div class="value">3.2x</div><div class="label">Throughput Increase</div></div>
+            <div class="metric-card"><div class="value">6 wks</div><div class="label">Time to Production</div></div>
+        </div>
+        <ul>
+            <li>Extract→Reason→Act pipeline: Doc Intelligence + AI Foundry agent</li>
+            <li>Custom-trained extraction models → 78% to 92% accuracy</li>
+            <li>Confidence-gated automation (0.95 threshold)</li>
+            <li>Full audit trail via Azure Monitor for regulatory compliance</li>
+        </ul>
+    </div>
+
+    <!-- ===================== SLIDE 5: Case Study 3 ===================== -->
+    <div class="slide" data-slide="5">
+        <span class="badge badge-pattern">Case Study 3</span>
+        <h2>🏭 Predictive Maintenance Platform</h2>
+        <p>Global manufacturer · 45 production facilities · $2.1M per incident</p>
+        <div class="metrics">
+            <div class="metric-card"><div class="value">94%</div><div class="label">Prediction Accuracy</div></div>
+            <div class="metric-card"><div class="value">68%</div><div class="label">Downtime Reduction</div></div>
+            <div class="metric-card"><div class="value">$38M</div><div class="label">Annual Savings</div></div>
+            <div class="metric-card"><div class="value">45</div><div class="label">Facilities Deployed</div></div>
+        </div>
+        <ul>
+            <li>AI Foundry agents as "reasoning layer" over IoT data infrastructure</li>
+            <li>Natural-language interface for plant managers (not data scientists)</li>
+            <li>Code interpreter for real-time statistical analysis</li>
+            <li>Sensor telemetry + maintenance history + parts inventory integration</li>
+        </ul>
+    </div>
+
+    <!-- ===================== SLIDE 6: Case Studies 4 & 5 ===================== -->
+    <div class="slide" data-slide="6">
+        <h2>More Case Studies</h2>
+        <div class="two-col">
+            <div>
+                <h3>🏥 Healthcare Compliance</h3>
+                <p style="font-size:1rem; color:var(--text-dim);">15-hospital health system · HIPAA-compliant AI</p>
+                <ul>
+                    <li>91% documentation accuracy</li>
+                    <li>4-hour prior auth turnaround</li>
+                    <li>100% HIPAA audit pass rate</li>
+                    <li>Private endpoints + CMK + PHI detection</li>
+                </ul>
+            </div>
+            <div>
+                <h3>🛍️ Retail Personalization</h3>
+                <p style="font-size:1rem; color:var(--text-dim);">E-commerce · 8M users · Conversational shopping</p>
+                <ul>
+                    <li>34% conversion lift</li>
+                    <li>28% average order value increase</li>
+                    <li>4.6/5 user rating</li>
+                    <li>Product catalog RAG + inventory APIs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 7: Enterprise Patterns ===================== -->
+    <div class="slide slide-section" data-slide="7">
+        <h2>Six Enterprise AI Patterns</h2>
+        <div class="pattern-grid">
+            <div class="pattern-box">
+                <h4>🔀 Pattern 1: Multi-Agent Triage</h4>
+                <p>Routing agent classifies intent, delegates to specialist agents with constrained scope.</p>
+            </div>
+            <div class="pattern-box">
+                <h4>📋 Pattern 2: Extract→Reason→Act</h4>
+                <p>Doc Intelligence extraction → AI Foundry reasoning → business action via tools.</p>
+            </div>
+            <div class="pattern-box">
+                <h4>🔍 Pattern 3: RAG + Agent Hybrid</h4>
+                <p>AI Search retrieval combined with agentic tool use based on query complexity.</p>
+            </div>
+            <div class="pattern-box">
+                <h4>🛡️ Pattern 4: Compliance-First Design</h4>
+                <p>Private endpoints, CMK, content safety, automated evaluation pipelines.</p>
+            </div>
+            <div class="pattern-box">
+                <h4>🤝 Pattern 5: Human-in-the-Loop</h4>
+                <p>Confidence thresholds trigger handoff with full context preserved.</p>
+            </div>
+            <div class="pattern-box">
+                <h4>📊 Pattern 6: Conversational Analytics</h4>
+                <p>Natural-language interface to data warehouses via code interpreter.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 8: Pattern Selection ===================== -->
+    <div class="slide" data-slide="8">
+        <h2>Pattern Selection Matrix</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:0.95rem;">
+            <thead>
+                <tr style="border-bottom:2px solid var(--accent);">
+                    <th style="padding:10px; text-align:left; color:var(--accent);">Criteria</th>
+                    <th style="padding:10px; text-align:center; color:var(--accent);">Multi-Agent</th>
+                    <th style="padding:10px; text-align:center; color:var(--accent);">Extract→Act</th>
+                    <th style="padding:10px; text-align:center; color:var(--accent);">RAG+Agent</th>
+                    <th style="padding:10px; text-align:center; color:var(--accent);">Compliance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <td style="padding:10px;">Complexity</td>
+                    <td style="padding:10px; text-align:center;">Medium</td>
+                    <td style="padding:10px; text-align:center;">High</td>
+                    <td style="padding:10px; text-align:center;">Medium</td>
+                    <td style="padding:10px; text-align:center;">High</td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <td style="padding:10px;">Time to Prod</td>
+                    <td style="padding:10px; text-align:center;">4-6 wks</td>
+                    <td style="padding:10px; text-align:center;">8-12 wks</td>
+                    <td style="padding:10px; text-align:center;">3-5 wks</td>
+                    <td style="padding:10px; text-align:center;">10-16 wks</td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <td style="padding:10px;">Min Team Size</td>
+                    <td style="padding:10px; text-align:center;">3-4</td>
+                    <td style="padding:10px; text-align:center;">4-6</td>
+                    <td style="padding:10px; text-align:center;">2-3</td>
+                    <td style="padding:10px; text-align:center;">5-8</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;">ROI Timeline</td>
+                    <td style="padding:10px; text-align:center;">3-6 mo</td>
+                    <td style="padding:10px; text-align:center;">6-9 mo</td>
+                    <td style="padding:10px; text-align:center;">2-4 mo</td>
+                    <td style="padding:10px; text-align:center;">9-12 mo</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===================== SLIDE 9: Pitfalls ===================== -->
+    <div class="slide" data-slide="9">
+        <h2>Top 5 Pitfalls to Avoid</h2>
+        <div class="pitfall">
+            <h4>⚠️ 1. Demo-to-Production Gap</h4>
+            <p>Impressive demos that take 6 months to productionize. Use AI Foundry's production infrastructure from day one.</p>
+        </div>
+        <div class="pitfall">
+            <h4>⚠️ 2. Ignoring Token Economics</h4>
+            <p>Costs 10x projected due to verbose prompts. Set per-agent token budgets and monitor in Azure Monitor.</p>
+        </div>
+        <div class="pitfall">
+            <h4>⚠️ 3. Under-investing in Knowledge Curation</h4>
+            <p>Bad data in = bad answers out. Allocate 30-40% of effort to knowledge base quality.</p>
+        </div>
+        <div class="pitfall">
+            <h4>⚠️ 4. Single-Agent Monolith</h4>
+            <p>One agent with a 4,000-word prompt handling everything. Decompose early with multi-agent triage.</p>
+        </div>
+        <div class="pitfall">
+            <h4>⚠️ 5. Skipping Adversarial Testing</h4>
+            <p>Happy-path-only evaluation. Include prompt injection and jailbreak test cases.</p>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 10: Lessons Learned ===================== -->
+    <div class="slide" data-slide="10">
+        <h2>Lessons That Accelerate Success</h2>
+        <div class="two-col">
+            <div>
+                <ul>
+                    <li><strong>Start with evaluation, not code</strong> — Build golden datasets before writing agent logic</li>
+                    <li><strong>Prompt engineering before fine-tuning</strong> — 80% effort on prompts, tools, retrieval</li>
+                    <li><strong>Observability from day one</strong> — Structured logging, latency, cost tracking</li>
+                    <li><strong>Staged rollouts with eval gates</strong> — Internal → beta → 10% → full</li>
+                </ul>
+            </div>
+            <div>
+                <div class="highlight-box">
+                    <h4 style="color:var(--accent-green);">Success Factor Impact</h4>
+                    <p style="font-size:0.95rem;">• Evaluation-first → <strong>2-3x faster</strong> iteration</p>
+                    <p style="font-size:0.95rem;">• Multi-agent → <strong>40% fewer</strong> hallucinations</p>
+                    <p style="font-size:0.95rem;">• Content safety → <strong>Zero</strong> compliance incidents</p>
+                    <p style="font-size:0.95rem;">• Observability → <strong>60% faster</strong> debugging</p>
+                    <p style="font-size:0.95rem;">• Staged rollouts → <strong>90% fewer</strong> prod incidents</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 11: AI Practice Roadmap ===================== -->
+    <div class="slide slide-section" data-slide="11">
+        <h2>AI Practice Roadmap</h2>
+        <div class="roadmap-row">
+            <div class="phase-card">
+                <h4>Phase 1 (Mo 1-2)</h4>
+                <p><strong>Foundation</strong></p>
+                <p>Environment setup, team training, pilot selection, evaluation dataset</p>
+            </div>
+            <div class="phase-card">
+                <h4>Phase 2 (Mo 3-4)</h4>
+                <p><strong>Pilot</strong></p>
+                <p>First production win, measure everything, internal case study</p>
+            </div>
+            <div class="phase-card">
+                <h4>Phase 3 (Mo 5-8)</h4>
+                <p><strong>Scale</strong></p>
+                <p>Staged rollout, 2-3 more use cases, reusable templates</p>
+            </div>
+            <div class="phase-card">
+                <h4>Phase 4 (Mo 9-12)</h4>
+                <p><strong>CoE</strong></p>
+                <p>Governance board, AI playbook, self-service platform</p>
+            </div>
+            <div class="phase-card" style="border-top-color: var(--accent-purple);">
+                <h4>Phase 5 (12+)</h4>
+                <p><strong>Innovation</strong></p>
+                <p>Autonomous workflows, cross-domain solutions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 12: Architecture Reference ===================== -->
+    <div class="slide" data-slide="12">
+        <h2>Enterprise Architecture Reference</h2>
+        <pre style="font-size:0.8rem; line-height:1.4;">
+┌─────────────────────────────────────────────────┐
+│           CHANNELS (Chat, Voice, Email, API)    │
+└──────────────────────┬──────────────────────────┘
+                       ▼
+              ┌─────────────────┐
+              │  Triage Agent   │ ← Intent classification
+              └───────┬─────────┘
+        ┌─────────────┼─────────────┐
+        ▼             ▼             ▼
+  ┌───────────┐ ┌───────────┐ ┌───────────┐
+  │ Specialist│ │ Specialist│ │ Specialist│ ← Domain agents
+  │ Agent A   │ │ Agent B   │ │ Agent C   │
+  └───────────┘ └───────────┘ └───────────┘
+        │             │             │
+  ┌─────┴─────────────┴─────────────┴─────┐
+  │  SHARED SERVICES                      │
+  │  AI Search │ Doc Intel │ Safety │ Eval│
+  └───────────────────────────────────────┘
+  ┌───────────────────────────────────────┐
+  │  GOVERNANCE & OBSERVABILITY           │
+  │  Monitor │ App Insights │ KV │ RBAC  │
+  └───────────────────────────────────────┘</pre>
+        <p style="font-size:1rem; color:var(--text-dim); margin-top:12px;"><strong>Principle:</strong> Separate channels, agents, shared services, and governance into independent layers.</p>
+    </div>
+
+    <!-- ===================== SLIDE 13: Mini Hack ===================== -->
+    <div class="slide" data-slide="13">
+        <h2>🧪 Mini Hack: Your Case Study</h2>
+        <p style="margin-bottom:20px;">Create a professional case study of your own Azure AI Foundry project:</p>
+        <div class="two-col">
+            <div>
+                <ul>
+                    <li><strong>Step 1:</strong> Choose your project (real or designed)</li>
+                    <li><strong>Step 2:</strong> Define quantified problem statement</li>
+                    <li><strong>Step 3:</strong> Document architecture + code snippet</li>
+                    <li><strong>Step 4:</strong> Quantify 4 key metrics with targets</li>
+                    <li><strong>Step 5:</strong> Extract 3 lessons + 2 improvements</li>
+                    <li><strong>Step 6:</strong> Build 3-phase expansion roadmap</li>
+                    <li><strong>Step 7:</strong> Present in 10 minutes</li>
+                </ul>
+            </div>
+            <div>
+                <div class="highlight-box">
+                    <h4 style="color:var(--accent-green);">Success Criteria</h4>
+                    <p style="font-size:0.95rem;">Your case study must answer:</p>
+                    <p style="font-size:0.95rem;">1. What problem does this solve?</p>
+                    <p style="font-size:0.95rem;">2. Why Azure AI Foundry?</p>
+                    <p style="font-size:0.95rem;">3. What evidence proves it works?</p>
+                    <p style="font-size:0.95rem;">4. How does it scale?</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== SLIDE 14: Key Takeaways ===================== -->
+    <div class="slide" data-slide="14">
+        <h2>Key Takeaways</h2>
+        <ul class="takeaway-list">
+            <li><strong>Patterns over point solutions</strong> — 6 patterns cover 90% of enterprise use cases</li>
+            <li><strong>Evaluation is the foundation</strong> — Start with golden datasets, not code</li>
+            <li><strong>Architecture separation</strong> — Channels, agents, services, governance as layers</li>
+            <li><strong>Multi-agent > monolithic</strong> — Focused agents beat single massive agents</li>
+            <li><strong>Compliance is a feature</strong> — Build it in from day one, not retrofitted</li>
+            <li><strong>Roadmap = practice</strong> — Foundation → Pilot → Scale → CoE → Innovation</li>
+        </ul>
+    </div>
+
+    <!-- ===================== SLIDE 15: Next Module ===================== -->
+    <div class="slide slide-title" data-slide="15">
+        <span class="badge badge-arc">Up Next</span>
+        <h1>Module 41<br>Multi-Region &amp; Global<br>Deployment Strategies</h1>
+        <p style="color:var(--text-dim); font-size:1.15rem; margin-top:20px;">Take enterprise AI global with multi-region deployments, disaster recovery, data residency, and cost optimization across Azure regions.</p>
+        <p style="color:var(--text-dim); margin-top:32px; font-size:0.95rem;">Azure AI Foundry: Zero to Hero · Module 41 of 45</p>
+    </div>
+
+</div>
+
+<!-- Slide Counter -->
+<div class="slide-counter" id="slideCounter">1 / 15</div>
+<div class="nav-hint">← → or Space to navigate</div>
+
+<!-- ================================================================
+     JAVASCRIPT — SLIDE NAVIGATION
+     ================================================================ -->
+<script>
+(function () {
+    'use strict';
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('slideCounter');
+    let current = 0;
+    const total = slides.length;
+
+    function show(index) {
+        slides[current].classList.remove('active');
+        current = (index + total) % total;
+        slides[current].classList.add('active');
+        counter.textContent = (current + 1) + ' / ' + total;
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(current + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1); }
+        if (e.key === 'Home') { e.preventDefault(); show(0); }
+        if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+    });
+
+    /* Touch swipe support */
+    let touchStartX = 0;
+    document.addEventListener('touchstart', function (e) { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', function (e) {
+        const diff = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(diff) > 50) { show(current + (diff < 0 ? 1 : -1)); }
+    });
+})();
+</script>
+
+</body>
+</html>

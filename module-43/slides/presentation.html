@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 43: Deploy &amp; Integrate with Agents/Copilot — Slide Deck</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-slide: #111127;
+            --bg-card: #1a1a3e;
+            --bg-code: #0d0d1f;
+            --accent: #00b4d8;
+            --accent-2: #7c3aed;
+            --accent-3: #f59e0b;
+            --accent-4: #10b981;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --text-bright: #ffffff;
+            --border: #2d2d5e;
+            --gradient-capstone: linear-gradient(135deg, #f59e0b, #ef4444, #7c3aed);
+            --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ─── Slide Container ─── */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 24px;
+            right: 40px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .slide-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 40px;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        /* ─── Title Slide ─── */
+        .slide-title {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #111127 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .slide-title::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 50%, rgba(0,180,216,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 50%, rgba(124,58,237,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .capstone-badge {
+            display: inline-block;
+            background: var(--gradient-capstone);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 24px;
+            border-radius: 50px;
+            margin-bottom: 32px;
+        }
+
+        .slide-title h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .slide-title h1 .hl {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .slide-title .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto 32px;
+        }
+        .slide-title .meta {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* ─── Content Slides ─── */
+        .slide h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 32px;
+            position: relative;
+            display: inline-block;
+        }
+        .slide h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .slide h3 {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin: 24px 0 12px;
+            font-weight: 600;
+        }
+
+        .slide p {
+            font-size: 1.1rem;
+            color: var(--text);
+            max-width: 800px;
+            margin-bottom: 16px;
+        }
+
+        .slide ul, .slide ol {
+            font-size: 1.05rem;
+            margin: 16px 0 16px 28px;
+            color: var(--text);
+        }
+        .slide li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+        .slide li::marker { color: var(--accent); }
+
+        /* ─── Two Column Layout ─── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 24px;
+        }
+
+        /* ─── Cards ─── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .card h4 {
+            color: var(--accent);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .card p, .card li {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+        }
+
+        /* ─── Code ─── */
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text);
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        code {
+            font-family: var(--font-mono);
+        }
+        :not(pre) > code {
+            background: var(--bg-card);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent-3);
+            font-size: 0.9em;
+        }
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .ty { color: #4ec9b0; }
+        .num { color: #b5cea8; }
+        .param { color: #9cdcfe; }
+
+        /* ─── Architecture Diagram ─── */
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 32px 0;
+        }
+        .arch-node {
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-bright);
+            text-align: center;
+            min-width: 120px;
+        }
+        .arch-node.hl {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-color: transparent;
+        }
+        .arch-node.capstone {
+            background: var(--gradient-capstone);
+            border-color: transparent;
+        }
+        .arch-arrow {
+            color: var(--accent);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* ─── Table ─── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.92rem;
+        }
+        th {
+            background: var(--bg-card);
+            color: var(--accent);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--accent);
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        tr:hover td {
+            background: rgba(0,180,216,0.05);
+        }
+
+        /* ─── Highlight Box ─── */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0,180,216,0.1), rgba(124,58,237,0.1));
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+        .highlight-box.warning {
+            border-color: var(--accent-3);
+            background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.05));
+        }
+        .highlight-box.success {
+            border-color: var(--accent-4);
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(0,180,216,0.05));
+        }
+
+        /* ─── Navigation Controls ─── */
+        .nav-hint {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26,26,62,0.9);
+            color: var(--text-dim);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            z-index: 50;
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .slide { padding: 40px 24px; }
+            .slide-title h1 { font-size: 2rem; }
+            .two-col { grid-template-columns: 1fr; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+
+        @media print {
+            .slide { min-height: auto; page-break-after: always; padding: 40px; }
+            .nav-hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ SLIDE 1: TITLE ═══════════════ -->
+<div class="slide slide-title" id="slide-1">
+    <div>
+        <span class="capstone-badge">🏆 ARC 9 · Capstone &amp; Mastery</span>
+        <h1>Deploy &amp; Integrate with<br><span class="hl">Agents / Copilot</span></h1>
+        <p class="subtitle">
+            Build agents on RAG pipelines, integrate with Copilot Studio &amp; Teams,
+            expose API endpoints, and validate with E2E testing.
+        </p>
+        <p class="meta">Module 43 of 45 · Azure AI Foundry: Zero to Hero · April 2026</p>
+    </div>
+    <span class="slide-number">1 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 2: AGENDA ═══════════════ -->
+<div class="slide" id="slide-2">
+    <h2>Agenda</h2>
+    <ol>
+        <li><strong>Agents on RAG</strong> — Build agents over your grounded data pipeline</li>
+        <li><strong>Function Tools</strong> — Extend agents with custom actions</li>
+        <li><strong>Copilot Studio</strong> — Low-code integration and publishing</li>
+        <li><strong>Teams Integration</strong> — Bring AI into the workplace</li>
+        <li><strong>API Endpoints</strong> — External access via APIM</li>
+        <li><strong>E2E Testing</strong> — Validate the complete system</li>
+        <li><strong>AI Quality Evaluation</strong> — Score with Foundry evaluators</li>
+        <li><strong>Mini Hack</strong> — Deploy your integrated solution</li>
+    </ol>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">2 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 3: WHY AGENTS ═══════════════ -->
+<div class="slide" id="slide-3">
+    <h2>Why AI Agents?</h2>
+    <div class="two-col">
+        <div>
+            <h3>Chat Completions</h3>
+            <ul>
+                <li>Stateless — no memory across calls</li>
+                <li>Single request/response pattern</li>
+                <li>Manual tool orchestration</li>
+                <li>No planning or reasoning loops</li>
+            </ul>
+        </div>
+        <div>
+            <h3>AI Agents</h3>
+            <ul>
+                <li>Stateful — persistent conversation threads</li>
+                <li>Autonomous multi-step reasoning</li>
+                <li>Automatic tool selection &amp; invocation</li>
+                <li>Planning, reflection, and self-correction</li>
+            </ul>
+        </div>
+    </div>
+    <div class="highlight-box">
+        <strong>Key Insight:</strong> Agents transform your RAG pipeline from a search engine into an
+        intelligent assistant that can reason, act, and learn from conversation context.
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">3 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 4: ARCHITECTURE ═══════════════ -->
+<div class="slide" id="slide-4">
+    <h2>Agent-on-RAG Architecture</h2>
+    <div class="arch-flow">
+        <div class="arch-node">User</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node hl">AI Agent</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node">Planner</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node capstone">RAG + Tools</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node">Response</div>
+    </div>
+    <div class="two-col" style="margin-top: 32px;">
+        <div class="card">
+            <h4>🔍 RAG Tool</h4>
+            <p>Azure AI Search with semantic ranking. Retrieves relevant chunks from your knowledge base with citations.</p>
+        </div>
+        <div class="card">
+            <h4>⚡ Function Tools</h4>
+            <p>Custom functions for actions: create tickets, check orders, trigger workflows, query databases.</p>
+        </div>
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">4 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 5: CREATE AGENT CODE ═══════════════ -->
+<div class="slide" id="slide-5">
+    <h2>Creating an Agent</h2>
+<pre>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="ty">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="ty">AzureAISearchTool</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="ty">DefaultAzureCredential</span>
+
+<span class="param">client</span> = <span class="ty">AIProjectClient</span>(
+    <span class="param">credential</span>=<span class="ty">DefaultAzureCredential</span>(),
+    <span class="param">endpoint</span>=<span class="str">"https://my-project.services.ai.azure.com"</span>,
+)
+
+<span class="param">search_tool</span> = <span class="ty">AzureAISearchTool</span>(
+    <span class="param">index_connection_id</span>=<span class="str">"&lt;connection-id&gt;"</span>,
+    <span class="param">index_name</span>=<span class="str">"product-kb"</span>,
+    <span class="param">query_type</span>=<span class="str">"semantic"</span>,
+    <span class="param">top_k</span>=<span class="num">5</span>,
+)
+
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"support-agent"</span>,
+    <span class="param">instructions</span>=<span class="str">"You are a product support specialist..."</span>,
+    <span class="param">tools</span>=[search_tool],
+)
+</pre>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">5 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 6: FUNCTION TOOLS ═══════════════ -->
+<div class="slide" id="slide-6">
+    <h2>Custom Function Tools</h2>
+    <p>Extend your agent beyond retrieval with actionable function tools:</p>
+<pre>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="ty">FunctionTool</span>, <span class="ty">ToolSet</span>
+
+<span class="kw">def</span> <span class="fn">create_ticket</span>(<span class="param">title</span>: <span class="ty">str</span>, <span class="param">priority</span>: <span class="ty">str</span>) -> <span class="ty">dict</span>:
+    <span class="str">"""Create a support ticket."""</span>
+    <span class="kw">return</span> {<span class="str">"ticket_id"</span>: <span class="str">"TKT-001"</span>, <span class="str">"status"</span>: <span class="str">"created"</span>}
+
+<span class="kw">def</span> <span class="fn">check_order</span>(<span class="param">order_id</span>: <span class="ty">str</span>) -> <span class="ty">dict</span>:
+    <span class="str">"""Look up order status."""</span>
+    <span class="kw">return</span> {<span class="str">"order_id"</span>: order_id, <span class="str">"status"</span>: <span class="str">"shipped"</span>}
+
+<span class="param">toolset</span> = <span class="ty">ToolSet</span>()
+toolset.<span class="fn">add</span>(<span class="ty">FunctionTool</span>([create_ticket, check_order]))
+toolset.<span class="fn">add</span>(search_tool)
+</pre>
+    <div class="highlight-box success">
+        <strong>Tip:</strong> Always include detailed docstrings — the agent uses them to decide when and how to call each function.
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">6 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 7: COPILOT STUDIO ═══════════════ -->
+<div class="slide" id="slide-7">
+    <h2>Copilot Studio Integration</h2>
+    <div class="two-col">
+        <div>
+            <h3>Integration Steps</h3>
+            <ol>
+                <li>Deploy agent as a FastAPI endpoint</li>
+                <li>Create custom connector in Copilot Studio</li>
+                <li>Author conversation topics</li>
+                <li>Configure Entra ID authentication</li>
+                <li>Test in the Copilot Studio canvas</li>
+                <li>Publish to channels</li>
+            </ol>
+        </div>
+        <div>
+            <h3>Benefits</h3>
+            <ul>
+                <li>Low-code topic authoring</li>
+                <li>Built-in analytics dashboard</li>
+                <li>Multi-channel publishing</li>
+                <li>Escalation to human agents</li>
+                <li>Conversation transcripts</li>
+                <li>A/B testing support</li>
+            </ul>
+        </div>
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">7 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 8: API ENDPOINT ═══════════════ -->
+<div class="slide" id="slide-8">
+    <h2>FastAPI Agent Endpoint</h2>
+<pre>
+<span class="kw">from</span> fastapi <span class="kw">import</span> <span class="ty">FastAPI</span>
+<span class="kw">from</span> pydantic <span class="kw">import</span> <span class="ty">BaseModel</span>
+
+<span class="param">app</span> = <span class="ty">FastAPI</span>(<span class="param">title</span>=<span class="str">"AI Agent API"</span>)
+
+<span class="kw">class</span> <span class="ty">ChatRequest</span>(<span class="ty">BaseModel</span>):
+    <span class="param">message</span>: <span class="ty">str</span>
+    <span class="param">session_id</span>: <span class="ty">str</span> | <span class="kw">None</span> = <span class="kw">None</span>
+
+<span class="kw">@app.post</span>(<span class="str">"/api/chat"</span>)
+<span class="kw">async def</span> <span class="fn">chat</span>(<span class="param">req</span>: <span class="ty">ChatRequest</span>):
+    <span class="param">thread_id</span> = req.session_id <span class="kw">or</span> create_thread()
+    result = <span class="kw">await</span> <span class="fn">invoke_agent</span>(req.message, thread_id)
+    <span class="kw">return</span> {<span class="str">"reply"</span>: result, <span class="str">"session_id"</span>: thread_id}
+</pre>
+    <p>This endpoint serves as the bridge between Copilot Studio, Teams, and external consumers.</p>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">8 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 9: TEAMS ═══════════════ -->
+<div class="slide" id="slide-9">
+    <h2>Teams Integration Options</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Approach</th>
+                <th>Complexity</th>
+                <th>Best For</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Copilot Studio → Teams</strong></td>
+                <td>Low</td>
+                <td>Quick deployment, business users</td>
+            </tr>
+            <tr>
+                <td><strong>Bot Framework</strong></td>
+                <td>Medium</td>
+                <td>Custom UX, adaptive cards</td>
+            </tr>
+            <tr>
+                <td><strong>Teams AI Library</strong></td>
+                <td>Medium</td>
+                <td>AI-native Teams apps</td>
+            </tr>
+            <tr>
+                <td><strong>Message Extension</strong></td>
+                <td>High</td>
+                <td>Inline search, compose actions</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="highlight-box warning">
+        <strong>⚠️ Always use Entra ID SSO</strong> for Teams authentication. Never expose unauthenticated agent endpoints.
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">9 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 10: APIM ═══════════════ -->
+<div class="slide" id="slide-10">
+    <h2>API Management Gateway</h2>
+    <div class="arch-flow">
+        <div class="arch-node">External Client</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node hl">API Management</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node">Azure Functions</div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-node capstone">AI Agent</div>
+    </div>
+    <div class="two-col" style="margin-top: 24px;">
+        <div class="card">
+            <h4>Security</h4>
+            <ul>
+                <li>JWT validation (Entra ID)</li>
+                <li>Subscription keys</li>
+                <li>IP whitelisting</li>
+                <li>CORS policies</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>Operations</h4>
+            <ul>
+                <li>Rate limiting (100 req/min)</li>
+                <li>Request/response caching</li>
+                <li>API versioning (v1, v2)</li>
+                <li>Usage analytics</li>
+            </ul>
+        </div>
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">10 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 11: E2E TESTING ═══════════════ -->
+<div class="slide" id="slide-11">
+    <h2>End-to-End Testing</h2>
+    <div class="two-col">
+        <div>
+            <h3>Testing Pyramid</h3>
+            <div class="card" style="margin-bottom:12px;">
+                <h4>🔬 Unit Tests</h4>
+                <p>Individual functions, tool handlers, prompt templates</p>
+            </div>
+            <div class="card" style="margin-bottom:12px;">
+                <h4>🔗 Integration Tests</h4>
+                <p>Agent + RAG pipeline, agent + tools, API contracts</p>
+            </div>
+            <div class="card" style="margin-bottom:12px;">
+                <h4>🌐 E2E Tests</h4>
+                <p>Full conversation flows through deployed endpoints</p>
+            </div>
+            <div class="card">
+                <h4>📈 Evaluations</h4>
+                <p>LLM-as-judge scoring for quality metrics</p>
+            </div>
+        </div>
+        <div>
+            <h3>Key Test Cases</h3>
+            <ul>
+                <li>Health check endpoint returns 200</li>
+                <li>Simple query returns non-empty response</li>
+                <li>Multi-turn conversation maintains context</li>
+                <li>Tool invocation produces correct action</li>
+                <li>Invalid input returns 400 error</li>
+                <li>Session ID is returned and reusable</li>
+                <li>Response time under SLA threshold</li>
+            </ul>
+        </div>
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">11 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 12: AI EVALUATION ═══════════════ -->
+<div class="slide" id="slide-12">
+    <h2>AI Quality Evaluation</h2>
+    <p>Use Azure AI Evaluation SDK to score agent responses:</p>
+<pre>
+<span class="kw">from</span> azure.ai.evaluation <span class="kw">import</span> <span class="ty">GroundednessEvaluator</span>, <span class="ty">RelevanceEvaluator</span>, <span class="fn">evaluate</span>
+
+<span class="param">results</span> = <span class="fn">evaluate</span>(
+    <span class="param">data</span>=test_dataset,
+    <span class="param">evaluators</span>={
+        <span class="str">"groundedness"</span>: <span class="ty">GroundednessEvaluator</span>(model_config),
+        <span class="str">"relevance"</span>: <span class="ty">RelevanceEvaluator</span>(model_config),
+    },
+)
+</pre>
+    <table>
+        <thead>
+            <tr><th>Metric</th><th>What It Measures</th><th>Target</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Groundedness</td><td>Response supported by source data</td><td>≥ 4.0 / 5.0</td></tr>
+            <tr><td>Relevance</td><td>Response addresses the query</td><td>≥ 4.0 / 5.0</td></tr>
+            <tr><td>Coherence</td><td>Logical flow and readability</td><td>≥ 4.0 / 5.0</td></tr>
+            <tr><td>Fluency</td><td>Natural language quality</td><td>≥ 4.0 / 5.0</td></tr>
+        </tbody>
+    </table>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">12 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 13: MINI HACK ═══════════════ -->
+<div class="slide" id="slide-13">
+    <h2>🧪 Mini Hack Challenge</h2>
+    <p><strong>Deploy your fully integrated AI agent solution:</strong></p>
+    <ol>
+        <li>Build an agent with RAG + 2 custom function tools</li>
+        <li>Deploy as FastAPI / Azure Functions endpoint</li>
+        <li>Connect to Copilot Studio via custom connector</li>
+        <li>Publish to Microsoft Teams</li>
+        <li>Protect with APIM (rate limiting + JWT auth)</li>
+        <li>Write 5+ E2E tests with pytest</li>
+        <li>Run AI quality evaluation (all scores ≥ 4.0)</li>
+        <li>Record a 3-minute demo video</li>
+    </ol>
+    <div class="highlight-box success">
+        <strong>Success Criteria:</strong> Agent responds via API, Teams, and Copilot Studio. All E2E tests pass. Quality scores ≥ 4.0/5.0.
+    </div>
+    <span class="slide-footer">Module 43 — Deploy &amp; Integrate with Agents/Copilot</span>
+    <span class="slide-number">13 / 14</span>
+</div>
+
+<!-- ═══════════════ SLIDE 14: SUMMARY ═══════════════ -->
+<div class="slide slide-title" id="slide-14">
+    <div>
+        <span class="capstone-badge">🏆 Module 43 Complete</span>
+        <h1>Key <span class="hl">Takeaways</span></h1>
+        <div style="text-align: left; max-width: 600px; margin: 32px auto;">
+            <ul>
+                <li>Agents add <strong>state, planning, and tool use</strong> on top of RAG</li>
+                <li>Copilot Studio enables <strong>low-code</strong> integration and publishing</li>
+                <li>Teams brings AI <strong>into the workplace</strong></li>
+                <li>APIM provides <strong>security and governance</strong> for external APIs</li>
+                <li>E2E testing + AI evaluation ensures <strong>production quality</strong></li>
+            </ul>
+        </div>
+        <p class="meta" style="margin-top: 32px;">
+            Next Up → Module 44: Performance Optimization &amp; Cost Management
+        </p>
+    </div>
+    <span class="slide-number">14 / 14</span>
+</div>
+
+<!-- ─── Navigation Hint ─── -->
+<div class="nav-hint">Scroll to navigate · 14 slides · Press Ctrl+P to print</div>
+
+<!-- ─── Keyboard Navigation ─── -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        const goToSlide = (index) => {
+            if (index >= 0 && index < slides.length) {
+                currentSlide = index;
+                slides[index].scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+                e.preventDefault();
+                goToSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                goToSlide(currentSlide - 1);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                goToSlide(slides.length - 1);
+            }
+        });
+
+        // Track current slide on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    currentSlide = Array.from(slides).indexOf(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        slides.forEach(slide => observer.observe(slide));
+    });
+</script>
+
+</body>
+</html>

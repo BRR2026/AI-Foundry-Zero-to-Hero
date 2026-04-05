@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 38: Building Repeatable AI Offerings for Customers — Slides</title>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0f0f1a;--surface:#181828;--card:#1e1e32;
+    --blue:#0078d4;--purple:#5c2d91;--teal:#00b7c3;--green:#107c10;
+    --yellow:#ffb900;--orange:#d83b01;--red:#e74856;--lightblue:#50e6ff;
+    --text:#e8e8f0;--muted:#9090a8;--dim:#606078;
+    --font:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  html{font-size:16px;scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  /* Slide Container */
+  .deck{max-width:1100px;margin:0 auto;padding:20px}
+  .slide{
+    background:var(--surface);border:1px solid rgba(255,255,255,.06);
+    border-radius:18px;min-height:600px;padding:60px 72px;
+    margin-bottom:48px;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .slide::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg,var(--blue),var(--purple),var(--teal));
+  }
+
+  /* Slide Number */
+  .slide-num{
+    position:absolute;top:20px;right:28px;font-size:.75rem;
+    color:var(--dim);font-weight:600;letter-spacing:2px;
+  }
+
+  /* Typography */
+  h1{font-size:2.8rem;font-weight:700;line-height:1.15;margin-bottom:16px}
+  h2{font-size:2rem;font-weight:700;margin-bottom:24px;color:var(--lightblue)}
+  h3{font-size:1.3rem;font-weight:600;color:var(--teal);margin:20px 0 12px}
+  p{font-size:1.05rem;line-height:1.7;color:var(--muted);margin-bottom:16px}
+  ul,ol{margin:12px 0 12px 28px}
+  li{margin-bottom:10px;line-height:1.6;color:var(--muted);font-size:1rem}
+  li strong{color:var(--text)}
+  a{color:var(--lightblue);text-decoration:none}
+
+  /* Title slide */
+  .slide-title{
+    background:linear-gradient(135deg,#0a0a1a 0%,#1a1040 40%,#0d2a4a 100%);
+    text-align:center;min-height:640px;
+  }
+  .slide-title h1{font-size:2.6rem;margin-bottom:12px}
+  .slide-title .subtitle{font-size:1.25rem;color:var(--lightblue);margin-bottom:24px}
+  .badge{
+    display:inline-block;padding:6px 20px;border-radius:20px;font-size:.8rem;
+    font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    background:rgba(92,45,145,.35);border:1px solid rgba(92,45,145,.5);
+    color:#c4a0ff;margin-bottom:28px;
+  }
+  .meta-row{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;color:var(--dim);font-size:.9rem;margin-top:12px}
+
+  /* Cards Grid */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin:20px 0}
+  .card{
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:22px;
+  }
+  .card .icon{font-size:1.8rem;margin-bottom:10px}
+  .card h4{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:6px}
+  .card p{font-size:.85rem;color:var(--muted);margin-bottom:0}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem}
+  thead th{
+    background:rgba(0,120,212,.2);color:var(--lightblue);padding:10px 14px;
+    text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:.5px;
+    font-size:.8rem;
+  }
+  tbody td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--muted)}
+  tbody tr:hover{background:rgba(0,120,212,.05)}
+
+  /* Code */
+  .code-box{
+    background:#13131f;border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;padding:20px 24px;margin:16px 0;
+    font-family:var(--mono);font-size:.82rem;line-height:1.6;
+    color:#d4d4d4;overflow-x:auto;white-space:pre;
+  }
+  .kw{color:#569cd6}.str{color:#ce9178}.fn{color:#dcdcaa}
+  .cm{color:#6a9955}.num{color:#b5cea8}.type{color:#4ec9b0}
+
+  /* Diagram */
+  .diagram{
+    background:rgba(0,183,195,.04);border:1px solid rgba(0,183,195,.15);
+    border-radius:12px;padding:28px;margin:16px 0;text-align:center;
+    font-family:var(--mono);font-size:.82rem;color:var(--teal);
+    white-space:pre;line-height:1.5;
+  }
+
+  /* Highlight box */
+  .highlight{
+    background:rgba(0,120,212,.08);border-left:4px solid var(--blue);
+    border-radius:0 10px 10px 0;padding:18px 22px;margin:18px 0;
+  }
+  .highlight p{margin-bottom:0;color:var(--text)}
+  .highlight.green{background:rgba(16,124,16,.08);border-color:var(--green)}
+  .highlight.yellow{background:rgba(255,185,0,.08);border-color:var(--yellow)}
+  .highlight.purple{background:rgba(92,45,145,.1);border-color:var(--purple)}
+
+  /* Footer nav */
+  .deck-nav{
+    display:flex;justify-content:space-between;padding:30px 0;
+    border-top:1px solid rgba(255,255,255,.06);margin-top:20px;
+  }
+  .deck-nav a{
+    padding:12px 24px;border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;color:var(--lightblue);font-weight:600;
+    font-size:.9rem;transition:all .3s;
+  }
+  .deck-nav a:hover{background:rgba(0,120,212,.15);border-color:var(--blue)}
+
+  @media(max-width:768px){
+    .slide{padding:36px 28px;min-height:auto}
+    h1{font-size:1.8rem}h2{font-size:1.4rem}
+    .cards{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ====== SLIDE 1: Title ====== -->
+<div class="slide slide-title">
+  <div class="slide-num">1 / 14</div>
+  <div class="badge">ARC 8 · Advanced Patterns &amp; Enterprise</div>
+  <h1>Building Repeatable AI Offerings for Customers</h1>
+  <p class="subtitle">Module 38 of 45 — Azure AI Foundry: Zero to Hero</p>
+  <p>Packaging, white-labeling, and monetizing AI solutions built on Azure AI Foundry</p>
+  <div class="meta-row">
+    <span>📅 April 2026</span>
+    <span>⏱️ ~4 hours</span>
+    <span>🎯 Advanced</span>
+  </div>
+</div>
+
+<!-- ====== SLIDE 2: Agenda ====== -->
+<div class="slide">
+  <div class="slide-num">2 / 14</div>
+  <h2>Agenda</h2>
+  <ol>
+    <li><strong>From Projects to Products</strong> — The productization mindset</li>
+    <li><strong>Packaging AI Solutions</strong> — Templates, containers, IaC modules</li>
+    <li><strong>White-Label Patterns</strong> — One solution, many brands</li>
+    <li><strong>Multi-Tenant Architecture</strong> — Isolation strategies for AI</li>
+    <li><strong>Solution Templates &amp; Accelerators</strong> — Production-ready starting points</li>
+    <li><strong>Pricing &amp; Licensing</strong> — Monetizing AI offerings</li>
+    <li><strong>Mini Hack</strong> — Build a customer FAQ bot template</li>
+  </ol>
+</div>
+
+<!-- ====== SLIDE 3: The Productization Spectrum ====== -->
+<div class="slide">
+  <div class="slide-num">3 / 14</div>
+  <h2>From Projects to Products</h2>
+  <p>Every AI offering sits somewhere on the productization spectrum:</p>
+  <div class="diagram">
+Custom Consulting          Configurable Template          Self-Service SaaS
+      │                           │                            │
+   High Touch               Medium Touch                  Low Touch
+   High Margin               Good Margin                  Scale Margin
+   Low Scale                 Medium Scale                 High Scale
+      │                           │                            │
+  ◄──────────────────────────────────────────────────────────────►
+  Per-customer build         Parameterized deploy         Customer self-serve
+  </div>
+  <div class="highlight">
+    <p>💡 <strong>Goal:</strong> Move your AI solution rightward on the spectrum — from bespoke to repeatable — without losing the ability to customize for each customer.</p>
+  </div>
+</div>
+
+<!-- ====== SLIDE 4: Packaging Options ====== -->
+<div class="slide">
+  <div class="slide-num">4 / 14</div>
+  <h2>Packaging AI Solutions in Azure AI Foundry</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">📦</div>
+      <h4>Project Template</h4>
+      <p>Pre-configured Foundry project with agents, knowledge, and evaluation pipelines</p>
+    </div>
+    <div class="card">
+      <div class="icon">🏗️</div>
+      <h4>Bicep / Terraform Module</h4>
+      <p>IaC that provisions all Azure resources plus AI Foundry assets</p>
+    </div>
+    <div class="card">
+      <div class="icon">🐳</div>
+      <h4>Container Image</h4>
+      <p>Dockerized agent with <code>agent.yaml</code> distributed via ACR or Marketplace</p>
+    </div>
+    <div class="card">
+      <div class="icon">📋</div>
+      <h4>ARM Template Spec</h4>
+      <p>Versioned ARM template stored in Azure for managed service providers</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SLIDE 5: Packaging Checklist ====== -->
+<div class="slide">
+  <div class="slide-num">5 / 14</div>
+  <h2>Packaging Checklist</h2>
+  <h3>Every repeatable AI offering should include:</h3>
+  <ul>
+    <li><strong>Externalized configuration</strong> — All endpoints, model names, knowledge sources are parameterized</li>
+    <li><strong>Tenant-specific values</strong> — Branding, domain, data sources are configurable per customer</li>
+    <li><strong>Evaluation datasets</strong> — Baseline metrics and pass/fail criteria</li>
+    <li><strong>Documentation</strong> — README, onboarding guide, architecture diagram</li>
+    <li><strong>Deployment validation</strong> — Smoke tests that run post-deployment</li>
+    <li><strong>Version management</strong> — Semantic versioning for templates and agents</li>
+  </ul>
+  <div class="highlight green">
+    <p>✅ If you can't deploy for a new customer in under 30 minutes, your solution isn't productized yet.</p>
+  </div>
+</div>
+
+<!-- ====== SLIDE 6: White-Label Architecture ====== -->
+<div class="slide">
+  <div class="slide-num">6 / 14</div>
+  <h2>White-Label Patterns</h2>
+  <p>One solution, many brands — what to make configurable:</p>
+  <table>
+    <thead><tr><th>Layer</th><th>Configurable Elements</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Branding</strong></td><td>Logo, colors, bot name, greeting messages</td></tr>
+      <tr><td><strong>Domain</strong></td><td>Custom domain or subdomain per customer</td></tr>
+      <tr><td><strong>Knowledge</strong></td><td>Separate search indexes, document sources</td></tr>
+      <tr><td><strong>Model</strong></td><td>Shared vs. dedicated model deployment</td></tr>
+      <tr><td><strong>Prompts</strong></td><td>Customer-specific system prompts and persona</td></tr>
+      <tr><td><strong>Guardrails</strong></td><td>Blocked topics, response length, tone</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ====== SLIDE 7: Customer Config Example ====== -->
+<div class="slide">
+  <div class="slide-num">7 / 14</div>
+  <h2>Customer Configuration</h2>
+  <h3>Each customer is defined by a single YAML file:</h3>
+  <div class="code-box"><span class="cm"># customer-config.yaml</span>
+<span class="kw">tenant_id</span>: <span class="str">"contoso"</span>
+<span class="kw">display_name</span>: <span class="str">"Contoso AI Assistant"</span>
+<span class="kw">branding</span>:
+  <span class="kw">primary_color</span>: <span class="str">"#0078D4"</span>
+  <span class="kw">greeting</span>: <span class="str">"Hello! How can I help?"</span>
+<span class="kw">knowledge</span>:
+  <span class="kw">index_name</span>: <span class="str">"contoso-knowledge-index"</span>
+<span class="kw">model</span>:
+  <span class="kw">deployment</span>: <span class="str">"gpt-4o"</span>
+  <span class="kw">temperature</span>: <span class="num">0.3</span>
+<span class="kw">guardrails</span>:
+  <span class="kw">blocked_topics</span>: [<span class="str">"competitor-products"</span>]</div>
+</div>
+
+<!-- ====== SLIDE 8: Multi-Tenant Isolation ====== -->
+<div class="slide">
+  <div class="slide-num">8 / 14</div>
+  <h2>Multi-Tenant Architecture</h2>
+  <table>
+    <thead><tr><th>Strategy</th><th>Isolation</th><th>Cost</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Shared everything</strong></td><td>Low</td><td>Low</td><td>Dev / testing</td></tr>
+      <tr><td><strong>Shared infra, separate data</strong></td><td>Medium ✅</td><td>Medium</td><td>Most offerings</td></tr>
+      <tr><td><strong>Separate Foundry projects</strong></td><td>High</td><td>High</td><td>Regulated industries</td></tr>
+      <tr><td><strong>Separate subscriptions</strong></td><td>Maximum</td><td>Highest</td><td>Government / defense</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight">
+    <p>💡 <strong>Recommended default:</strong> Shared infrastructure with separate data — one AI Foundry hub, per-tenant projects, and separate AI Search indexes.</p>
+  </div>
+</div>
+
+<!-- ====== SLIDE 9: Multi-Tenant Flow ====== -->
+<div class="slide">
+  <div class="slide-num">9 / 14</div>
+  <h2>Multi-Tenant Request Flow</h2>
+  <div class="diagram">
+    Customer Request
+           │
+           ▼
+  ┌─────────────────┐
+  │  API Gateway /   │
+  │  Tenant Router   │
+  └────────┬────────┘
+           │  extract tenant ID
+           ▼
+  ┌─────────────────┐       ┌──────────────────┐
+  │  Config Lookup   │──────▶│ Tenant Config DB │
+  └────────┬────────┘       └──────────────────┘
+           │
+           ▼
+  ┌─────────────────┐       ┌──────────────────┐
+  │  AI Foundry      │──────▶│ Tenant Project   │
+  │  Agent Endpoint  │       └──────────────────┘
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐       ┌──────────────────┐
+  │  Knowledge       │──────▶│ Tenant Index     │
+  │  Retrieval       │       └──────────────────┘
+  └────────┬────────┘
+           │
+           ▼
+      Response
+  </div>
+</div>
+
+<!-- ====== SLIDE 10: Solution Accelerators ====== -->
+<div class="slide">
+  <div class="slide-num">10 / 14</div>
+  <h2>Solution Templates &amp; Accelerators</h2>
+  <h3>What makes an accelerator production-ready?</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🔧</div>
+      <h4>Infrastructure Code</h4>
+      <p>Bicep/Terraform modules for all Azure resources</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔒</div>
+      <h4>Security Hardening</h4>
+      <p>Private endpoints, managed identity, RBAC</p>
+    </div>
+    <div class="card">
+      <div class="icon">📊</div>
+      <h4>Monitoring</h4>
+      <p>App Insights, dashboards, alerting rules</p>
+    </div>
+    <div class="card">
+      <div class="icon">✅</div>
+      <h4>Evaluation</h4>
+      <p>Datasets, metrics, pass/fail criteria</p>
+    </div>
+    <div class="card">
+      <div class="icon">📚</div>
+      <h4>Documentation</h4>
+      <p>Onboarding guide, architecture diagram, runbooks</p>
+    </div>
+    <div class="card">
+      <div class="icon">🚀</div>
+      <h4>Deployment Automation</h4>
+      <p>One-click scripts or CI/CD pipelines</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SLIDE 11: Pricing Models ====== -->
+<div class="slide">
+  <div class="slide-num">11 / 14</div>
+  <h2>Pricing &amp; Licensing Strategies</h2>
+  <table>
+    <thead><tr><th>Model</th><th>How It Works</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Per-conversation</strong></td><td>Charge per completed session</td><td>FAQ / support bots</td></tr>
+      <tr><td><strong>Per-query</strong></td><td>Charge per API call</td><td>Search / analytics</td></tr>
+      <tr><td><strong>Per-seat</strong></td><td>Fixed monthly fee per user</td><td>Enterprise copilots</td></tr>
+      <tr><td><strong>Tiered consumption</strong></td><td>Volume-based pricing tiers</td><td>High-volume apps</td></tr>
+      <tr><td><strong>Flat subscription</strong></td><td>Fixed monthly/annual fee</td><td>SMB solutions</td></tr>
+      <tr><td><strong>Outcome-based</strong></td><td>Based on measurable results</td><td>Premium offerings</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight yellow">
+    <p>⚠️ Always account for: model inference, search queries, storage, networking, monitoring, and your support effort when setting prices.</p>
+  </div>
+</div>
+
+<!-- ====== SLIDE 12: Margin Example ====== -->
+<div class="slide">
+  <div class="slide-num">12 / 14</div>
+  <h2>Cost &amp; Margin Calculation</h2>
+  <h3>Per-conversation pricing example:</h3>
+  <div class="code-box">Avg tokens per conversation:       2,500
+GPT-4o cost per 1K tokens:         ~$0.005 (blended)
+Azure AI Search cost per query:    ~$0.001
+Infrastructure overhead:           ~$0.002
+──────────────────────────────────────────────
+Total cost per conversation:       ~$0.020
+
+Your price per conversation:        $0.10
+<span class="fn">Gross margin:                       80%</span></div>
+  <h3>Licensing reminders</h3>
+  <ul>
+    <li><strong>Model terms</strong> — Comply with Microsoft's usage policies for redistribution</li>
+    <li><strong>Data ownership</strong> — Customer data stays in the customer's tenant</li>
+    <li><strong>IP clarity</strong> — Define who owns fine-tuned models, evals, and custom prompts</li>
+    <li><strong>Usage transparency</strong> — Provide customers with usage dashboards</li>
+  </ul>
+</div>
+
+<!-- ====== SLIDE 13: Mini Hack ====== -->
+<div class="slide">
+  <div class="slide-num">13 / 14</div>
+  <h2>🧪 Mini Hack: Customer FAQ Bot Template</h2>
+  <h3>Build a reusable, parameterized solution template:</h3>
+  <ol>
+    <li><strong>Define the config schema</strong> — What varies per customer?</li>
+    <li><strong>Create Bicep templates</strong> — Parameterized infrastructure for AI Foundry + Search + Storage</li>
+    <li><strong>Build agent templates</strong> — <code>agent.yaml</code> + system prompt with placeholders</li>
+    <li><strong>Write deployment automation</strong> — Script that reads config and provisions everything</li>
+    <li><strong>Add smoke tests</strong> — Validate agent config, tenant isolation, guardrails</li>
+    <li><strong>Deploy for two customers</strong> — Contoso + Fabrikam with different configs</li>
+  </ol>
+  <div class="highlight green">
+    <p>✅ <strong>Success criteria:</strong> Both tenants deploy in &lt; 10 minutes, pass all smoke tests, and each agent only answers from its own knowledge base.</p>
+  </div>
+</div>
+
+<!-- ====== SLIDE 14: Key Takeaways ====== -->
+<div class="slide">
+  <div class="slide-num">14 / 14</div>
+  <h2>Key Takeaways</h2>
+  <ul>
+    <li><strong>Productize, don't customize</strong> — Parameterize once, deploy many times</li>
+    <li><strong>White-label with config files</strong> — Branding, knowledge, prompts, and guardrails per customer</li>
+    <li><strong>Isolate tenants at the data layer</strong> — Shared infra, separate search indexes and projects</li>
+    <li><strong>Build accelerators, not demos</strong> — Include IaC, security, monitoring, eval, and docs</li>
+    <li><strong>Price for margin</strong> — Account for all cost components before setting your price</li>
+    <li><strong>Automate everything</strong> — Customer config → deployed agent in minutes, not weeks</li>
+  </ul>
+  <div class="highlight purple">
+    <p>🔮 <strong>Next — Module 39:</strong> AI Marketplace &amp; Partner Ecosystem — Publishing your offerings to Azure Marketplace</p>
+  </div>
+</div>
+
+<!-- Footer Nav -->
+<nav class="deck-nav">
+  <a href="../module-37/slides/presentation.html">← Module 37: Adv. Networking &amp; Security</a>
+  <a href="../module-39/slides/presentation.html">Module 39: AI Marketplace →</a>
+</nav>
+
+</div><!-- .deck -->
+</body>
+</html>

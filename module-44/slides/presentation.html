@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 44 — Add Governance, Monitoring & Security | Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #0078d4;
+    --accent-bright: #58a6ff;
+    --purple: #5c2d91;
+    --purple-bright: #bc8cff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --orange: #f0883e;
+    --code-bg: #0d1117;
+    --gradient-hero: linear-gradient(135deg, #0078d4 0%, #5c2d91 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+
+  /* Slide Container */
+  .deck { position: relative; width: 100%; height: 100%; }
+  .slide {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 60px 80px;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateX(40px);
+  }
+  .slide.active {
+    opacity: 1; visibility: visible; transform: translateX(0);
+  }
+  .slide.exit-left {
+    opacity: 0; visibility: hidden; transform: translateX(-40px);
+  }
+
+  /* Typography */
+  h1 { font-size: 3rem; font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+  h2 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 20px; color: var(--accent-bright); }
+  h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 12px; color: var(--purple-bright); }
+  p, li { font-size: 1.2rem; line-height: 1.7; color: var(--text-muted); }
+  li { margin-bottom: 10px; }
+  ul { list-style: none; padding: 0; }
+  ul li::before { content: "▸ "; color: var(--accent-bright); font-weight: 700; }
+
+  .slide-content { max-width: 1100px; width: 100%; }
+
+  /* Badge */
+  .badge {
+    display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 0.85rem;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;
+  }
+  .badge-arc { background: rgba(92,45,145,0.25); color: var(--purple-bright); border: 1px solid rgba(92,45,145,0.4); }
+  .badge-blue { background: rgba(0,120,212,0.2); color: var(--accent-bright); border: 1px solid rgba(0,120,212,0.35); }
+
+  /* Code */
+  code, .code-block {
+    font-family: 'JetBrains Mono', monospace; background: var(--code-bg);
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  code { padding: 2px 8px; font-size: 0.95rem; color: var(--accent-bright); }
+  .code-block { padding: 24px 28px; font-size: 0.9rem; line-height: 1.7; overflow-x: auto; text-align: left; width: 100%; margin: 16px 0; white-space: pre; color: var(--text); }
+  .code-comment { color: var(--text-muted); }
+  .code-keyword { color: var(--purple-bright); }
+  .code-string { color: var(--green); }
+  .code-func { color: var(--accent-bright); }
+
+  /* Grid Layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; width: 100%; margin-top: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; width: 100%; margin-top: 20px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px; text-align: left;
+  }
+  .card h3 { margin-bottom: 12px; }
+  .card p { font-size: 1rem; }
+
+  .card-accent { border-left: 4px solid var(--accent-bright); }
+  .card-purple { border-left: 4px solid var(--purple-bright); }
+  .card-green { border-left: 4px solid var(--green); }
+  .card-yellow { border-left: 4px solid var(--yellow); }
+  .card-red { border-left: 4px solid var(--red); }
+
+  /* Diagram */
+  .diagram {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 40px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+    line-height: 1.6; white-space: pre; text-align: center; margin: 20px 0;
+    color: var(--accent-bright); width: 100%;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 1rem; }
+  th { background: var(--surface-2); color: var(--accent-bright); padding: 12px 16px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--accent); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  tr:hover td { background: rgba(0,120,212,0.05); }
+
+  /* Title slide */
+  .title-slide { background: var(--gradient-hero); text-align: center; }
+  .title-slide h1 { font-size: 3.2rem; color: #fff; }
+  .title-slide p { color: rgba(255,255,255,0.85); font-size: 1.3rem; }
+  .title-slide .badge { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); }
+
+  /* Slide counter */
+  .slide-counter {
+    position: fixed; bottom: 24px; right: 32px;
+    font-size: 0.85rem; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace; z-index: 100;
+  }
+
+  /* Controls hint */
+  .controls-hint {
+    position: fixed; bottom: 24px; left: 32px;
+    font-size: 0.8rem; color: var(--text-muted);
+    opacity: 0.5; z-index: 100;
+  }
+
+  /* Checklist style */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+  .checklist li { margin-bottom: 8px; }
+
+  /* Warn list */
+  .warn-list { list-style: none; padding: 0; }
+  .warn-list li::before { content: "⚠ "; color: var(--yellow); font-weight: 700; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(0,120,212,0.1); border: 1px solid rgba(0,120,212,0.3);
+    border-radius: 12px; padding: 24px; margin: 16px 0; text-align: center;
+  }
+  .highlight-box p { color: var(--text); font-size: 1.1rem; }
+  .highlight-box .big-number { font-size: 3rem; font-weight: 800; color: var(--accent-bright); }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ========== SLIDE 1: TITLE ========== -->
+  <div class="slide title-slide active" data-slide="1">
+    <div class="slide-content">
+      <div class="badge badge-arc">ARC 9 · CAPSTONE & MASTERY</div>
+      <h1>Add Governance, Monitoring<br>& Security</h1>
+      <p>Module 44 of 45 — Azure AI Foundry: Zero to Hero</p>
+      <p style="margin-top: 24px; font-size: 1rem; opacity: 0.7;">April 2026 · Zero to Hero Training Team</p>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 2: AGENDA ========== -->
+  <div class="slide" data-slide="2">
+    <div class="slide-content">
+      <div class="badge badge-blue">Agenda</div>
+      <h2>What We'll Cover Today</h2>
+      <div class="grid-2">
+        <div>
+          <ul>
+            <li>RBAC & role assignment strategies</li>
+            <li>Managed Identity patterns</li>
+            <li>Monitoring dashboards with KQL</li>
+            <li>Alert configuration & action groups</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li>Azure AI Content Safety</li>
+            <li>Compliance & Azure Policy</li>
+            <li>Network security & private endpoints</li>
+            <li>Security hardening checklist</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 3: WHY GOVERNANCE MATTERS ========== -->
+  <div class="slide" data-slide="3">
+    <div class="slide-content">
+      <div class="badge badge-arc">Foundation</div>
+      <h2>Why Governance & Security Matter</h2>
+      <div class="grid-3">
+        <div class="card card-red">
+          <h3>🚨 Risk</h3>
+          <p>AI systems without governance are enterprise liabilities — data breaches, compliance violations, brand damage.</p>
+        </div>
+        <div class="card card-green">
+          <h3>✅ Trust</h3>
+          <p>Stakeholders require proof of security controls before approving production deployments of AI solutions.</p>
+        </div>
+        <div class="card card-accent">
+          <h3>📋 Compliance</h3>
+          <p>GDPR, HIPAA, SOC 2, and industry regulations demand auditable access controls and data protection.</p>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top: 24px;">
+        <p>Security is not a feature — it's a <strong style="color: var(--accent-bright);">prerequisite</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 4: RBAC MODEL ========== -->
+  <div class="slide" data-slide="4">
+    <div class="slide-content">
+      <div class="badge badge-blue">Identity</div>
+      <h2>RBAC Assignment Model</h2>
+      <div class="diagram">
+  Security Principal    +    Role Definition    +    Scope    =    Role Assignment
+  ─────────────────         ────────────────        ─────         ───────────────
+  • User                    • Reader                • Subscription    → Allow/Deny
+  • Group                   • Contributor            • Resource Group      actions
+  • Service Principal       • Azure AI Developer    • Resource            at scope
+  • Managed Identity        • Custom Role           • AI Project</div>
+      <ul style="margin-top: 16px;">
+        <li>Always assign at the <strong>narrowest scope</strong> possible</li>
+        <li>Use <strong>Entra ID security groups</strong> — never assign to individuals</li>
+        <li>Avoid <code>Owner</code> role on AI resources</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 5: KEY RBAC ROLES ========== -->
+  <div class="slide" data-slide="5">
+    <div class="slide-content">
+      <div class="badge badge-blue">Roles</div>
+      <h2>Built-in Roles for AI Foundry</h2>
+      <table>
+        <tr><th>Role</th><th>Scope</th><th>Use Case</th></tr>
+        <tr><td>Azure AI Developer</td><td>AI Project</td><td>Create deployments, run experiments</td></tr>
+        <tr><td>Cognitive Services User</td><td>AI Services</td><td>Call prediction APIs</td></tr>
+        <tr><td>Cognitive Services OpenAI User</td><td>Azure OpenAI</td><td>Access completions & embeddings</td></tr>
+        <tr><td>Cognitive Services OpenAI Contributor</td><td>Azure OpenAI</td><td>Manage deployments & fine-tuning</td></tr>
+        <tr><td>Search Index Data Reader</td><td>AI Search</td><td>Read-only search index access</td></tr>
+        <tr><td>Key Vault Secrets User</td><td>Key Vault</td><td>Read secret values</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 6: MANAGED IDENTITY ========== -->
+  <div class="slide" data-slide="6">
+    <div class="slide-content">
+      <div class="badge badge-blue">Identity</div>
+      <h2>Managed Identity Patterns</h2>
+      <div class="grid-2">
+        <div class="card card-accent">
+          <h3>🔐 System-Assigned</h3>
+          <p>Created with the resource. 1:1 relationship. Deleted when resource is deleted.</p>
+          <p style="margin-top: 8px;"><strong>Best for:</strong> Single-purpose workloads</p>
+        </div>
+        <div class="card card-purple">
+          <h3>🪪 User-Assigned</h3>
+          <p>Standalone resource. Shared across multiple services. Independent lifecycle.</p>
+          <p style="margin-top: 8px;"><strong>Best for:</strong> Multi-service architectures</p>
+        </div>
+      </div>
+      <div class="code-block"><span class="code-comment"># Python — credential-free auth everywhere</span>
+<span class="code-keyword">from</span> azure.identity <span class="code-keyword">import</span> <span class="code-func">DefaultAzureCredential</span>
+credential = <span class="code-func">DefaultAzureCredential</span>()
+<span class="code-comment"># Works in Azure (Managed ID) and locally (CLI / VS Code)</span></div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 7: ANTI-PATTERN ========== -->
+  <div class="slide" data-slide="7">
+    <div class="slide-content">
+      <div class="badge" style="background: rgba(248,81,73,0.2); color: var(--red); border: 1px solid rgba(248,81,73,0.4);">Anti-Pattern</div>
+      <h2>🚫 Never Hardcode Secrets</h2>
+      <div class="grid-2">
+        <div class="card card-red">
+          <h3>❌ Don't Do This</h3>
+          <div class="code-block" style="margin-top: 8px;"><span class="code-comment"># DANGER: secrets in code</span>
+api_key = <span class="code-string">"sk-abc123..."</span>
+client = OpenAI(api_key=api_key)</div>
+        </div>
+        <div class="card card-green">
+          <h3>✅ Do This Instead</h3>
+          <div class="code-block" style="margin-top: 8px;"><span class="code-comment"># SAFE: managed identity</span>
+credential = <span class="code-func">DefaultAzureCredential</span>()
+client = AIProjectClient(
+    credential=credential)</div>
+        </div>
+      </div>
+      <ul class="warn-list" style="margin-top: 16px;">
+        <li>Hardcoded keys are the #1 cause of production security incidents</li>
+        <li>Use Key Vault references for any external (non-Azure) secrets</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 8: MONITORING ========== -->
+  <div class="slide" data-slide="8">
+    <div class="slide-content">
+      <div class="badge badge-blue">Observability</div>
+      <h2>Monitoring Dashboards</h2>
+      <div class="grid-2">
+        <div class="card card-accent">
+          <h3>📊 API Latency</h3>
+          <p>Track P50 / P95 / P99 response times per deployment. Alert on SLA breaches.</p>
+        </div>
+        <div class="card card-yellow">
+          <h3>⚠️ Error Rates</h3>
+          <p>Monitor 4xx/5xx rates. Watch for 429 throttling spikes indicating capacity issues.</p>
+        </div>
+        <div class="card card-purple">
+          <h3>🔢 Token Usage</h3>
+          <p>Prompt + completion tokens per deployment. Essential for cost management.</p>
+        </div>
+        <div class="card card-green">
+          <h3>💰 Cost Tracking</h3>
+          <p>Budget alerts at 50%, 80%, 100%. Break down costs by team and deployment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 9: KQL QUERIES ========== -->
+  <div class="slide" data-slide="9">
+    <div class="slide-content">
+      <div class="badge badge-blue">KQL</div>
+      <h2>Key Monitoring Queries</h2>
+      <div class="code-block"><span class="code-comment">// API latency percentiles — last 24 hours</span>
+<span class="code-func">AzureDiagnostics</span>
+| <span class="code-keyword">where</span> ResourceProvider == <span class="code-string">"MICROSOFT.COGNITIVESERVICES"</span>
+| <span class="code-keyword">where</span> TimeGenerated > ago(24h)
+| <span class="code-keyword">summarize</span>
+    P50 = <span class="code-func">percentile</span>(DurationMs, 50),
+    P95 = <span class="code-func">percentile</span>(DurationMs, 95),
+    P99 = <span class="code-func">percentile</span>(DurationMs, 99)
+  <span class="code-keyword">by</span> <span class="code-func">bin</span>(TimeGenerated, 1h)
+
+<span class="code-comment">// Error rate breakdown</span>
+<span class="code-func">AzureDiagnostics</span>
+| <span class="code-keyword">summarize</span>
+    Errors4xx = <span class="code-func">countif</span>(httpStatusCode_d >= 400 and httpStatusCode_d &lt; 500),
+    Errors5xx = <span class="code-func">countif</span>(httpStatusCode_d >= 500)
+  <span class="code-keyword">by</span> <span class="code-func">bin</span>(TimeGenerated, 15m)</div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 10: ALERTS ========== -->
+  <div class="slide" data-slide="10">
+    <div class="slide-content">
+      <div class="badge badge-blue">Alerts</div>
+      <h2>Alert Strategy</h2>
+      <table>
+        <tr><th>Alert</th><th>Condition</th><th>Severity</th><th>Action</th></tr>
+        <tr><td>High Latency</td><td>P95 > 5s for 5 min</td><td>Warning</td><td>Email + Teams</td></tr>
+        <tr><td>Error Spike</td><td>5xx > 5% for 10 min</td><td>Critical</td><td>PagerDuty + Email</td></tr>
+        <tr><td>Throttling</td><td>429s > 50/min</td><td>Warning</td><td>Auto-scale + Email</td></tr>
+        <tr><td>Auth Failures</td><td>401/403 > 20/hr</td><td>Critical</td><td>Security team</td></tr>
+        <tr><td>Budget 80%</td><td>Daily spend > 80%</td><td>Warning</td><td>Cost owners</td></tr>
+        <tr><td>Content Blocks</td><td>Block rate > 10%</td><td>Info</td><td>Log review</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 11: CONTENT SAFETY ========== -->
+  <div class="slide" data-slide="11">
+    <div class="slide-content">
+      <div class="badge badge-arc">Safety</div>
+      <h2>Content Safety Architecture</h2>
+      <div class="diagram">
+        User Request
+             │
+             ▼
+   ┌───────────────────┐
+   │   Input Filters   │  ← Prompt Shield + Category Filters
+   │   + Blocklists    │  ← Custom blocked terms
+   └─────────┬─────────┘
+             │
+             ▼
+   ┌───────────────────┐
+   │   AI Model        │  ← GPT-4o / GPT-4.1 / etc.
+   └─────────┬─────────┘
+             │
+             ▼
+   ┌───────────────────┐
+   │   Output Filters  │  ← Category + Groundedness
+   │   + Protected     │  ← Copyright detection
+   └─────────┬─────────┘
+             │
+             ▼
+        Safe Response</div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 12: NETWORK SECURITY ========== -->
+  <div class="slide" data-slide="12">
+    <div class="slide-content">
+      <div class="badge badge-blue">Network</div>
+      <h2>Network Isolation with Private Endpoints</h2>
+      <div class="grid-2">
+        <div>
+          <ul class="checklist">
+            <li>Private endpoints for all AI resources</li>
+            <li>Public network access disabled</li>
+            <li>Private DNS zones for resolution</li>
+            <li>NSGs restrict to required ports only</li>
+            <li>TLS 1.2+ enforced everywhere</li>
+          </ul>
+        </div>
+        <div class="card card-accent">
+          <h3>🔒 Zero Trust</h3>
+          <p>No resource is accessible from the public internet. All traffic flows through the VNet via private endpoints with DNS-based resolution.</p>
+          <p style="margin-top: 12px; color: var(--accent-bright);"><strong>Managed VNet (Preview):</strong> AI Foundry can auto-provision private endpoints for all dependencies.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 13: HARDENING CHECKLIST ========== -->
+  <div class="slide" data-slide="13">
+    <div class="slide-content">
+      <div class="badge badge-arc">Hardening</div>
+      <h2>Security Hardening Checklist</h2>
+      <div class="grid-2">
+        <div>
+          <h3>Identity & Access</h3>
+          <ul class="checklist">
+            <li>Managed Identity — no API keys</li>
+            <li>RBAC at minimum scope</li>
+            <li>MFA via Conditional Access</li>
+            <li>PIM for elevated roles</li>
+            <li>90-day credential rotation</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Data & Network</h3>
+          <ul class="checklist">
+            <li>Encryption at rest (CMK)</li>
+            <li>TLS 1.2+ in transit</li>
+            <li>Key Vault for all secrets</li>
+            <li>Private endpoints enabled</li>
+            <li>Defender for Cloud active</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 14: MINI HACK ========== -->
+  <div class="slide" data-slide="14">
+    <div class="slide-content" style="text-align: center;">
+      <div class="badge badge-arc">Hands-On</div>
+      <h2>🛠️ Mini Hack Challenge</h2>
+      <p style="font-size: 1.3rem; color: var(--text); margin-bottom: 24px;">Build the complete governance & security layer for your capstone project.</p>
+      <div class="grid-3">
+        <div class="card card-accent">
+          <h3>Step 1–2</h3>
+          <p>Configure RBAC groups & Managed Identity with DefaultAzureCredential</p>
+        </div>
+        <div class="card card-purple">
+          <h3>Step 3–4</h3>
+          <p>Build monitoring dashboard & configure 3+ metric alerts</p>
+        </div>
+        <div class="card card-green">
+          <h3>Step 5–6</h3>
+          <p>Apply content safety filters & run security hardening checklist</p>
+        </div>
+      </div>
+      <p style="margin-top: 24px; font-size: 1rem;">See <code>lab/hands-on-lab.md</code> for detailed instructions</p>
+    </div>
+  </div>
+
+  <!-- ========== SLIDE 15: KEY TAKEAWAYS ========== -->
+  <div class="slide" data-slide="15">
+    <div class="slide-content">
+      <div class="badge badge-arc">Summary</div>
+      <h2>Key Takeaways</h2>
+      <ul>
+        <li><strong>RBAC is non-negotiable</strong> — minimum role, narrowest scope, group-based assignments</li>
+        <li><strong>Managed Identity eliminates secrets</strong> — <code>DefaultAzureCredential</code> everywhere</li>
+        <li><strong>Monitor everything</strong> — latency, errors, tokens, cost in a single dashboard</li>
+        <li><strong>Content safety is multi-layered</strong> — input filters + output filters + blocklists</li>
+        <li><strong>Network isolation is essential</strong> — private endpoints + disabled public access</li>
+        <li><strong>Compliance requires automation</strong> — Azure Policy + Purview + audit logs</li>
+        <li><strong>Security is continuous</strong> — build reviews into CI/CD and sprint cadence</li>
+      </ul>
+      <div class="highlight-box" style="margin-top: 24px;">
+        <p><strong style="color: var(--accent-bright);">Next →</strong> Module 45: Capstone Review & Certification</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Slide Counter -->
+<div class="slide-counter" id="slideCounter">1 / 15</div>
+<div class="controls-hint">← → Arrow keys or click to navigate</div>
+
+<script>
+(function() {
+  'use strict';
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('slideCounter');
+  const total = slides.length;
+  let current = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= total || n === current) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit-left');
+    setTimeout(() => slides[current === 0 && n === total -1 ? 0 : current].classList.remove('exit-left'), 500);
+    const prev = current;
+    current = n;
+    slides[current].classList.remove('exit-left');
+    slides[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + total;
+    setTimeout(() => slides[prev].classList.remove('exit-left'), 500);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.clientX > window.innerWidth / 2) goTo(current + 1);
+    else goTo(current - 1);
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { diff > 0 ? goTo(current + 1) : goTo(current - 1); }
+  });
+})();
+</script>
+
+</body>
+</html>

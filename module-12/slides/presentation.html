@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 12 — Azure AI Search & Vector Indexes | Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #0078d4;
+    --accent-bright: #58a6ff;
+    --purple: #5c2d91;
+    --purple-bright: #bc8cff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --orange: #f0883e;
+    --code-bg: #0d1117;
+    --gradient-hero: linear-gradient(135deg, #0078d4 0%, #5c2d91 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+
+  /* Slide Container */
+  .deck { position: relative; width: 100%; height: 100%; }
+  .slide {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 60px 80px;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateX(40px);
+  }
+  .slide.active {
+    opacity: 1; visibility: visible; transform: translateX(0);
+  }
+  .slide.exit-left {
+    opacity: 0; visibility: hidden; transform: translateX(-40px);
+  }
+
+  /* Typography */
+  h1 { font-size: 3rem; font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+  h2 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 20px; color: var(--accent-bright); }
+  h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 12px; color: var(--purple-bright); }
+  p, li { font-size: 1.2rem; line-height: 1.7; color: var(--text-muted); }
+  li { margin-bottom: 10px; }
+  ul { list-style: none; padding: 0; }
+  ul li::before { content: "▸ "; color: var(--accent-bright); font-weight: 700; }
+
+  .slide-content { max-width: 1100px; width: 100%; }
+
+  /* Badge */
+  .badge {
+    display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 0.85rem;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;
+  }
+  .badge-arc { background: rgba(92,45,145,0.25); color: var(--purple-bright); border: 1px solid rgba(92,45,145,0.4); }
+  .badge-blue { background: rgba(0,120,212,0.2); color: var(--accent-bright); border: 1px solid rgba(0,120,212,0.35); }
+
+  /* Code */
+  code, .code-block {
+    font-family: 'JetBrains Mono', monospace; background: var(--code-bg);
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  code { padding: 2px 8px; font-size: 0.95rem; color: var(--accent-bright); }
+  .code-block { padding: 24px 28px; font-size: 0.9rem; line-height: 1.7; overflow-x: auto; text-align: left; width: 100%; margin: 16px 0; white-space: pre; color: var(--text); }
+  .code-comment { color: var(--text-muted); }
+  .code-keyword { color: var(--purple-bright); }
+  .code-string { color: var(--green); }
+  .code-func { color: var(--accent-bright); }
+
+  /* Grid Layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; width: 100%; margin-top: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; width: 100%; margin-top: 20px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px; text-align: left;
+  }
+  .card h3 { margin-bottom: 12px; }
+  .card p { font-size: 1rem; }
+
+  .card-accent { border-left: 4px solid var(--accent-bright); }
+  .card-purple { border-left: 4px solid var(--purple-bright); }
+  .card-green { border-left: 4px solid var(--green); }
+  .card-yellow { border-left: 4px solid var(--yellow); }
+  .card-red { border-left: 4px solid var(--red); }
+
+  /* Diagram / Visual */
+  .diagram {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 40px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+    line-height: 1.6; white-space: pre; text-align: center; margin: 20px 0;
+    color: var(--accent-bright); width: 100%;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 1rem; }
+  th { background: var(--surface-2); color: var(--accent-bright); padding: 12px 16px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--accent); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  tr:hover td { background: rgba(0,120,212,0.05); }
+
+  /* Title slide */
+  .title-slide { background: var(--gradient-hero); text-align: center; }
+  .title-slide h1 { font-size: 3.2rem; color: #fff; }
+  .title-slide p { color: rgba(255,255,255,0.85); font-size: 1.3rem; }
+  .title-slide .badge { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); }
+  .module-number { font-size: 6rem; font-weight: 900; opacity: 0.15; position: absolute; top: 30px; right: 60px; color: #fff; }
+
+  /* Slide number */
+  .slide-number {
+    position: fixed; bottom: 20px; right: 30px; font-size: 0.85rem;
+    color: var(--text-muted); font-family: 'JetBrains Mono', monospace; z-index: 100;
+  }
+
+  /* Navigation */
+  .nav-controls {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 100;
+  }
+  .nav-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    width: 44px; height: 44px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    transition: all 0.2s ease;
+  }
+  .nav-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; background: var(--gradient-hero);
+    z-index: 200; transition: width 0.4s ease;
+  }
+
+  /* Highlight */
+  .highlight { color: var(--accent-bright); font-weight: 600; }
+  .highlight-purple { color: var(--purple-bright); font-weight: 600; }
+  .highlight-green { color: var(--green); font-weight: 600; }
+
+  /* Comparison arrow */
+  .vs-divider { text-align: center; font-size: 2rem; color: var(--yellow); padding: 10px 0; }
+
+  /* Emoji icons for visual appeal */
+  .icon { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-number" id="slideNumber"></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: Title -->
+  <div class="slide title-slide active" data-slide="1">
+    <span class="module-number">12</span>
+    <div class="slide-content">
+      <span class="badge">ARC 3 · DATA & RAG</span>
+      <h1>Azure AI Search<br>& Vector Indexes</h1>
+      <p style="margin-top:20px;">Module 12 of 45 — Azure AI Foundry: Zero to Hero</p>
+      <p style="margin-top:8px; font-size:1rem; opacity:0.7;">April 2026</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Agenda -->
+  <div class="slide" data-slide="2">
+    <div class="slide-content">
+      <span class="badge badge-blue">Agenda</span>
+      <h2>What We'll Cover Today</h2>
+      <div class="grid-2">
+        <div>
+          <ul>
+            <li>What is Azure AI Search?</li>
+            <li>Embeddings & Vector Fundamentals</li>
+            <li>Creating Vector Indexes</li>
+            <li>Index Schema Design</li>
+            <li>Hybrid Search Deep Dive</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li>Integrated Vectorization</li>
+            <li>Querying with REST & SDK</li>
+            <li>Performance & Scaling</li>
+            <li>Mini Hack Lab</li>
+            <li>Module 13 Preview</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: What is Azure AI Search -->
+  <div class="slide" data-slide="3">
+    <div class="slide-content">
+      <span class="badge badge-arc">Core Concept</span>
+      <h2>What is Azure AI Search?</h2>
+      <p style="font-size:1.3rem; color:var(--text); margin-bottom:24px;">
+        A cloud search service with built-in AI capabilities for <span class="highlight">full-text</span>,
+        <span class="highlight-purple">semantic</span>, and <span class="highlight-green">vector</span> search.
+      </p>
+      <div class="grid-3">
+        <div class="card card-accent">
+          <span class="icon">📝</span>
+          <h3>Full-Text Search</h3>
+          <p>BM25 scoring, language analyzers, fuzzy matching, autocomplete</p>
+        </div>
+        <div class="card card-purple">
+          <span class="icon">🧠</span>
+          <h3>Semantic Ranking</h3>
+          <p>Transformer-based re-ranking with captions and answers</p>
+        </div>
+        <div class="card card-green">
+          <span class="icon">🔢</span>
+          <h3>Vector Search</h3>
+          <p>HNSW nearest-neighbor search on embeddings</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Embeddings -->
+  <div class="slide" data-slide="4">
+    <div class="slide-content">
+      <span class="badge badge-blue">Fundamentals</span>
+      <h2>Understanding Embeddings</h2>
+      <div class="grid-2">
+        <div>
+          <ul>
+            <li>Text → <span class="highlight">high-dimensional vector</span> (e.g., 1536 dims)</li>
+            <li>Semantically similar text = nearby vectors</li>
+            <li>Generated by models like <code>text-embedding-3-large</code></li>
+            <li>Similarity measured with <span class="highlight-green">cosine similarity</span></li>
+          </ul>
+        </div>
+        <div class="diagram" style="font-size:0.85rem; text-align:left;">
+"Azure AI Search rocks"
+        ↓ Embedding Model
+  [0.023, -0.041, 0.087, ..., 0.012]
+        ↓ 1536 dimensions
+  Store in vector field
+        ↓
+  Compare with query vector
+        ↓
+  🎯 Nearest Neighbors</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Creating Vector Indexes -->
+  <div class="slide" data-slide="5">
+    <div class="slide-content">
+      <span class="badge badge-arc">Hands-On</span>
+      <h2>Creating Vector Indexes</h2>
+      <div class="code-block"><span class="code-comment"># Define a vector field in your index schema</span>
+<span class="code-keyword">SearchField</span>(
+    name=<span class="code-string">"content_vector"</span>,
+    type=SearchFieldDataType.<span class="code-func">Collection</span>(
+        SearchFieldDataType.Single
+    ),
+    searchable=<span class="code-keyword">True</span>,
+    vector_search_dimensions=<span class="code-string">1536</span>,
+    vector_search_profile_name=<span class="code-string">"my-hnsw-profile"</span>,
+)
+
+<span class="code-comment"># Configure HNSW algorithm</span>
+<span class="code-keyword">HnswAlgorithmConfiguration</span>(
+    name=<span class="code-string">"hnsw-config"</span>,
+    parameters=HnswParameters(m=<span class="code-string">4</span>, ef_construction=<span class="code-string">400</span>)
+)</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Index Schema Design -->
+  <div class="slide" data-slide="6">
+    <div class="slide-content">
+      <span class="badge badge-blue">Best Practices</span>
+      <h2>Index Schema Design</h2>
+      <table>
+        <thead>
+          <tr><th>Field Type</th><th>Purpose</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>SearchableField</code></td><td>Full-text search (BM25)</td><td>title, content</td></tr>
+          <tr><td><code>SimpleField</code></td><td>Filter, sort, facet</td><td>category, date</td></tr>
+          <tr><td><code>SearchField</code> (vector)</td><td>Vector similarity search</td><td>content_vector</td></tr>
+          <tr><td><code>ComplexField</code></td><td>Nested objects</td><td>metadata</td></tr>
+        </tbody>
+      </table>
+      <div class="grid-2" style="margin-top:20px;">
+        <div class="card card-green">
+          <h3>✅ Do</h3>
+          <p>Separate text and vector fields · Use language analyzers · Set filterable on category fields</p>
+        </div>
+        <div class="card card-red">
+          <h3>❌ Don't</h3>
+          <p>Make all fields searchable · Skip semantic config · Use oversized dimensions</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Hybrid Search -->
+  <div class="slide" data-slide="7">
+    <div class="slide-content">
+      <span class="badge badge-arc">Key Topic</span>
+      <h2>Hybrid Search: The Best of All Worlds</h2>
+      <div class="diagram" style="font-size:0.9rem;">
+        ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+        │  Keyword     │    │   Vector     │    │  Semantic    │
+        │  (BM25)      │    │  (HNSW)      │    │  (Reranker)  │
+        └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+               │                   │                   │
+               └───────────┬───────┘                   │
+                           ▼                           │
+                  ┌─────────────────┐                  │
+                  │  Reciprocal Rank │                  │
+                  │  Fusion (RRF)    │──────────────────┘
+                  └────────┬────────┘
+                           ▼
+                  ┌─────────────────┐
+                  │  Final Ranked   │
+                  │  Results 🎯      │
+                  └─────────────────┘</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Hybrid Search Query -->
+  <div class="slide" data-slide="8">
+    <div class="slide-content">
+      <span class="badge badge-blue">Code</span>
+      <h2>Hybrid Search in Action</h2>
+      <div class="code-block"><span class="code-comment"># Python SDK — Hybrid + Semantic search</span>
+results = search_client.<span class="code-func">search</span>(
+    search_text=<span class="code-string">"How does RAG reduce hallucinations?"</span>,
+    vector_queries=[
+        <span class="code-keyword">VectorizedQuery</span>(
+            vector=query_embedding,
+            k_nearest_neighbors=<span class="code-string">5</span>,
+            fields=<span class="code-string">"content_vector"</span>,
+        )
+    ],
+    query_type=<span class="code-string">"semantic"</span>,
+    semantic_configuration_name=<span class="code-string">"my-semantic-config"</span>,
+    top=<span class="code-string">10</span>,
+)
+
+<span class="code-keyword">for</span> result <span class="code-keyword">in</span> results:
+    print(result[<span class="code-string">"title"</span>], result[<span class="code-string">"@search.reranker_score"</span>])</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Integrated Vectorization -->
+  <div class="slide" data-slide="9">
+    <div class="slide-content">
+      <span class="badge badge-arc">Feature</span>
+      <h2>Integrated Vectorization</h2>
+      <p style="font-size:1.15rem; color:var(--text); margin-bottom:24px;">
+        Let Azure AI Search generate embeddings for you — at both <span class="highlight">index time</span> and <span class="highlight-purple">query time</span>.
+      </p>
+      <div class="grid-2">
+        <div class="card card-accent">
+          <h3>🔧 Manual Pipeline</h3>
+          <ul>
+            <li>You call embedding API</li>
+            <li>You manage vectors</li>
+            <li>You embed queries yourself</li>
+            <li>More control, more code</li>
+          </ul>
+        </div>
+        <div class="card card-green">
+          <h3>⚡ Integrated Vectorization</h3>
+          <ul>
+            <li>Search calls embedding API</li>
+            <li>Vectors auto-generated</li>
+            <li>Queries auto-embedded</li>
+            <li>Less code, simpler arch</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: REST API Query -->
+  <div class="slide" data-slide="10">
+    <div class="slide-content">
+      <span class="badge badge-blue">API</span>
+      <h2>Querying via REST API</h2>
+      <div class="code-block"><span class="code-comment">// POST https://&lt;service&gt;.search.windows.net/indexes/my-index/docs/search</span>
+{
+  <span class="code-string">"search"</span>: <span class="code-string">"vector search fundamentals"</span>,
+  <span class="code-string">"vectorQueries"</span>: [{
+    <span class="code-string">"kind"</span>: <span class="code-string">"text"</span>,
+    <span class="code-string">"text"</span>: <span class="code-string">"vector search fundamentals"</span>,
+    <span class="code-string">"fields"</span>: <span class="code-string">"content_vector"</span>,
+    <span class="code-string">"k"</span>: <span class="code-string">5</span>
+  }],
+  <span class="code-string">"queryType"</span>: <span class="code-string">"semantic"</span>,
+  <span class="code-string">"semanticConfiguration"</span>: <span class="code-string">"my-config"</span>,
+  <span class="code-string">"select"</span>: <span class="code-string">"title, content, category"</span>,
+  <span class="code-string">"top"</span>: <span class="code-string">10</span>
+}</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: Performance -->
+  <div class="slide" data-slide="11">
+    <div class="slide-content">
+      <span class="badge badge-arc">Production</span>
+      <h2>Performance & Scaling</h2>
+      <div class="grid-2">
+        <div>
+          <h3>Replicas & Partitions</h3>
+          <ul>
+            <li><span class="highlight">Replicas</span> → more query throughput</li>
+            <li><span class="highlight-purple">Partitions</span> → more storage capacity</li>
+            <li>≥ 3 replicas for HA SLA</li>
+            <li>≥ 2 replicas for read HA</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Optimization Tips</h3>
+          <ul>
+            <li>Use filters to narrow search scope</li>
+            <li>Choose appropriate vector dimensions</li>
+            <li>Monitor with Azure Monitor</li>
+            <li>Cache frequent queries</li>
+          </ul>
+        </div>
+      </div>
+      <table style="margin-top:24px;">
+        <thead><tr><th>Tier</th><th>Partitions</th><th>Replicas</th><th>Vector Dims</th></tr></thead>
+        <tbody>
+          <tr><td>Basic</td><td>1</td><td>3</td><td>Up to 3,000</td></tr>
+          <tr><td>Standard S1</td><td>12</td><td>12</td><td>Up to 3,000</td></tr>
+          <tr><td>Standard S2</td><td>12</td><td>12</td><td>Up to 3,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: Mini Hack -->
+  <div class="slide" data-slide="12">
+    <div class="slide-content">
+      <span class="badge badge-blue">🧪 Mini Hack</span>
+      <h2>Lab: Vector Index + Hybrid Search</h2>
+      <div class="grid-2">
+        <div>
+          <h3>What You'll Build</h3>
+          <ul>
+            <li>Create a vector index with HNSW</li>
+            <li>Generate embeddings with Azure OpenAI</li>
+            <li>Upload 8 sample documents</li>
+            <li>Run hybrid + semantic queries</li>
+            <li>Compare search modes</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Tools Needed</h3>
+          <ul>
+            <li>Azure AI Search (Basic tier)</li>
+            <li>Azure OpenAI (embedding model)</li>
+            <li>Python 3.10+</li>
+            <li><code>azure-search-documents</code></li>
+            <li>VS Code or terminal</li>
+          </ul>
+        </div>
+      </div>
+      <p style="margin-top:24px; text-align:center; font-size:1.1rem;">
+        📄 Full instructions: <code>lab/hands-on-lab.md</code> · ⏱️ 45–60 minutes
+      </p>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: Key Takeaways -->
+  <div class="slide" data-slide="13">
+    <div class="slide-content">
+      <span class="badge badge-arc">Summary</span>
+      <h2>Key Takeaways</h2>
+      <div class="grid-2">
+        <div class="card card-accent">
+          <h3>🔍 Azure AI Search</h3>
+          <p>Unified platform for keyword, semantic, and vector search — the retrieval backbone of RAG.</p>
+        </div>
+        <div class="card card-purple">
+          <h3>📐 Schema Design</h3>
+          <p>Pair SearchableFields with vector fields. Use analyzers, filters, and semantic configs.</p>
+        </div>
+        <div class="card card-green">
+          <h3>⚡ Hybrid Search</h3>
+          <p>Combine BM25 + vector + semantic ranking with RRF for best retrieval quality.</p>
+        </div>
+        <div class="card card-yellow">
+          <h3>🔧 Integrated Vectorization</h3>
+          <p>Simplify your pipeline — let Azure AI Search handle embedding generation automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: Module 13 Preview -->
+  <div class="slide" data-slide="14">
+    <div class="slide-content">
+      <span class="badge badge-blue">Up Next</span>
+      <h2>Module 13 Preview</h2>
+      <h1 style="font-size:2.4rem; margin-top:20px;">Retrieval-Augmented Generation<br>(RAG) Patterns</h1>
+      <div class="grid-3" style="margin-top:30px;">
+        <div class="card card-accent">
+          <h3>RAG Architecture</h3>
+          <p>End-to-end flow from query to grounded response</p>
+        </div>
+        <div class="card card-purple">
+          <h3>Prompt Engineering</h3>
+          <p>Grounding prompts with retrieved context</p>
+        </div>
+        <div class="card card-green">
+          <h3>Evaluation</h3>
+          <p>Measuring retrieval quality and answer accuracy</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15: Thank You -->
+  <div class="slide title-slide" data-slide="15">
+    <span class="module-number">12</span>
+    <div class="slide-content">
+      <span class="badge">Complete</span>
+      <h1>Thank You!</h1>
+      <p style="margin-top:16px;">Module 12 — Azure AI Search & Vector Indexes</p>
+      <p style="margin-top:24px;">
+        📄 Lab: <code style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;">lab/hands-on-lab.md</code> &nbsp;·&nbsp;
+        📝 Quiz: <code style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;">quiz/assessment.md</code>
+      </p>
+      <p style="margin-top:16px; font-size:1rem; opacity:0.7;">Azure AI Foundry: Zero to Hero · April 2026</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav-controls">
+  <button class="nav-btn" onclick="prevSlide()" title="Previous (←)">←</button>
+  <button class="nav-btn" onclick="nextSlide()" title="Next (→)">→</button>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function updateSlide(newIndex, direction) {
+    if (newIndex < 0 || newIndex >= total || newIndex === current) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add(direction === 'next' ? 'exit-left' : '');
+    slides[current].style.transform = direction === 'next' ? 'translateX(-40px)' : 'translateX(40px)';
+
+    current = newIndex;
+    slides[current].classList.remove('exit-left');
+    slides[current].classList.add('active');
+    slides[current].style.transform = 'translateX(0)';
+
+    document.getElementById('slideNumber').textContent = `${current + 1} / ${total}`;
+    document.getElementById('progressBar').style.width = `${((current + 1) / total) * 100}%`;
+  }
+
+  window.nextSlide = function() { updateSlide(current + 1, 'next'); };
+  window.prevSlide = function() { updateSlide(current - 1, 'prev'); };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'Home') { e.preventDefault(); updateSlide(0, 'prev'); }
+    if (e.key === 'End') { e.preventDefault(); updateSlide(total - 1, 'next'); }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+  });
+
+  // Initialize
+  document.getElementById('slideNumber').textContent = `1 / ${total}`;
+  document.getElementById('progressBar').style.width = `${(1 / total) * 100}%`;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 16: Intro to AI Agents & Agent Framework — Slides</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-card: #161b22;
+            --bg-accent: #1c2333;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --blue: #0078d4;
+            --purple: #5c2d91;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --cyan: #58a6ff;
+            --orange: #f0883e;
+            --font: 'Inter', -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-40px);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 24px;
+            right: 32px;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--blue), var(--purple));
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .nav-hint {
+            position: fixed;
+            bottom: 24px;
+            left: 32px;
+            font-size: 12px;
+            color: var(--text-muted);
+            z-index: 100;
+        }
+
+        /* Slide Typography */
+        h1 { font-size: 3rem; font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+        h2 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 20px; }
+        h3 { font-size: 1.4rem; font-weight: 600; color: var(--cyan); margin-bottom: 12px; }
+
+        .subtitle { font-size: 1.3rem; color: var(--text-muted); font-weight: 400; line-height: 1.5; max-width: 700px; text-align: center; }
+        .small { font-size: 0.95rem; color: var(--text-muted); }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .badge--arc { background: rgba(92,45,145,0.3); border: 1px solid var(--purple); color: #c9a0ff; }
+        .badge--tier { background: rgba(210,153,34,0.2); border: 1px solid var(--yellow); color: var(--yellow); }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Layout helpers */
+        .center { text-align: center; align-items: center; }
+        .left-align { align-items: flex-start; text-align: left; }
+        .full-width { width: 100%; max-width: 1000px; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 960px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+        }
+
+        .card h3 { margin-bottom: 10px; }
+        .card p, .card li { font-size: 15px; line-height: 1.6; color: var(--text-muted); }
+        .card ul { padding-left: 20px; list-style: disc; }
+        .card li { margin-bottom: 6px; }
+        .card--blue { border-color: var(--blue); border-width: 2px; }
+        .card--purple { border-color: var(--purple); border-width: 2px; }
+        .card--green { border-color: var(--green); border-width: 2px; }
+
+        .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+        /* Lists */
+        .slide ul, .slide ol { text-align: left; max-width: 750px; }
+        .slide li { font-size: 1.15rem; line-height: 1.7; margin-bottom: 10px; color: var(--text); }
+        .slide li strong { color: var(--cyan); }
+
+        /* Architecture layers */
+        .arch-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .arch-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .arch-row .arch-icon { font-size: 1.5rem; width: 36px; text-align: center; }
+        .arch-row .arch-desc { font-size: 0.85rem; font-weight: 400; color: rgba(255,255,255,0.75); }
+        .arch-row--inst { background: linear-gradient(135deg, #d83b01, #c23501); }
+        .arch-row--model { background: linear-gradient(135deg, #0078d4, #004578); }
+        .arch-row--tools { background: linear-gradient(135deg, #107c10, #0e6b0e); }
+        .arch-row--memory { background: linear-gradient(135deg, #5c2d91, #7b3fb5); }
+
+        .arch-arrow { text-align: center; color: var(--text-muted); font-size: 1.2rem; }
+
+        /* Code */
+        .code-block {
+            background: #1a1e27;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 20px 24px;
+            font-family: var(--mono);
+            font-size: 14px;
+            line-height: 1.65;
+            text-align: left;
+            width: 100%;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+
+        .code-block .kw { color: #569cd6; }
+        .code-block .str { color: #ce9178; }
+        .code-block .cm { color: #6a9955; }
+        .code-block .fn { color: #dcdcaa; }
+
+        /* Table */
+        .slide table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 850px;
+            font-size: 15px;
+        }
+        .slide th { background: var(--bg-card); padding: 12px 16px; text-align: left; border-bottom: 2px solid #30363d; font-weight: 600; }
+        .slide td { padding: 10px 16px; border-bottom: 1px solid #21262d; }
+        .slide tr:hover td { background: var(--bg-accent); }
+    </style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide center active" data-slide="1">
+        <div class="badge badge--arc">ARC 4 · AI AGENTS</div>
+        <div class="badge badge--tier" style="margin-left:12px;">🟡 INTERMEDIATE</div>
+        <h1><span class="gradient-text">Intro to AI Agents &amp;<br>Agent Framework</span></h1>
+        <p class="subtitle">Module 16 — Azure AI Foundry: Zero to Hero</p>
+        <p class="small" style="margin-top:24px;">Zero to Hero Training Team · April 2026</p>
+    </div>
+
+    <!-- SLIDE 2: Welcome to Intermediate -->
+    <div class="slide center" data-slide="2">
+        <div class="icon">🎉🏆</div>
+        <h2>Welcome to <span class="gradient-text">Intermediate</span>!</h2>
+        <p class="subtitle" style="max-width:650px;">
+            You've completed the Beginner tier (Modules 1–15).<br>
+            From here, we build autonomous AI agents, advanced workflows, and production-ready solutions.
+        </p>
+        <div style="margin-top:32px; display:flex; gap:20px;">
+            <div class="card" style="text-align:center; padding:16px 24px;">
+                <div style="font-size:2rem;">🟢</div>
+                <div class="small">Beginner ✓</div>
+                <div style="font-size:12px; color:var(--green);">Modules 1–15</div>
+            </div>
+            <div class="card card--purple" style="text-align:center; padding:16px 24px;">
+                <div style="font-size:2rem;">🟡</div>
+                <div class="small">Intermediate</div>
+                <div style="font-size:12px; color:var(--yellow);">Modules 16–30</div>
+            </div>
+            <div class="card" style="text-align:center; padding:16px 24px;">
+                <div style="font-size:2rem;">🔴</div>
+                <div class="small">Advanced</div>
+                <div style="font-size:12px; color:var(--text-muted);">Modules 31–45</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: What Are AI Agents? -->
+    <div class="slide center" data-slide="3">
+        <h2>What Are AI Agents?</h2>
+        <p class="subtitle" style="margin-bottom:32px;">Autonomous systems that reason, plan, use tools, and take actions to accomplish goals.</p>
+        <ul style="max-width:700px;">
+            <li><strong>Goal-oriented</strong> — work toward an objective, not just answer questions</li>
+            <li><strong>Autonomous</strong> — decide next actions without step-by-step user guidance</li>
+            <li><strong>Tool-equipped</strong> — search, compute, call APIs, execute code</li>
+            <li><strong>Multi-step</strong> — plan, execute, evaluate, iterate</li>
+            <li><strong>Stateful</strong> — maintain memory across interactions</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 4: Evolution -->
+    <div class="slide center" data-slide="4">
+        <h2>The Evolution to Agents</h2>
+        <div class="grid-2" style="margin-top:16px; max-width:800px;">
+            <div class="card">
+                <div class="icon">💬</div>
+                <h3>Single Prompts</h3>
+                <p>One prompt → one response. No memory, no tools.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🔄</div>
+                <h3>Chat Apps</h3>
+                <p>Multi-turn conversation. Session memory. Still reactive.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🔗</div>
+                <h3>RAG Apps</h3>
+                <p>Retrieve external knowledge. Grounded responses.</p>
+            </div>
+            <div class="card card--purple">
+                <div class="icon">🤖</div>
+                <h3>AI Agents</h3>
+                <p>Autonomous, multi-step, tool-using, goal-driven. <strong style="color:var(--yellow);">We are here.</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: Agents vs. Chatbots -->
+    <div class="slide center" data-slide="5">
+        <h2>Agents vs. Chatbots</h2>
+        <div class="grid-2" style="margin-top:16px;">
+            <div class="card card--blue">
+                <h3 style="color:var(--blue);">💬 Chatbot</h3>
+                <ul>
+                    <li>Reactive — waits for prompts</li>
+                    <li>Single-turn logic</li>
+                    <li>No tools — text only</li>
+                    <li>Session memory only</li>
+                    <li>User-guided</li>
+                </ul>
+            </div>
+            <div class="card card--purple">
+                <h3 style="color:#c9a0ff;">🤖 AI Agent</h3>
+                <ul>
+                    <li>Proactive — plans &amp; executes</li>
+                    <li>Multi-step reasoning</li>
+                    <li>Tool-equipped (APIs, code, search)</li>
+                    <li>Persistent memory</li>
+                    <li>Self-directed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: Azure AI Agent Service -->
+    <div class="slide center" data-slide="6">
+        <h2>Azure AI Agent Service</h2>
+        <p class="subtitle" style="margin-bottom:28px;">Fully managed platform in Microsoft Foundry for building, deploying, and scaling AI agents.</p>
+        <div class="grid-3">
+            <div class="card"><div class="icon">🧠</div><h3>Model Flexibility</h3><p>GPT-4o, Phi-4, Llama, Mistral — any model from the catalog</p></div>
+            <div class="card"><div class="icon">🔧</div><h3>Built-in Tools</h3><p>File Search, Code Interpreter, Bing, Functions, Logic Apps</p></div>
+            <div class="card"><div class="icon">💾</div><h3>Managed State</h3><p>Threads &amp; memory handled automatically</p></div>
+            <div class="card"><div class="icon">📊</div><h3>Observability</h3><p>OpenTelemetry tracing, App Insights, trace explorer</p></div>
+            <div class="card"><div class="icon">🔒</div><h3>Enterprise Security</h3><p>RBAC, managed identity, VNET, content filtering</p></div>
+            <div class="card"><div class="icon">⚡</div><h3>Auto-Scaling</h3><p>Managed compute for agent execution workloads</p></div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Agent Architecture -->
+    <div class="slide center" data-slide="7">
+        <h2>Agent Architecture: Four Pillars</h2>
+        <div class="arch-stack" style="margin-top:20px;">
+            <div class="arch-row arch-row--inst">
+                <span class="arch-icon">📋</span>
+                <div><div>Instructions</div><div class="arch-desc">System prompt — persona, goals, rules, constraints</div></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-row arch-row--model">
+                <span class="arch-icon">🧠</span>
+                <div><div>Model (LLM)</div><div class="arch-desc">Reasoning engine — GPT-4o, Phi-4, Llama</div></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-row arch-row--tools">
+                <span class="arch-icon">🔧</span>
+                <div><div>Tools</div><div class="arch-desc">Code Interpreter, File Search, APIs, Functions</div></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-row arch-row--memory">
+                <span class="arch-icon">💾</span>
+                <div><div>Memory (Threads)</div><div class="arch-desc">Conversation history, files, execution state</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: Instructions -->
+    <div class="slide left-align" data-slide="8">
+        <h2>Pillar 1: Instructions</h2>
+        <p style="margin-bottom:20px; color:var(--text-muted);">The soul of your agent — defines who it is and how it behaves.</p>
+        <div class="code-block">
+<span class="cm">## Role</span>
+You are a <span class="str">Financial Analysis Agent</span> for Contoso.
+
+<span class="cm">## Goals</span>
+- Analyze financial data uploaded by users
+- Generate quarterly reports with key metrics
+
+<span class="cm">## Constraints</span>
+- Never fabricate financial numbers
+- Always include confidence levels
+
+<span class="cm">## Tools</span>
+- Use <span class="str">Code Interpreter</span> for calculations
+- Use <span class="str">File Search</span> for company policies
+        </div>
+    </div>
+
+    <!-- SLIDE 9: Tools -->
+    <div class="slide center" data-slide="9">
+        <h2>Pillar 3: Tools</h2>
+        <p class="subtitle" style="margin-bottom:24px;">Give your agent the ability to interact with the real world.</p>
+        <div class="grid-3">
+            <div class="card"><div class="icon">📂</div><h3>File Search</h3><p>Search uploaded files &amp; knowledge bases via AI Search</p></div>
+            <div class="card"><div class="icon">💻</div><h3>Code Interpreter</h3><p>Execute Python in a sandbox — calculations, charts, data</p></div>
+            <div class="card"><div class="icon">🌐</div><h3>Bing Grounding</h3><p>Search the web for real-time information</p></div>
+            <div class="card"><div class="icon">⚙️</div><h3>Azure Functions</h3><p>Custom serverless logic &amp; integrations</p></div>
+            <div class="card"><div class="icon">🔗</div><h3>OpenAPI Tools</h3><p>Connect to any REST API via OpenAPI spec</p></div>
+            <div class="card"><div class="icon">🔄</div><h3>Logic Apps</h3><p>Trigger workflows with 400+ connectors</p></div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: Agent Types -->
+    <div class="slide center" data-slide="10">
+        <h2>Agent Types</h2>
+        <div class="grid-2" style="margin-top:20px;">
+            <div class="card card--blue">
+                <h3 style="color:var(--blue);">📝 Prompt Agent</h3>
+                <ul>
+                    <li><strong>No code</strong> — portal config only</li>
+                    <li>Built-in tools (File Search, Code Interpreter, Bing)</li>
+                    <li>Fully managed runtime</li>
+                    <li>Deploy in minutes</li>
+                    <li>Ideal for prototyping &amp; simple tasks</li>
+                </ul>
+            </div>
+            <div class="card card--purple">
+                <h3 style="color:#c9a0ff;">🐳 Hosted Agent</h3>
+                <ul>
+                    <li><strong>Custom code</strong> — Python + Docker</li>
+                    <li>Any tools, APIs, databases</li>
+                    <li>Container-based deployment</li>
+                    <li>Any framework (SK, LangChain)</li>
+                    <li>Ideal for complex workflows</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: Decision Framework -->
+    <div class="slide center" data-slide="11">
+        <h2>Choosing the Right Type</h2>
+        <table style="margin-top:16px;">
+            <thead>
+                <tr><th>Criteria</th><th>Prompt Agent</th><th>Hosted Agent</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Dev speed</strong></td><td>Minutes</td><td>Hours–Days</td></tr>
+                <tr><td><strong>Code</strong></td><td>None</td><td>Python + Docker</td></tr>
+                <tr><td><strong>Tool scope</strong></td><td>Built-in only</td><td>Unlimited</td></tr>
+                <tr><td><strong>Multi-agent</strong></td><td>No</td><td>Yes</td></tr>
+                <tr><td><strong>Best for</strong></td><td>Prototyping, Q&amp;A</td><td>Production, complex</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top:20px; color:var(--green); font-weight:600;">✅ Start with Prompt Agents → graduate to Hosted Agents</p>
+    </div>
+
+    <!-- SLIDE 12: Security -->
+    <div class="slide center" data-slide="12">
+        <h2>Agent Security Principles</h2>
+        <ul style="margin-top:16px;">
+            <li><strong>Least privilege</strong> — only enable tools the agent needs</li>
+            <li><strong>Content filtering</strong> — keep Azure Content Safety active</li>
+            <li><strong>Managed Identity</strong> — never embed API keys in instructions</li>
+            <li><strong>Input validation</strong> — guard against prompt injection</li>
+            <li><strong>Output guardrails</strong> — define what the agent must NEVER do</li>
+            <li><strong>Monitoring</strong> — enable tracing for all production agents</li>
+            <li><strong>Human-in-the-loop</strong> — require approval for high-stakes actions</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 13: Mini Hack -->
+    <div class="slide center" data-slide="13">
+        <div class="icon">🧪</div>
+        <h2>Mini Hack: Your First <span class="gradient-text">Prompt Agent</span></h2>
+        <div style="text-align:left; max-width:650px; margin-top:20px;">
+            <ol style="font-size:1.05rem; line-height:2;">
+                <li>Open <strong>ai.azure.com</strong> → your project → <strong>Agents</strong></li>
+                <li>Click <strong>+ New agent</strong></li>
+                <li>Name: <code style="background:#1a1e27; padding:2px 6px; border-radius:3px;">Travel Planner</code></li>
+                <li>Select <strong>GPT-4o</strong> model</li>
+                <li>Write instructions (persona + goals + constraints)</li>
+                <li>Enable <strong>Code Interpreter</strong> + <strong>Bing Grounding</strong></li>
+                <li>Test: <em>"Plan a 5-day Japan trip for $5,000"</em></li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- SLIDE 14: Key Takeaways -->
+    <div class="slide center" data-slide="14">
+        <h2>Key Takeaways</h2>
+        <ul style="margin-top:16px;">
+            <li>Agents are <strong>autonomous, goal-driven</strong> — not just better chatbots</li>
+            <li>Four pillars: <strong>Instructions + Model + Tools + Memory</strong></li>
+            <li><strong>Azure AI Agent Service</strong> provides a fully managed platform</li>
+            <li><strong>Prompt agents</strong> = no-code, fast; <strong>Hosted agents</strong> = custom code, powerful</li>
+            <li><strong>Start simple</strong>, validate, then scale up</li>
+            <li><strong>Security first</strong> — least privilege, filtering, monitoring</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 15: Next Module -->
+    <div class="slide center" data-slide="15">
+        <h2>Up Next</h2>
+        <h1><span class="gradient-text">Module 17</span></h1>
+        <p class="subtitle">Building Agents with Tools</p>
+        <p class="small" style="margin-top:24px;">File Search · Code Interpreter · Bing Grounding · Custom Functions</p>
+        <p style="margin-top:32px; color:var(--text-muted); font-size:14px;">
+            Azure AI Foundry: Zero to Hero · Arc 4: AI Agents
+        </p>
+    </div>
+
+</div>
+
+<!-- Slide Number -->
+<div class="slide-number" id="slideNumber">1 / 15</div>
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar" style="width: 6.67%"></div>
+<!-- Nav Hint -->
+<div class="nav-hint">← → Arrow keys to navigate</div>
+
+<script>
+(function() {
+    'use strict';
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    let current = 0;
+
+    function goTo(n) {
+        if (n < 0 || n >= total) return;
+        slides[current].classList.remove('active');
+        slides[current].classList.add(n > current ? 'prev' : '');
+        current = n;
+        slides.forEach(function(s, i) {
+            s.classList.remove('active', 'prev');
+            if (i < current) s.classList.add('prev');
+        });
+        slides[current].classList.add('active');
+        document.getElementById('slideNumber').textContent = (current + 1) + ' / ' + total;
+        document.getElementById('progressBar').style.width = ((current + 1) / total * 100) + '%';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+        if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+        if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', function(e) {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { diff > 0 ? goTo(current + 1) : goTo(current - 1); }
+    });
+})();
+</script>
+</body>
+</html>

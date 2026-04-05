@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 19: Custom Tools & Function Calling | Azure AI Foundry: Zero to Hero</title>
+<meta name="description" content="Learn to define custom functions for AI agents, implement function calling patterns with JSON Schema, connect agents to external APIs and databases, and build robust error handling strategies in Azure AI Foundry.">
+<style>
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #deecf9;
+  --ms-light-purple: #f3e8ff;
+  --ms-green: #107c10;
+  --ms-red: #d13438;
+  --ms-orange: #ff8c00;
+  --ms-yellow: #fce100;
+  --ms-gray-10: #faf9f8;
+  --ms-gray-20: #f3f2f1;
+  --ms-gray-30: #edebe9;
+  --ms-gray-50: #d2d0ce;
+  --ms-gray-90: #605e5c;
+  --ms-gray-130: #323130;
+  --ms-gray-150: #252423;
+  --ms-gray-160: #1b1a19;
+  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+  --max-width: 780px;
+  --radius: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ms-gray-130);
+  background: var(--ms-gray-10);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==================== PROGRESS BAR ==================== */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  z-index: 10000;
+  transition: width 0.15s linear;
+}
+
+/* ==================== HERO SECTION ==================== */
+.hero {
+  background: linear-gradient(135deg, var(--ms-dark-blue) 0%, var(--ms-blue) 40%, var(--ms-purple) 100%);
+  color: #fff;
+  padding: 80px 24px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(92,45,145,0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0,120,212,0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 24px;
+}
+
+.hero-badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ms-yellow);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.hero h1 .accent {
+  background: linear-gradient(90deg, #fce100, #ff8c00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  opacity: 0.92;
+  max-width: 600px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-meta svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  opacity: 0.8;
+}
+
+/* ==================== STICKY TOC ==================== */
+.toc-wrapper {
+  position: sticky;
+  top: 4px;
+  z-index: 999;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ms-gray-30);
+  padding: 0 24px;
+  transition: box-shadow var(--transition);
+}
+
+.toc-wrapper.scrolled {
+  box-shadow: var(--shadow-md);
+}
+
+.toc-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 12px 0;
+}
+
+.toc-inner::-webkit-scrollbar { display: none; }
+
+.toc-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ms-gray-90);
+  white-space: nowrap;
+  padding-right: 8px;
+  border-right: 2px solid var(--ms-gray-30);
+  margin-right: 4px;
+}
+
+.toc-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ms-gray-90);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.toc-link:hover { color: var(--ms-blue); background: var(--ms-light-blue); }
+
+.toc-link.active {
+  color: var(--ms-blue);
+  background: var(--ms-light-blue);
+  font-weight: 600;
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.section { margin-bottom: 56px; }
+
+.section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ms-gray-150);
+  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--ms-blue);
+  display: inline-block;
+  scroll-margin-top: 80px;
+}
+
+.section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ms-gray-130);
+  margin: 28px 0 12px;
+}
+
+.section h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ms-purple);
+  margin: 20px 0 8px;
+}
+
+p { margin-bottom: 16px; }
+
+ul, ol {
+  margin: 0 0 16px 24px;
+}
+
+li { margin-bottom: 6px; }
+
+a { color: var(--ms-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+strong { font-weight: 600; }
+
+code {
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  background: var(--ms-gray-20);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ms-purple);
+}
+
+pre {
+  background: var(--ms-gray-160);
+  color: #d4d4d4;
+  padding: 20px 24px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 16px 0 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  position: relative;
+  border: 1px solid var(--ms-gray-150);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+pre .copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #ccc;
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+pre .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+.keyword { color: #569cd6; }
+.string { color: #ce9178; }
+.comment { color: #6a9955; }
+.function { color: #dcdcaa; }
+.type { color: #4ec9b0; }
+.number { color: #b5cea8; }
+.param { color: #9cdcfe; }
+.decorator { color: #d7ba7d; }
+
+/* ==================== CALLOUT BOXES ==================== */
+.callout {
+  padding: 20px 24px;
+  border-radius: var(--radius);
+  margin: 24px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.callout-header svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.callout-info {
+  background: #e8f4fd;
+  border-color: var(--ms-blue);
+}
+.callout-info .callout-header { color: var(--ms-blue); }
+.callout-info .callout-header svg { fill: var(--ms-blue); }
+
+.callout-warning {
+  background: #fff4ce;
+  border-color: var(--ms-orange);
+}
+.callout-warning .callout-header { color: #8a6d00; }
+.callout-warning .callout-header svg { fill: var(--ms-orange); }
+
+.callout-tip {
+  background: #dff6dd;
+  border-color: var(--ms-green);
+}
+.callout-tip .callout-header { color: var(--ms-green); }
+.callout-tip .callout-header svg { fill: var(--ms-green); }
+
+.callout-danger {
+  background: #fde7e9;
+  border-color: var(--ms-red);
+}
+.callout-danger .callout-header { color: var(--ms-red); }
+.callout-danger .callout-header svg { fill: var(--ms-red); }
+
+.callout-purple {
+  background: var(--ms-light-purple);
+  border-color: var(--ms-purple);
+}
+.callout-purple .callout-header { color: var(--ms-purple); }
+.callout-purple .callout-header svg { fill: var(--ms-purple); }
+
+/* ==================== DIAGRAM ==================== */
+.diagram-container {
+  margin: 28px 0;
+  padding: 32px 24px;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--ms-gray-30);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.diagram-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ms-gray-130);
+  margin-bottom: 24px;
+}
+
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.flow-node {
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 120px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.flow-node.blue { background: var(--ms-light-blue); color: var(--ms-dark-blue); border: 2px solid var(--ms-blue); }
+.flow-node.purple { background: var(--ms-light-purple); color: var(--ms-purple); border: 2px solid var(--ms-purple); }
+.flow-node.green { background: #dff6dd; color: #0b6a0b; border: 2px solid var(--ms-green); }
+.flow-node.orange { background: #fff4ce; color: #6b5900; border: 2px solid var(--ms-orange); }
+.flow-node.red { background: #fde7e9; color: #a80000; border: 2px solid var(--ms-red); }
+
+.flow-arrow {
+  font-size: 22px;
+  color: var(--ms-gray-90);
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.flow-label {
+  font-size: 10px;
+  font-weight: 400;
+  display: block;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+/* Architecture diagram */
+.arch-diagram {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr 60px 1fr;
+  gap: 12px;
+  align-items: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.arch-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.arch-box {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  border: 2px solid;
+}
+
+.arch-arrow {
+  text-align: center;
+  font-size: 20px;
+  color: var(--ms-gray-90);
+}
+
+.arch-arrow span {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==================== VIDEO EMBED ==================== */
+.video-container {
+  margin: 28px 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--ms-gray-30);
+}
+
+.video-header {
+  background: var(--ms-gray-160);
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-header svg { width: 18px; height: 18px; fill: var(--ms-red); }
+
+.video-responsive {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  background: #000;
+}
+
+.video-responsive iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ==================== TABLE ==================== */
+.table-responsive { overflow-x: auto; margin: 20px 0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+thead th {
+  background: var(--ms-dark-blue);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ms-gray-30);
+  vertical-align: top;
+}
+
+tbody tr:hover { background: var(--ms-gray-10); }
+tbody tr:nth-child(even) { background: var(--ms-gray-20); }
+tbody tr:nth-child(even):hover { background: var(--ms-gray-30); }
+
+/* ==================== CHECKLIST ==================== */
+.checklist {
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
+}
+
+.checklist li {
+  padding: 8px 0 8px 32px;
+  position: relative;
+  border-bottom: 1px solid var(--ms-gray-20);
+}
+
+.checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  font-size: 16px;
+  color: var(--ms-blue);
+}
+
+/* ==================== MINI HACK ==================== */
+.mini-hack {
+  background: linear-gradient(135deg, #1b1a19 0%, #2d2d2d 100%);
+  color: #e0e0e0;
+  border-radius: var(--radius);
+  padding: 32px;
+  margin: 32px 0;
+  border: 1px solid #444;
+}
+
+.mini-hack h3 {
+  color: var(--ms-yellow);
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+
+.mini-hack .hack-subtitle {
+  color: #aaa;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.mini-hack h4 { color: var(--ms-orange); margin-top: 20px; }
+
+.mini-hack ul { margin-left: 20px; }
+.mini-hack li { color: #ccc; }
+.mini-hack code { background: #333; color: #4ec9b0; }
+
+.mini-hack .step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ms-blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 8px;
+}
+
+.hack-steps {
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
+}
+
+.hack-steps li {
+  padding: 12px 0;
+  border-bottom: 1px solid #444;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.hack-steps li:last-child { border-bottom: none; }
+
+/* ==================== BOTTOM NAV ==================== */
+.bottom-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 2px solid var(--ms-gray-30);
+}
+
+.nav-card {
+  flex: 1;
+  padding: 20px 24px;
+  border-radius: var(--radius);
+  background: #fff;
+  border: 1px solid var(--ms-gray-30);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nav-card:hover {
+  border-color: var(--ms-blue);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.nav-card .nav-direction {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ms-blue);
+  margin-bottom: 4px;
+}
+
+.nav-card .nav-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ms-gray-130);
+}
+
+.nav-card.next { text-align: right; }
+
+/* ==================== FOOTER ==================== */
+.footer {
+  background: var(--ms-gray-160);
+  color: #999;
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 13px;
+}
+
+.footer a { color: var(--ms-blue); }
+
+/* ==================== BACK TO TOP ==================== */
+.back-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ms-blue);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all var(--transition);
+  z-index: 900;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: var(--ms-dark-blue);
+  transform: translateY(-3px);
+}
+
+.back-to-top svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 640px) {
+  .hero { padding: 48px 16px 40px; }
+  .hero h1 { font-size: 1.6rem; }
+  .container { padding: 32px 16px 60px; }
+  .section h2 { font-size: 1.4rem; }
+  pre { padding: 16px; font-size: 13px; }
+  .bottom-nav { flex-direction: column; }
+  .nav-card.next { text-align: left; }
+  .flow-diagram { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .arch-diagram { grid-template-columns: 1fr; }
+  .arch-arrow { transform: rotate(90deg); padding: 8px 0; }
+  .mini-hack { padding: 24px 20px; }
+}
+
+/* ==================== ANIMATIONS ==================== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      ARC 4 · AI AGENTS
+    </div>
+    <h1>Custom Tools &amp; <span class="accent">Function Calling</span></h1>
+    <p class="hero-subtitle">
+      Empower your AI agents with the ability to call external functions, query databases,
+      invoke APIs, and take real-world actions — turning conversational AI into powerful,
+      autonomous systems with Azure AI Foundry.
+    </p>
+    <div class="hero-meta">
+      <span>
+        <svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM8.5 4h-1v4.5l3.5 2.1.5-.8-3-1.8V4z"/></svg>
+        Module 19 of 45
+      </span>
+      <span>
+        <svg viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 014.5 0h7A2.5 2.5 0 0114 2.5v11a2.5 2.5 0 01-2.5 2.5h-7A2.5 2.5 0 012 13.5v-11zm2.5-1A1.5 1.5 0 003 2.5v11A1.5 1.5 0 004.5 15h7a1.5 1.5 0 001.5-1.5v-11A1.5 1.5 0 0011.5 1.5h-7z"/></svg>
+        April 2026
+      </span>
+      <span>
+        <svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 12.5a5.5 5.5 0 110-11 5.5 5.5 0 010 11zM9 8.5v-4H7v4H5l3 3.5 3-3.5H9z"/></svg>
+        Intermediate–Advanced
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== STICKY TOC ==================== -->
+<nav class="toc-wrapper" id="tocWrapper">
+  <div class="toc-inner">
+    <span class="toc-label">Contents</span>
+    <a class="toc-link" href="#overview" data-section="overview">Overview</a>
+    <a class="toc-link" href="#custom-functions" data-section="custom-functions">Custom Functions</a>
+    <a class="toc-link" href="#function-calling" data-section="function-calling">Function Calling</a>
+    <a class="toc-link" href="#external-apis" data-section="external-apis">External APIs</a>
+    <a class="toc-link" href="#error-handling" data-section="error-handling">Error Handling</a>
+    <a class="toc-link" href="#mini-hack" data-section="mini-hack">Mini Hack</a>
+    <a class="toc-link" href="#video" data-section="video">Video</a>
+    <a class="toc-link" href="#resources" data-section="resources">Resources</a>
+  </div>
+</nav>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="container">
+
+  <!-- SECTION: Overview -->
+  <section class="section fade-in" id="overview">
+    <h2>Overview</h2>
+    <p>
+      Function calling is the mechanism that transforms a large language model from a passive text generator 
+      into an active agent capable of performing real-world tasks. In Azure AI Foundry, custom tools and 
+      function calling allow your agents to retrieve live data, execute business logic, interact with 
+      databases, and orchestrate multi-step workflows — all while maintaining natural conversational flow.
+    </p>
+    <p>
+      This module covers the complete lifecycle of building function-enabled agents: defining tool schemas 
+      with JSON Schema, implementing function calling patterns, connecting to external services, and 
+      building robust error-handling strategies that keep your agents reliable in production.
+    </p>
+
+    <div class="callout callout-info">
+      <div class="callout-header">
+        <svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 10H7V7h2v4zm0-5H7V4h2v2z"/></svg>
+        Key Concept
+      </div>
+      <p>
+        <strong>Function calling</strong> does not mean the model executes code directly. Instead, the model 
+        outputs a structured JSON request indicating which function to call and with what arguments. Your 
+        application code then executes the function and returns the result to the model for further reasoning.
+      </p>
+    </div>
+
+    <h3>What You Will Learn</h3>
+    <ul>
+      <li>Define custom function tools with precise JSON Schema specifications</li>
+      <li>Implement sequential, parallel, and nested function calling patterns</li>
+      <li>Connect agents to live REST APIs, databases, and internal microservices</li>
+      <li>Build fallback strategies with retry logic, circuit breakers, and graceful degradation</li>
+      <li>Construct a multi-tool agent that checks weather and books meetings</li>
+    </ul>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Completion of Module 18 (Agent Architecture Fundamentals)</li>
+      <li>Azure AI Foundry project with a deployed GPT-4o or GPT-4.1 model</li>
+      <li>Python 3.10+ with <code>azure-ai-projects</code> and <code>azure-identity</code> SDKs</li>
+      <li>Basic familiarity with REST APIs and JSON Schema</li>
+    </ul>
+  </section>
+
+  <!-- SECTION: Custom Functions -->
+  <section class="section fade-in" id="custom-functions">
+    <h2>Defining Custom Functions for Agents</h2>
+    <p>
+      Custom functions are the building blocks of tool-enabled agents. Each function is described by a 
+      <strong>tool definition</strong> that tells the model what the function does, what parameters it 
+      accepts, and what format those parameters should take. Azure AI Foundry uses the OpenAI-compatible 
+      tool specification format, built on JSON Schema.
+    </p>
+
+    <h3>Anatomy of a Tool Definition</h3>
+    <p>Every tool definition consists of three key components:</p>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+            <th>Best Practice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>name</code></td>
+            <td>Unique identifier for the function</td>
+            <td>Use snake_case, be descriptive (e.g., <code>get_weather_forecast</code>)</td>
+          </tr>
+          <tr>
+            <td><code>description</code></td>
+            <td>Tells the model when and why to use this function</td>
+            <td>Be specific about capabilities and limitations</td>
+          </tr>
+          <tr>
+            <td><code>parameters</code></td>
+            <td>JSON Schema defining input shape and validation</td>
+            <td>Use <code>required</code> fields, add <code>enum</code> constraints where possible</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Example: Weather Lookup Tool</h3>
+    <pre><code><span class="comment"># Define a weather lookup tool with JSON Schema parameters</span>
+<span class="param">weather_tool</span> = {
+    <span class="string">"type"</span>: <span class="string">"function"</span>,
+    <span class="string">"function"</span>: {
+        <span class="string">"name"</span>: <span class="string">"get_weather"</span>,
+        <span class="string">"description"</span>: <span class="string">"Get current weather conditions and forecast for a specific city. Returns temperature, humidity, wind speed, and a short text forecast."</span>,
+        <span class="string">"parameters"</span>: {
+            <span class="string">"type"</span>: <span class="string">"object"</span>,
+            <span class="string">"properties"</span>: {
+                <span class="string">"city"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"string"</span>,
+                    <span class="string">"description"</span>: <span class="string">"City name, e.g., 'Seattle' or 'London'"</span>
+                },
+                <span class="string">"units"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"string"</span>,
+                    <span class="string">"enum"</span>: [<span class="string">"celsius"</span>, <span class="string">"fahrenheit"</span>],
+                    <span class="string">"description"</span>: <span class="string">"Temperature unit preference"</span>
+                }
+            },
+            <span class="string">"required"</span>: [<span class="string">"city"</span>],
+            <span class="string">"additionalProperties"</span>: <span class="keyword">false</span>
+        }
+    }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <h3>Example: Meeting Booking Tool</h3>
+    <pre><code><span class="comment"># Define a meeting booking tool</span>
+<span class="param">meeting_tool</span> = {
+    <span class="string">"type"</span>: <span class="string">"function"</span>,
+    <span class="string">"function"</span>: {
+        <span class="string">"name"</span>: <span class="string">"book_meeting"</span>,
+        <span class="string">"description"</span>: <span class="string">"Schedule a meeting in the user's calendar. Checks for conflicts and sends invitations to all attendees."</span>,
+        <span class="string">"parameters"</span>: {
+            <span class="string">"type"</span>: <span class="string">"object"</span>,
+            <span class="string">"properties"</span>: {
+                <span class="string">"title"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"string"</span>,
+                    <span class="string">"description"</span>: <span class="string">"Meeting title/subject"</span>
+                },
+                <span class="string">"date"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"string"</span>,
+                    <span class="string">"description"</span>: <span class="string">"Meeting date in ISO 8601 format (YYYY-MM-DD)"</span>,
+                    <span class="string">"pattern"</span>: <span class="string">"^\\d{4}-\\d{2}-\\d{2}$"</span>
+                },
+                <span class="string">"start_time"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"string"</span>,
+                    <span class="string">"description"</span>: <span class="string">"Start time in 24-hour format (HH:MM)"</span>
+                },
+                <span class="string">"duration_minutes"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"integer"</span>,
+                    <span class="string">"minimum"</span>: <span class="number">15</span>,
+                    <span class="string">"maximum"</span>: <span class="number">480</span>,
+                    <span class="string">"description"</span>: <span class="string">"Meeting duration in minutes"</span>
+                },
+                <span class="string">"attendees"</span>: {
+                    <span class="string">"type"</span>: <span class="string">"array"</span>,
+                    <span class="string">"items"</span>: { <span class="string">"type"</span>: <span class="string">"string"</span>, <span class="string">"format"</span>: <span class="string">"email"</span> },
+                    <span class="string">"description"</span>: <span class="string">"List of attendee email addresses"</span>
+                }
+            },
+            <span class="string">"required"</span>: [<span class="string">"title"</span>, <span class="string">"date"</span>, <span class="string">"start_time"</span>, <span class="string">"duration_minutes"</span>],
+            <span class="string">"additionalProperties"</span>: <span class="keyword">false</span>
+        }
+    }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <div class="callout callout-tip">
+      <div class="callout-header">
+        <svg viewBox="0 0 16 16"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25V8.5h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/></svg>
+        Pro Tip
+      </div>
+      <p>
+        Write descriptions as if explaining the function to a new team member. The model uses the 
+        <code>description</code> field to decide <em>when</em> to invoke a tool, so clarity directly 
+        impacts accuracy. Include what the function returns and any constraints.
+      </p>
+    </div>
+
+    <h3>Schema Design Best Practices</h3>
+    <ul>
+      <li><strong>Use enums:</strong> Constrain values to valid options (e.g., <code>"enum": ["celsius", "fahrenheit"]</code>)</li>
+      <li><strong>Add patterns:</strong> Use regex patterns for dates, IDs, and formatted strings</li>
+      <li><strong>Set boundaries:</strong> Use <code>minimum</code>/<code>maximum</code> for numbers, <code>minLength</code>/<code>maxLength</code> for strings</li>
+      <li><strong>Mark required fields:</strong> Always specify which parameters are mandatory</li>
+      <li><strong>Disable extras:</strong> Set <code>"additionalProperties": false</code> to prevent hallucinated fields</li>
+      <li><strong>Nest wisely:</strong> Keep schemas flat where possible; deep nesting reduces model accuracy</li>
+    </ul>
+  </section>
+
+  <!-- SECTION: Function Calling Patterns -->
+  <section class="section fade-in" id="function-calling">
+    <h2>Function Calling Patterns &amp; Schemas</h2>
+    <p>
+      Azure AI Foundry supports several function calling patterns, each suited to different scenarios. 
+      Understanding these patterns lets you design agents that can handle simple lookups, complex 
+      multi-step workflows, and everything in between.
+    </p>
+
+    <!-- Architecture Diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">Function Calling Flow in Azure AI Foundry</div>
+      <div class="flow-diagram">
+        <div class="flow-node blue">
+          👤 User Query
+          <span class="flow-label">Natural language</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node purple">
+          🤖 LLM Reasoning
+          <span class="flow-label">Selects tool + args</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node orange">
+          ⚙️ Your Code
+          <span class="flow-label">Executes function</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node green">
+          📊 Result
+          <span class="flow-label">JSON response</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node blue">
+          💬 Final Answer
+          <span class="flow-label">Natural language</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Pattern 1: Sequential Function Calling</h3>
+    <p>
+      The model calls one function at a time, waiting for results before deciding 
+      whether to call another function or generate a final response.
+    </p>
+    <pre><code><span class="keyword">from</span> azure.ai.projects <span class="keyword">import</span> AIProjectClient
+<span class="keyword">from</span> azure.identity <span class="keyword">import</span> DefaultAzureCredential
+<span class="keyword">import</span> json
+
+<span class="comment"># Initialize the AI Foundry client</span>
+<span class="param">client</span> = AIProjectClient(
+    credential=DefaultAzureCredential(),
+    project_endpoint=<span class="string">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+<span class="comment"># Register tools with the agent</span>
+<span class="param">tools</span> = [weather_tool, meeting_tool]
+
+<span class="comment"># Create the agent with function calling capabilities</span>
+<span class="param">agent</span> = client.agents.create_agent(
+    model=<span class="string">"gpt-4o"</span>,
+    name=<span class="string">"scheduling-assistant"</span>,
+    instructions=<span class="string">"""You are a scheduling assistant that can check weather 
+    and book meetings. Always check weather before suggesting 
+    outdoor meeting locations."""</span>,
+    tools=tools
+)
+
+<span class="comment"># Create a conversation thread</span>
+<span class="param">thread</span> = client.agents.create_thread()
+client.agents.create_message(
+    thread_id=thread.id,
+    role=<span class="string">"user"</span>,
+    content=<span class="string">"What's the weather in Seattle? If it's nice, book a lunch meeting."</span>
+)
+
+<span class="comment"># Run the agent — it will call functions as needed</span>
+<span class="param">run</span> = client.agents.create_and_process_run(
+    thread_id=thread.id,
+    agent_id=agent.id
+)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <h3>Pattern 2: Parallel Function Calling</h3>
+    <p>
+      When the model determines that multiple independent functions are needed, it can request 
+      them all at once. This reduces latency and is ideal for dashboard-style queries.
+    </p>
+    <pre><code><span class="comment"># The model may request multiple function calls simultaneously</span>
+<span class="comment"># Example: "What's the weather in Seattle, Portland, and Vancouver?"</span>
+<span class="comment"># → Model emits 3 parallel get_weather calls</span>
+
+<span class="keyword">import</span> asyncio
+
+<span class="keyword">async def</span> <span class="function">handle_tool_calls</span>(<span class="param">tool_calls</span>):
+    <span class="string">"""Execute multiple tool calls concurrently."""</span>
+    <span class="param">tasks</span> = []
+    <span class="keyword">for</span> <span class="param">call</span> <span class="keyword">in</span> tool_calls:
+        <span class="param">func_name</span> = call.function.name
+        <span class="param">args</span> = json.loads(call.function.arguments)
+        
+        <span class="keyword">if</span> func_name == <span class="string">"get_weather"</span>:
+            tasks.append(fetch_weather_async(args[<span class="string">"city"</span>]))
+        <span class="keyword">elif</span> func_name == <span class="string">"book_meeting"</span>:
+            tasks.append(create_meeting_async(**args))
+    
+    <span class="param">results</span> = <span class="keyword">await</span> asyncio.gather(*tasks, return_exceptions=<span class="keyword">True</span>)
+    <span class="keyword">return</span> results</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <h3>Pattern 3: Chained (Multi-Turn) Function Calling</h3>
+    <p>
+      The result of one function call informs the next. The model reasons over intermediate results 
+      and decides on subsequent actions, creating sophisticated multi-step workflows.
+    </p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Chained Function Calling — Weather → Schedule → Book</div>
+      <div class="flow-diagram">
+        <div class="flow-node blue">
+          get_weather
+          <span class="flow-label">Step 1: Check conditions</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node purple">
+          LLM Decides
+          <span class="flow-label">"Weather is good"</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node orange">
+          check_availability
+          <span class="flow-label">Step 2: Find open slot</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node green">
+          book_meeting
+          <span class="flow-label">Step 3: Confirm booking</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-header">
+        <svg viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 00-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z"/></svg>
+        Important
+      </div>
+      <p>
+        Azure AI Foundry agents handle the function calling loop automatically when you use 
+        <code>create_and_process_run()</code>. For manual control over each step (e.g., to add 
+        custom logging or approval gates), use <code>create_run()</code> and process tool calls 
+        in your own loop.
+      </p>
+    </div>
+
+    <h3>JSON Schema Deep Dive</h3>
+    <p>
+      JSON Schema is the backbone of function calling. Well-crafted schemas reduce hallucinated 
+      parameters and improve tool selection accuracy. Key schema features for function calling:
+    </p>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Schema Feature</th>
+            <th>Use Case</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>enum</code></td>
+            <td>Constrain to known values</td>
+            <td><code>"enum": ["high", "medium", "low"]</code></td>
+          </tr>
+          <tr>
+            <td><code>pattern</code></td>
+            <td>Validate format with regex</td>
+            <td><code>"pattern": "^\\d{4}-\\d{2}-\\d{2}$"</code></td>
+          </tr>
+          <tr>
+            <td><code>minimum/maximum</code></td>
+            <td>Bound numeric ranges</td>
+            <td><code>"minimum": 1, "maximum": 100</code></td>
+          </tr>
+          <tr>
+            <td><code>items</code></td>
+            <td>Define array element types</td>
+            <td><code>"items": {"type": "string", "format": "email"}</code></td>
+          </tr>
+          <tr>
+            <td><code>$defs</code></td>
+            <td>Reusable sub-schemas</td>
+            <td>Shared address or contact structures</td>
+          </tr>
+          <tr>
+            <td><code>oneOf/anyOf</code></td>
+            <td>Conditional parameters</td>
+            <td>Different schemas based on action type</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION: External APIs -->
+  <section class="section fade-in" id="external-apis">
+    <h2>Connecting Agents to External APIs &amp; Databases</h2>
+    <p>
+      Real-world agents need to interact with external systems — REST APIs for live data, databases 
+      for persistent storage, and internal microservices for business logic. This section covers 
+      patterns for secure, reliable external connectivity.
+    </p>
+
+    <!-- Architecture Diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">Agent External Connectivity Architecture</div>
+      <div class="arch-diagram">
+        <div class="arch-col">
+          <div class="arch-box" style="background:#e8f4fd;border-color:var(--ms-blue);color:var(--ms-dark-blue)">
+            🤖 AI Foundry Agent
+          </div>
+          <div class="arch-box" style="background:var(--ms-light-purple);border-color:var(--ms-purple);color:var(--ms-purple)">
+            📋 Tool Definitions
+          </div>
+        </div>
+        <div class="arch-arrow">
+          →<br>
+          <span>tool calls</span>
+        </div>
+        <div class="arch-col">
+          <div class="arch-box" style="background:#fff4ce;border-color:var(--ms-orange);color:#6b5900">
+            ⚙️ Function Router
+          </div>
+          <div class="arch-box" style="background:#dff6dd;border-color:var(--ms-green);color:#0b6a0b">
+            🔐 Auth Layer
+          </div>
+        </div>
+        <div class="arch-arrow">
+          →<br>
+          <span>requests</span>
+        </div>
+        <div class="arch-col">
+          <div class="arch-box" style="background:#e8f4fd;border-color:var(--ms-blue);color:var(--ms-dark-blue)">
+            🌐 REST APIs
+          </div>
+          <div class="arch-box" style="background:var(--ms-light-purple);border-color:var(--ms-purple);color:var(--ms-purple)">
+            🗄️ Databases
+          </div>
+          <div class="arch-box" style="background:#dff6dd;border-color:var(--ms-green);color:#0b6a0b">
+            📡 Microservices
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Connecting to a REST API</h3>
+    <pre><code><span class="keyword">import</span> httpx
+<span class="keyword">from</span> azure.identity <span class="keyword">import</span> DefaultAzureCredential
+
+<span class="keyword">async def</span> <span class="function">get_weather</span>(<span class="param">city</span>: <span class="type">str</span>, <span class="param">units</span>: <span class="type">str</span> = <span class="string">"celsius"</span>) -> <span class="type">dict</span>:
+    <span class="string">"""Fetch live weather data from an external API."""</span>
+    <span class="param">api_key</span> = get_secret_from_keyvault(<span class="string">"weather-api-key"</span>)
+    <span class="param">base_url</span> = <span class="string">"https://api.weatherservice.com/v2/current"</span>
+    
+    <span class="keyword">async with</span> httpx.AsyncClient(timeout=<span class="number">10.0</span>) <span class="keyword">as</span> client:
+        <span class="param">response</span> = <span class="keyword">await</span> client.get(
+            base_url,
+            params={
+                <span class="string">"q"</span>: city,
+                <span class="string">"units"</span>: <span class="string">"metric"</span> <span class="keyword">if</span> units == <span class="string">"celsius"</span> <span class="keyword">else</span> <span class="string">"imperial"</span>,
+                <span class="string">"appid"</span>: api_key
+            }
+        )
+        response.raise_for_status()
+        <span class="param">data</span> = response.json()
+    
+    <span class="keyword">return</span> {
+        <span class="string">"city"</span>: city,
+        <span class="string">"temperature"</span>: data[<span class="string">"main"</span>][<span class="string">"temp"</span>],
+        <span class="string">"humidity"</span>: data[<span class="string">"main"</span>][<span class="string">"humidity"</span>],
+        <span class="string">"conditions"</span>: data[<span class="string">"weather"</span>][<span class="number">0</span>][<span class="string">"description"</span>],
+        <span class="string">"units"</span>: units
+    }</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <h3>Connecting to a Database</h3>
+    <pre><code><span class="keyword">import</span> aioodbc
+
+<span class="keyword">async def</span> <span class="function">query_customer_orders</span>(
+    <span class="param">customer_id</span>: <span class="type">str</span>,
+    <span class="param">status</span>: <span class="type">str</span> = <span class="string">"all"</span>
+) -> <span class="type">dict</span>:
+    <span class="string">"""Query customer order history from Azure SQL Database."""</span>
+    <span class="param">conn_str</span> = get_secret_from_keyvault(<span class="string">"sql-connection-string"</span>)
+    
+    <span class="param">query</span> = <span class="string">"""
+        SELECT order_id, product_name, quantity, total_price, status
+        FROM orders 
+        WHERE customer_id = ? 
+    """</span>
+    <span class="param">params</span> = [customer_id]
+    
+    <span class="keyword">if</span> status != <span class="string">"all"</span>:
+        query += <span class="string">" AND status = ?"</span>
+        params.append(status)
+    
+    query += <span class="string">" ORDER BY order_date DESC LIMIT 20"</span>
+    
+    <span class="keyword">async with</span> aioodbc.connect(dsn=conn_str) <span class="keyword">as</span> conn:
+        <span class="keyword">async with</span> conn.cursor() <span class="keyword">as</span> cursor:
+            <span class="keyword">await</span> cursor.execute(query, params)
+            <span class="param">rows</span> = <span class="keyword">await</span> cursor.fetchall()
+    
+    <span class="keyword">return</span> {
+        <span class="string">"customer_id"</span>: customer_id,
+        <span class="string">"order_count"</span>: len(rows),
+        <span class="string">"orders"</span>: [
+            {<span class="string">"id"</span>: r[<span class="number">0</span>], <span class="string">"product"</span>: r[<span class="number">1</span>], <span class="string">"qty"</span>: r[<span class="number">2</span>], <span class="string">"total"</span>: float(r[<span class="number">3</span>]), <span class="string">"status"</span>: r[<span class="number">4</span>]}
+            <span class="keyword">for</span> r <span class="keyword">in</span> rows
+        ]
+    }</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <div class="callout callout-danger">
+      <div class="callout-header">
+        <svg viewBox="0 0 16 16"><path d="M4.47.22A.749.749 0 015 0h6a.75.75 0 01.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 01-.22.53l-4.25 4.25A.749.749 0 0111 16H5a.749.749 0 01-.53-.22L.22 11.53A.749.749 0 010 11V5a.75.75 0 01.22-.53L4.47.22zM7.25 8V4.75a.75.75 0 011.5 0V8a.75.75 0 01-1.5 0zm.75 2.5a1 1 0 100 2 1 1 0 000-2z"/></svg>
+        Security Warning
+      </div>
+      <p>
+        <strong>Never expose raw SQL access to AI agents.</strong> Always use parameterized queries, 
+        restrict database permissions to read-only where possible, and implement row-level security. 
+        Store credentials in Azure Key Vault — never hard-code API keys or connection strings.
+      </p>
+    </div>
+
+    <h3>Implementing a Function Router</h3>
+    <p>
+      A function router maps tool call names to your implementation functions. This pattern keeps 
+      your code organized and makes it easy to add new tools:
+    </p>
+    <pre><code><span class="keyword">from</span> typing <span class="keyword">import</span> Callable, Any
+
+<span class="keyword">class</span> <span class="type">FunctionRouter</span>:
+    <span class="string">"""Routes agent tool calls to implementation functions."""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(self):
+        self._registry: <span class="type">dict</span>[<span class="type">str</span>, <span class="type">Callable</span>] = {}
+    
+    <span class="keyword">def</span> <span class="function">register</span>(self, <span class="param">name</span>: <span class="type">str</span>, <span class="param">func</span>: <span class="type">Callable</span>):
+        <span class="string">"""Register a function handler by tool name."""</span>
+        self._registry[name] = func
+    
+    <span class="keyword">async def</span> <span class="function">dispatch</span>(self, <span class="param">tool_call</span>) -> <span class="type">str</span>:
+        <span class="string">"""Execute the requested function and return JSON result."""</span>
+        <span class="param">func_name</span> = tool_call.function.name
+        <span class="param">args</span> = json.loads(tool_call.function.arguments)
+        
+        <span class="keyword">if</span> func_name <span class="keyword">not in</span> self._registry:
+            <span class="keyword">return</span> json.dumps({<span class="string">"error"</span>: <span class="string">f"Unknown function: {func_name}"</span>})
+        
+        <span class="keyword">try</span>:
+            <span class="param">result</span> = <span class="keyword">await</span> self._registry[func_name](**args)
+            <span class="keyword">return</span> json.dumps(result)
+        <span class="keyword">except</span> <span class="type">Exception</span> <span class="keyword">as</span> e:
+            <span class="keyword">return</span> json.dumps({<span class="string">"error"</span>: str(e), <span class="string">"function"</span>: func_name})
+
+<span class="comment"># Usage</span>
+<span class="param">router</span> = FunctionRouter()
+router.register(<span class="string">"get_weather"</span>, get_weather)
+router.register(<span class="string">"book_meeting"</span>, book_meeting)
+router.register(<span class="string">"query_customer_orders"</span>, query_customer_orders)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+  </section>
+
+  <!-- SECTION: Error Handling -->
+  <section class="section fade-in" id="error-handling">
+    <h2>Error Handling &amp; Fallback Strategies</h2>
+    <p>
+      Production agents must handle failures gracefully. External APIs go down, databases time out, 
+      and users provide unexpected input. Robust error handling is what separates demo-quality agents 
+      from production-ready systems.
+    </p>
+
+    <h3>The Error Handling Pyramid</h3>
+    <div class="diagram-container">
+      <div class="diagram-title">Defense-in-Depth Error Handling</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 0;">
+        <div class="flow-node red" style="min-width:200px;">🛡️ Input Validation<span class="flow-label">Validate before calling</span></div>
+        <div style="font-size:14px;color:var(--ms-gray-90);">↓</div>
+        <div class="flow-node orange" style="min-width:260px;">⏱️ Timeouts &amp; Retries<span class="flow-label">Handle transient failures</span></div>
+        <div style="font-size:14px;color:var(--ms-gray-90);">↓</div>
+        <div class="flow-node purple" style="min-width:320px;">🔄 Circuit Breaker<span class="flow-label">Prevent cascade failures</span></div>
+        <div style="font-size:14px;color:var(--ms-gray-90);">↓</div>
+        <div class="flow-node blue" style="min-width:380px;">🔀 Fallback &amp; Graceful Degradation<span class="flow-label">Alternative paths when services fail</span></div>
+        <div style="font-size:14px;color:var(--ms-gray-90);">↓</div>
+        <div class="flow-node green" style="min-width:440px;">📝 Structured Error Responses<span class="flow-label">Inform the model about what went wrong</span></div>
+      </div>
+    </div>
+
+    <h3>Implementing Retry with Exponential Backoff</h3>
+    <pre><code><span class="keyword">import</span> asyncio
+<span class="keyword">import</span> random
+<span class="keyword">from</span> functools <span class="keyword">import</span> wraps
+
+<span class="keyword">def</span> <span class="function">retry_with_backoff</span>(<span class="param">max_retries</span>=<span class="number">3</span>, <span class="param">base_delay</span>=<span class="number">1.0</span>, <span class="param">max_delay</span>=<span class="number">30.0</span>):
+    <span class="string">"""Decorator: retry async functions with exponential backoff + jitter."""</span>
+    <span class="keyword">def</span> <span class="function">decorator</span>(<span class="param">func</span>):
+        <span class="decorator">@wraps</span>(func)
+        <span class="keyword">async def</span> <span class="function">wrapper</span>(*args, **kwargs):
+            <span class="keyword">for</span> <span class="param">attempt</span> <span class="keyword">in</span> range(max_retries + <span class="number">1</span>):
+                <span class="keyword">try</span>:
+                    <span class="keyword">return await</span> func(*args, **kwargs)
+                <span class="keyword">except</span> (<span class="type">httpx.TimeoutException</span>, <span class="type">httpx.HTTPStatusError</span>) <span class="keyword">as</span> e:
+                    <span class="keyword">if</span> attempt == max_retries:
+                        <span class="keyword">raise</span>
+                    <span class="param">delay</span> = min(base_delay * (<span class="number">2</span> ** attempt) + random.uniform(<span class="number">0</span>, <span class="number">1</span>), max_delay)
+                    <span class="keyword">await</span> asyncio.sleep(delay)
+        <span class="keyword">return</span> wrapper
+    <span class="keyword">return</span> decorator
+
+<span class="decorator">@retry_with_backoff</span>(max_retries=<span class="number">3</span>, base_delay=<span class="number">1.0</span>)
+<span class="keyword">async def</span> <span class="function">get_weather</span>(<span class="param">city</span>: <span class="type">str</span>, <span class="param">units</span>: <span class="type">str</span> = <span class="string">"celsius"</span>) -> <span class="type">dict</span>:
+    <span class="comment"># ... implementation with automatic retry</span>
+    <span class="keyword">pass</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <h3>Circuit Breaker Pattern</h3>
+    <pre><code><span class="keyword">import</span> time
+
+<span class="keyword">class</span> <span class="type">CircuitBreaker</span>:
+    <span class="string">"""Prevents repeated calls to a failing service."""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, <span class="param">failure_threshold</span>=<span class="number">5</span>, <span class="param">recovery_timeout</span>=<span class="number">60</span>):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = <span class="number">0</span>
+        self.last_failure_time = <span class="keyword">None</span>
+        self.state = <span class="string">"closed"</span>  <span class="comment"># closed = healthy, open = failing</span>
+    
+    <span class="keyword">def</span> <span class="function">can_execute</span>(self) -> <span class="type">bool</span>:
+        <span class="keyword">if</span> self.state == <span class="string">"closed"</span>:
+            <span class="keyword">return True</span>
+        <span class="keyword">if</span> time.time() - self.last_failure_time > self.recovery_timeout:
+            self.state = <span class="string">"half-open"</span>
+            <span class="keyword">return True</span>
+        <span class="keyword">return False</span>
+    
+    <span class="keyword">def</span> <span class="function">record_success</span>(self):
+        self.failure_count = <span class="number">0</span>
+        self.state = <span class="string">"closed"</span>
+    
+    <span class="keyword">def</span> <span class="function">record_failure</span>(self):
+        self.failure_count += <span class="number">1</span>
+        self.last_failure_time = time.time()
+        <span class="keyword">if</span> self.failure_count >= self.failure_threshold:
+            self.state = <span class="string">"open"</span>
+
+<span class="comment"># Usage in function router</span>
+<span class="param">weather_breaker</span> = CircuitBreaker(failure_threshold=<span class="number">3</span>, recovery_timeout=<span class="number">30</span>)
+
+<span class="keyword">async def</span> <span class="function">safe_get_weather</span>(<span class="param">city</span>, <span class="param">units</span>=<span class="string">"celsius"</span>):
+    <span class="keyword">if not</span> weather_breaker.can_execute():
+        <span class="keyword">return</span> {<span class="string">"error"</span>: <span class="string">"Weather service temporarily unavailable"</span>,
+                <span class="string">"fallback"</span>: <span class="string">"Please try again in a minute"</span>}
+    <span class="keyword">try</span>:
+        <span class="param">result</span> = <span class="keyword">await</span> get_weather(city, units)
+        weather_breaker.record_success()
+        <span class="keyword">return</span> result
+    <span class="keyword">except</span> <span class="type">Exception</span>:
+        weather_breaker.record_failure()
+        <span class="keyword">return</span> {<span class="string">"error"</span>: <span class="string">"Weather service failed"</span>,
+                <span class="string">"fallback"</span>: <span class="string">"Unable to retrieve weather data"</span>}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <h3>Structured Error Responses</h3>
+    <p>
+      When a function fails, return a structured error so the model can reason about the failure 
+      and communicate it to the user appropriately:
+    </p>
+    <pre><code><span class="comment"># ✅ Good: Structured error with context</span>
+{
+    <span class="string">"error"</span>: <span class="string">"service_unavailable"</span>,
+    <span class="string">"message"</span>: <span class="string">"Weather API returned HTTP 503"</span>,
+    <span class="string">"retry_after_seconds"</span>: <span class="number">30</span>,
+    <span class="string">"fallback_data"</span>: {
+        <span class="string">"last_known_temperature"</span>: <span class="number">18</span>,
+        <span class="string">"data_age_minutes"</span>: <span class="number">45</span>
+    }
+}
+
+<span class="comment"># ❌ Bad: Raw exception string</span>
+<span class="string">"ConnectionError: HTTPSConnectionPool(host='api.weather.com', port=443): Max retries exceeded"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+    <div class="callout callout-tip">
+      <div class="callout-header">
+        <svg viewBox="0 0 16 16"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25V8.5h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/></svg>
+        Pro Tip
+      </div>
+      <p>
+        Include a <code>fallback_data</code> field with cached or approximate data. This lets the 
+        model still provide a useful (if partial) response. Users prefer an approximate answer to 
+        no answer at all.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION: Mini Hack -->
+  <section class="section fade-in" id="mini-hack">
+    <h2>🛠️ Mini Hack</h2>
+
+    <div class="mini-hack">
+      <h3>Build an Agent: Weather Checker + Meeting Booker</h3>
+      <p class="hack-subtitle">
+        Combine everything you've learned to build a multi-tool agent that checks live weather 
+        and books meetings based on conditions — a complete, production-style function-calling workflow.
+      </p>
+
+      <h4>🎯 Objective</h4>
+      <p>Create an Azure AI Foundry agent with two custom tools that can:</p>
+      <ul>
+        <li>Check real-time weather conditions for any city</li>
+        <li>Book calendar meetings with attendee management</li>
+        <li>Chain decisions: only suggest outdoor meetings when weather is favorable</li>
+        <li>Handle errors gracefully with fallback responses</li>
+      </ul>
+
+      <h4>📋 Steps</h4>
+      <ol class="hack-steps">
+        <li>
+          <span class="step-badge">1</span>
+          <div><strong>Set up your environment</strong> — Install <code>azure-ai-projects</code>, 
+          <code>azure-identity</code>, and <code>httpx</code>. Configure your Azure AI Foundry 
+          project endpoint and credentials.</div>
+        </li>
+        <li>
+          <span class="step-badge">2</span>
+          <div><strong>Define tool schemas</strong> — Create JSON Schema definitions for 
+          <code>get_weather</code> (city, units) and <code>book_meeting</code> (title, date, 
+          time, duration, attendees).</div>
+        </li>
+        <li>
+          <span class="step-badge">3</span>
+          <div><strong>Implement function handlers</strong> — Build Python functions that call a 
+          weather API and a calendar API (or mock them for testing). Add input validation.</div>
+        </li>
+        <li>
+          <span class="step-badge">4</span>
+          <div><strong>Build the function router</strong> — Create a dispatcher that maps tool 
+          call names to your handler functions with error wrapping.</div>
+        </li>
+        <li>
+          <span class="step-badge">5</span>
+          <div><strong>Create the agent</strong> — Register both tools with an Azure AI Foundry 
+          agent. Write system instructions that tell the agent to check weather before suggesting 
+          outdoor activities.</div>
+        </li>
+        <li>
+          <span class="step-badge">6</span>
+          <div><strong>Add error handling</strong> — Implement retry logic with exponential backoff, 
+          a circuit breaker for the weather API, and structured error responses.</div>
+        </li>
+        <li>
+          <span class="step-badge">7</span>
+          <div><strong>Test end-to-end</strong> — Run conversations like "What's the weather in 
+          Seattle? If it's above 60°F, book a team lunch on the rooftop for Friday at noon." 
+          Verify the agent chains calls correctly.</div>
+        </li>
+      </ol>
+
+      <h4>✅ Success Criteria</h4>
+      <ul>
+        <li>Agent correctly selects and calls the weather tool when asked about conditions</li>
+        <li>Agent books meetings with all required parameters populated</li>
+        <li>Agent chains weather → meeting decisions based on conditions</li>
+        <li>Errors return structured JSON, not raw exceptions</li>
+        <li>Circuit breaker triggers after 3 consecutive failures</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION: Video -->
+  <section class="section fade-in" id="video">
+    <h2>📺 Video Resource</h2>
+    <p>
+      Watch this hands-on walkthrough of building an AI agent from scratch using Microsoft Foundry, 
+      covering tool definition, function calling, and real-world integrations.
+    </p>
+    <div class="video-container">
+      <div class="video-header">
+        <svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm-1.5 4.5l5 3.5-5 3.5v-7z"/></svg>
+        Build An AI Agent From Scratch Using Microsoft Foundry
+      </div>
+      <div class="video-responsive">
+        <iframe 
+          src="https://www.youtube.com/embed/wL8H0RySf6I" 
+          title="Build An AI Agent From Scratch Using Microsoft Foundry"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Resources -->
+  <section class="section fade-in" id="resources">
+    <h2>Additional Resources</h2>
+
+    <h3>Key Documentation</h3>
+    <ul>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/agents/how-to/tools/function-calling" target="_blank" rel="noopener">Azure AI Foundry — Function Calling Guide</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/agents/concepts/tools" target="_blank" rel="noopener">Agent Tools Overview — Concepts</a></li>
+      <li><a href="https://json-schema.org/understanding-json-schema/" target="_blank" rel="noopener">Understanding JSON Schema (json-schema.org)</a></li>
+      <li><a href="https://learn.microsoft.com/python/api/azure-ai-projects/" target="_blank" rel="noopener">Azure AI Projects SDK — Python Reference</a></li>
+    </ul>
+
+    <h3>Related Modules</h3>
+    <ul>
+      <li><strong>Module 18:</strong> Agent Architecture Fundamentals — prerequisite concepts</li>
+      <li><strong>Module 20:</strong> Agent Memory &amp; State Management — stateful tool usage</li>
+      <li><strong>Module 21:</strong> Multi-Agent Orchestration — coordinating tool-using agents</li>
+    </ul>
+
+    <h3>Learning Checklist</h3>
+    <ul class="checklist">
+      <li>I can define custom function tools with proper JSON Schema parameters</li>
+      <li>I understand sequential, parallel, and chained function calling patterns</li>
+      <li>I can connect agents to external REST APIs securely using Key Vault</li>
+      <li>I can implement a function router to dispatch tool calls</li>
+      <li>I have implemented retry logic with exponential backoff</li>
+      <li>I understand the circuit breaker pattern for fault tolerance</li>
+      <li>I return structured error responses from my function handlers</li>
+      <li>I completed the Mini Hack: Weather + Meeting Booker agent</li>
+    </ul>
+  </section>
+
+  <!-- ==================== BOTTOM NAV ==================== -->
+  <nav class="bottom-nav">
+    <a class="nav-card prev" href="../module-18/blog.html">
+      <span class="nav-direction">← Previous Module</span>
+      <span class="nav-title">Module 18: Agent Architecture Fundamentals</span>
+    </a>
+    <a class="nav-card next" href="../module-20/blog.html">
+      <span class="nav-direction">Next Module →</span>
+      <span class="nav-title">Module 20: Agent Memory &amp; State Management</span>
+    </a>
+  </nav>
+
+</main>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="footer">
+  <p>
+    <strong>Azure AI Foundry: Zero to Hero</strong> — Module 19 of 45<br>
+    Arc 4: AI Agents · Custom Tools &amp; Function Calling<br><br>
+    Built with ♥ for the Azure AI community · April 2026<br>
+    <a href="https://learn.microsoft.com/azure/ai-services/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a> ·
+    <a href="https://github.com/Azure-Samples" target="_blank" rel="noopener">Azure Samples</a>
+  </p>
+</footer>
+
+<!-- ==================== BACK TO TOP ==================== -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">
+  <svg viewBox="0 0 16 16"><path d="M3.22 9.78a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0l4.25 4.25a.75.75 0 01-1.06 1.06L8 6.06 4.28 9.78a.75.75 0 01-1.06 0z"/></svg>
+</button>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Progress Bar ----
+  const progressBar = document.getElementById('progressBar');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+
+  // ---- Sticky TOC shadow ----
+  const tocWrapper = document.getElementById('tocWrapper');
+  function updateTocShadow() {
+    if (window.scrollY > 200) {
+      tocWrapper.classList.add('scrolled');
+    } else {
+      tocWrapper.classList.remove('scrolled');
+    }
+  }
+
+  // ---- Back to Top ----
+  const backToTop = document.getElementById('backToTop');
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---- Scroll handler (debounced) ----
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        updateProgress();
+        updateTocShadow();
+        updateBackToTop();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // ---- IntersectionObserver: TOC active state ----
+  const sections = document.querySelectorAll('.section[id]');
+  const tocLinks = document.querySelectorAll('.toc-link[data-section]');
+
+  const tocObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        tocLinks.forEach(function(link) {
+          link.classList.toggle('active', link.getAttribute('data-section') === id);
+        });
+      }
+    });
+  }, {
+    rootMargin: '-80px 0px -60% 0px',
+    threshold: 0
+  });
+
+  sections.forEach(function(section) {
+    tocObserver.observe(section);
+  });
+
+  // ---- IntersectionObserver: Fade-in animations ----
+  const fadeElements = document.querySelectorAll('.fade-in');
+  const fadeObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        fadeObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  fadeElements.forEach(function(el) {
+    fadeObserver.observe(el);
+  });
+
+  // ---- Copy Code Button ----
+  window.copyCode = function(btn) {
+    const pre = btn.closest('pre');
+    const code = pre.querySelector('code');
+    const text = code.textContent;
+    
+    navigator.clipboard.writeText(text).then(function() {
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.color = '#4ec9b0';
+      setTimeout(function() {
+        btn.textContent = originalText;
+        btn.style.color = '';
+      }, 2000);
+    }).catch(function() {
+      // Fallback for older browsers
+      const range = document.createRange();
+      range.selectNodeContents(code);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand('copy');
+      selection.removeAllRanges();
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+    });
+  };
+
+  // ---- Initialize on load ----
+  updateProgress();
+  updateTocShadow();
+  updateBackToTop();
+})();
+</script>
+</body>
+</html>

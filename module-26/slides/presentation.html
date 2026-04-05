@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 26: Deploying Model Endpoints — Slide Deck</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --bg-elevated: #1c2333;
+  --border: #30363d;
+  --primary: #58a6ff;
+  --accent: #3ddbd9;
+  --green: #3fb950;
+  --orange: #d29922;
+  --red: #f85149;
+  --purple: #bc8cff;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-bright: #ffffff;
+  --font-sans: 'Segoe UI', -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+
+/* Slide Container */
+.deck { position: relative; width: 100vw; height: 100vh; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem 6rem;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.slide.active { display: flex; opacity: 1; }
+
+/* Title Slide */
+.slide.title-slide {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2332 100%);
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.slide.title-slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 500px 300px at 30% 70%, rgba(88,166,255,0.12), transparent),
+    radial-gradient(ellipse 400px 250px at 80% 30%, rgba(61,219,217,0.08), transparent);
+  pointer-events: none;
+}
+
+/* Badges */
+.arc-badge {
+  display: inline-block;
+  background: rgba(248,81,73,0.15);
+  border: 1px solid rgba(248,81,73,0.4);
+  color: #f85149;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+/* Typography */
+h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+  color: var(--text-bright);
+}
+
+h1 .hl { color: var(--primary); }
+
+h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 3px solid var(--primary);
+  display: inline-block;
+}
+
+h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 1.5rem 0 0.75rem;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+p, li { font-size: 1.1rem; line-height: 1.7; color: var(--text); }
+
+ul { list-style: none; padding: 0; }
+
+ul li {
+  padding: 0.4rem 0;
+  padding-left: 1.6rem;
+  position: relative;
+}
+
+ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Cards / Boxes */
+.card-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.card h4 { color: var(--accent); font-size: 1.05rem; margin-bottom: 0.5rem; }
+.card p { font-size: 0.92rem; color: var(--text-dim); margin: 0; }
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+th {
+  background: var(--bg-elevated);
+  color: var(--primary);
+  padding: 0.7rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--primary);
+  font-weight: 600;
+}
+
+td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+tbody tr:hover { background: rgba(88,166,255,0.05); }
+
+/* Code Block */
+pre {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+code { font-family: var(--font-mono); }
+.ck { color: #569cd6; }
+.cs { color: #ce9178; }
+.cc { color: #6a9955; }
+.cf { color: #dcdcaa; }
+.cn { color: #b5cea8; }
+.ct { color: #4ec9b0; }
+.cp { color: #9cdcfe; }
+
+/* Traffic Bar */
+.traffic-bar {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 48px;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.traffic-bar .seg-blue {
+  background: linear-gradient(135deg, #1f6feb, #388bfd);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.traffic-bar .seg-green {
+  background: linear-gradient(135deg, #238636, #3fb950);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Two-column */
+.two-col {
+  display: flex;
+  gap: 3rem;
+  align-items: flex-start;
+}
+
+.two-col > * { flex: 1; }
+
+/* Step list */
+.step-list { counter-reset: sc; }
+.step-list li {
+  counter-increment: sc;
+  padding-left: 2.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.step-list li::before {
+  content: counter(sc);
+  position: absolute;
+  left: 0;
+  width: 26px; height: 26px;
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Bottom Bar */
+.slide-footer {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 6rem;
+  right: 6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+/* Navigation */
+.nav-controls {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 2rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.nav-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+
+.slide-counter {
+  position: fixed;
+  bottom: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  z-index: 10;
+  background: var(--bg-card);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+/* Highlight text helpers */
+.hl-blue { color: var(--primary); }
+.hl-green { color: var(--green); }
+.hl-orange { color: var(--orange); }
+.hl-red { color: var(--red); }
+.hl-accent { color: var(--accent); }
+.hl-purple { color: var(--purple); }
+.dim { color: var(--text-dim); }
+strong { color: var(--text-bright); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .slide { padding: 2rem 2.5rem; }
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.6rem; }
+  .card-row { flex-direction: column; }
+  .two-col { flex-direction: column; gap: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ──────────────── SLIDE 1: Title ──────────────── -->
+<div class="slide title-slide active">
+  <div class="arc-badge">ARC 6 · DEPLOYMENT &amp; MLOps</div>
+  <h1>Deploying <span class="hl">Model Endpoints</span></h1>
+  <p class="subtitle" style="margin-top:1rem;">Azure AI Foundry: Zero to Hero · Module 26 of 45</p>
+  <p class="dim" style="margin-top:2rem; font-size:0.9rem;">April 2026 · Intermediate–Advanced</p>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 2: Agenda ──────────────── -->
+<div class="slide">
+  <h2>Agenda</h2>
+  <ul>
+    <li>Deployment Types: Managed Compute, Serverless API, Provisioned Throughput</li>
+    <li>Endpoint Configuration &amp; Scaling Strategies</li>
+    <li>Blue/Green Deployments &amp; Traffic Splitting</li>
+    <li>API Key Management &amp; Authentication</li>
+    <li>🎬 Video: How to create AI model deployment</li>
+    <li>🧪 Mini Hack: Blue/Green Traffic Splitting Lab</li>
+  </ul>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 3: Why Deployment Matters ──────────────── -->
+<div class="slide">
+  <h2>Why Deployment Matters</h2>
+  <div class="two-col">
+    <div>
+      <h3>The Gap</h3>
+      <p>A model in a notebook is a <strong>prototype</strong>. A model behind an endpoint is a <strong>product</strong>.</p>
+      <ul style="margin-top:1rem;">
+        <li>Scalable REST API for any client</li>
+        <li>Authentication &amp; access control</li>
+        <li>Monitoring, logging, and alerting</li>
+        <li>Version management &amp; rollback</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Deployment Lifecycle</h3>
+      <pre style="font-size:0.85rem;">
+Model Registry
+    ↓
+Create Deployment
+    ↓
+Configure Endpoint
+    ↓
+Live Inference
+    ↓
+Monitor → Scale → Update</pre>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 4: Deployment Types ──────────────── -->
+<div class="slide">
+  <h2>Three Deployment Types</h2>
+  <div class="card-row">
+    <div class="card">
+      <div class="icon">🖥️</div>
+      <h4>Managed Compute</h4>
+      <p>Dedicated VMs (GPU/CPU). Full control over SKU, autoscaling, and networking. Best for fine-tuned or custom models.</p>
+    </div>
+    <div class="card">
+      <div class="icon">⚡</div>
+      <h4>Serverless API</h4>
+      <p>Pay-per-token, zero infrastructure. Instant availability for Model Catalog models. Ideal for prototyping and variable loads.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔒</div>
+      <h4>Provisioned Throughput</h4>
+      <p>Reserved PTU capacity. Guaranteed latency and throughput for mission-critical production SLA workloads.</p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 5: Comparison Matrix ──────────────── -->
+<div class="slide">
+  <h2>Deployment Type Comparison</h2>
+  <table>
+    <thead>
+      <tr><th>Dimension</th><th>Managed Compute</th><th>Serverless API</th><th>Provisioned (PTU)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Billing</strong></td><td>Per-VM-hour</td><td>Per-token</td><td>Per-PTU-hour</td></tr>
+      <tr><td><strong>Scaling</strong></td><td>Manual / Autoscale</td><td>Automatic</td><td>Fixed allocation</td></tr>
+      <tr><td><strong>Latency</strong></td><td>Low (dedicated)</td><td>Variable</td><td>Predictable</td></tr>
+      <tr><td><strong>Custom Models</strong></td><td class="hl-green">✅ Yes</td><td class="hl-red">❌ Catalog only</td><td class="hl-green">✅ Select</td></tr>
+      <tr><td><strong>Best For</strong></td><td>Custom / fine-tuned</td><td>Prototyping</td><td>Prod SLA</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 6: SDK Deployment Code ──────────────── -->
+<div class="slide">
+  <h2>Deploy via SDK</h2>
+  <pre><code><span class="cc"># Deploy a serverless model via Azure AI Foundry SDK</span>
+<span class="ck">from</span> azure.ai.projects <span class="ck">import</span> AIProjectClient
+
+<span class="cp">deployment</span> = project_client.deployments.<span class="cf">begin_create_or_update</span>(
+    <span class="cp">name</span>=<span class="cs">"gpt-4o-production"</span>,
+    <span class="cp">model</span>=<span class="cs">"gpt-4o"</span>,
+    <span class="cp">model_version</span>=<span class="cs">"2024-11-20"</span>,
+    <span class="cp">sku_name</span>=<span class="cs">"GlobalStandard"</span>,
+    <span class="cp">sku_capacity</span>=<span class="cn">50</span>,  <span class="cc"># 50K tokens/min</span>
+).<span class="cf">result</span>()</code></pre>
+  <p class="dim" style="margin-top:1rem;">Also available via Azure CLI, REST API, Bicep, and Terraform.</p>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 7: Endpoint Configuration ──────────────── -->
+<div class="slide">
+  <h2>Endpoint Configuration</h2>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>SKU Name</strong></td><td>Deployment tier</td><td><code>GlobalStandard</code></td></tr>
+      <tr><td><strong>SKU Capacity</strong></td><td>Rate limit (TPM) or PTUs</td><td><code>80</code></td></tr>
+      <tr><td><strong>Version Policy</strong></td><td>Auto-upgrade behavior</td><td><code>NoAutoUpgrade</code></td></tr>
+      <tr><td><strong>Content Filter</strong></td><td>Safety policy</td><td><code>DefaultV2</code></td></tr>
+      <tr><td><strong>Network</strong></td><td>Access restriction</td><td><code>PrivateEndpoint</code></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:1.25rem;">💡 Always pin model versions with <code>NoAutoUpgrade</code> in production.</p>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 8: Scaling Strategies ──────────────── -->
+<div class="slide">
+  <h2>Scaling Strategies</h2>
+  <div class="card-row">
+    <div class="card">
+      <h4>Serverless</h4>
+      <p>Adjust <code>sku_capacity</code> (TPM). No instance management. Scaling is transparent.</p>
+    </div>
+    <div class="card">
+      <h4>Managed Compute</h4>
+      <p>Set <code>min_instances</code>, <code>max_instances</code>, and <code>target_utilization</code>. Scale-to-zero possible.</p>
+    </div>
+    <div class="card">
+      <h4>Provisioned (PTU)</h4>
+      <p>Fixed PTU allocation. Use the <strong>Capacity Calculator</strong> for sizing. ~10 PTUs ≈ 6 req/min (GPT-4o).</p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 9: Blue/Green Concept ──────────────── -->
+<div class="slide">
+  <h2>Blue/Green Deployments</h2>
+  <div class="two-col">
+    <div>
+      <p>Run <strong>two model versions</strong> behind a single endpoint URL. Gradually shift traffic from <span class="hl-blue">blue (stable)</span> to <span class="hl-green">green (new)</span>.</p>
+      <ul style="margin-top:1rem;">
+        <li>Zero-downtime model upgrades</li>
+        <li>Instant rollback capability</li>
+        <li>A/B comparison of model quality</li>
+        <li>Risk-managed production releases</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.5rem;">Phase 1 — Canary (10%)</p>
+      <div class="traffic-bar">
+        <div class="seg-blue" style="width:90%;">Blue 90%</div>
+        <div class="seg-green" style="width:10%;">10%</div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-dim); margin:0.75rem 0 0.5rem;">Phase 2 — Validation (50/50)</p>
+      <div class="traffic-bar">
+        <div class="seg-blue" style="width:50%;">Blue 50%</div>
+        <div class="seg-green" style="width:50%;">Green 50%</div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-dim); margin:0.75rem 0 0.5rem;">Phase 3 — Full Cutover</p>
+      <div class="traffic-bar">
+        <div class="seg-green" style="width:100%;">Green 100%</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 10: Traffic Split Code ──────────────── -->
+<div class="slide">
+  <h2>Traffic Splitting — Code</h2>
+  <pre><code><span class="cc"># Configure 90/10 traffic split</span>
+<span class="cp">endpoint</span> = project_client.endpoints.<span class="cf">begin_create_or_update</span>(
+    <span class="cp">name</span>=<span class="cs">"gpt4o-endpoint"</span>,
+    <span class="cp">traffic</span>={
+        <span class="cs">"gpt4o-blue"</span>: <span class="cn">90</span>,   <span class="cc"># current stable version</span>
+        <span class="cs">"gpt4o-green"</span>: <span class="cn">10</span>,  <span class="cc"># new canary version</span>
+    },
+).<span class="cf">result</span>()
+
+<span class="cc"># Instant rollback — shift 100% back to blue</span>
+project_client.endpoints.<span class="cf">begin_create_or_update</span>(
+    <span class="cp">name</span>=<span class="cs">"gpt4o-endpoint"</span>,
+    <span class="cp">traffic</span>={<span class="cs">"gpt4o-blue"</span>: <span class="cn">100</span>, <span class="cs">"gpt4o-green"</span>: <span class="cn">0</span>},
+).<span class="cf">result</span>()</code></pre>
+  <p style="margin-top:0.75rem;">⚠️ Traffic percentages <strong>must sum to 100</strong>. Changes propagate in seconds.</p>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 11: Authentication ──────────────── -->
+<div class="slide">
+  <h2>Authentication Methods</h2>
+  <div class="card-row">
+    <div class="card">
+      <div class="icon">🔑</div>
+      <h4>API Key</h4>
+      <ul>
+        <li>Simple <code>api-key</code> header</li>
+        <li>Primary + secondary keys</li>
+        <li>Zero-downtime rotation</li>
+        <li>Store in Key Vault</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color: var(--green);">
+      <div class="icon">🛡️</div>
+      <h4>Microsoft Entra ID <span class="hl-green">(Recommended)</span></h4>
+      <ul>
+        <li>Managed identity — no secrets</li>
+        <li>Fine-grained RBAC</li>
+        <li>Full audit trail</li>
+        <li>Works with <code>DefaultAzureCredential</code></li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 12: Key Rotation ──────────────── -->
+<div class="slide">
+  <h2>API Key Rotation Strategy</h2>
+  <div class="two-col">
+    <div>
+      <ul class="step-list">
+        <li>Clients use <strong>primary key</strong></li>
+        <li>Regenerate <strong>primary</strong> key</li>
+        <li>Update all clients to new primary</li>
+        <li>Regenerate <strong>secondary</strong> key</li>
+      </ul>
+      <p style="margin-top:1rem; font-size:0.95rem;">Secondary key stays active during rotation → <span class="hl-green">zero downtime</span></p>
+    </div>
+    <div>
+      <h3>Security Best Practices</h3>
+      <ul>
+        <li><span class="hl-green">✅</span> Store keys in Azure Key Vault</li>
+        <li><span class="hl-green">✅</span> Automate rotation every 90 days</li>
+        <li><span class="hl-green">✅</span> Use separate keys per environment</li>
+        <li><span class="hl-red">❌</span> Never commit to source control</li>
+        <li><span class="hl-red">❌</span> Never share across dev/staging/prod</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 13: Best Practices ──────────────── -->
+<div class="slide">
+  <h2>Deployment Best Practices</h2>
+  <div class="card-row">
+    <div class="card">
+      <h4>📊 Monitor Everything</h4>
+      <p>Latency P50/P95/P99, token usage, error rates, content filter triggers.</p>
+    </div>
+    <div class="card">
+      <h4>🔄 Always Traffic Split</h4>
+      <p>Never deploy new models to 100%. Start at 5-10% canary.</p>
+    </div>
+  </div>
+  <div class="card-row" style="margin-top:0;">
+    <div class="card">
+      <h4>📋 Pin Model Versions</h4>
+      <p>Use <code>NoAutoUpgrade</code>. Explicit versioning prevents surprises.</p>
+    </div>
+    <div class="card">
+      <h4>🏗️ Infrastructure as Code</h4>
+      <p>Define deployments in Bicep/Terraform. Version alongside app code.</p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 14: Mini Hack ──────────────── -->
+<div class="slide" style="background: linear-gradient(135deg, #0d1117 0%, #1a1a2e 50%, #0f3460 100%);">
+  <div class="arc-badge" style="background:rgba(61,219,217,0.15); border-color:rgba(61,219,217,0.4); color:var(--accent);">🧪 MINI HACK</div>
+  <h2 style="border-color: var(--accent);">Blue/Green Traffic Splitting</h2>
+  <ul>
+    <li>Deploy a <span class="hl-blue">"blue"</span> model (stable version)</li>
+    <li>Deploy a <span class="hl-green">"green"</span> model (new version)</li>
+    <li>Configure <strong>90/10</strong> traffic split</li>
+    <li>Validate both deployments respond</li>
+    <li>Shift traffic: 50/50 → 100% green</li>
+    <li>Perform instant <span class="hl-red">rollback</span> to blue</li>
+  </ul>
+  <p style="margin-top:1.5rem; color: var(--text-dim);">⏱️ 30–40 minutes · See <code>lab/hands-on-lab.md</code> for full instructions</p>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26</span>
+  </div>
+</div>
+
+<!-- ──────────────── SLIDE 15: Summary & Next ──────────────── -->
+<div class="slide title-slide">
+  <h2 style="border: none; font-size: 1.8rem;">Key Takeaways</h2>
+  <div style="text-align:left; max-width:650px; margin-top:1.5rem;">
+    <ul>
+      <li><span class="hl-blue">3 deployment types</span> — choose based on workload, cost, and SLA needs</li>
+      <li><span class="hl-accent">Endpoint configuration</span> — SKU, capacity, version policy, content filters</li>
+      <li><span class="hl-green">Blue/green deployments</span> — gradual rollout with instant rollback</li>
+      <li><span class="hl-purple">Authentication</span> — Entra ID for production, API keys with Key Vault</li>
+    </ul>
+  </div>
+  <p style="margin-top:2rem; color: var(--text-dim);">
+    <strong style="color: var(--accent);">Next → Module 27:</strong> Monitoring &amp; Observability for Deployed Endpoints
+  </p>
+  <div class="slide-footer">
+    <span>Azure AI Foundry Training</span>
+    <span>Module 26 · End</span>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div class="slide-counter" id="counter">1 / 15</div>
+<div class="nav-controls">
+  <button class="nav-btn" onclick="navigate(-1)" title="Previous">◀</button>
+  <button class="nav-btn" onclick="navigate(1)" title="Next">▶</button>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function show(idx) {
+    slides[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + slides.length;
+  }
+
+  window.navigate = function(dir) { show(current + dir); };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') { e.preventDefault(); show(0); }
+    if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].screenX - tx;
+    if (Math.abs(diff) > 50) navigate(diff < 0 ? 1 : -1);
+  });
+})();
+</script>
+
+</body>
+</html>

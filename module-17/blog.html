@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 17: Building Your First Agent — Azure AI Foundry Zero to Hero Training Series. Learn to configure agent instructions, use built-in tools, and build agents with Python & .NET SDKs.">
+    <meta name="keywords" content="Azure AI Foundry, AI Agents, Code Interpreter, File Search, Bing Search, Agent SDK, Python, .NET, Microsoft Foundry">
+    <meta name="author" content="Azure AI Foundry Training">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Module 17: Building Your First Agent | Azure AI Foundry">
+    <meta property="og:description" content="Configure agent instructions, leverage built-in tools, and build your first AI agent using Azure AI Foundry SDKs.">
+    <meta property="og:type" content="article">
+    <title>Module 17: Building Your First Agent | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #50e6ff;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --ms-red: #d13438;
+            --ms-yellow: #fce100;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-60: #a19f9d;
+            --ms-gray-90: #605e5c;
+            --ms-gray-130: #323130;
+            --ms-gray-150: #252423;
+            --ms-gray-160: #1b1a19;
+            --surface: #ffffff;
+            --text-primary: #323130;
+            --text-secondary: #605e5c;
+            --code-bg: #f6f8fa;
+            --code-border: #d0d7de;
+            --max-width: 780px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.7;
+            background: var(--ms-gray-10);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Progress Bar ─── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10001;
+            transition: width 0.15s ease-out;
+        }
+
+        /* ─── Top Navigation ─── */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--ms-gray-160);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 10000;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .top-nav .ms-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .top-nav .ms-logo svg { width: 108px; height: 24px; }
+        .top-nav .nav-divider {
+            width: 1px; height: 24px; background: rgba(255,255,255,0.2);
+            margin: 0 16px;
+        }
+        .top-nav .nav-title {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .top-nav .nav-breadcrumb {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .top-nav .nav-breadcrumb a {
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-breadcrumb a:hover { color: #fff; }
+        .top-nav .nav-breadcrumb span { color: rgba(255,255,255,0.4); }
+
+        /* ─── Hero Section ─── */
+        .hero {
+            margin-top: 48px;
+            background: linear-gradient(135deg, var(--ms-dark-blue) 0%, var(--ms-blue) 40%, var(--ms-purple) 100%);
+            padding: 80px 24px 60px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(92,45,145,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-content { max-width: var(--max-width); margin: 0 auto; position: relative; z-index: 1; }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .hero-badge .badge-dot {
+            width: 8px; height: 8px;
+            background: var(--ms-light-blue);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 620px;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 32px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+        .hero-meta-item svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* ─── Main Layout ─── */
+        .main-layout {
+            max-width: calc(var(--max-width) + 280px);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+            align-items: start;
+        }
+
+        /* ─── Sticky TOC ─── */
+        .toc-sidebar {
+            position: sticky;
+            top: 68px;
+            max-height: calc(100vh - 88px);
+            overflow-y: auto;
+            padding-right: 16px;
+        }
+        .toc-sidebar::-webkit-scrollbar { width: 3px; }
+        .toc-sidebar::-webkit-scrollbar-thumb { background: var(--ms-gray-40); border-radius: 3px; }
+        .toc-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-gray-90);
+            margin-bottom: 16px;
+        }
+        .toc-list { list-style: none; }
+        .toc-list li { margin-bottom: 2px; }
+        .toc-list a {
+            display: block;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .toc-list a:hover { color: var(--ms-blue); background: rgba(0,120,212,0.05); }
+        .toc-list a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            background: rgba(0,120,212,0.08);
+            font-weight: 600;
+        }
+
+        /* ─── Article Content ─── */
+        .article-content { min-width: 0; }
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 48px;
+            border: 1px solid var(--ms-gray-30);
+        }
+
+        .content-card h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--ms-gray-30);
+            scroll-margin-top: 100px;
+        }
+        .content-card h2:first-of-type { margin-top: 0; }
+        .content-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 32px 0 12px;
+        }
+        .content-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 24px 0 8px;
+        }
+        .content-card p { margin-bottom: 16px; color: var(--text-primary); }
+        .content-card ul, .content-card ol { margin: 0 0 16px 24px; }
+        .content-card li { margin-bottom: 8px; }
+        .content-card a { color: var(--ms-blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+        .content-card a:hover { border-bottom-color: var(--ms-blue); }
+        .content-card strong { font-weight: 600; }
+
+        /* ─── Code Blocks ─── */
+        pre {
+            background: var(--ms-gray-150);
+            color: #e6e6e6;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+            position: relative;
+            border: 1px solid var(--ms-gray-130);
+        }
+        pre .lang-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 11px;
+            color: var(--ms-gray-60);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        p code, li code {
+            background: var(--code-bg);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--code-border);
+            font-size: 0.85em;
+            color: var(--ms-dark-blue);
+        }
+
+        /* Syntax Highlighting */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+        .op { color: #d4d4d4; }
+        .dec { color: #c586c0; }
+
+        /* ─── Callouts ─── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .callout-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .callout-content { flex: 1; }
+        .callout-content strong { display: block; margin-bottom: 4px; }
+        .callout-content p { margin-bottom: 8px; }
+        .callout-content p:last-child { margin-bottom: 0; }
+
+        .callout-info {
+            background: rgba(0,120,212,0.06);
+            border-color: var(--ms-blue);
+        }
+        .callout-info .callout-icon { color: var(--ms-blue); }
+
+        .callout-tip {
+            background: rgba(16,124,16,0.06);
+            border-color: var(--ms-green);
+        }
+        .callout-tip .callout-icon { color: var(--ms-green); }
+
+        .callout-warning {
+            background: rgba(255,140,0,0.06);
+            border-color: var(--ms-orange);
+        }
+        .callout-warning .callout-icon { color: var(--ms-orange); }
+
+        .callout-important {
+            background: rgba(92,45,145,0.06);
+            border-color: var(--ms-purple);
+        }
+        .callout-important .callout-icon { color: var(--ms-purple); }
+
+        /* ─── Video Embed ─── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            margin: 24px 0;
+            box-shadow: var(--shadow-md);
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ─── Feature Cards ─── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: var(--ms-gray-10);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .feature-card .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .feature-card h4 { margin: 0 0 8px; font-size: 0.95rem; }
+        .feature-card p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; }
+
+        /* ─── Architecture Diagram ─── */
+        .arch-diagram {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-diagram .diagram-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--ms-dark-blue);
+            margin-bottom: 20px;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .arch-node {
+            background: white;
+            border: 2px solid var(--ms-blue);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            box-shadow: var(--shadow-sm);
+        }
+        .arch-node.purple { border-color: var(--ms-purple); color: var(--ms-purple); }
+        .arch-node.green { border-color: var(--ms-green); color: var(--ms-green); }
+        .arch-arrow { font-size: 1.5rem; color: var(--ms-gray-60); }
+
+        /* ─── Comparison Table ─── */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.9rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--ms-gray-30);
+        }
+        .comparison-table thead {
+            background: var(--ms-dark-blue);
+            color: white;
+        }
+        .comparison-table th {
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .comparison-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table tbody tr:nth-child(even) { background: var(--ms-gray-10); }
+        .comparison-table tbody tr:hover { background: rgba(0,120,212,0.04); }
+
+        /* ─── Step List ─── */
+        .step-list { counter-reset: step-counter; list-style: none; margin-left: 0; padding: 0; }
+        .step-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 48px;
+            margin-bottom: 24px;
+        }
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--ms-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .step-list li h4 { margin-top: 4px; }
+
+        /* ─── Module Navigation ─── */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 16px;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 2px solid var(--ms-gray-30);
+        }
+        .module-nav a {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px 24px;
+            background: var(--ms-gray-10);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .module-nav a:hover {
+            border-color: var(--ms-blue);
+            background: rgba(0,120,212,0.04);
+            transform: translateY(-1px);
+        }
+        .module-nav a .nav-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--ms-blue);
+        }
+        .module-nav a .nav-module {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .module-nav a.next { text-align: right; }
+
+        /* ─── Back to Top ─── */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+        .back-to-top svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* ─── Footer ─── */
+        .site-footer {
+            background: var(--ms-gray-160);
+            color: rgba(255,255,255,0.7);
+            padding: 40px 24px;
+            margin-top: 48px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .site-footer a { color: var(--ms-light-blue); text-decoration: none; }
+        .site-footer a:hover { text-decoration: underline; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                padding: 24px 16px;
+            }
+            .toc-sidebar {
+                position: static;
+                max-height: none;
+                border-bottom: 1px solid var(--ms-gray-30);
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+            }
+            .content-card { padding: 24px; }
+            .hero { padding: 60px 16px 40px; }
+            .top-nav .nav-breadcrumb { display: none; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero-meta { flex-direction: column; gap: 8px; }
+            .module-nav { flex-direction: column; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+
+        /* ─── Print ─── */
+        @media print {
+            .top-nav, .progress-bar, .back-to-top, .toc-sidebar, .video-container { display: none !important; }
+            .main-layout { display: block; }
+            .hero { background: none !important; color: #000 !important; padding: 20px 0; }
+            .hero-badge { border: 1px solid #000; }
+            .content-card { box-shadow: none; border: none; padding: 0; }
+            pre { background: #f5f5f5 !important; color: #333 !important; border: 1px solid #ccc; }
+            .module-nav a { border: 1px solid #ccc; }
+            body { background: #fff; }
+            .callout { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav" role="navigation" aria-label="Global navigation">
+        <a href="https://devblogs.microsoft.com" class="ms-logo" aria-label="Microsoft Developer Blogs">
+            <svg viewBox="0 0 108 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#f25022" d="M0 0h10.931v10.931H0z"/>
+                <path fill="#7fba00" d="M12.069 0H23v10.931H12.069z"/>
+                <path fill="#00a4ef" d="M0 12.069h10.931V23H0z"/>
+                <path fill="#ffb900" d="M12.069 12.069H23V23H12.069z"/>
+                <text x="28" y="17" fill="#fff" font-family="Segoe UI, sans-serif" font-size="14" font-weight="600">Developer Blogs</text>
+            </svg>
+        </a>
+        <div class="nav-divider"></div>
+        <span class="nav-title">Azure AI Foundry Training</span>
+        <div class="nav-breadcrumb">
+            <a href="#">Zero to Hero</a>
+            <span>›</span>
+            <a href="#">Arc 4: AI Agents</a>
+            <span>›</span>
+            <a href="#" aria-current="page">Module 17</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                ARC 4 · AI AGENTS
+            </div>
+            <h1>Building Your First Agent</h1>
+            <p class="subtitle">Configure agent instructions, leverage built-in tools like Code Interpreter and Bing Search, test in the playground, and build production agents with the Python and .NET SDKs.</p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM8.5 4h-1v4.5l3.5 2.1.5-.82-3-1.78V4z"/></svg>
+                    90 min
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm11.28-1.78L7.5 9.94 4.72 7.16 3.66 8.22l3.84 3.84 4.84-4.84-1.06-1z"/></svg>
+                    Module 17 of 45
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M2 4a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2-.5a.5.5 0 00-.5.5v8a.5.5 0 00.5.5h8a.5.5 0 00.5-.5V4a.5.5 0 00-.5-.5H4z"/></svg>
+                    April 2026
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M3.5 2A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14h9a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0012.5 2h-9zM5 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4.5-1.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
+                    Intermediate
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sticky TOC Sidebar -->
+        <aside class="toc-sidebar" aria-label="Table of Contents">
+            <div class="toc-title">On this page</div>
+            <ul class="toc-list">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#video">Video Tutorial</a></li>
+                <li><a href="#agent-concepts">Agent Concepts</a></li>
+                <li><a href="#instructions-persona">Instructions &amp; Persona</a></li>
+                <li><a href="#built-in-tools">Built-in Tools</a></li>
+                <li><a href="#playground">Agent Playground</a></li>
+                <li><a href="#sdk-python">Python SDK</a></li>
+                <li><a href="#sdk-dotnet">.NET SDK</a></li>
+                <li><a href="#mini-hack">Mini Hack</a></li>
+                <li><a href="#best-practices">Best Practices</a></li>
+                <li><a href="#summary">Summary</a></li>
+            </ul>
+        </aside>
+
+        <!-- Article Content -->
+        <main class="article-content">
+            <article class="content-card">
+
+                <!-- Overview -->
+                <h2 id="overview">Overview</h2>
+                <p>AI Agents in Azure AI Foundry are intelligent assistants powered by large language models that can <strong>reason, plan, and take actions</strong> using a set of configurable tools. Unlike simple chat completions, agents maintain state through threads, can invoke tools autonomously, and handle multi-step workflows.</p>
+                <p>In this module, you'll learn to create your first agent from the ground up — from crafting effective instructions to integrating built-in tools, and from playground experimentation to production-ready SDK implementations.</p>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5v1m0 3v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    <div class="callout-content">
+                        <strong>Prerequisites</strong>
+                        <p>You need an Azure AI Foundry project with a deployed GPT-4o or GPT-4.1 model. Module 16 covers project setup if you haven't completed it yet.</p>
+                    </div>
+                </div>
+
+                <div class="arch-diagram">
+                    <div class="diagram-title">Azure AI Foundry Agent Architecture</div>
+                    <div class="arch-flow">
+                        <div class="arch-node">User Message</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node purple">Agent (Instructions + Model)</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node green">Tools (Code Interpreter, File Search, Bing)</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node">Response</div>
+                    </div>
+                </div>
+
+                <!-- Video Tutorial -->
+                <h2 id="video">Video Tutorial</h2>
+                <p>Watch this comprehensive walkthrough on building an AI agent from scratch using Microsoft Foundry:</p>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/wL8H0RySf6I"
+                            title="Build An AI Agent From Scratch Using Microsoft Foundry"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            loading="lazy">
+                    </iframe>
+                </div>
+
+                <!-- Agent Concepts -->
+                <h2 id="agent-concepts">Understanding Agent Concepts</h2>
+                <p>Before building an agent, it's essential to understand the core primitives of the Azure AI Foundry Agent Service:</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <span class="icon">🤖</span>
+                        <h4>Agent</h4>
+                        <p>An entity configured with instructions, a model, and tools to perform tasks.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">🧵</span>
+                        <h4>Thread</h4>
+                        <p>A conversation session storing message history between user and agent.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">💬</span>
+                        <h4>Message</h4>
+                        <p>A single unit of communication — text, image, or file — within a thread.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">▶️</span>
+                        <h4>Run</h4>
+                        <p>An execution of the agent on a thread, invoking the model and tools.</p>
+                    </div>
+                </div>
+
+                <h3>How Agents Process Requests</h3>
+                <ol>
+                    <li>A user sends a <strong>message</strong> to a <strong>thread</strong></li>
+                    <li>A <strong>run</strong> is created, invoking the agent on the thread</li>
+                    <li>The agent reads the thread, follows its <strong>instructions</strong>, and decides which <strong>tools</strong> to call</li>
+                    <li>Tool outputs are appended to the thread, and the model generates a final response</li>
+                    <li>The response is added to the thread as an <strong>assistant message</strong></li>
+                </ol>
+
+                <!-- Instructions & Persona -->
+                <h2 id="instructions-persona">Configuring Instructions &amp; Persona</h2>
+                <p>Agent instructions are the system prompt that defines your agent's behavior, personality, and capabilities. Well-crafted instructions are the single most important factor in agent quality.</p>
+
+                <h3>Anatomy of Effective Instructions</h3>
+                <pre><span class="lang-label">Instructions</span>
+<span class="cm"># Agent: Financial Data Analyst</span>
+
+<span class="cm">## Role</span>
+<span class="str">You are a senior financial data analyst specializing in
+market trends and portfolio analysis.</span>
+
+<span class="cm">## Capabilities</span>
+<span class="str">- Analyze CSV and Excel files using Code Interpreter
+- Search for current market data using Bing Search
+- Generate visualizations (charts, graphs, tables)
+- Provide data-driven investment insights</span>
+
+<span class="cm">## Behavior Guidelines</span>
+<span class="str">- Always cite data sources and explain methodology
+- Use clear, professional language
+- When uncertain, state assumptions explicitly
+- Present numeric results with appropriate precision
+- Proactively suggest follow-up analyses</span>
+
+<span class="cm">## Constraints</span>
+<span class="str">- Never provide specific buy/sell recommendations
+- Always include disclaimers for financial advice
+- Limit responses to factual, data-driven insights</span></pre>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a7 7 0 00-3.5 13.06V17a1 1 0 001 1h5a1 1 0 001-1v-2.94A7 7 0 0010 1zm0 2a5 5 0 013.5 8.56l-.5.44V15h-6v-2.99l-.5-.45A5 5 0 0110 3z" fill="currentColor"/><rect x="7" y="18" width="6" height="1" rx=".5" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Pro Tip: Instruction Engineering</strong>
+                        <p>Structure instructions with clear sections using Markdown headers. Agents perform best when instructions are specific, organized, and include both capabilities and constraints.</p>
+                    </div>
+                </div>
+
+                <h3>Key Principles for Agent Instructions</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Principle</th>
+                            <th>Good Example</th>
+                            <th>Avoid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Be Specific</strong></td>
+                            <td>"Analyze sales data and produce a bar chart comparing Q1 vs Q2"</td>
+                            <td>"Look at the data"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Define Boundaries</strong></td>
+                            <td>"Only answer questions about Azure services"</td>
+                            <td>No constraints defined</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Set Tone</strong></td>
+                            <td>"Respond in a professional, concise manner"</td>
+                            <td>Ambiguous persona</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Handle Errors</strong></td>
+                            <td>"If data is missing, ask the user for clarification"</td>
+                            <td>No error handling guidance</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Built-in Tools -->
+                <h2 id="built-in-tools">Built-in Tools</h2>
+                <p>Azure AI Foundry agents come with three powerful built-in tools that extend agent capabilities beyond text generation:</p>
+
+                <h3>🖥️ Code Interpreter</h3>
+                <p>Code Interpreter enables your agent to write and execute Python code in a sandboxed environment. It can process uploaded files, perform calculations, generate charts, and transform data.</p>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> CodeInterpreterTool
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="cm"># Create client</span>
+<span class="param">client</span> = AIProjectClient(
+    <span class="param">endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>,
+    <span class="param">credential</span>=<span class="fn">DefaultAzureCredential</span>()
+)
+
+<span class="cm"># Create agent with Code Interpreter</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"data-analyst"</span>,
+    <span class="param">instructions</span>=<span class="str">"You are a data analyst. Analyze files and create visualizations."</span>,
+    <span class="param">tools</span>=[<span class="fn">CodeInterpreterTool</span>()]
+)
+<span class="fn">print</span>(<span class="str">f"Agent created: <span class="param">{agent.id}</span>"</span>)</pre>
+
+                <h3>🔍 File Search</h3>
+                <p>File Search provides built-in RAG (Retrieval Augmented Generation) capability. Upload documents to a vector store and the agent automatically searches them to ground its responses.</p>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> FileSearchTool
+
+<span class="cm"># Upload files and create vector store</span>
+<span class="param">uploaded_file</span> = client.agents.<span class="fn">upload_file_and_poll</span>(
+    <span class="param">file_path</span>=<span class="str">"product_docs.pdf"</span>,
+    <span class="param">purpose</span>=<span class="str">"agents"</span>
+)
+<span class="param">vector_store</span> = client.agents.<span class="fn">create_vector_store_and_poll</span>(
+    <span class="param">name</span>=<span class="str">"product-knowledge"</span>,
+    <span class="param">file_ids</span>=[uploaded_file.id]
+)
+
+<span class="cm"># Create agent with File Search</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"support-agent"</span>,
+    <span class="param">instructions</span>=<span class="str">"Answer questions using the product documentation."</span>,
+    <span class="param">tools</span>=[<span class="fn">FileSearchTool</span>()],
+    <span class="param">tool_resources</span>={<span class="str">"file_search"</span>: {<span class="str">"vector_store_ids"</span>: [vector_store.id]}}
+)</pre>
+
+                <h3>🌐 Bing Search (Grounding)</h3>
+                <p>Bing Search enables agents to access real-time information from the internet, grounding responses with current data.</p>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> BingGroundingTool
+
+<span class="cm"># Get your Bing Grounding connection</span>
+<span class="param">bing_connection</span> = client.connections.<span class="fn">get</span>(<span class="str">"bing-grounding"</span>)
+
+<span class="cm"># Create agent with Bing Search</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"research-agent"</span>,
+    <span class="param">instructions</span>=<span class="str">"Search the web for the latest information to answer questions."</span>,
+    <span class="param">tools</span>=[<span class="fn">BingGroundingTool</span>(<span class="param">connection_id</span>=bing_connection.id)]
+)</pre>
+
+                <div class="callout callout-warning">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 2L1 18h18L10 2zm0 3.83L16.17 16H3.83L10 5.83zM9.25 9v4h1.5V9h-1.5zm0 5v1.5h1.5V14h-1.5z" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Bing Search Requires a Connection</strong>
+                        <p>To use Bing Grounding, you must first create a Grounding with Bing Search resource in the Azure portal and link it as a connection in your AI Foundry project.</p>
+                    </div>
+                </div>
+
+                <h3>Tool Comparison</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Code Interpreter</th>
+                            <th>File Search</th>
+                            <th>Bing Search</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Primary Use</strong></td>
+                            <td>Data analysis, code execution</td>
+                            <td>Document Q&amp;A (RAG)</td>
+                            <td>Real-time web data</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Input</strong></td>
+                            <td>Files (CSV, Excel, JSON)</td>
+                            <td>PDFs, DOCX, TXT, MD</td>
+                            <td>Natural language queries</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Output</strong></td>
+                            <td>Text, charts, transformed files</td>
+                            <td>Grounded text answers</td>
+                            <td>Text with web citations</td>
+                        </tr>
+                        <tr>
+                            <td><strong>State</strong></td>
+                            <td>Sandboxed per session</td>
+                            <td>Persistent vector store</td>
+                            <td>Stateless (per query)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Extra Cost</strong></td>
+                            <td>Per session time</td>
+                            <td>Per GB stored + queries</td>
+                            <td>Per Bing API call</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Agent Playground -->
+                <h2 id="playground">Testing Agents in the Playground</h2>
+                <p>The Azure AI Foundry portal includes an interactive <strong>Agent Playground</strong> that lets you create, configure, and test agents without writing any code.</p>
+
+                <h3>Using the Playground</h3>
+                <ol class="step-list">
+                    <li>
+                        <h4>Navigate to the Agent Playground</h4>
+                        <p>Open your Azure AI Foundry project in the portal. Select <strong>Agents</strong> from the left navigation menu, then click <strong>+ New Agent</strong>.</p>
+                    </li>
+                    <li>
+                        <h4>Configure the Agent</h4>
+                        <p>Enter the agent name, select a model deployment (e.g., <code>gpt-4o</code>), and write your system instructions in the Instructions field.</p>
+                    </li>
+                    <li>
+                        <h4>Enable Tools</h4>
+                        <p>Toggle on the desired tools — Code Interpreter, File Search, or Bing Search. For File Search, upload files to create a vector store.</p>
+                    </li>
+                    <li>
+                        <h4>Test in the Chat Panel</h4>
+                        <p>Use the right-side chat panel to send test messages. The playground displays tool invocations, code execution, and intermediate steps in real time.</p>
+                    </li>
+                    <li>
+                        <h4>Iterate and Refine</h4>
+                        <p>Adjust instructions based on test results. You can modify instructions on the fly without recreating the agent.</p>
+                    </li>
+                </ol>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a7 7 0 00-3.5 13.06V17a1 1 0 001 1h5a1 1 0 001-1v-2.94A7 7 0 0010 1zm0 2a5 5 0 013.5 8.56l-.5.44V15h-6v-2.99l-.5-.45A5 5 0 0110 3z" fill="currentColor"/><rect x="7" y="18" width="6" height="1" rx=".5" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Playground Tip</strong>
+                        <p>Enable <strong>"Show tool calls"</strong> in the playground to see exactly which tools the agent calls and how it processes data. This transparency helps you debug instruction issues.</p>
+                    </div>
+                </div>
+
+                <!-- Python SDK -->
+                <h2 id="sdk-python">Agent SDK — Python</h2>
+                <p>The <code>azure-ai-projects</code> Python package provides a comprehensive SDK for creating and managing agents programmatically.</p>
+
+                <h3>Installation</h3>
+                <pre><span class="lang-label">Bash</span>
+pip install azure-ai-projects azure-identity</pre>
+
+                <h3>Complete Agent Lifecycle</h3>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> CodeInterpreterTool
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="cm"># 1. Initialize the client</span>
+<span class="param">client</span> = AIProjectClient(
+    <span class="param">endpoint</span>=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>,
+    <span class="param">credential</span>=<span class="fn">DefaultAzureCredential</span>()
+)
+
+<span class="cm"># 2. Create an agent</span>
+<span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"data-analyst"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a data analyst. When given data files:
+    1. Load and inspect the data
+    2. Provide summary statistics
+    3. Create relevant visualizations
+    4. Highlight key insights"""</span>,
+    <span class="param">tools</span>=[<span class="fn">CodeInterpreterTool</span>()]
+)
+
+<span class="cm"># 3. Create a thread</span>
+<span class="param">thread</span> = client.agents.<span class="fn">create_thread</span>()
+
+<span class="cm"># 4. Upload a file and add message</span>
+<span class="param">file</span> = client.agents.<span class="fn">upload_file_and_poll</span>(
+    <span class="param">file_path</span>=<span class="str">"sales_data.csv"</span>,
+    <span class="param">purpose</span>=<span class="str">"agents"</span>
+)
+<span class="param">message</span> = client.agents.<span class="fn">create_message</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">role</span>=<span class="str">"user"</span>,
+    <span class="param">content</span>=<span class="str">"Analyze this sales data and create a trend chart."</span>,
+    <span class="param">attachments</span>=[{<span class="str">"file_id"</span>: file.id, <span class="str">"tools"</span>: [{<span class="str">"type"</span>: <span class="str">"code_interpreter"</span>}]}]
+)
+
+<span class="cm"># 5. Run the agent and stream results</span>
+<span class="kw">with</span> client.agents.<span class="fn">create_stream</span>(
+    <span class="param">thread_id</span>=thread.id,
+    <span class="param">agent_id</span>=agent.id
+) <span class="kw">as</span> stream:
+    <span class="kw">for</span> event <span class="kw">in</span> stream:
+        <span class="kw">if</span> event.type == <span class="str">"thread.message.delta"</span>:
+            <span class="fn">print</span>(event.data.delta.content[<span class="num">0</span>].text.value, <span class="param">end</span>=<span class="str">""</span>)
+
+<span class="cm"># 6. Clean up</span>
+client.agents.<span class="fn">delete_agent</span>(agent.id)
+<span class="fn">print</span>(<span class="str">"\nAgent deleted."</span>)</pre>
+
+                <!-- .NET SDK -->
+                <h2 id="sdk-dotnet">Agent SDK — .NET</h2>
+                <p>The .NET SDK offers the same capabilities with idiomatic C# patterns using <code>Azure.AI.Projects</code>.</p>
+
+                <h3>Installation</h3>
+                <pre><span class="lang-label">.NET CLI</span>
+dotnet add package Azure.AI.Projects --prerelease
+dotnet add package Azure.Identity</pre>
+
+                <h3>Complete Agent Lifecycle in C#</h3>
+                <pre><span class="lang-label">C#</span>
+<span class="kw">using</span> Azure.AI.Projects;
+<span class="kw">using</span> Azure.Identity;
+
+<span class="cm">// 1. Initialize the client</span>
+<span class="kw">var</span> <span class="param">connectionString</span> = <span class="str">"&lt;your-foundry-project-connection-string&gt;"</span>;
+<span class="kw">var</span> <span class="param">client</span> = <span class="kw">new</span> <span class="type">AgentsClient</span>(<span class="param">connectionString</span>, <span class="kw">new</span> <span class="type">DefaultAzureCredential</span>());
+
+<span class="cm">// 2. Create an agent with Code Interpreter</span>
+<span class="kw">var</span> <span class="param">agent</span> = <span class="kw">await</span> client.<span class="fn">CreateAgentAsync</span>(
+    <span class="param">model</span>: <span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>: <span class="str">"data-analyst-dotnet"</span>,
+    <span class="param">instructions</span>: <span class="str">"Analyze data files and provide insights with charts."</span>,
+    <span class="param">tools</span>: [<span class="kw">new</span> <span class="type">CodeInterpreterToolDefinition</span>()]
+);
+
+<span class="cm">// 3. Create a thread and add a message</span>
+<span class="kw">var</span> <span class="param">thread</span> = <span class="kw">await</span> client.<span class="fn">CreateThreadAsync</span>();
+<span class="kw">await</span> client.<span class="fn">CreateMessageAsync</span>(
+    thread.Value.Id,
+    <span class="type">MessageRole</span>.User,
+    <span class="str">"Analyze the uploaded sales data and identify trends."</span>
+);
+
+<span class="cm">// 4. Run the agent</span>
+<span class="kw">var</span> <span class="param">run</span> = <span class="kw">await</span> client.<span class="fn">CreateRunAsync</span>(thread.Value.Id, agent.Value.Id);
+
+<span class="cm">// 5. Poll for completion</span>
+<span class="kw">do</span>
+{
+    <span class="kw">await</span> <span class="type">Task</span>.<span class="fn">Delay</span>(<span class="num">1000</span>);
+    <span class="param">run</span> = <span class="kw">await</span> client.<span class="fn">GetRunAsync</span>(thread.Value.Id, run.Value.Id);
+} <span class="kw">while</span> (run.Value.Status == <span class="type">RunStatus</span>.InProgress
+    || run.Value.Status == <span class="type">RunStatus</span>.Queued);
+
+<span class="cm">// 6. Retrieve messages</span>
+<span class="kw">var</span> <span class="param">messages</span> = <span class="kw">await</span> client.<span class="fn">GetMessagesAsync</span>(thread.Value.Id);
+<span class="kw">foreach</span> (<span class="kw">var</span> msg <span class="kw">in</span> messages.Value.Data)
+{
+    <span class="type">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"[{msg.Role}]: {msg.Content[0]}"</span>);
+}
+
+<span class="cm">// 7. Clean up</span>
+<span class="kw">await</span> client.<span class="fn">DeleteAgentAsync</span>(agent.Value.Id);</pre>
+
+                <!-- Mini Hack -->
+                <h2 id="mini-hack">🧪 Mini Hack: Data Analyst Agent</h2>
+                <p>Put everything together! Build a data analyst agent with Code Interpreter that can analyze CSV data, compute statistics, and generate visualizations.</p>
+
+                <div class="callout callout-important">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a9 9 0 100 18 9 9 0 000-18zm1 14H9v-2h2v2zm0-4H9V5h2v6z" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Challenge Objectives</strong>
+                        <p>Create an agent that can: (1) Load a CSV file, (2) Generate summary statistics, (3) Create a bar chart of top categories, (4) Identify outliers and trends. Target completion: 30 minutes.</p>
+                    </div>
+                </div>
+
+                <h3>Step-by-Step Implementation</h3>
+                <pre><span class="lang-label">Python</span>
+<span class="kw">import</span> os
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> AIProjectClient
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> CodeInterpreterTool, FilePurpose
+<span class="kw">from</span> azure.identity <span class="kw">import</span> DefaultAzureCredential
+
+<span class="cm"># ── Configuration ──</span>
+<span class="param">ENDPOINT</span> = os.environ[<span class="str">"AZURE_AI_FOUNDRY_ENDPOINT"</span>]
+<span class="param">MODEL</span> = <span class="str">"gpt-4o"</span>
+
+<span class="param">INSTRUCTIONS</span> = <span class="str">"""You are an expert data analyst. When given a dataset:
+
+1. **Inspect** — Load the file, show shape, columns, dtypes, and first 5 rows.
+2. **Summarize** — Compute mean, median, std dev, min, max for numeric columns.
+3. **Visualize** — Create a bar chart of the top 10 categories by total value.
+   Use matplotlib with a clean style, labeled axes, and a title.
+4. **Insights** — Identify the top 3 key trends, outliers, or patterns.
+
+Always explain your methodology and present results clearly."""</span>
+
+<span class="cm"># ── Build the Agent ──</span>
+<span class="kw">def</span> <span class="fn">main</span>():
+    client = AIProjectClient(
+        <span class="param">endpoint</span>=ENDPOINT,
+        <span class="param">credential</span>=<span class="fn">DefaultAzureCredential</span>()
+    )
+
+    <span class="cm"># Create agent</span>
+    agent = client.agents.<span class="fn">create_agent</span>(
+        <span class="param">model</span>=MODEL,
+        <span class="param">name</span>=<span class="str">"mini-hack-data-analyst"</span>,
+        <span class="param">instructions</span>=INSTRUCTIONS,
+        <span class="param">tools</span>=[<span class="fn">CodeInterpreterTool</span>()]
+    )
+    <span class="fn">print</span>(<span class="str">f"✅ Agent created: {agent.id}"</span>)
+
+    <span class="cm"># Upload data file</span>
+    data_file = client.agents.<span class="fn">upload_file_and_poll</span>(
+        <span class="param">file_path</span>=<span class="str">"sample_sales.csv"</span>,
+        <span class="param">purpose</span>=FilePurpose.AGENTS
+    )
+    <span class="fn">print</span>(<span class="str">f"📁 File uploaded: {data_file.id}"</span>)
+
+    <span class="cm"># Create thread with the file</span>
+    thread = client.agents.<span class="fn">create_thread</span>()
+    client.agents.<span class="fn">create_message</span>(
+        <span class="param">thread_id</span>=thread.id,
+        <span class="param">role</span>=<span class="str">"user"</span>,
+        <span class="param">content</span>=<span class="str">"Analyze this sales dataset. Show summary stats, "</span>
+                <span class="str">"create a chart of top products by revenue, "</span>
+                <span class="str">"and share the 3 most important insights."</span>,
+        <span class="param">attachments</span>=[{
+            <span class="str">"file_id"</span>: data_file.id,
+            <span class="str">"tools"</span>: [{<span class="str">"type"</span>: <span class="str">"code_interpreter"</span>}]
+        }]
+    )
+
+    <span class="cm"># Run and stream the response</span>
+    <span class="fn">print</span>(<span class="str">"\n🔄 Running agent...\n"</span>)
+    <span class="kw">with</span> client.agents.<span class="fn">create_stream</span>(
+        <span class="param">thread_id</span>=thread.id,
+        <span class="param">agent_id</span>=agent.id
+    ) <span class="kw">as</span> stream:
+        <span class="kw">for</span> event <span class="kw">in</span> stream:
+            <span class="kw">if</span> <span class="fn">hasattr</span>(event, <span class="str">"data"</span>) <span class="kw">and</span> <span class="fn">hasattr</span>(event.data, <span class="str">"delta"</span>):
+                <span class="kw">for</span> content <span class="kw">in</span> event.data.delta.content:
+                    <span class="kw">if</span> <span class="fn">hasattr</span>(content, <span class="str">"text"</span>):
+                        <span class="fn">print</span>(content.text.value, <span class="param">end</span>=<span class="str">""</span>)
+
+    <span class="cm"># Retrieve generated images</span>
+    messages = client.agents.<span class="fn">list_messages</span>(<span class="param">thread_id</span>=thread.id)
+    <span class="kw">for</span> msg <span class="kw">in</span> messages.data:
+        <span class="kw">for</span> content <span class="kw">in</span> msg.content:
+            <span class="kw">if</span> <span class="fn">hasattr</span>(content, <span class="str">"image_file"</span>):
+                file_id = content.image_file.file_id
+                file_content = client.agents.<span class="fn">get_file_content</span>(file_id)
+                <span class="kw">with</span> <span class="fn">open</span>(<span class="str">"chart_output.png"</span>, <span class="str">"wb"</span>) <span class="kw">as</span> f:
+                    <span class="kw">for</span> chunk <span class="kw">in</span> file_content:
+                        f.<span class="fn">write</span>(chunk)
+                <span class="fn">print</span>(<span class="str">"\n📊 Chart saved to chart_output.png"</span>)
+
+    <span class="cm"># Cleanup</span>
+    client.agents.<span class="fn">delete_agent</span>(agent.id)
+    <span class="fn">print</span>(<span class="str">"🧹 Agent cleaned up."</span>)
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    <span class="fn">main</span>()</pre>
+
+                <!-- Best Practices -->
+                <h2 id="best-practices">Best Practices</h2>
+
+                <h3>Agent Design Patterns</h3>
+                <ul>
+                    <li><strong>Single Responsibility:</strong> Each agent should have one clear purpose. Compose multiple specialized agents rather than one omniscient agent.</li>
+                    <li><strong>Fail Gracefully:</strong> Include error-handling guidance in instructions so agents communicate issues clearly instead of hallucinating.</li>
+                    <li><strong>Version Instructions:</strong> Store instructions in files or config and version-control them alongside your code.</li>
+                    <li><strong>Minimize Tool Scope:</strong> Only enable tools the agent actually needs. This reduces cost and improves response accuracy.</li>
+                </ul>
+
+                <h3>Security Considerations</h3>
+                <ul>
+                    <li>Use <strong>Managed Identity</strong> (<code>DefaultAzureCredential</code>) instead of API keys in production</li>
+                    <li>Enable <strong>content safety filters</strong> on your model deployment</li>
+                    <li>Review and limit the <strong>data uploaded</strong> to Code Interpreter sessions</li>
+                    <li>Use <strong>Azure RBAC</strong> to control who can create and manage agents</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5v1m0 3v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    <div class="callout-content">
+                        <strong>Cost Optimization</strong>
+                        <p>Code Interpreter sessions are billed per session-minute. Design your agents to complete tasks efficiently and always call <code>delete_agent()</code> when done to avoid orphaned resources.</p>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <h2 id="summary">Summary</h2>
+                <p>In this module, you've learned to:</p>
+                <ul>
+                    <li>✅ Understand the agent primitives: Agents, Threads, Messages, and Runs</li>
+                    <li>✅ Craft effective agent instructions with clear persona, capabilities, and constraints</li>
+                    <li>✅ Leverage built-in tools: Code Interpreter, File Search, and Bing Search</li>
+                    <li>✅ Test and iterate using the Agent Playground</li>
+                    <li>✅ Build agents programmatically with both Python and .NET SDKs</li>
+                    <li>✅ Build a complete data analyst agent in the Mini Hack</li>
+                </ul>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 20 20"><path d="M10 1a7 7 0 00-3.5 13.06V17a1 1 0 001 1h5a1 1 0 001-1v-2.94A7 7 0 0010 1zm0 2a5 5 0 013.5 8.56l-.5.44V15h-6v-2.99l-.5-.45A5 5 0 0110 3z" fill="currentColor"/><rect x="7" y="18" width="6" height="1" rx=".5" fill="currentColor"/></svg>
+                    <div class="callout-content">
+                        <strong>Next Up: Module 18</strong>
+                        <p>In the next module, you'll learn to extend agents with <strong>custom function tools</strong>, integrating your own APIs and business logic into agent workflows.</p>
+                    </div>
+                </div>
+
+                <!-- Module Navigation -->
+                <nav class="module-nav" aria-label="Module navigation">
+                    <a href="../module-16/blog.html" class="prev">
+                        <span class="nav-label">← Previous</span>
+                        <span class="nav-module">Module 16: Introduction to AI Agents</span>
+                    </a>
+                    <a href="../module-18/blog.html" class="next">
+                        <span class="nav-label">Next →</span>
+                        <span class="nav-module">Module 18: Custom Function Tools</span>
+                    </a>
+                </nav>
+
+            </article>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>Azure AI Foundry: Zero to Hero · Module 17 of 45 · April 2026</p>
+        <p style="margin-top: 8px">
+            <a href="https://learn.microsoft.com/azure/ai-services/agents/">Azure AI Agent Service Docs</a> ·
+            <a href="https://github.com/Azure/azure-sdk-for-python">Python SDK</a> ·
+            <a href="https://github.com/Azure/azure-sdk-for-net">.NET SDK</a>
+        </p>
+        <p style="margin-top: 8px; opacity: 0.6;">© 2026 Microsoft. Training content for educational purposes.</p>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">
+        <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+    </button>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Progress Bar ──
+        const progressBar = document.getElementById('progressBar');
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            progressBar.style.width = progress + '%';
+        }
+
+        // ── Back to Top ──
+        const backToTop = document.getElementById('backToTop');
+        function toggleBackToTop() {
+            backToTop.classList.toggle('visible', window.scrollY > 400);
+        }
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Sticky TOC with IntersectionObserver ──
+        const tocLinks = document.querySelectorAll('.toc-list a');
+        const sections = [];
+        tocLinks.forEach(link => {
+            const id = link.getAttribute('href').substring(1);
+            const section = document.getElementById(id);
+            if (section) sections.push({ id, el: section, link });
+        });
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        tocLinks.forEach(l => l.classList.remove('active'));
+                        const active = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
+                        if (active) active.classList.add('active');
+                    }
+                });
+            },
+            { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
+        );
+        sections.forEach(s => observer.observe(s.el));
+
+        // ── Scroll Event Listeners ──
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    updateProgress();
+                    toggleBackToTop();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // ── Smooth scroll for TOC ──
+        tocLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Initial state
+        updateProgress();
+    })();
+    </script>
+</body>
+</html>

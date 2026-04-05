@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Module 12 of Azure AI Foundry Zero to Hero — Deep dive into Azure AI Search, vector indexes, hybrid search, and integrated vectorization for RAG architectures.">
+<meta name="author" content="Zero to Hero Training Team">
+<meta name="date" content="2026-04">
+<title>Module 12: Azure AI Search & Vector Indexes — Azure AI Foundry: Zero to Hero</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & DESIGN TOKENS
+   ============================================================ */
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #50e6ff;
+  --ms-teal: #00b7c3;
+  --ms-green: #107c10;
+  --ms-yellow: #ffb900;
+  --ms-orange: #d83b01;
+  --ms-red: #e74856;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eef1f5;
+  --bg-dark: #1b1b1b;
+  --bg-code: #1e1e1e;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #424242;
+  --text-muted: #6e6e6e;
+  --text-inverse: #ffffff;
+  --text-link: #0078d4;
+
+  --border-light: #e1e4e8;
+  --border-medium: #d0d7de;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-xl: 0 12px 48px rgba(0,0,0,0.15);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --content-max: 780px;
+  --toc-width: 220px;
+
+  --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  z-index: 10000;
+  transition: width 0.1s linear;
+}
+
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 9000;
+  background: var(--bg-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.nav-links a:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #0078d4, #5c2d91);
+  color: var(--text-inverse);
+  padding: 80px 24px 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(80,230,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 5px 16px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.hero .subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   LAYOUT: SIDEBAR TOC + MAIN CONTENT
+   ============================================================ */
+.page-layout {
+  display: flex;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  gap: 48px;
+}
+
+/* ---------- Sticky TOC Sidebar ---------- */
+.toc-sidebar {
+  position: sticky;
+  top: 70px;
+  width: var(--toc-width);
+  min-width: var(--toc-width);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  align-self: flex-start;
+  padding-right: 8px;
+}
+
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+.toc-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ms-blue);
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list li {
+  margin-bottom: 2px;
+}
+
+.toc-list a {
+  display: block;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  transition: all var(--transition-fast);
+  line-height: 1.45;
+}
+
+.toc-list a:hover {
+  color: var(--ms-blue);
+  background: rgba(0,120,212,0.05);
+}
+
+.toc-list a.active {
+  color: var(--ms-blue);
+  border-left-color: var(--ms-blue);
+  background: rgba(0,120,212,0.08);
+  font-weight: 600;
+}
+
+/* ---------- Main Content ---------- */
+.main-content {
+  flex: 1;
+  max-width: var(--content-max);
+  min-width: 0;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.main-content h2 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 56px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--bg-tertiary);
+  scroll-margin-top: 80px;
+}
+
+.main-content h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ms-dark-blue);
+  margin-top: 36px;
+  margin-bottom: 14px;
+  scroll-margin-top: 80px;
+}
+
+.main-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.main-content p {
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.8;
+}
+
+.main-content ul, .main-content ol {
+  margin-bottom: 20px;
+  padding-left: 24px;
+}
+
+.main-content li {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.main-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.main-content a {
+  color: var(--text-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.main-content a:hover {
+  border-bottom-color: var(--ms-blue);
+}
+
+/* Inline code */
+.main-content code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--bg-secondary);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--ms-dark-blue);
+  border: 1px solid var(--border-light);
+}
+
+/* Code blocks */
+.code-block {
+  background: var(--bg-code);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  margin: 20px 0;
+  overflow-x: auto;
+  border: 1px solid #333;
+  position: relative;
+}
+
+.code-block code {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: #d4d4d4;
+  background: none;
+  padding: 0;
+  border: none;
+  line-height: 1.65;
+}
+
+.code-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+}
+
+.code-block .kw { color: #569cd6; }
+.code-block .str { color: #ce9178; }
+.code-block .fn { color: #dcdcaa; }
+.code-block .cm { color: #6a9955; }
+.code-block .num { color: #b5cea8; }
+.code-block .type { color: #4ec9b0; }
+
+/* ============================================================
+   CALLOUT BOXES
+   ============================================================ */
+.callout {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.callout-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout p { margin-bottom: 8px; font-size: 0.95rem; }
+.callout p:last-child { margin-bottom: 0; }
+
+.callout-blue {
+  background: rgba(0,120,212,0.06);
+  border-color: var(--ms-blue);
+}
+.callout-blue .callout-title { color: var(--ms-blue); }
+
+.callout-yellow {
+  background: rgba(255,185,0,0.08);
+  border-color: var(--ms-yellow);
+}
+.callout-yellow .callout-title { color: #986f0a; }
+
+.callout-green {
+  background: rgba(16,124,16,0.06);
+  border-color: var(--ms-green);
+}
+.callout-green .callout-title { color: var(--ms-green); }
+
+.callout-red {
+  background: rgba(231,72,86,0.06);
+  border-color: var(--ms-red);
+}
+.callout-red .callout-title { color: var(--ms-red); }
+
+/* ============================================================
+   VIDEO EMBED
+   ============================================================ */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  margin: 24px 0;
+  box-shadow: var(--shadow-lg);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.main-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 0.92rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.main-content thead th {
+  background: var(--ms-dark-blue);
+  color: var(--text-inverse);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-content tbody td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.main-content tbody tr:nth-child(even) {
+  background: var(--bg-secondary);
+}
+
+.main-content tbody tr:hover {
+  background: rgba(0,120,212,0.04);
+}
+
+/* ============================================================
+   FEATURE CARDS / GRID
+   ============================================================ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.feature-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.feature-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.feature-card .card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.feature-card h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   DIAGRAM / ASCII ART
+   ============================================================ */
+.diagram-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  margin: 24px 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   MODULE NAVIGATION (PREV / NEXT)
+   ============================================================ */
+.module-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  margin: 60px 0 40px;
+  padding-top: 30px;
+  border-top: 2px solid var(--bg-tertiary);
+}
+
+.module-nav a {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-normal);
+  flex: 1;
+}
+
+.module-nav a:hover {
+  border-color: var(--ms-blue);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.module-nav a .nav-label {
+  font-size: 0.78rem;
+  color: var(--ms-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.module-nav a .nav-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.module-nav a.next {
+  text-align: right;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  background: var(--bg-dark);
+  color: rgba(255,255,255,0.7);
+  padding: 40px 24px;
+  margin-top: 60px;
+}
+
+.footer-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-inner p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   BACK TO TOP BUTTON
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 44px;
+  height: 44px;
+  background: var(--ms-blue);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all var(--transition-normal);
+  z-index: 5000;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: var(--ms-dark-blue);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   MINI HACK SECTION STYLING
+   ============================================================ */
+.mini-hack-banner {
+  background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  margin: 32px 0;
+  text-align: center;
+}
+
+.mini-hack-banner h3 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.mini-hack-banner p {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+@media (max-width: 960px) {
+  .toc-sidebar {
+    display: none;
+  }
+
+  .page-layout {
+    padding: 24px 16px;
+  }
+
+  .hero {
+    padding: 50px 20px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .module-nav {
+    flex-direction: column;
+  }
+
+  .module-nav a.next {
+    text-align: left;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 1.6rem; }
+  .hero .subtitle { font-size: 1rem; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+  .nav-links { display: none; }
+  .main-content h2 { font-size: 1.5rem; }
+  .main-content h3 { font-size: 1.15rem; }
+  .code-block { padding: 16px; }
+  .code-block code { font-size: 0.8rem; }
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  .top-nav, .scroll-progress, .back-to-top, .toc-sidebar, .module-nav, .video-container { display: none !important; }
+  .hero { background: var(--ms-blue) !important; padding: 30px 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-layout { display: block; max-width: 100%; }
+  .main-content { max-width: 100%; }
+  .code-block { border: 1px solid #ccc; background: #f5f5f5 !important; color: #333 !important; }
+  .code-block code { color: #333 !important; }
+  .callout { break-inside: avoid; }
+  body { font-size: 11pt; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ============================================================
+     TOP NAVIGATION
+     ============================================================ -->
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="#" class="nav-brand">
+      <!-- Microsoft 4-color grid logo -->
+      <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="10" height="10" fill="#f25022"/>
+        <rect x="11" y="0" width="10" height="10" fill="#7fba00"/>
+        <rect x="0" y="11" width="10" height="10" fill="#00a4ef"/>
+        <rect x="11" y="11" width="10" height="10" fill="#ffb900"/>
+      </svg>
+      AI Foundry Training Blog
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Curriculum</a></li>
+      <li><a href="#">Resources</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO SECTION
+     ============================================================ -->
+<header class="hero">
+  <div class="hero-inner">
+    <span class="hero-badge">ARC 3 · DATA &amp; RAG</span>
+    <h1>Azure AI Search &amp; Vector Indexes</h1>
+    <p class="subtitle">Build powerful retrieval systems with vector indexes, hybrid search, and integrated vectorization — the backbone of every production RAG architecture.</p>
+    <div class="hero-meta">
+      <span>📘 Module 12 of 45</span>
+      <span>✍️ Zero to Hero Training Team</span>
+      <span>📅 April 2026</span>
+      <span>⏱️ 25 min read</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     PAGE LAYOUT: TOC + CONTENT
+     ============================================================ -->
+<div class="page-layout">
+
+  <!-- ---------- Sticky TOC Sidebar ---------- -->
+  <aside class="toc-sidebar">
+    <div class="toc-title">On This Page</div>
+    <ul class="toc-list" id="tocList">
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#featured-video">Featured Video</a></li>
+      <li><a href="#what-is-azure-ai-search">What is Azure AI Search</a></li>
+      <li><a href="#embeddings-vectors">Embeddings &amp; Vectors</a></li>
+      <li><a href="#creating-vector-indexes">Creating Vector Indexes</a></li>
+      <li><a href="#index-schema-design">Index Schema Design</a></li>
+      <li><a href="#hybrid-search">Hybrid Search</a></li>
+      <li><a href="#integrated-vectorization">Integrated Vectorization</a></li>
+      <li><a href="#querying-vector-indexes">Querying Vector Indexes</a></li>
+      <li><a href="#performance-scaling">Performance &amp; Scaling</a></li>
+      <li><a href="#mini-hack">Mini Hack</a></li>
+      <li><a href="#key-takeaways">Key Takeaways</a></li>
+      <li><a href="#module-13-preview">Module 13 Preview</a></li>
+      <li><a href="#resources">Resources</a></li>
+    </ul>
+  </aside>
+
+  <!-- ---------- Main Content ---------- -->
+  <article class="main-content">
+
+    <!-- ============================================================
+         SECTION: INTRODUCTION
+         ============================================================ -->
+    <h2 id="introduction">Introduction</h2>
+
+    <p>Welcome to <strong>Module 12</strong> of the Azure AI Foundry: Zero to Hero training series. In this module, we turn our attention to one of the most critical components of any AI application: <strong>information retrieval</strong>. Specifically, we'll explore Azure AI Search — Microsoft's cloud-native search service that brings together full-text, semantic, and vector search into a single unified platform.</p>
+
+    <p>If you've worked through Modules 10 and 11, you already know how to organize data within Azure AI Foundry and prepare it for consumption. Now it's time to make that data <em>searchable</em> — and not just with traditional keyword matching, but with the kind of deep semantic understanding that modern AI applications demand.</p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Why This Module Matters</div>
+      <p>Azure AI Search is the <strong>retrieval backbone of Retrieval-Augmented Generation (RAG)</strong> architectures. Before you can ground an LLM's responses in your own data, you need a powerful, fast, and intelligent retrieval layer. That's exactly what we're building in this module.</p>
+    </div>
+
+    <p>By the end of this module, you will understand how to create vector indexes, design schemas for hybrid retrieval, perform queries that combine keyword, semantic, and vector search, and choose between manual embedding pipelines and integrated vectorization. Let's dive in.</p>
+
+    <!-- ============================================================
+         SECTION: FEATURED VIDEO
+         ============================================================ -->
+    <h2 id="featured-video">Featured Video</h2>
+
+    <p>Before we get into the details, watch this walkthrough that demonstrates building vector indexes in Azure AI Search from start to finish:</p>
+
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/8rX2z1HmKVk"
+        title="Build Vector Indexes Like a Pro in Azure AI Search"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+
+    <p><strong>Build Vector Indexes Like a Pro in Azure AI Search</strong> — This video covers the end-to-end process of creating indexes, configuring HNSW parameters, generating embeddings, and running hybrid queries. We recommend watching it before or after completing the reading.</p>
+
+    <!-- ============================================================
+         SECTION: WHAT IS AZURE AI SEARCH
+         ============================================================ -->
+    <h2 id="what-is-azure-ai-search">What is Azure AI Search?</h2>
+
+    <p>Azure AI Search (formerly known as Azure Cognitive Search) is a fully managed cloud search service that provides rich search experiences over your content. It's designed to handle the complete search lifecycle — from ingesting and enriching data to serving fast, relevant search results at scale.</p>
+
+    <h3>Core Capabilities</h3>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="card-icon">📝</div>
+        <h4>Full-Text Search</h4>
+        <p>Industry-standard BM25 scoring with language analyzers, phonetic matching, synonyms, and autocomplete suggestions for traditional keyword retrieval.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🧠</div>
+        <h4>Semantic Ranking</h4>
+        <p>Transformer-based re-ranking that understands language context and meaning, providing AI-quality relevance with extractive captions and answers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🔢</div>
+        <h4>Vector Search</h4>
+        <p>Nearest-neighbor retrieval using HNSW or exhaustive KNN algorithms on embedding vectors, enabling similarity search across any content type.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🔗</div>
+        <h4>AI Foundry Integration</h4>
+        <p>Deep integration with Azure AI Foundry projects, enabling seamless connection between your search indexes and AI workflows like RAG and agents.</p>
+      </div>
+    </div>
+
+    <h3>Key Architecture Concepts</h3>
+
+    <p>Before building indexes, it helps to understand the key building blocks of Azure AI Search:</p>
+
+    <table>
+      <thead>
+        <tr><th>Concept</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Index</strong></td><td>A searchable data structure containing fields with your content, metadata, and vector embeddings. Analogous to a database table.</td></tr>
+        <tr><td><strong>Indexer</strong></td><td>An automated crawler that pulls data from supported data sources (Blob Storage, Cosmos DB, SQL) and populates your index.</td></tr>
+        <tr><td><strong>Skillset</strong></td><td>A pipeline of AI enrichment steps (OCR, entity extraction, embedding generation) that process data during indexing.</td></tr>
+        <tr><td><strong>Data Source</strong></td><td>A connection to your data origin — Azure Blob Storage, Azure Cosmos DB, Azure SQL, Azure Data Lake, and more.</td></tr>
+        <tr><td><strong>Semantic Configuration</strong></td><td>Defines which fields the semantic ranker should prioritize for title, content, and keyword extraction.</td></tr>
+        <tr><td><strong>Vector Search Profile</strong></td><td>Configuration that specifies the algorithm (HNSW or KNN), parameters, and vectorizer for a vector field.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ Azure AI Search vs. Other Search Services</div>
+      <p>Azure AI Search is <em>not</em> a general-purpose database or a data warehouse. It's a purpose-built search engine optimized for fast retrieval. Use it as a read-optimized index fed from your primary data stores.</p>
+    </div>
+
+    <h3>How Azure AI Search Fits into AI Foundry</h3>
+
+    <p>Within Azure AI Foundry, Azure AI Search serves as the primary retrieval service for building RAG-based applications. When you create a project in the AI Foundry portal (<a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>), you can connect a search index directly to your project. This allows you to:</p>
+
+    <ul>
+      <li><strong>Ground AI models</strong> in your own data by connecting search indexes to prompt flow and AI agents</li>
+      <li><strong>Use the "Add your data" feature</strong> to quickly connect an index to a chat deployment</li>
+      <li><strong>Evaluate retrieval quality</strong> using built-in evaluation tools that measure groundedness, relevance, and coherence</li>
+      <li><strong>Build end-to-end RAG pipelines</strong> from data ingestion through search to generated responses</li>
+    </ul>
+
+    <!-- ============================================================
+         SECTION: EMBEDDINGS & VECTORS
+         ============================================================ -->
+    <h2 id="embeddings-vectors">Understanding Embeddings &amp; Vectors</h2>
+
+    <p>At the heart of vector search lies a deceptively simple idea: <strong>represent text (or images, audio, etc.) as numerical vectors</strong>, then find similar items by comparing their vectors. These numerical representations are called <em>embeddings</em>.</p>
+
+    <h3>What Are Embeddings?</h3>
+
+    <p>An embedding is a dense numerical vector — typically hundreds or thousands of floating-point numbers — that captures the semantic meaning of a piece of content. Embedding models like Azure OpenAI's <code>text-embedding-ada-002</code> (1536 dimensions) or <code>text-embedding-3-large</code> (up to 3072 dimensions) are trained on vast amounts of text to learn these representations.</p>
+
+    <p>The key insight is that <strong>semantically similar content produces similar vectors</strong>. "How to make a cake" and "baking recipe instructions" would have embeddings that are close together in vector space, even though they share very few keywords.</p>
+
+    <div class="diagram-box">
+  "Azure AI Search is great"    →  [0.023, -0.041, 0.087, ..., 0.012]  (1536 dims)
+  "Search service in Azure"     →  [0.021, -0.038, 0.091, ..., 0.015]  (1536 dims)
+  "I like chocolate cake"       →  [0.156, 0.203, -0.044, ..., -0.089] (1536 dims)
+
+  Cosine similarity:
+    "AI Search is great" ↔ "Search service" = 0.94  ✅ Similar
+    "AI Search is great" ↔ "chocolate cake"  = 0.23  ❌ Different</div>
+
+    <h3>Similarity Metrics</h3>
+
+    <p>When comparing vectors, Azure AI Search supports several distance/similarity metrics:</p>
+
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Description</th><th>Best For</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Cosine</strong></td><td>Measures the angle between vectors. Normalized, so vector magnitude doesn't matter.</td><td>Text embeddings (default)</td></tr>
+        <tr><td><strong>Dot Product</strong></td><td>Measures both direction and magnitude. Faster to compute.</td><td>Pre-normalized vectors</td></tr>
+        <tr><td><strong>Euclidean</strong></td><td>Measures straight-line distance between points in vector space.</td><td>When magnitude matters</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ Recommendation</div>
+      <p>For most text-based retrieval scenarios with Azure OpenAI embeddings, <strong>cosine similarity</strong> is the recommended metric. It's the default in Azure AI Search's HNSW configuration and works well with all major embedding models.</p>
+    </div>
+
+    <h3>Choosing an Embedding Model</h3>
+
+    <p>Azure OpenAI provides several embedding models optimized for different use cases:</p>
+
+    <table>
+      <thead>
+        <tr><th>Model</th><th>Dimensions</th><th>Max Tokens</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>text-embedding-ada-002</code></td><td>1536</td><td>8,191</td><td>General-purpose text embedding</td></tr>
+        <tr><td><code>text-embedding-3-small</code></td><td>512–1536</td><td>8,191</td><td>Cost-optimized, flexible dimensions</td></tr>
+        <tr><td><code>text-embedding-3-large</code></td><td>256–3072</td><td>8,191</td><td>Highest quality, configurable dimensions</td></tr>
+      </tbody>
+    </table>
+
+    <p>The <code>text-embedding-3</code> family supports <strong>Matryoshka Representation Learning (MRL)</strong>, allowing you to truncate vectors to lower dimensions while retaining most of the semantic information. This gives you a tunable trade-off between quality and cost/performance.</p>
+
+    <!-- ============================================================
+         SECTION: CREATING VECTOR INDEXES
+         ============================================================ -->
+    <h2 id="creating-vector-indexes">Creating Vector Indexes</h2>
+
+    <p>A vector index in Azure AI Search is simply a search index that includes one or more fields of type <code>Collection(Edm.Single)</code> configured for vector search. Let's walk through the process of creating one.</p>
+
+    <h3>Step 1: Configure Vector Search Algorithms</h3>
+
+    <p>Azure AI Search supports two vector search algorithms:</p>
+
+    <table>
+      <thead>
+        <tr><th>Algorithm</th><th>Type</th><th>Speed</th><th>Recall</th><th>Best For</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>HNSW</strong></td><td>Approximate (ANN)</td><td>Fast</td><td>High</td><td>Production workloads (recommended)</td></tr>
+        <tr><td><strong>Exhaustive KNN</strong></td><td>Exact</td><td>Slower</td><td>Perfect</td><td>Small datasets, ground truth testing</td></tr>
+      </tbody>
+    </table>
+
+    <p>HNSW (Hierarchical Navigable Small World) is the recommended algorithm for production use. It builds a multi-layered graph structure that enables fast approximate nearest-neighbor search with high recall.</p>
+
+    <h3>HNSW Parameters</h3>
+
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>m</code></td><td>4</td><td>Bi-directional links per node. Higher = better recall but more memory.</td></tr>
+        <tr><td><code>efConstruction</code></td><td>400</td><td>Neighbors evaluated during index building. Higher = better quality but slower indexing.</td></tr>
+        <tr><td><code>efSearch</code></td><td>500</td><td>Neighbors evaluated during search. Higher = better recall but slower queries.</td></tr>
+        <tr><td><code>metric</code></td><td>cosine</td><td>Similarity metric: cosine, dotProduct, or euclidean.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Step 2: Define the Index Schema with Python SDK</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="cm"># Install: pip install azure-search-documents azure-identity</span>
+
+<span class="kw">from</span> azure.search.documents.indexes <span class="kw">import</span> SearchIndexClient
+<span class="kw">from</span> azure.search.documents.indexes.models <span class="kw">import</span> (
+    SearchIndex, SearchField, SearchFieldDataType,
+    SimpleField, SearchableField,
+    VectorSearch, HnswAlgorithmConfiguration, VectorSearchProfile,
+    SemanticConfiguration, SemanticSearch,
+    SemanticPrioritizedFields, SemanticField,
+)
+<span class="kw">from</span> azure.core.credentials <span class="kw">import</span> AzureKeyCredential
+
+<span class="cm"># Define fields</span>
+fields = [
+    <span class="fn">SimpleField</span>(name=<span class="str">"id"</span>, type=SearchFieldDataType.String,
+               key=<span class="kw">True</span>, filterable=<span class="kw">True</span>),
+    <span class="fn">SearchableField</span>(name=<span class="str">"title"</span>, type=SearchFieldDataType.String,
+                    analyzer_name=<span class="str">"en.microsoft"</span>),
+    <span class="fn">SearchableField</span>(name=<span class="str">"content"</span>, type=SearchFieldDataType.String,
+                    analyzer_name=<span class="str">"en.microsoft"</span>),
+    <span class="fn">SimpleField</span>(name=<span class="str">"category"</span>, type=SearchFieldDataType.String,
+               filterable=<span class="kw">True</span>, facetable=<span class="kw">True</span>),
+    <span class="fn">SearchField</span>(
+        name=<span class="str">"content_vector"</span>,
+        type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+        searchable=<span class="kw">True</span>,
+        vector_search_dimensions=<span class="num">1536</span>,
+        vector_search_profile_name=<span class="str">"hnsw-profile"</span>,
+    ),
+]
+
+<span class="cm"># Configure vector search</span>
+vector_search = <span class="fn">VectorSearch</span>(
+    algorithms=[<span class="fn">HnswAlgorithmConfiguration</span>(name=<span class="str">"hnsw-config"</span>)],
+    profiles=[
+        <span class="fn">VectorSearchProfile</span>(
+            name=<span class="str">"hnsw-profile"</span>,
+            algorithm_configuration_name=<span class="str">"hnsw-config"</span>,
+        )
+    ],
+)
+
+<span class="cm"># Configure semantic search</span>
+semantic_config = <span class="fn">SemanticConfiguration</span>(
+    name=<span class="str">"semantic-config"</span>,
+    prioritized_fields=<span class="fn">SemanticPrioritizedFields</span>(
+        title_field=<span class="fn">SemanticField</span>(field_name=<span class="str">"title"</span>),
+        content_fields=[<span class="fn">SemanticField</span>(field_name=<span class="str">"content"</span>)],
+    ),
+)
+
+<span class="cm"># Create the index</span>
+index = <span class="fn">SearchIndex</span>(
+    name=<span class="str">"my-vector-index"</span>,
+    fields=fields,
+    vector_search=vector_search,
+    semantic_search=<span class="fn">SemanticSearch</span>(configurations=[semantic_config]),
+)
+
+client = <span class="fn">SearchIndexClient</span>(
+    endpoint=<span class="str">"https://&lt;your-service&gt;.search.windows.net"</span>,
+    credential=<span class="fn">AzureKeyCredential</span>(<span class="str">"&lt;your-admin-key&gt;"</span>),
+)
+result = client.<span class="fn">create_or_update_index</span>(index)
+<span class="fn">print</span>(f<span class="str">"Created index: {result.name}"</span>)</code>
+    </div>
+
+    <h3>Step 3: Generate Embeddings and Upload Documents</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> openai <span class="kw">import</span> AzureOpenAI
+<span class="kw">from</span> azure.search.documents <span class="kw">import</span> SearchClient
+
+<span class="cm"># Initialize clients</span>
+openai_client = <span class="fn">AzureOpenAI</span>(
+    azure_endpoint=<span class="str">"https://&lt;your-openai&gt;.openai.azure.com"</span>,
+    api_key=<span class="str">"&lt;your-key&gt;"</span>,
+    api_version=<span class="str">"2024-10-21"</span>,
+)
+
+<span class="cm"># Generate embedding</span>
+<span class="kw">def</span> <span class="fn">get_embedding</span>(text: str) -> list[float]:
+    response = openai_client.embeddings.<span class="fn">create</span>(
+        input=text, model=<span class="str">"text-embedding-ada-002"</span>
+    )
+    <span class="kw">return</span> response.data[<span class="num">0</span>].embedding
+
+<span class="cm"># Prepare a document with its embedding</span>
+doc = {
+    <span class="str">"id"</span>: <span class="str">"1"</span>,
+    <span class="str">"title"</span>: <span class="str">"Introduction to RAG"</span>,
+    <span class="str">"content"</span>: <span class="str">"RAG combines retrieval with generation..."</span>,
+    <span class="str">"category"</span>: <span class="str">"AI Patterns"</span>,
+    <span class="str">"content_vector"</span>: <span class="fn">get_embedding</span>(<span class="str">"Introduction to RAG. RAG combines..."</span>),
+}
+
+<span class="cm"># Upload to index</span>
+search_client = <span class="fn">SearchClient</span>(
+    endpoint=<span class="str">"https://&lt;your-service&gt;.search.windows.net"</span>,
+    index_name=<span class="str">"my-vector-index"</span>,
+    credential=<span class="fn">AzureKeyCredential</span>(<span class="str">"&lt;your-key&gt;"</span>),
+)
+result = search_client.<span class="fn">upload_documents</span>(documents=[doc])
+<span class="fn">print</span>(f<span class="str">"Uploaded: {result[0].succeeded}"</span>)</code>
+    </div>
+
+    <!-- ============================================================
+         SECTION: INDEX SCHEMA DESIGN
+         ============================================================ -->
+    <h2 id="index-schema-design">Index Schema Design Best Practices</h2>
+
+    <p>A well-designed index schema is the foundation of effective retrieval. The schema determines not just what data you store, but how effectively it can be searched, filtered, and ranked.</p>
+
+    <h3>Field Types Reference</h3>
+
+    <table>
+      <thead>
+        <tr><th>Field Type</th><th>Purpose</th><th>Searchable</th><th>Filterable</th><th>Vector</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>SearchableField</code></td><td>Full-text search with BM25</td><td>✅</td><td>Optional</td><td>❌</td></tr>
+        <tr><td><code>SimpleField</code></td><td>Filters, sorting, faceting</td><td>❌</td><td>✅</td><td>❌</td></tr>
+        <tr><td><code>SearchField</code> (vector)</td><td>Vector similarity search</td><td>✅</td><td>❌</td><td>✅</td></tr>
+        <tr><td><code>ComplexField</code></td><td>Nested/structured objects</td><td>Varies</td><td>Varies</td><td>❌</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Design Principles</h3>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="card-icon">✅</div>
+        <h4>Do: Separate Text &amp; Vectors</h4>
+        <p>Keep your <code>content</code> text field and <code>content_vector</code> as separate fields. This enables hybrid search where both BM25 and vector retrieval contribute to ranking.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">✅</div>
+        <h4>Do: Use Language Analyzers</h4>
+        <p>Apply language-specific analyzers like <code>en.microsoft</code> to text fields. They handle stemming, stop words, and linguistic normalization for better recall.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">⚠️</div>
+        <h4>Consider: Multiple Vector Fields</h4>
+        <p>For complex scenarios, you can have multiple vector fields — one for title embeddings, another for content embeddings, or different embedding models entirely.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">❌</div>
+        <h4>Don't: Over-index Fields</h4>
+        <p>Making every field searchable, filterable, sortable, and facetable wastes storage and slows indexing. Only enable attributes you'll actually use in queries.</p>
+      </div>
+    </div>
+
+    <h3>Chunking Considerations</h3>
+
+    <p>When your source documents are long (pages, PDFs, articles), you need to split them into smaller <strong>chunks</strong> before embedding. Each chunk becomes a separate document in your index. Key considerations:</p>
+
+    <ul>
+      <li><strong>Chunk size:</strong> 200–800 tokens is typical. Too small loses context; too large dilutes relevance.</li>
+      <li><strong>Overlap:</strong> Add 50–100 tokens of overlap between chunks to preserve context at boundaries.</li>
+      <li><strong>Parent tracking:</strong> Include a <code>parent_id</code> or <code>source_url</code> field so you can trace chunks back to their source document.</li>
+      <li><strong>Metadata:</strong> Store page numbers, section headers, or document titles as filterable fields on each chunk.</li>
+    </ul>
+
+    <!-- ============================================================
+         SECTION: HYBRID SEARCH
+         ============================================================ -->
+    <h2 id="hybrid-search">Hybrid Search: Keyword + Semantic + Vector</h2>
+
+    <p>Hybrid search is where Azure AI Search truly shines. Instead of choosing between keyword search and vector search, you use <strong>both simultaneously</strong> — and optionally add semantic ranking as a third layer of intelligence.</p>
+
+    <h3>Why Hybrid?</h3>
+
+    <p>Each search approach has strengths and weaknesses:</p>
+
+    <table>
+      <thead>
+        <tr><th>Approach</th><th>Strengths</th><th>Weaknesses</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Keyword (BM25)</strong></td><td>Exact term matching, great for names/codes/IDs</td><td>Misses synonyms and semantic meaning</td></tr>
+        <tr><td><strong>Vector</strong></td><td>Understands meaning, handles synonyms naturally</td><td>Can miss exact terms, needs embedding model</td></tr>
+        <tr><td><strong>Semantic Ranking</strong></td><td>Deep language understanding, extractive answers</td><td>Adds latency, only re-ranks top results</td></tr>
+      </tbody>
+    </table>
+
+    <p>By combining them, you get the best of all worlds: <strong>exact matching when it matters, semantic understanding when keywords fail, and intelligent re-ranking for the final results</strong>.</p>
+
+    <h3>How It Works: Reciprocal Rank Fusion (RRF)</h3>
+
+    <div class="diagram-box">
+  User Query: "How does RAG reduce hallucinations?"
+                    │
+        ┌───────────┼───────────────┐
+        ▼           ▼               ▼
+   ┌─────────┐ ┌──────────┐ ┌────────────┐
+   │ Keyword  │ │  Vector   │ │  (Optional) │
+   │  BM25    │ │  HNSW     │ │  Semantic   │
+   │ Ranking  │ │ Nearest   │ │  Reranker   │
+   │          │ │ Neighbor  │ │             │
+   └────┬─────┘ └─────┬─────┘ └──────┬──────┘
+        │              │              │
+        └──────┬───────┘              │
+               ▼                      │
+     ┌──────────────────┐             │
+     │  Reciprocal Rank  │◄────────────┘
+     │  Fusion (RRF)     │
+     └────────┬──────────┘
+              ▼
+     ┌──────────────────┐
+     │  Merged, Ranked   │
+     │  Results 🎯       │
+     └──────────────────┘</div>
+
+    <p><strong>Reciprocal Rank Fusion (RRF)</strong> merges ranked lists from different retrieval methods. For each document, RRF calculates a score based on its position in each list: <code>score = Σ 1/(k + rank)</code>, where <code>k</code> is a constant (default 60). Documents appearing highly in multiple lists get boosted.</p>
+
+    <h3>Hybrid Search Query Example</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.search.documents <span class="kw">import</span> SearchClient
+<span class="kw">from</span> azure.search.documents.models <span class="kw">import</span> VectorizedQuery
+
+<span class="cm"># Assume query_embedding is already generated</span>
+results = search_client.<span class="fn">search</span>(
+    <span class="cm"># 1️⃣ Keyword search component</span>
+    search_text=<span class="str">"How does RAG reduce hallucinations?"</span>,
+
+    <span class="cm"># 2️⃣ Vector search component</span>
+    vector_queries=[
+        <span class="fn">VectorizedQuery</span>(
+            vector=query_embedding,
+            k_nearest_neighbors=<span class="num">5</span>,
+            fields=<span class="str">"content_vector"</span>,
+        )
+    ],
+
+    <span class="cm"># 3️⃣ Semantic ranking (re-ranks merged results)</span>
+    query_type=<span class="str">"semantic"</span>,
+    semantic_configuration_name=<span class="str">"semantic-config"</span>,
+
+    <span class="cm"># Standard parameters</span>
+    select=<span class="str">"title,content,category"</span>,
+    top=<span class="num">10</span>,
+)
+
+<span class="kw">for</span> r <span class="kw">in</span> results:
+    <span class="fn">print</span>(f<span class="str">"{r['title']} — Score: {r['@search.score']:.4f}"</span>)
+    <span class="fn">print</span>(f<span class="str">"  Reranker: {r.get('@search.reranker_score', 'N/A')}"</span>)</code>
+    </div>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Pro Tip: Use Filters with Hybrid Search</div>
+      <p>Add <code>filter="category eq 'Documentation'"</code> to narrow results before ranking. Pre-filtering reduces the search space and improves both performance and relevance. Filters are applied <em>before</em> the BM25 and vector scoring.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: INTEGRATED VECTORIZATION
+         ============================================================ -->
+    <h2 id="integrated-vectorization">Integrated Vectorization</h2>
+
+    <p>Traditionally, building a vector search pipeline requires you to manage the embedding process yourself: call the embedding API for each document during indexing, store the resulting vectors, and embed every query at search time. <strong>Integrated vectorization</strong> simplifies this by letting Azure AI Search handle embedding generation automatically.</p>
+
+    <h3>How Integrated Vectorization Works</h3>
+
+    <p>When you configure integrated vectorization, you define a <strong>vectorizer</strong> within the index definition. This vectorizer specifies which embedding model to use (e.g., an Azure OpenAI deployment). Azure AI Search then:</p>
+
+    <ol>
+      <li><strong>At index time:</strong> Automatically calls the embedding model to generate vectors for text content as documents are indexed (via skillsets).</li>
+      <li><strong>At query time:</strong> Automatically embeds the user's search text before performing vector similarity search.</li>
+    </ol>
+
+    <h3>Manual vs. Integrated Comparison</h3>
+
+    <table>
+      <thead>
+        <tr><th>Aspect</th><th>Manual Pipeline</th><th>Integrated Vectorization</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Index-time embedding</strong></td><td>Your code calls embedding API</td><td>Skillset calls embedding API</td></tr>
+        <tr><td><strong>Query-time embedding</strong></td><td>Your code embeds the query</td><td>Vectorizer embeds automatically</td></tr>
+        <tr><td><strong>Code complexity</strong></td><td>More code to write/maintain</td><td>Less code, simpler architecture</td></tr>
+        <tr><td><strong>Control</strong></td><td>Full control over embedding process</td><td>Less control, managed by service</td></tr>
+        <tr><td><strong>Embedding model</strong></td><td>Any model you choose</td><td>Must be Azure OpenAI or supported model</td></tr>
+        <tr><td><strong>Cost transparency</strong></td><td>You see each API call</td><td>Calls are made on your behalf</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Configuring a Vectorizer</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.search.documents.indexes.models <span class="kw">import</span> (
+    AzureOpenAIVectorizer,
+    AzureOpenAIVectorizerParameters,
+)
+
+<span class="cm"># Define the vectorizer</span>
+vectorizer = <span class="fn">AzureOpenAIVectorizer</span>(
+    vectorizer_name=<span class="str">"my-openai-vectorizer"</span>,
+    parameters=<span class="fn">AzureOpenAIVectorizerParameters</span>(
+        resource_url=<span class="str">"https://&lt;your-openai&gt;.openai.azure.com"</span>,
+        deployment_name=<span class="str">"text-embedding-ada-002"</span>,
+        model_name=<span class="str">"text-embedding-ada-002"</span>,
+    ),
+)
+
+<span class="cm"># Add to vector search config</span>
+vector_search = <span class="fn">VectorSearch</span>(
+    algorithms=[<span class="fn">HnswAlgorithmConfiguration</span>(name=<span class="str">"hnsw-config"</span>)],
+    profiles=[
+        <span class="fn">VectorSearchProfile</span>(
+            name=<span class="str">"hnsw-profile"</span>,
+            algorithm_configuration_name=<span class="str">"hnsw-config"</span>,
+            vectorizer_name=<span class="str">"my-openai-vectorizer"</span>,  <span class="cm"># Link the vectorizer</span>
+        )
+    ],
+    vectorizers=[vectorizer],
+)</code>
+    </div>
+
+    <p>With this configuration, you can send plain text queries and Azure AI Search will automatically embed them before performing vector search:</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.search.documents.models <span class="kw">import</span> VectorizableTextQuery
+
+<span class="cm"># No need to call embedding API yourself!</span>
+results = search_client.<span class="fn">search</span>(
+    search_text=<span class="str">"How does RAG work?"</span>,
+    vector_queries=[
+        <span class="fn">VectorizableTextQuery</span>(
+            text=<span class="str">"How does RAG work?"</span>,  <span class="cm"># Plain text, not a vector</span>
+            k_nearest_neighbors=<span class="num">5</span>,
+            fields=<span class="str">"content_vector"</span>,
+        )
+    ],
+    query_type=<span class="str">"semantic"</span>,
+    semantic_configuration_name=<span class="str">"semantic-config"</span>,
+)</code>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ When to Use Each Approach</div>
+      <p><strong>Use integrated vectorization</strong> when you want a simpler architecture and your embedding model is hosted on Azure OpenAI. <strong>Use manual pipelines</strong> when you need custom preprocessing, non-Azure embedding models, or fine-grained control over the embedding process.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: QUERYING VECTOR INDEXES
+         ============================================================ -->
+    <h2 id="querying-vector-indexes">Querying Vector Indexes: REST &amp; SDK</h2>
+
+    <p>Azure AI Search provides multiple ways to query your vector indexes. Let's explore both the REST API and the Python SDK approaches.</p>
+
+    <h3>REST API Query</h3>
+
+    <div class="code-block">
+      <span class="code-label">REST</span>
+      <code><span class="cm">// POST https://&lt;service&gt;.search.windows.net/indexes/my-index/docs/search?api-version=2024-07-01</span>
+<span class="cm">// Headers: Content-Type: application/json, api-key: &lt;admin-key&gt;</span>
+
+{
+  <span class="str">"search"</span>: <span class="str">"vector search fundamentals"</span>,
+  <span class="str">"vectorQueries"</span>: [
+    {
+      <span class="str">"kind"</span>: <span class="str">"vector"</span>,
+      <span class="str">"vector"</span>: [<span class="num">0.023</span>, <span class="num">-0.041</span>, <span class="num">0.087</span>, ...],
+      <span class="str">"fields"</span>: <span class="str">"content_vector"</span>,
+      <span class="str">"k"</span>: <span class="num">5</span>
+    }
+  ],
+  <span class="str">"queryType"</span>: <span class="str">"semantic"</span>,
+  <span class="str">"semanticConfiguration"</span>: <span class="str">"semantic-config"</span>,
+  <span class="str">"select"</span>: <span class="str">"title, content, category"</span>,
+  <span class="str">"filter"</span>: <span class="str">"category eq 'Search'"</span>,
+  <span class="str">"top"</span>: <span class="num">10</span>
+}</code>
+    </div>
+
+    <h3>Python SDK Query with Filters</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="cm"># Hybrid search with category filter and scoring profile</span>
+results = search_client.<span class="fn">search</span>(
+    search_text=<span class="str">"best practices for chunking documents"</span>,
+    vector_queries=[
+        <span class="fn">VectorizedQuery</span>(
+            vector=query_embedding,
+            k_nearest_neighbors=<span class="num">5</span>,
+            fields=<span class="str">"content_vector"</span>,
+        )
+    ],
+    filter=<span class="str">"category eq 'Best Practices'"</span>,
+    query_type=<span class="str">"semantic"</span>,
+    semantic_configuration_name=<span class="str">"semantic-config"</span>,
+    top=<span class="num">10</span>,
+    include_total_count=<span class="kw">True</span>,
+)
+
+<span class="fn">print</span>(f<span class="str">"Total matching documents: {results.get_count()}"</span>)
+
+<span class="kw">for</span> result <span class="kw">in</span> results:
+    <span class="fn">print</span>(f<span class="str">"  {result['title']}"</span>)
+    <span class="fn">print</span>(f<span class="str">"  Score: {result['@search.score']}"</span>)
+
+    <span class="cm"># Semantic captions (if available)</span>
+    captions = result.get(<span class="str">"@search.captions"</span>)
+    <span class="kw">if</span> captions:
+        <span class="fn">print</span>(f<span class="str">"  Caption: {captions[0].text}"</span>)</code>
+    </div>
+
+    <h3>Query Parameters Reference</h3>
+
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>search_text</code></td><td>Keyword query string for BM25 full-text search</td></tr>
+        <tr><td><code>vector_queries</code></td><td>One or more vector queries (VectorizedQuery or VectorizableTextQuery)</td></tr>
+        <tr><td><code>query_type</code></td><td><code>"simple"</code>, <code>"full"</code> (Lucene), or <code>"semantic"</code></td></tr>
+        <tr><td><code>filter</code></td><td>OData filter expression (e.g., <code>category eq 'Search'</code>)</td></tr>
+        <tr><td><code>select</code></td><td>Comma-separated list of fields to return</td></tr>
+        <tr><td><code>top</code></td><td>Number of results to return (default 50)</td></tr>
+        <tr><td><code>skip</code></td><td>Number of results to skip for pagination</td></tr>
+        <tr><td><code>semantic_configuration_name</code></td><td>Name of semantic config for re-ranking</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ============================================================
+         SECTION: PERFORMANCE & SCALING
+         ============================================================ -->
+    <h2 id="performance-scaling">Performance &amp; Scaling</h2>
+
+    <p>As your vector index grows and query volume increases, you'll need to think about performance and scaling. Azure AI Search provides several mechanisms to handle production workloads.</p>
+
+    <h3>Replicas and Partitions</h3>
+
+    <table>
+      <thead>
+        <tr><th>Resource</th><th>Purpose</th><th>Scaling Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Replicas</strong></td><td>Copies of your index for concurrent queries</td><td>More replicas = higher query throughput</td></tr>
+        <tr><td><strong>Partitions</strong></td><td>Divisions of your index across storage units</td><td>More partitions = larger index capacity</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ HA Recommendations</div>
+      <p><strong>2 replicas</strong> for read high-availability. <strong>3 replicas</strong> for read/write high-availability (required for SLA). Max replicas and partitions vary by tier.</p>
+    </div>
+
+    <h3>Vector Index Size Estimation</h3>
+
+    <p>Each vector in your index consumes memory. Estimate your index size:</p>
+
+    <div class="code-block">
+      <span class="code-label">Formula</span>
+      <code><span class="cm">Vector Memory = num_documents × dimensions × 4 bytes (float32)</span>
+
+<span class="cm">Example: 1 million docs × 1536 dims × 4 bytes</span>
+       = <span class="num">6,144,000,000</span> bytes
+       ≈ <span class="num">5.7 GB</span> of vector data alone
+
+<span class="cm">HNSW graph overhead adds ~10-30% depending on m parameter</span>
+<span class="cm">Total estimate: ~6.5-7.5 GB for vectors + HNSW graph</span></code>
+    </div>
+
+    <h3>Performance Optimization Tips</h3>
+
+    <ul>
+      <li><strong>Use filters aggressively</strong> — Pre-filter narrows the vector search space, reducing latency significantly.</li>
+      <li><strong>Right-size your dimensions</strong> — If using <code>text-embedding-3-small</code>, consider 512 dims instead of 1536 when quality is acceptable.</li>
+      <li><strong>Tune HNSW parameters</strong> — Lower <code>efSearch</code> for faster queries (at slight recall cost). Higher for better recall.</li>
+      <li><strong>Monitor with Azure Monitor</strong> — Track query latency, throttling, document count, and storage usage.</li>
+      <li><strong>Use caching</strong> — For repeated queries, cache results at the application layer.</li>
+      <li><strong>Optimize chunk sizes</strong> — Fewer, larger chunks mean fewer vectors, but potentially lower retrieval precision.</li>
+    </ul>
+
+    <h3>Service Tier Selection</h3>
+
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Best For</th><th>Max Indexes</th><th>Vector Quota</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Free</strong></td><td>Development and testing</td><td>3</td><td>Limited</td></tr>
+        <tr><td><strong>Basic</strong></td><td>Small production workloads</td><td>15</td><td>Up to 1 GB vectors</td></tr>
+        <tr><td><strong>Standard S1</strong></td><td>Medium workloads</td><td>50</td><td>Up to 8 GB vectors (per partition)</td></tr>
+        <tr><td><strong>Standard S2</strong></td><td>Large workloads</td><td>200</td><td>Up to 32 GB vectors (per partition)</td></tr>
+        <tr><td><strong>Standard S3</strong></td><td>Enterprise scale</td><td>200+</td><td>Up to 96 GB vectors (per partition)</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ============================================================
+         SECTION: MINI HACK
+         ============================================================ -->
+    <h2 id="mini-hack">🧪 Mini Hack: Create a Vector Index &amp; Run Hybrid Search</h2>
+
+    <div class="mini-hack-banner">
+      <h3>🛠️ Hands-On Lab</h3>
+      <p>Build a vector index, ingest documents with embeddings, and execute hybrid search queries — all in 45 to 60 minutes.</p>
+    </div>
+
+    <p>In this mini hack, you'll put everything from this module into practice. You'll create a vector index, generate embeddings with Azure OpenAI, upload sample documents, and run hybrid queries combining keyword, vector, and semantic search.</p>
+
+    <h3>What You'll Build</h3>
+
+    <ul>
+      <li>A vector index with HNSW configuration and semantic ranking</li>
+      <li>An embedding pipeline using Azure OpenAI <code>text-embedding-ada-002</code></li>
+      <li>8 sample documents covering RAG, search, chunking, and AI Foundry topics</li>
+      <li>Hybrid search queries with filters, semantic captions, and reranker scores</li>
+    </ul>
+
+    <h3>Prerequisites</h3>
+
+    <ul>
+      <li>Azure subscription with an <strong>Azure AI Search</strong> resource (Basic tier or above)</li>
+      <li>Azure OpenAI resource with a deployed embedding model</li>
+      <li>Python 3.10+ with <code>azure-search-documents</code> and <code>openai</code> packages</li>
+    </ul>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">📄 Full Lab Instructions</div>
+      <p>The complete step-by-step lab with all code files is available in <strong><code>lab/hands-on-lab.md</code></strong>. The lab includes 6 exercises, 5 checkpoints, and a cleanup guide.</p>
+    </div>
+
+    <h3>Quick Start</h3>
+
+    <div class="code-block">
+      <span class="code-label">Bash</span>
+      <code><span class="cm"># 1. Install dependencies</span>
+pip install azure-search-documents==11.6.0 azure-identity openai python-dotenv
+
+<span class="cm"># 2. Create index</span>
+python create_index.py
+
+<span class="cm"># 3. Generate embeddings & upload documents</span>
+python upload_documents.py
+
+<span class="cm"># 4. Run hybrid search queries</span>
+python hybrid_search.py</code>
+    </div>
+
+    <!-- ============================================================
+         SECTION: KEY TAKEAWAYS
+         ============================================================ -->
+    <h2 id="key-takeaways">Key Takeaways</h2>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="card-icon">🔍</div>
+        <h4>Azure AI Search is the Retrieval Backbone</h4>
+        <p>A unified platform for keyword, semantic, and vector search — deeply integrated with Azure AI Foundry for end-to-end AI applications.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">📐</div>
+        <h4>Schema Design Matters</h4>
+        <p>Pair SearchableFields with vector fields. Use language analyzers, semantic configs, and filterable metadata for optimal retrieval.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">⚡</div>
+        <h4>Hybrid Search is the Gold Standard</h4>
+        <p>Combine BM25 keyword scoring + vector similarity + semantic re-ranking with RRF for the best retrieval quality.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🔧</div>
+        <h4>Integrated Vectorization Simplifies Architecture</h4>
+        <p>Let Azure AI Search handle embedding at index and query time. Less code, fewer moving parts, easier maintenance.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">📊</div>
+        <h4>Scale with Replicas &amp; Partitions</h4>
+        <p>Replicas for throughput, partitions for capacity. Monitor with Azure Monitor and size your tier based on vector storage needs.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🎯</div>
+        <h4>Embeddings Are the Foundation</h4>
+        <p>Choose the right model and dimensions. Cosine similarity with text-embedding models is the default go-to for text retrieval.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION: MODULE 13 PREVIEW
+         ============================================================ -->
+    <h2 id="module-13-preview">Module 13 Preview</h2>
+
+    <p>Now that you understand how to build and query vector indexes, you're ready for the next step: <strong>Retrieval-Augmented Generation (RAG) Patterns</strong>. In Module 13, we'll connect the retrieval layer you built here to large language models, creating end-to-end systems that ground AI responses in your own data.</p>
+
+    <h3>What's Coming in Module 13</h3>
+
+    <ul>
+      <li><strong>RAG architecture patterns</strong> — Query → Retrieve → Generate → Ground</li>
+      <li><strong>Prompt engineering for RAG</strong> — How to structure prompts with retrieved context</li>
+      <li><strong>Azure AI Foundry RAG workflows</strong> — Using prompt flow and AI agents with search indexes</li>
+      <li><strong>Evaluation metrics</strong> — Measuring groundedness, relevance, coherence, and faithfulness</li>
+      <li><strong>Advanced patterns</strong> — Multi-turn RAG, agentic RAG, and RAG with tools</li>
+    </ul>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ Preparation for Module 13</div>
+      <p>Keep your vector index from the Mini Hack lab running — we'll use it as the retrieval layer for the RAG pipeline in Module 13. If you've deleted it, you can quickly recreate it using the lab scripts.</p>
+    </div>
+
+    <!-- ============================================================
+         SECTION: RESOURCES
+         ============================================================ -->
+    <h2 id="resources">Resources</h2>
+
+    <h3>Official Documentation</h3>
+
+    <ul>
+      <li><a href="https://learn.microsoft.com/azure/search/" target="_blank" rel="noopener">Azure AI Search Documentation</a> — Complete service documentation</li>
+      <li><a href="https://learn.microsoft.com/azure/search/vector-search-overview" target="_blank" rel="noopener">Vector Search Overview</a> — Concepts and configuration</li>
+      <li><a href="https://learn.microsoft.com/azure/search/hybrid-search-overview" target="_blank" rel="noopener">Hybrid Search Overview</a> — Combining retrieval methods</li>
+      <li><a href="https://learn.microsoft.com/azure/search/vector-search-integrated-vectorization" target="_blank" rel="noopener">Integrated Vectorization</a> — Automatic embedding generation</li>
+      <li><a href="https://learn.microsoft.com/azure/search/semantic-search-overview" target="_blank" rel="noopener">Semantic Ranking</a> — Transformer-based re-ranking</li>
+      <li><a href="https://learn.microsoft.com/azure/search/search-what-is-an-index" target="_blank" rel="noopener">Index Design Guide</a> — Schema best practices</li>
+    </ul>
+
+    <h3>SDK &amp; API References</h3>
+
+    <ul>
+      <li><a href="https://learn.microsoft.com/python/api/azure-search-documents/" target="_blank" rel="noopener">Python SDK: azure-search-documents</a></li>
+      <li><a href="https://learn.microsoft.com/rest/api/searchservice/" target="_blank" rel="noopener">Search Service REST API</a></li>
+      <li><a href="https://learn.microsoft.com/azure/search/search-api-versions" target="_blank" rel="noopener">API Versions Reference</a></li>
+    </ul>
+
+    <h3>Tools &amp; Portals</h3>
+
+    <ul>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry Portal</a> — Manage AI projects and search connections</li>
+      <li><a href="https://portal.azure.com" target="_blank" rel="noopener">Azure Portal</a> — Manage search service resources</li>
+    </ul>
+
+    <h3>Related Module Materials</h3>
+
+    <ul>
+      <li><strong>Training Guide:</strong> <code>training-guide.md</code></li>
+      <li><strong>Presentation:</strong> <code>slides/presentation.html</code></li>
+      <li><strong>Hands-On Lab:</strong> <code>lab/hands-on-lab.md</code></li>
+      <li><strong>Assessment Quiz:</strong> <code>quiz/assessment.md</code></li>
+    </ul>
+
+    <!-- ============================================================
+         MODULE NAVIGATION
+         ============================================================ -->
+    <nav class="module-nav">
+      <a href="../module-11/blog.html" class="prev">
+        <span class="nav-label">← Previous</span>
+        <span class="nav-title">Module 11: Data Ingestion &amp; Preparation</span>
+      </a>
+      <a href="../module-13/blog.html" class="next">
+        <span class="nav-label">Next →</span>
+        <span class="nav-title">Module 13: RAG Patterns</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>&copy; 2026 Azure AI Foundry: Zero to Hero Training. Module 12 of 45.</p>
+    <ul class="footer-links">
+      <li><a href="#">Curriculum</a></li>
+      <li><a href="#">Resources</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+      <li><a href="#">Privacy</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Scroll Progress Bar ----
+  const progressBar = document.getElementById('scrollProgress');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+
+  // ---- Back to Top Button ----
+  const backToTop = document.getElementById('backToTop');
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---- Sticky TOC Active State with IntersectionObserver ----
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = [];
+
+  tocLinks.forEach(function(link) {
+    const id = link.getAttribute('href').substring(1);
+    const section = document.getElementById(id);
+    if (section) sections.push({ id: id, element: section, link: link });
+  });
+
+  function setActiveLink(id) {
+    tocLinks.forEach(function(link) {
+      link.classList.remove('active');
+    });
+    const activeLink = document.querySelector('.toc-list a[href="#' + id + '"]');
+    if (activeLink) {
+      activeLink.classList.add('active');
+    }
+  }
+
+  if ('IntersectionObserver' in window) {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          setActiveLink(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(function(section) {
+      observer.observe(section.element);
+    });
+  }
+
+  // ---- Smooth scroll for TOC links ----
+  tocLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ---- Combined scroll listener ----
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        updateProgress();
+        updateBackToTop();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // ---- Initial state ----
+  updateProgress();
+  updateBackToTop();
+  if (sections.length > 0) {
+    setActiveLink(sections[0].id);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Module 18: Agent Tools Deep Dive — Azure AI Foundry Zero to Hero Training Series. Master Code Interpreter, File Search, Azure Functions, OpenAPI tools, and Bing Grounding for building powerful AI agents.">
+    <meta name="keywords" content="Azure AI Foundry, AI Agents, Code Interpreter, File Search, Azure Functions, OpenAPI Tools, Bing Grounding, Vector Store, Agent Tools">
+    <meta name="author" content="Azure AI Foundry Training">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Module 18: Agent Tools Deep Dive | Azure AI Foundry">
+    <meta property="og:description" content="Master Code Interpreter, File Search, Azure Functions as tools, OpenAPI integrations, and Bing Grounding to build powerful multi-tool AI agents.">
+    <meta property="og:type" content="article">
+    <title>Module 18: Agent Tools Deep Dive | Azure AI Foundry: Zero to Hero</title>
+    <style>
+        :root {
+            --ms-blue: #0078d4;
+            --ms-dark-blue: #004578;
+            --ms-purple: #5c2d91;
+            --ms-light-blue: #50e6ff;
+            --ms-green: #107c10;
+            --ms-orange: #ff8c00;
+            --ms-red: #d13438;
+            --ms-yellow: #fce100;
+            --ms-gray-10: #faf9f8;
+            --ms-gray-20: #f3f2f1;
+            --ms-gray-30: #edebe9;
+            --ms-gray-40: #d2d0ce;
+            --ms-gray-60: #a19f9d;
+            --ms-gray-90: #605e5c;
+            --ms-gray-130: #323130;
+            --ms-gray-150: #252423;
+            --ms-gray-160: #1b1a19;
+            --surface: #ffffff;
+            --text-primary: #323130;
+            --text-secondary: #605e5c;
+            --code-bg: #f6f8fa;
+            --code-border: #d0d7de;
+            --max-width: 780px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.7;
+            background: var(--ms-gray-10);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Progress Bar ─── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+            z-index: 10001;
+            transition: width 0.15s ease-out;
+        }
+
+        /* ─── Top Navigation ─── */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--ms-gray-160);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 10000;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .top-nav .ms-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .top-nav .ms-logo svg { width: 108px; height: 24px; }
+        .top-nav .nav-divider {
+            width: 1px; height: 24px; background: rgba(255,255,255,0.2);
+            margin: 0 16px;
+        }
+        .top-nav .nav-title {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .top-nav .nav-breadcrumb {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .top-nav .nav-breadcrumb a {
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .top-nav .nav-breadcrumb a:hover { color: #fff; }
+        .top-nav .nav-breadcrumb span { color: rgba(255,255,255,0.4); }
+
+        /* ─── Hero Section ─── */
+        .hero {
+            margin-top: 48px;
+            background: linear-gradient(135deg, var(--ms-dark-blue) 0%, var(--ms-blue) 40%, var(--ms-purple) 100%);
+            padding: 80px 24px 60px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(92,45,145,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-content { max-width: var(--max-width); margin: 0 auto; position: relative; z-index: 1; }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .hero-badge .badge-dot {
+            width: 8px; height: 8px;
+            background: var(--ms-light-blue);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 620px;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 32px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+        .hero-meta-item svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* ─── Main Layout ─── */
+        .main-layout {
+            max-width: calc(var(--max-width) + 280px);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 40px;
+            padding: 40px 24px;
+            align-items: start;
+        }
+
+        /* ─── Sticky TOC ─── */
+        .toc-sidebar {
+            position: sticky;
+            top: 68px;
+            max-height: calc(100vh - 88px);
+            overflow-y: auto;
+            padding-right: 16px;
+        }
+        .toc-sidebar::-webkit-scrollbar { width: 3px; }
+        .toc-sidebar::-webkit-scrollbar-thumb { background: var(--ms-gray-40); border-radius: 3px; }
+        .toc-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ms-gray-90);
+            margin-bottom: 16px;
+        }
+        .toc-list { list-style: none; }
+        .toc-list li { margin-bottom: 2px; }
+        .toc-list a {
+            display: block;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .toc-list a:hover { color: var(--ms-blue); background: rgba(0,120,212,0.05); }
+        .toc-list a.active {
+            color: var(--ms-blue);
+            border-left-color: var(--ms-blue);
+            background: rgba(0,120,212,0.08);
+            font-weight: 600;
+        }
+
+        /* ─── Article Content ─── */
+        .article-content { min-width: 0; }
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 48px;
+            border: 1px solid var(--ms-gray-30);
+        }
+
+        .content-card h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--ms-dark-blue);
+            margin: 48px 0 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--ms-gray-30);
+            scroll-margin-top: 100px;
+        }
+        .content-card h2:first-of-type { margin-top: 0; }
+        .content-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 32px 0 12px;
+        }
+        .content-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ms-gray-130);
+            margin: 24px 0 8px;
+        }
+        .content-card p { margin-bottom: 16px; color: var(--text-primary); }
+        .content-card ul, .content-card ol { margin: 0 0 16px 24px; }
+        .content-card li { margin-bottom: 8px; }
+        .content-card a { color: var(--ms-blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+        .content-card a:hover { border-bottom-color: var(--ms-blue); }
+        .content-card strong { font-weight: 600; }
+
+        /* ─── Code Blocks ─── */
+        pre {
+            background: var(--ms-gray-150);
+            color: #e6e6e6;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+            position: relative;
+            border: 1px solid var(--ms-gray-130);
+        }
+        pre .lang-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 11px;
+            color: var(--ms-gray-60);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        p code, li code {
+            background: var(--code-bg);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--code-border);
+            font-size: 0.85em;
+            color: var(--ms-dark-blue);
+        }
+
+        /* Syntax Highlighting */
+        .kw { color: #569cd6; }
+        .str { color: #ce9178; }
+        .cm { color: #6a9955; }
+        .fn { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .type { color: #4ec9b0; }
+        .param { color: #9cdcfe; }
+        .op { color: #d4d4d4; }
+        .dec { color: #c586c0; }
+
+        /* ─── Callouts ─── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .callout-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .callout-content { flex: 1; }
+        .callout-content strong { display: block; margin-bottom: 4px; }
+        .callout-content p { margin-bottom: 8px; }
+        .callout-content p:last-child { margin-bottom: 0; }
+
+        .callout-info {
+            background: rgba(0,120,212,0.06);
+            border-color: var(--ms-blue);
+        }
+        .callout-info .callout-icon { color: var(--ms-blue); }
+
+        .callout-tip {
+            background: rgba(16,124,16,0.06);
+            border-color: var(--ms-green);
+        }
+        .callout-tip .callout-icon { color: var(--ms-green); }
+
+        .callout-warning {
+            background: rgba(255,140,0,0.06);
+            border-color: var(--ms-orange);
+        }
+        .callout-warning .callout-icon { color: var(--ms-orange); }
+
+        .callout-important {
+            background: rgba(209,52,56,0.06);
+            border-color: var(--ms-red);
+        }
+        .callout-important .callout-icon { color: var(--ms-red); }
+
+        /* ─── Video Embed ─── */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            margin: 24px 0;
+            box-shadow: var(--shadow-md);
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ─── Feature Cards ─── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: var(--ms-gray-10);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .feature-card .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .feature-card h4 { margin: 0 0 8px; font-size: 0.95rem; }
+        .feature-card p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; }
+
+        /* ─── Architecture Diagram ─── */
+        .arch-diagram {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-diagram .diagram-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--ms-dark-blue);
+            margin-bottom: 20px;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .arch-node {
+            background: white;
+            border: 2px solid var(--ms-blue);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ms-dark-blue);
+            box-shadow: var(--shadow-sm);
+        }
+        .arch-node.purple { border-color: var(--ms-purple); color: var(--ms-purple); }
+        .arch-node.green { border-color: var(--ms-green); color: var(--ms-green); }
+        .arch-node.orange { border-color: var(--ms-orange); color: var(--ms-orange); }
+        .arch-node.red { border-color: var(--ms-red); color: var(--ms-red); }
+        .arch-arrow { font-size: 1.5rem; color: var(--ms-gray-60); }
+
+        /* ─── Comparison Table ─── */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.9rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--ms-gray-30);
+        }
+        .comparison-table thead {
+            background: var(--ms-dark-blue);
+            color: white;
+        }
+        .comparison-table th {
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .comparison-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--ms-gray-30);
+        }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table tbody tr:nth-child(even) { background: var(--ms-gray-10); }
+        .comparison-table tbody tr:hover { background: rgba(0,120,212,0.04); }
+
+        /* ─── Step List ─── */
+        .step-list { counter-reset: step-counter; list-style: none; margin-left: 0; padding: 0; }
+        .step-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 48px;
+            margin-bottom: 24px;
+        }
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--ms-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .step-list li h4 { margin-top: 4px; }
+
+        /* ─── Module Navigation ─── */
+        .module-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 16px;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 2px solid var(--ms-gray-30);
+        }
+        .module-nav a {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px 24px;
+            background: var(--ms-gray-10);
+            border: 1px solid var(--ms-gray-30);
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .module-nav a:hover {
+            border-color: var(--ms-blue);
+            background: rgba(0,120,212,0.04);
+            transform: translateY(-1px);
+        }
+        .module-nav a .nav-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--ms-blue);
+        }
+        .module-nav a .nav-module {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .module-nav a.next { text-align: right; }
+
+        /* ─── Back to Top ─── */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: var(--ms-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .back-to-top:hover { background: var(--ms-dark-blue); transform: translateY(-2px); }
+        .back-to-top svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* ─── Footer ─── */
+        .site-footer {
+            background: var(--ms-gray-160);
+            color: rgba(255,255,255,0.7);
+            padding: 40px 24px;
+            margin-top: 48px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .site-footer a { color: var(--ms-light-blue); text-decoration: none; }
+        .site-footer a:hover { text-decoration: underline; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                padding: 24px 16px;
+            }
+            .toc-sidebar {
+                position: static;
+                max-height: none;
+                border-bottom: 1px solid var(--ms-gray-30);
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+            }
+            .content-card { padding: 24px; }
+            .hero { padding: 60px 16px 40px; }
+            .top-nav .nav-breadcrumb { display: none; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero-meta { flex-direction: column; gap: 8px; }
+            .module-nav { flex-direction: column; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+
+        /* ─── Print ─── */
+        @media print {
+            .top-nav, .progress-bar, .back-to-top, .toc-sidebar, .video-container { display: none !important; }
+            .main-layout { display: block; }
+            .hero { background: none !important; color: #000 !important; padding: 20px 0; }
+            .hero-badge { border: 1px solid #000; }
+            .content-card { box-shadow: none; border: none; padding: 0; }
+            pre { background: #f5f5f5 !important; color: #333 !important; border: 1px solid #ccc; }
+            .module-nav a { border: 1px solid #ccc; }
+            body { background: #fff; }
+            .callout { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav" role="navigation" aria-label="Global navigation">
+        <a href="https://devblogs.microsoft.com" class="ms-logo" aria-label="Microsoft Developer Blogs">
+            <svg viewBox="0 0 108 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#f25022" d="M0 0h10.931v10.931H0z"/>
+                <path fill="#7fba00" d="M12.069 0H23v10.931H12.069z"/>
+                <path fill="#00a4ef" d="M0 12.069h10.931V23H0z"/>
+                <path fill="#ffb900" d="M12.069 12.069H23V23H12.069z"/>
+                <text x="28" y="17" fill="#fff" font-family="Segoe UI, sans-serif" font-size="14" font-weight="600">Developer Blogs</text>
+            </svg>
+        </a>
+        <div class="nav-divider"></div>
+        <span class="nav-title">AI Foundry Training Blog</span>
+        <div class="nav-breadcrumb">
+            <a href="#">Zero to Hero</a>
+            <span>›</span>
+            <a href="#">Arc 4: AI Agents</a>
+            <span>›</span>
+            <a href="#" aria-current="page">Module 18</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                ARC 4 · AI AGENTS
+            </div>
+            <h1>Agent Tools Deep Dive</h1>
+            <p class="subtitle">Master the five essential agent tools — Code Interpreter, File Search, Azure Functions, OpenAPI integrations, and Bing Grounding — to build powerful, multi-capable AI agents on Azure AI Foundry.</p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM8.5 4h-1v4.5l3.5 2.1.5-.82-3-1.78V4z"/></svg>
+                    120 min
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm11.28-1.78L7.5 9.94 4.72 7.16 3.66 8.22l3.84 3.84 4.84-4.84-1.06-1z"/></svg>
+                    Module 18 of 45
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M2 4a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2-.5a.5.5 0 00-.5.5v8a.5.5 0 00.5.5h8a.5.5 0 00.5-.5V4a.5.5 0 00-.5-.5H4z"/></svg>
+                    April 2026
+                </div>
+                <div class="hero-meta-item">
+                    <svg viewBox="0 0 16 16"><path d="M3.5 2A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14h9a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0012.5 2h-9zM5 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4.5-1.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
+                    🟡 Intermediate
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sticky TOC Sidebar -->
+        <aside class="toc-sidebar" aria-label="Table of Contents">
+            <div class="toc-title">On this page</div>
+            <ul class="toc-list">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#video">Video Tutorial</a></li>
+                <li><a href="#tools-landscape">Tools Landscape</a></li>
+                <li><a href="#code-interpreter">Code Interpreter</a></li>
+                <li><a href="#file-search">File Search</a></li>
+                <li><a href="#azure-functions">Azure Functions</a></li>
+                <li><a href="#openapi-tools">OpenAPI Tools</a></li>
+                <li><a href="#bing-grounding">Bing Grounding</a></li>
+                <li><a href="#comparison">Tool Comparison</a></li>
+                <li><a href="#mini-hack">Mini Hack</a></li>
+                <li><a href="#best-practices">Best Practices</a></li>
+                <li><a href="#next-steps">Next Steps</a></li>
+            </ul>
+        </aside>
+
+        <!-- Article Content -->
+        <article class="article-content">
+            <div class="content-card">
+
+                <!-- ═══════════ OVERVIEW ═══════════ -->
+                <h2 id="overview">Overview</h2>
+                <p>In <a href="../module-17/blog.html">Module 17</a>, you built your first agent on Azure AI Foundry. Now it's time to go deeper. This module explores the <strong>five core tools</strong> that give agents the ability to execute code, search documents, call APIs, connect external services, and access real-time web information.</p>
+                <p>Understanding when and how to use each tool is the key to building agents that can handle complex, real-world tasks — from analyzing datasets with Python code to answering questions from your proprietary documentation to calling third-party APIs for live data.</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <span class="icon">🐍</span>
+                        <h4>Code Interpreter</h4>
+                        <p>Sandboxed Python for data analysis &amp; visualization</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">🔍</span>
+                        <h4>File Search</h4>
+                        <p>Semantic retrieval over uploaded documents</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">⚡</span>
+                        <h4>Azure Functions</h4>
+                        <p>Custom serverless API endpoints as tools</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">🔗</span>
+                        <h4>OpenAPI Tools</h4>
+                        <p>Connect any external REST API</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="icon">🌐</span>
+                        <h4>Bing Grounding</h4>
+                        <p>Real-time web search for grounded answers</p>
+                    </div>
+                </div>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5 4.5v-5h3v1h-2v4h-1zm0-7V4h1.5v1.5H6.5z"/></svg>
+                    <div class="callout-content">
+                        <strong>Prerequisites</strong>
+                        <p>Complete <a href="../module-17/blog.html">Module 17: Building Your First Agent</a> before starting this module. You should have an Azure AI Foundry project with an agent already deployed.</p>
+                    </div>
+                </div>
+
+                <!-- ═══════════ VIDEO ═══════════ -->
+                <h2 id="video">Video Tutorial</h2>
+                <p>Watch the full walkthrough to see each agent tool demonstrated live in Azure AI Foundry:</p>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/wL8H0RySf6I" title="Module 18: Agent Tools Deep Dive — Azure AI Foundry" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                </div>
+
+                <!-- ═══════════ TOOLS LANDSCAPE ═══════════ -->
+                <h2 id="tools-landscape">Agent Tools Landscape</h2>
+                <p>Azure AI Foundry agents support a rich ecosystem of tools that extend their capabilities far beyond simple text generation. Each tool type serves a distinct purpose:</p>
+
+                <div class="arch-diagram">
+                    <div class="diagram-title">Agent Tool Architecture</div>
+                    <div class="arch-flow">
+                        <div class="arch-node">🧑 User Message</div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node purple">🤖 Agent (LLM)</div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node green">🔧 Tool Selection</div>
+                    </div>
+                    <div style="margin-top: 16px;"></div>
+                    <div class="arch-flow">
+                        <div class="arch-node">🐍 Code Interpreter</div>
+                        <div class="arch-node">🔍 File Search</div>
+                        <div class="arch-node purple">⚡ Azure Functions</div>
+                        <div class="arch-node green">🔗 OpenAPI</div>
+                        <div class="arch-node orange">🌐 Bing</div>
+                    </div>
+                </div>
+
+                <p>The agent's LLM examines the user's message, determines which tool(s) to invoke, calls them, processes the results, and generates a final response. This tool-calling loop can execute <strong>multiple tools in sequence or parallel</strong> within a single conversation turn.</p>
+
+                <!-- ═══════════ CODE INTERPRETER ═══════════ -->
+                <h2 id="code-interpreter">1. Code Interpreter Tool</h2>
+                <p>The Code Interpreter tool gives your agent the ability to write and execute <strong>Python code in a sandboxed environment</strong>. It is purpose-built for data analysis, mathematical computation, and visualization — tasks that LLMs can describe but cannot natively execute.</p>
+
+                <h3>Capabilities</h3>
+                <ul>
+                    <li><strong>Data analysis</strong> — Process CSV, Excel, JSON, and Parquet files with pandas, numpy, and scipy</li>
+                    <li><strong>Visualization</strong> — Generate charts and plots with matplotlib and seaborn, returned as downloadable images</li>
+                    <li><strong>Math &amp; statistics</strong> — Execute precise calculations, regressions, and statistical tests</li>
+                    <li><strong>File generation</strong> — Create output files (CSV, XLSX, PDF) the user can download</li>
+                    <li><strong>Iterative debugging</strong> — Automatically retry failed code with corrected syntax</li>
+                </ul>
+
+                <h3>Enabling Code Interpreter</h3>
+<pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">CodeInterpreterTool</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+<span class="param">project_client</span> = <span class="type">AIProjectClient</span>(
+    <span class="param">credential</span>=<span class="type">DefaultAzureCredential</span>(),
+    <span class="param">endpoint</span>=<span class="str">"https://your-project.services.ai.azure.com"</span>,
+)
+
+<span class="cm"># Create an agent with Code Interpreter enabled</span>
+<span class="param">code_interpreter</span> = <span class="type">CodeInterpreterTool</span>()
+
+<span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"data-analyst"</span>,
+    <span class="param">instructions</span>=<span class="str">"You are a data analyst. Analyze uploaded files and create visualizations."</span>,
+    <span class="param">tools</span>=<span class="param">code_interpreter</span>.<span class="fn">definitions</span>,
+)
+<span class="fn">print</span>(<span class="str">f"Agent created: </span><span class="param">{agent.id}</span><span class="str">"</span>)</pre>
+
+                <h3>Uploading Files for Analysis</h3>
+<pre><span class="lang-label">Python</span>
+<span class="cm"># Upload a CSV file for the agent to analyze</span>
+<span class="param">uploaded_file</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">upload_file_and_poll</span>(
+    <span class="param">file_path</span>=<span class="str">"sales_data.csv"</span>,
+    <span class="param">purpose</span>=<span class="str">"agents"</span>,
+)
+
+<span class="cm"># Create a thread with the file attached</span>
+<span class="param">thread</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_thread</span>()
+
+<span class="param">message</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_message</span>(
+    <span class="param">thread_id</span>=<span class="param">thread</span>.<span class="param">id</span>,
+    <span class="param">role</span>=<span class="str">"user"</span>,
+    <span class="param">content</span>=<span class="str">"Analyze trends in this sales data and create a bar chart of monthly revenue."</span>,
+    <span class="param">attachments</span>=[{
+        <span class="str">"file_id"</span>: <span class="param">uploaded_file</span>.<span class="param">id</span>,
+        <span class="str">"tools"</span>: [{<span class="str">"type"</span>: <span class="str">"code_interpreter"</span>}],
+    }],
+)
+
+<span class="cm"># Run the agent and wait for completion</span>
+<span class="param">run</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_and_process_run</span>(
+    <span class="param">thread_id</span>=<span class="param">thread</span>.<span class="param">id</span>,
+    <span class="param">agent_id</span>=<span class="param">agent</span>.<span class="param">id</span>,
+)</pre>
+
+                <div class="callout callout-warning">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 00.016 1.001c.19.31.546.5.934.5h13.856a1.08 1.08 0 00.934-.5.98.98 0 00.016-1.001L8.893 1.5zM8 5c.535 0 .954.462.9.995l-.35 3.507a.553.553 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z"/></svg>
+                    <div class="callout-content">
+                        <strong>Sandbox Limits</strong>
+                        <p>Code Interpreter runs in a stateless sandbox. Each execution session has limited memory, a timeout of ~3 minutes, and no internet access. Pre-installed libraries include pandas, numpy, matplotlib, seaborn, scipy, and scikit-learn.</p>
+                    </div>
+                </div>
+
+                <!-- ═══════════ FILE SEARCH ═══════════ -->
+                <h2 id="file-search">2. File Search Tool</h2>
+                <p>The File Search tool enables <strong>semantic retrieval</strong> over your uploaded documents. It automatically creates vector store embeddings, chunks your files, and performs similarity search to retrieve the most relevant passages — giving your agent access to knowledge that isn't in its training data.</p>
+
+                <h3>How It Works</h3>
+                <ol class="step-list">
+                    <li>
+                        <h4>Create a Vector Store</h4>
+                        <p>Upload documents (PDF, DOCX, TXT, MD, HTML) to a vector store. Azure AI Foundry automatically chunks and embeds the content.</p>
+                    </li>
+                    <li>
+                        <h4>Attach to Agent</h4>
+                        <p>Associate the vector store with your agent's File Search tool. The agent can now search across all uploaded documents.</p>
+                    </li>
+                    <li>
+                        <h4>Semantic Query</h4>
+                        <p>When a user asks a question, the agent converts it to a semantic query, retrieves relevant chunks, and synthesizes an answer with citations.</p>
+                    </li>
+                </ol>
+
+                <h3>Creating a Vector Store &amp; Agent</h3>
+<pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">FileSearchTool</span>
+
+<span class="cm"># Upload documentation files</span>
+<span class="param">docs</span> = [<span class="str">"product-guide.pdf"</span>, <span class="str">"api-reference.md"</span>, <span class="str">"faq.docx"</span>]
+<span class="param">file_ids</span> = []
+<span class="kw">for</span> <span class="param">doc</span> <span class="kw">in</span> <span class="param">docs</span>:
+    <span class="param">f</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">upload_file_and_poll</span>(
+        <span class="param">file_path</span>=<span class="param">doc</span>, <span class="param">purpose</span>=<span class="str">"agents"</span>
+    )
+    <span class="param">file_ids</span>.<span class="fn">append</span>(<span class="param">f</span>.<span class="param">id</span>)
+
+<span class="cm"># Create a vector store from the uploaded files</span>
+<span class="param">vector_store</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_vector_store_and_poll</span>(
+    <span class="param">name</span>=<span class="str">"product-docs"</span>,
+    <span class="param">file_ids</span>=<span class="param">file_ids</span>,
+)
+<span class="fn">print</span>(<span class="str">f"Vector store created: </span><span class="param">{vector_store.id}</span><span class="str"> ({vector_store.file_counts})"</span>)
+
+<span class="cm"># Create agent with File Search tool</span>
+<span class="param">file_search</span> = <span class="type">FileSearchTool</span>(
+    <span class="param">vector_store_ids</span>=[<span class="param">vector_store</span>.<span class="param">id</span>]
+)
+
+<span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"doc-assistant"</span>,
+    <span class="param">instructions</span>=<span class="str">"Answer questions using the product documentation. Always cite sources."</span>,
+    <span class="param">tools</span>=<span class="param">file_search</span>.<span class="fn">definitions</span>,
+    <span class="param">tool_resources</span>=<span class="param">file_search</span>.<span class="fn">resources</span>,
+)</pre>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5 4.5v-5h3v1h-2v4h-1zm0-7V4h1.5v1.5H6.5z"/></svg>
+                    <div class="callout-content">
+                        <strong>Supported File Formats</strong>
+                        <p>File Search supports <code>.pdf</code>, <code>.docx</code>, <code>.pptx</code>, <code>.txt</code>, <code>.md</code>, <code>.html</code>, <code>.json</code>, <code>.csv</code>, and more. Each vector store can hold up to 10,000 files with a maximum total of 100 GB.</p>
+                    </div>
+                </div>
+
+                <h3>Vector Store Configuration Options</h3>
+<pre><span class="lang-label">Python</span>
+<span class="cm"># Advanced: configure chunking strategy</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    <span class="type">VectorStoreChunkingStrategyRequest</span>,
+    <span class="type">VectorStoreStaticChunkingStrategy</span>,
+)
+
+<span class="param">vector_store</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_vector_store_and_poll</span>(
+    <span class="param">name</span>=<span class="str">"technical-docs"</span>,
+    <span class="param">file_ids</span>=<span class="param">file_ids</span>,
+    <span class="param">chunking_strategy</span>=<span class="type">VectorStoreChunkingStrategyRequest</span>(
+        <span class="param">type</span>=<span class="str">"static"</span>,
+        <span class="param">static</span>=<span class="type">VectorStoreStaticChunkingStrategy</span>(
+            <span class="param">max_chunk_size_tokens</span>=<span class="num">800</span>,
+            <span class="param">chunk_overlap_tokens</span>=<span class="num">400</span>,
+        ),
+    ),
+)</pre>
+
+                <!-- ═══════════ AZURE FUNCTIONS ═══════════ -->
+                <h2 id="azure-functions">3. Azure Functions as Tools</h2>
+                <p>When your agent needs custom logic — querying a database, processing a payment, sending an email, or any business-specific operation — you can expose <strong>Azure Functions as agent tools</strong>. This gives your agent access to serverless compute with your own code running behind the scenes.</p>
+
+                <h3>Architecture</h3>
+                <div class="arch-diagram">
+                    <div class="diagram-title">Azure Function Tool Flow</div>
+                    <div class="arch-flow">
+                        <div class="arch-node">🧑 User</div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node purple">🤖 Agent</div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node green">⚡ Azure Function</div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node orange">🗄️ Database / API</div>
+                    </div>
+                </div>
+
+                <h3>Creating a Function Tool Definition</h3>
+                <p>First, define the function schema so the agent knows what parameters to pass:</p>
+<pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">FunctionTool</span>
+
+<span class="cm"># Define the function tool schema</span>
+<span class="param">functions</span> = <span class="type">FunctionTool</span>(
+    <span class="param">definitions</span>=[
+        {
+            <span class="str">"name"</span>: <span class="str">"get_customer_orders"</span>,
+            <span class="str">"description"</span>: <span class="str">"Retrieve recent orders for a customer by their ID."</span>,
+            <span class="str">"parameters"</span>: {
+                <span class="str">"type"</span>: <span class="str">"object"</span>,
+                <span class="str">"properties"</span>: {
+                    <span class="str">"customer_id"</span>: {
+                        <span class="str">"type"</span>: <span class="str">"string"</span>,
+                        <span class="str">"description"</span>: <span class="str">"The unique customer identifier"</span>,
+                    },
+                    <span class="str">"limit"</span>: {
+                        <span class="str">"type"</span>: <span class="str">"integer"</span>,
+                        <span class="str">"description"</span>: <span class="str">"Max number of orders to return (default: 10)"</span>,
+                    },
+                },
+                <span class="str">"required"</span>: [<span class="str">"customer_id"</span>],
+            },
+        }
+    ]
+)
+
+<span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"customer-support"</span>,
+    <span class="param">instructions</span>=<span class="str">"You are a customer support agent. Use tools to look up order information."</span>,
+    <span class="param">tools</span>=<span class="param">functions</span>.<span class="fn">definitions</span>,
+)</pre>
+
+                <h3>Handling Function Calls</h3>
+                <p>When the agent decides to call your function, you intercept the call, execute your logic, and return the result:</p>
+<pre><span class="lang-label">Python</span>
+<span class="kw">import</span> json
+<span class="kw">import</span> requests
+
+<span class="kw">def</span> <span class="fn">handle_tool_call</span>(<span class="param">tool_call</span>):
+    <span class="str">"""Route agent tool calls to Azure Function endpoints."""</span>
+    <span class="param">name</span> = <span class="param">tool_call</span>.<span class="param">function</span>.<span class="param">name</span>
+    <span class="param">args</span> = json.<span class="fn">loads</span>(<span class="param">tool_call</span>.<span class="param">function</span>.<span class="param">arguments</span>)
+
+    <span class="kw">if</span> <span class="param">name</span> == <span class="str">"get_customer_orders"</span>:
+        <span class="param">response</span> = requests.<span class="fn">get</span>(
+            <span class="str">"https://my-func-app.azurewebsites.net/api/orders"</span>,
+            <span class="param">params</span>=<span class="param">args</span>,
+            <span class="param">headers</span>={<span class="str">"x-functions-key"</span>: <span class="param">FUNCTION_KEY</span>},
+        )
+        <span class="kw">return</span> <span class="param">response</span>.<span class="fn">text</span>
+
+    <span class="kw">return</span> json.<span class="fn">dumps</span>({<span class="str">"error"</span>: <span class="str">f"Unknown function: </span><span class="param">{name}</span><span class="str">"</span>})
+
+<span class="cm"># Process the run and handle requires_action status</span>
+<span class="param">run</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_run</span>(
+    <span class="param">thread_id</span>=<span class="param">thread</span>.<span class="param">id</span>,
+    <span class="param">agent_id</span>=<span class="param">agent</span>.<span class="param">id</span>,
+)
+
+<span class="cm"># Poll until run completes or requires action</span>
+<span class="kw">while</span> <span class="param">run</span>.<span class="param">status</span> <span class="kw">in</span> (<span class="str">"queued"</span>, <span class="str">"in_progress"</span>, <span class="str">"requires_action"</span>):
+    <span class="kw">if</span> <span class="param">run</span>.<span class="param">status</span> == <span class="str">"requires_action"</span>:
+        <span class="param">tool_outputs</span> = []
+        <span class="kw">for</span> <span class="param">call</span> <span class="kw">in</span> <span class="param">run</span>.<span class="param">required_action</span>.<span class="param">submit_tool_outputs</span>.<span class="param">tool_calls</span>:
+            <span class="param">result</span> = <span class="fn">handle_tool_call</span>(<span class="param">call</span>)
+            <span class="param">tool_outputs</span>.<span class="fn">append</span>({
+                <span class="str">"tool_call_id"</span>: <span class="param">call</span>.<span class="param">id</span>,
+                <span class="str">"output"</span>: <span class="param">result</span>,
+            })
+        <span class="param">run</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">submit_tool_outputs_to_run</span>(
+            <span class="param">thread_id</span>=<span class="param">thread</span>.<span class="param">id</span>,
+            <span class="param">run_id</span>=<span class="param">run</span>.<span class="param">id</span>,
+            <span class="param">tool_outputs</span>=<span class="param">tool_outputs</span>,
+        )
+    <span class="param">run</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">get_run</span>(<span class="param">thread_id</span>=<span class="param">thread</span>.<span class="param">id</span>, <span class="param">run_id</span>=<span class="param">run</span>.<span class="param">id</span>)</pre>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5 4.5v-5h3v1h-2v4h-1zm0-7V4h1.5v1.5H6.5z"/></svg>
+                    <div class="callout-content">
+                        <strong>Managed Identity</strong>
+                        <p>In production, use Azure Managed Identity instead of function keys. Configure your Azure Function with Entra ID authentication and assign the agent's managed identity the appropriate role.</p>
+                    </div>
+                </div>
+
+                <!-- ═══════════ OPENAPI TOOLS ═══════════ -->
+                <h2 id="openapi-tools">4. OpenAPI Tools</h2>
+                <p>OpenAPI tools let your agent connect to <strong>any external REST API</strong> by providing an OpenAPI (Swagger) specification. The agent reads the schema, understands the available endpoints, and calls them with the correct parameters — no custom handler code required.</p>
+
+                <h3>Defining an OpenAPI Tool</h3>
+<pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">OpenApiTool</span>, <span class="type">OpenApiAnonymousAuthDetails</span>
+
+<span class="cm"># Load your OpenAPI specification</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"weather-api.json"</span>, <span class="str">"r"</span>) <span class="kw">as</span> <span class="param">f</span>:
+    <span class="param">openapi_spec</span> = json.<span class="fn">load</span>(<span class="param">f</span>)
+
+<span class="cm"># Create the OpenAPI tool with anonymous auth</span>
+<span class="param">weather_tool</span> = <span class="type">OpenApiTool</span>(
+    <span class="param">name</span>=<span class="str">"weather_api"</span>,
+    <span class="param">description</span>=<span class="str">"Get current weather and forecasts for any location."</span>,
+    <span class="param">spec</span>=<span class="param">openapi_spec</span>,
+    <span class="param">auth</span>=<span class="type">OpenApiAnonymousAuthDetails</span>(),
+)
+
+<span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"weather-assistant"</span>,
+    <span class="param">instructions</span>=<span class="str">"Provide weather information using the weather API tool."</span>,
+    <span class="param">tools</span>=<span class="param">weather_tool</span>.<span class="fn">definitions</span>,
+)</pre>
+
+                <h3>Authentication Options</h3>
+                <p>OpenAPI tools support multiple authentication mechanisms for connecting to secured APIs:</p>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Auth Type</th>
+                            <th>Class</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Anonymous</strong></td>
+                            <td><code>OpenApiAnonymousAuthDetails</code></td>
+                            <td>Public APIs with no authentication</td>
+                        </tr>
+                        <tr>
+                            <td><strong>API Key</strong></td>
+                            <td><code>OpenApiApiKeyAuthDetails</code></td>
+                            <td>APIs requiring an API key in header/query</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OAuth 2.0</strong></td>
+                            <td><code>OpenApiOAuth2AuthDetails</code></td>
+                            <td>APIs using OAuth 2.0 client credentials</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Managed Identity</strong></td>
+                            <td><code>OpenApiManagedAuthDetails</code></td>
+                            <td>Azure services with Entra ID integration</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>OpenAPI Spec Example</h3>
+<pre><span class="lang-label">JSON</span>
+{
+  <span class="str">"openapi"</span>: <span class="str">"3.0.0"</span>,
+  <span class="str">"info"</span>: {
+    <span class="str">"title"</span>: <span class="str">"Weather API"</span>,
+    <span class="str">"version"</span>: <span class="str">"1.0.0"</span>
+  },
+  <span class="str">"servers"</span>: [{ <span class="str">"url"</span>: <span class="str">"https://api.weather.example.com"</span> }],
+  <span class="str">"paths"</span>: {
+    <span class="str">"/current"</span>: {
+      <span class="str">"get"</span>: {
+        <span class="str">"operationId"</span>: <span class="str">"getCurrentWeather"</span>,
+        <span class="str">"summary"</span>: <span class="str">"Get current weather for a city"</span>,
+        <span class="str">"parameters"</span>: [{
+          <span class="str">"name"</span>: <span class="str">"city"</span>,
+          <span class="str">"in"</span>: <span class="str">"query"</span>,
+          <span class="str">"required"</span>: <span class="kw">true</span>,
+          <span class="str">"schema"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> }
+        }],
+        <span class="str">"responses"</span>: {
+          <span class="str">"200"</span>: {
+            <span class="str">"description"</span>: <span class="str">"Weather data"</span>
+          }
+        }
+      }
+    }
+  }
+}</pre>
+
+                <div class="callout callout-warning">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 00.016 1.001c.19.31.546.5.934.5h13.856a1.08 1.08 0 00.934-.5.98.98 0 00.016-1.001L8.893 1.5zM8 5c.535 0 .954.462.9.995l-.35 3.507a.553.553 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z"/></svg>
+                    <div class="callout-content">
+                        <strong>Schema Quality Matters</strong>
+                        <p>The quality of your OpenAPI spec directly impacts the agent's ability to use the API correctly. Include detailed <code>description</code> fields for every endpoint, parameter, and schema object. Use meaningful <code>operationId</code> values.</p>
+                    </div>
+                </div>
+
+                <!-- ═══════════ BING GROUNDING ═══════════ -->
+                <h2 id="bing-grounding">5. Bing Grounding Tool</h2>
+                <p>The Bing Grounding tool gives your agent <strong>real-time access to web search results</strong>, ensuring responses are grounded in current information. This is essential for questions about recent events, up-to-date pricing, live statistics, and anything that changes frequently.</p>
+
+                <h3>How Bing Grounding Works</h3>
+                <ol>
+                    <li><strong>Query formulation</strong> — The agent converts the user's question into an optimized search query</li>
+                    <li><strong>Web search</strong> — Bing retrieves the most relevant web results</li>
+                    <li><strong>Grounded response</strong> — The agent synthesizes an answer from the search results, citing sources</li>
+                    <li><strong>Citation links</strong> — Responses include inline citations so users can verify the information</li>
+                </ol>
+
+                <h3>Enabling Bing Grounding</h3>
+<pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">BingGroundingTool</span>
+
+<span class="cm"># You need a Bing Grounding connection in your AI Foundry project</span>
+<span class="param">bing_connection</span> = <span class="param">project_client</span>.<span class="fn">connections</span>.<span class="fn">get</span>(
+    <span class="param">connection_name</span>=<span class="str">"bing-grounding"</span>,
+)
+
+<span class="param">bing_tool</span> = <span class="type">BingGroundingTool</span>(
+    <span class="param">connection_id</span>=<span class="param">bing_connection</span>.<span class="param">id</span>,
+)
+
+<span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"research-assistant"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are a research assistant with access to real-time web search.
+Always ground your answers in current search results and cite your sources.
+If you're unsure about something, search for it before answering."""</span>,
+    <span class="param">tools</span>=<span class="param">bing_tool</span>.<span class="fn">definitions</span>,
+)</pre>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5 4.5v-5h3v1h-2v4h-1zm0-7V4h1.5v1.5H6.5z"/></svg>
+                    <div class="callout-content">
+                        <strong>Grounding vs. RAG</strong>
+                        <p>Use <strong>Bing Grounding</strong> for real-time web information (news, current events, public data). Use <strong>File Search</strong> for your own proprietary documents and internal knowledge. For best results, combine both tools on the same agent.</p>
+                    </div>
+                </div>
+
+                <!-- ═══════════ COMPARISON ═══════════ -->
+                <h2 id="comparison">Tool Comparison</h2>
+                <p>Choosing the right tool for each task is critical. Here's a comprehensive comparison of all five agent tools:</p>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Best For</th>
+                            <th>Data Source</th>
+                            <th>Latency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Code Interpreter</strong></td>
+                            <td>Data analysis, math, charts</td>
+                            <td>Uploaded files</td>
+                            <td>Medium (5-30s)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>File Search</strong></td>
+                            <td>Document Q&amp;A, knowledge retrieval</td>
+                            <td>Vector store</td>
+                            <td>Fast (1-3s)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Azure Functions</strong></td>
+                            <td>Custom business logic, DB queries</td>
+                            <td>Your own APIs</td>
+                            <td>Variable</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenAPI</strong></td>
+                            <td>Third-party API integration</td>
+                            <td>External services</td>
+                            <td>Variable</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bing Grounding</strong></td>
+                            <td>Real-time web search, current events</td>
+                            <td>Internet</td>
+                            <td>Fast (2-5s)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="arch-diagram">
+                    <div class="diagram-title">Decision Guide: Which Tool to Use?</div>
+                    <div class="arch-flow">
+                        <div class="arch-node">Need computation?<br>→ Code Interpreter</div>
+                        <div class="arch-node purple">Have internal docs?<br>→ File Search</div>
+                        <div class="arch-node green">Custom logic needed?<br>→ Azure Functions</div>
+                    </div>
+                    <div style="margin-top: 12px;"></div>
+                    <div class="arch-flow">
+                        <div class="arch-node orange">External API?<br>→ OpenAPI Tools</div>
+                        <div class="arch-node red">Need live web data?<br>→ Bing Grounding</div>
+                    </div>
+                </div>
+
+                <!-- ═══════════ MINI HACK ═══════════ -->
+                <h2 id="mini-hack">🧪 Mini Hack</h2>
+                <p>Put everything together! Build a <strong>multi-tool agent</strong> that combines Code Interpreter, File Search, and a custom Azure Function tool to handle a complex real-world scenario.</p>
+
+                <div class="callout callout-important">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm-.5 4v-1h1v1h-1zm0-2.5v-5h1v5h-1z"/></svg>
+                    <div class="callout-content">
+                        <strong>Challenge Requirements</strong>
+                        <p>Build an agent that uses <strong>Code Interpreter</strong> to analyze a CSV dataset, <strong>File Search</strong> to query documentation, and a <strong>custom Azure Function</strong> tool — all within a single agent.</p>
+                    </div>
+                </div>
+
+                <h3>Challenge Scenario</h3>
+                <p>You're building an intelligent sales assistant that can:</p>
+                <ul>
+                    <li>📊 <strong>Analyze</strong> a CSV of quarterly sales data and generate visualizations (Code Interpreter)</li>
+                    <li>📄 <strong>Answer</strong> questions about company policies from an employee handbook (File Search)</li>
+                    <li>⚡ <strong>Look up</strong> real-time inventory from your warehouse system (Azure Function tool)</li>
+                </ul>
+
+                <h3>Step-by-Step Implementation</h3>
+                <ol class="step-list">
+                    <li>
+                        <h4>Set Up the Vector Store</h4>
+                        <p>Upload your employee handbook PDF and product catalog to a vector store for File Search.</p>
+                    </li>
+                    <li>
+                        <h4>Deploy the Azure Function</h4>
+                        <p>Create a simple HTTP-triggered Function that queries your inventory database and returns stock levels.</p>
+                    </li>
+                    <li>
+                        <h4>Build the Multi-Tool Agent</h4>
+                        <p>Create an agent with all three tools enabled and test it in the playground.</p>
+                    </li>
+                    <li>
+                        <h4>Test End-to-End</h4>
+                        <p>Send a message like: <em>"Analyze Q1 sales trends from the CSV, check if our return policy covers electronics, and look up current stock for product SKU-1234."</em></p>
+                    </li>
+                </ol>
+
+                <h3>Starter Code</h3>
+<pre><span class="lang-label">Python</span>
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    <span class="type">CodeInterpreterTool</span>,
+    <span class="type">FileSearchTool</span>,
+    <span class="type">FunctionTool</span>,
+)
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+<span class="param">project_client</span> = <span class="type">AIProjectClient</span>(
+    <span class="param">credential</span>=<span class="type">DefaultAzureCredential</span>(),
+    <span class="param">endpoint</span>=<span class="str">"https://your-project.services.ai.azure.com"</span>,
+)
+
+<span class="cm"># ── Tool 1: Code Interpreter ──</span>
+<span class="param">code_interpreter</span> = <span class="type">CodeInterpreterTool</span>()
+
+<span class="cm"># ── Tool 2: File Search ──</span>
+<span class="param">vector_store</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_vector_store_and_poll</span>(
+    <span class="param">name</span>=<span class="str">"company-docs"</span>,
+    <span class="param">file_ids</span>=[<span class="param">handbook_file</span>.<span class="param">id</span>, <span class="param">catalog_file</span>.<span class="param">id</span>],
+)
+<span class="param">file_search</span> = <span class="type">FileSearchTool</span>(<span class="param">vector_store_ids</span>=[<span class="param">vector_store</span>.<span class="param">id</span>])
+
+<span class="cm"># ── Tool 3: Custom Function (Inventory Lookup) ──</span>
+<span class="param">inventory_tool</span> = <span class="type">FunctionTool</span>(
+    <span class="param">definitions</span>=[{
+        <span class="str">"name"</span>: <span class="str">"check_inventory"</span>,
+        <span class="str">"description"</span>: <span class="str">"Check real-time inventory for a product SKU."</span>,
+        <span class="str">"parameters"</span>: {
+            <span class="str">"type"</span>: <span class="str">"object"</span>,
+            <span class="str">"properties"</span>: {
+                <span class="str">"sku"</span>: {
+                    <span class="str">"type"</span>: <span class="str">"string"</span>,
+                    <span class="str">"description"</span>: <span class="str">"Product SKU identifier"</span>,
+                }
+            },
+            <span class="str">"required"</span>: [<span class="str">"sku"</span>],
+        },
+    }]
+)
+
+<span class="cm"># ── Create the Multi-Tool Agent ──</span>
+<span class="param">all_tools</span> = (
+    <span class="param">code_interpreter</span>.<span class="fn">definitions</span>
+    + <span class="param">file_search</span>.<span class="fn">definitions</span>
+    + <span class="param">inventory_tool</span>.<span class="fn">definitions</span>
+)
+
+<span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
+    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"sales-assistant"</span>,
+    <span class="param">instructions</span>=<span class="str">"""You are an intelligent sales assistant. You can:
+1. Analyze CSV data and create charts (Code Interpreter)
+2. Answer questions from company docs (File Search)
+3. Check real-time inventory levels (check_inventory function)
+
+Always use the appropriate tool for each part of the user's request."""</span>,
+    <span class="param">tools</span>=<span class="param">all_tools</span>,
+    <span class="param">tool_resources</span>=<span class="param">file_search</span>.<span class="fn">resources</span>,
+)
+
+<span class="fn">print</span>(<span class="str">f"✅ Multi-tool agent created: </span><span class="param">{agent.id}</span><span class="str">"</span>)</pre>
+
+                <!-- ═══════════ BEST PRACTICES ═══════════ -->
+                <h2 id="best-practices">Best Practices</h2>
+
+                <h3>General Guidelines</h3>
+                <ul>
+                    <li><strong>Keep instructions explicit</strong> — Tell the agent exactly when and how to use each tool in its system instructions</li>
+                    <li><strong>Minimize tool count</strong> — Only attach tools the agent actually needs; too many tools can confuse the LLM</li>
+                    <li><strong>Test in the Playground first</strong> — Validate tool behavior interactively before writing production code</li>
+                    <li><strong>Handle errors gracefully</strong> — Always return clear error messages from function tools so the agent can retry or inform the user</li>
+                </ul>
+
+                <h3>Performance Tips</h3>
+                <ul>
+                    <li><strong>Code Interpreter</strong> — Keep datasets under 50 MB for optimal performance; pre-clean data when possible</li>
+                    <li><strong>File Search</strong> — Use focused vector stores per domain rather than one massive store; tune chunk sizes for your content type</li>
+                    <li><strong>Azure Functions</strong> — Use premium plans for low cold-start latency; return concise JSON responses</li>
+                    <li><strong>OpenAPI</strong> — Minimize the spec to only the endpoints the agent needs; use descriptive operation summaries</li>
+                    <li><strong>Bing Grounding</strong> — Instruct the agent to search only when the question requires current information</li>
+                </ul>
+
+                <div class="callout callout-tip">
+                    <svg class="callout-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5 4.5v-5h3v1h-2v4h-1zm0-7V4h1.5v1.5H6.5z"/></svg>
+                    <div class="callout-content">
+                        <strong>Security Reminder</strong>
+                        <p>Never expose sensitive credentials in function tool definitions. Use Azure Key Vault for secrets, Managed Identity for Azure service-to-service auth, and connection objects in your AI Foundry project for API keys.</p>
+                    </div>
+                </div>
+
+                <!-- ═══════════ NEXT STEPS ═══════════ -->
+                <h2 id="next-steps">Next Steps</h2>
+                <p>You've now mastered the five essential agent tools. In <a href="../module-19/blog.html">Module 19: Multi-Tool Agents</a>, you'll learn how to orchestrate multiple tools together in sophisticated agent workflows, handle parallel tool calls, and build agents that dynamically select the best tool for each task.</p>
+
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li>✅ <strong>Code Interpreter</strong> provides sandboxed Python execution for data analysis and visualization</li>
+                    <li>✅ <strong>File Search</strong> enables semantic retrieval over your uploaded documents via vector stores</li>
+                    <li>✅ <strong>Azure Functions</strong> let you extend agents with custom serverless business logic</li>
+                    <li>✅ <strong>OpenAPI Tools</strong> connect agents to any external API through schema definitions</li>
+                    <li>✅ <strong>Bing Grounding</strong> provides real-time web search for up-to-date, grounded responses</li>
+                    <li>✅ Combine multiple tools on a single agent for complex, real-world scenarios</li>
+                </ul>
+
+                <!-- Module Nav -->
+                <div class="module-nav">
+                    <a href="../module-17/blog.html" class="prev">
+                        <span class="nav-label">← Previous</span>
+                        <span class="nav-module">Module 17: Building Your First Agent</span>
+                    </a>
+                    <a href="../module-19/blog.html" class="next">
+                        <span class="nav-label">Next →</span>
+                        <span class="nav-module">Module 19: Multi-Tool Agents</span>
+                    </a>
+                </div>
+
+            </div>
+        </article>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">
+        <svg viewBox="0 0 16 16"><path d="M8 3.5l5 5h-3.5V14h-3V8.5H3l5-5z"/></svg>
+    </button>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>Azure AI Foundry: Zero to Hero Training Series &bull; Module 18: Agent Tools Deep Dive</p>
+        <p style="margin-top: 8px;">
+            <a href="../module-17/blog.html">← Module 17</a> &bull;
+            <a href="../module-19/blog.html">Module 19 →</a>
+        </p>
+        <p style="margin-top: 16px; opacity: 0.6;">&copy; 2026 Microsoft. All rights reserved. Built with Azure AI Foundry.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Scroll Progress Bar ──
+        const progressBar = document.getElementById('progressBar');
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            progressBar.style.width = progress + '%';
+        }
+
+        // ── Back to Top Button ──
+        const backToTop = document.getElementById('backToTop');
+        function toggleBackToTop() {
+            if (window.scrollY > 400) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+        backToTop.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Throttled Scroll Handler ──
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    updateProgress();
+                    toggleBackToTop();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // ── TOC Active Section (IntersectionObserver) ──
+        const tocLinks = document.querySelectorAll('.toc-list a');
+        const sections = [];
+        tocLinks.forEach(function(link) {
+            const id = link.getAttribute('href').slice(1);
+            const section = document.getElementById(id);
+            if (section) sections.push({ id: id, el: section });
+        });
+
+        if ('IntersectionObserver' in window && sections.length > 0) {
+            let currentActive = null;
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        if (currentActive !== id) {
+                            currentActive = id;
+                            tocLinks.forEach(function(link) {
+                                if (link.getAttribute('href') === '#' + id) {
+                                    link.classList.add('active');
+                                } else {
+                                    link.classList.remove('active');
+                                }
+                            });
+                        }
+                    }
+                });
+            }, {
+                rootMargin: '-80px 0px -70% 0px',
+                threshold: 0
+            });
+
+            sections.forEach(function(s) {
+                observer.observe(s.el);
+            });
+        }
+
+        // ── Initial state ──
+        updateProgress();
+        toggleBackToTop();
+    })();
+    </script>
+</body>
+</html>

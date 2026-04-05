@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Module 13 of Azure AI Foundry Zero to Hero — Build an end-to-end RAG pipeline covering ingestion, retrieval, augmentation, and generation with Azure AI Search and the Agents API.">
+<meta name="author" content="Zero to Hero Training Team">
+<meta name="date" content="2026-04">
+<title>Module 13: RAG Pipeline — End to End — Azure AI Foundry: Zero to Hero</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & DESIGN TOKENS
+   ============================================================ */
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #50e6ff;
+  --ms-teal: #00b7c3;
+  --ms-green: #107c10;
+  --ms-yellow: #ffb900;
+  --ms-orange: #d83b01;
+  --ms-red: #e74856;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eef1f5;
+  --bg-dark: #1b1b1b;
+  --bg-code: #1e1e1e;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #424242;
+  --text-muted: #6e6e6e;
+  --text-inverse: #ffffff;
+  --text-link: #0078d4;
+
+  --border-light: #e1e4e8;
+  --border-medium: #d0d7de;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-xl: 0 12px 48px rgba(0,0,0,0.15);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --content-max: 780px;
+  --toc-width: 220px;
+
+  --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  z-index: 10000;
+  transition: width 0.1s linear;
+}
+
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 9000;
+  background: var(--bg-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ms-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.nav-links a:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #0078d4, #5c2d91);
+  color: var(--text-inverse);
+  padding: 80px 24px 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(80,230,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 5px 16px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.hero .subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   LAYOUT: SIDEBAR TOC + MAIN CONTENT
+   ============================================================ */
+.page-layout {
+  display: flex;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  gap: 48px;
+}
+
+/* ---------- Sticky TOC Sidebar ---------- */
+.toc-sidebar {
+  position: sticky;
+  top: 70px;
+  width: var(--toc-width);
+  min-width: var(--toc-width);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  align-self: flex-start;
+  padding-right: 8px;
+}
+
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+.toc-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ms-blue);
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list li {
+  margin-bottom: 2px;
+}
+
+.toc-list a {
+  display: block;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  transition: all var(--transition-fast);
+  line-height: 1.45;
+}
+
+.toc-list a:hover {
+  color: var(--ms-blue);
+  background: rgba(0,120,212,0.05);
+}
+
+.toc-list a.active {
+  color: var(--ms-blue);
+  border-left-color: var(--ms-blue);
+  background: rgba(0,120,212,0.08);
+  font-weight: 600;
+}
+
+/* ---------- Main Content ---------- */
+.main-content {
+  flex: 1;
+  max-width: var(--content-max);
+  min-width: 0;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.main-content h2 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 56px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--bg-tertiary);
+  scroll-margin-top: 80px;
+}
+
+.main-content h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ms-dark-blue);
+  margin-top: 36px;
+  margin-bottom: 14px;
+  scroll-margin-top: 80px;
+}
+
+.main-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.main-content p {
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.8;
+}
+
+.main-content ul, .main-content ol {
+  margin-bottom: 20px;
+  padding-left: 24px;
+}
+
+.main-content li {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.main-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.main-content a {
+  color: var(--text-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.main-content a:hover {
+  border-bottom-color: var(--ms-blue);
+}
+
+/* Inline code */
+.main-content code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--bg-secondary);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--ms-dark-blue);
+  border: 1px solid var(--border-light);
+}
+
+/* Code blocks */
+.code-block {
+  background: var(--bg-code);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  margin: 20px 0;
+  overflow-x: auto;
+  border: 1px solid #333;
+  position: relative;
+}
+
+.code-block code {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: #d4d4d4;
+  background: none;
+  padding: 0;
+  border: none;
+  line-height: 1.65;
+}
+
+.code-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+}
+
+.code-block .kw { color: #569cd6; }
+.code-block .str { color: #ce9178; }
+.code-block .fn { color: #dcdcaa; }
+.code-block .cm { color: #6a9955; }
+.code-block .num { color: #b5cea8; }
+.code-block .type { color: #4ec9b0; }
+.code-block .op { color: #d4d4d4; }
+.code-block .param { color: #9cdcfe; }
+
+/* ============================================================
+   CALLOUT BOXES
+   ============================================================ */
+.callout {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.callout-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout p { margin-bottom: 8px; font-size: 0.95rem; }
+.callout p:last-child { margin-bottom: 0; }
+
+.callout-blue {
+  background: rgba(0,120,212,0.06);
+  border-color: var(--ms-blue);
+}
+.callout-blue .callout-title { color: var(--ms-blue); }
+
+.callout-yellow {
+  background: rgba(255,185,0,0.08);
+  border-color: var(--ms-yellow);
+}
+.callout-yellow .callout-title { color: #986f0a; }
+
+.callout-green {
+  background: rgba(16,124,16,0.06);
+  border-color: var(--ms-green);
+}
+.callout-green .callout-title { color: var(--ms-green); }
+
+.callout-red {
+  background: rgba(231,72,86,0.06);
+  border-color: var(--ms-red);
+}
+.callout-red .callout-title { color: var(--ms-red); }
+
+/* ============================================================
+   VIDEO EMBED
+   ============================================================ */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  margin: 24px 0;
+  box-shadow: var(--shadow-lg);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.main-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 0.92rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.main-content thead th {
+  background: var(--ms-dark-blue);
+  color: var(--text-inverse);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-content tbody td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.main-content tbody tr:nth-child(even) {
+  background: var(--bg-secondary);
+}
+
+.main-content tbody tr:hover {
+  background: rgba(0,120,212,0.04);
+}
+
+/* ============================================================
+   FEATURE CARDS / GRID
+   ============================================================ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.feature-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.feature-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.feature-card .card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.feature-card h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   DIAGRAM / ASCII ART
+   ============================================================ */
+.diagram-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  margin: 24px 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   MODULE NAVIGATION (PREV / NEXT)
+   ============================================================ */
+.module-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  margin: 60px 0 40px;
+  padding-top: 30px;
+  border-top: 2px solid var(--bg-tertiary);
+}
+
+.module-nav a {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-normal);
+  flex: 1;
+}
+
+.module-nav a:hover {
+  border-color: var(--ms-blue);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.module-nav a .nav-label {
+  font-size: 0.78rem;
+  color: var(--ms-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.module-nav a .nav-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.module-nav a.next {
+  text-align: right;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  background: var(--bg-dark);
+  color: rgba(255,255,255,0.7);
+  padding: 40px 24px;
+  margin-top: 60px;
+}
+
+.footer-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-inner p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   BACK TO TOP BUTTON
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 44px;
+  height: 44px;
+  background: var(--ms-blue);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all var(--transition-normal);
+  z-index: 5000;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: var(--ms-dark-blue);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   MINI HACK SECTION STYLING
+   ============================================================ */
+.mini-hack-banner {
+  background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  margin: 32px 0;
+  text-align: center;
+}
+
+.mini-hack-banner h3 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.mini-hack-banner p {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   PIPELINE FLOW DIAGRAM
+   ============================================================ */
+.pipeline-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 28px 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.pipeline-step {
+  background: var(--ms-blue);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 110px;
+}
+
+.pipeline-step.alt {
+  background: var(--ms-purple);
+}
+
+.pipeline-step.teal {
+  background: var(--ms-teal);
+}
+
+.pipeline-step.green {
+  background: var(--ms-green);
+}
+
+.pipeline-arrow {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+@media (max-width: 960px) {
+  .toc-sidebar {
+    display: none;
+  }
+
+  .page-layout {
+    padding: 24px 16px;
+  }
+
+  .hero {
+    padding: 50px 20px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .module-nav {
+    flex-direction: column;
+  }
+
+  .module-nav a.next {
+    text-align: left;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-flow {
+    flex-direction: column;
+  }
+
+  .pipeline-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 1.6rem; }
+  .hero .subtitle { font-size: 1rem; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+  .nav-links { display: none; }
+  .main-content h2 { font-size: 1.5rem; }
+  .main-content h3 { font-size: 1.15rem; }
+  .code-block { padding: 16px; }
+  .code-block code { font-size: 0.8rem; }
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  .top-nav, .scroll-progress, .back-to-top, .toc-sidebar, .module-nav, .video-container { display: none !important; }
+  .hero { background: var(--ms-blue) !important; padding: 30px 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-layout { display: block; max-width: 100%; }
+  .main-content { max-width: 100%; }
+  .code-block { border: 1px solid #ccc; background: #f5f5f5 !important; color: #333 !important; }
+  .code-block code { color: #333 !important; }
+  .callout { break-inside: avoid; }
+  body { font-size: 11pt; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ============================================================
+     TOP NAVIGATION
+     ============================================================ -->
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="#" class="nav-brand">
+      <!-- Microsoft 4-color grid logo -->
+      <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="10" height="10" fill="#f25022"/>
+        <rect x="11" y="0" width="10" height="10" fill="#7fba00"/>
+        <rect x="0" y="11" width="10" height="10" fill="#00a4ef"/>
+        <rect x="11" y="11" width="10" height="10" fill="#ffb900"/>
+      </svg>
+      AI Foundry Training Blog
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Curriculum</a></li>
+      <li><a href="#">Resources</a></li>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO SECTION
+     ============================================================ -->
+<header class="hero">
+  <div class="hero-inner">
+    <span class="hero-badge">ARC 3 · DATA &amp; RAG</span>
+    <h1>RAG Pipeline — End to End</h1>
+    <p class="subtitle">Design and build a complete Retrieval-Augmented Generation pipeline — from document ingestion through vector retrieval, prompt construction, and grounded answer generation with Azure AI Foundry.</p>
+    <div class="hero-meta">
+      <span>📘 Module 13 of 45</span>
+      <span>✍️ Zero to Hero Training Team</span>
+      <span>📅 April 2026</span>
+      <span>⏱️ 28 min read</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN PAGE LAYOUT: TOC + CONTENT
+     ============================================================ -->
+<div class="page-layout">
+
+  <!-- ==================== TOC SIDEBAR ==================== -->
+  <aside class="toc-sidebar" id="tocSidebar">
+    <div class="toc-title">On This Page</div>
+    <ul class="toc-list" id="tocList">
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#rag-architecture">RAG Architecture Overview</a></li>
+      <li><a href="#ingestion-pipeline">Document Ingestion Pipeline</a></li>
+      <li><a href="#retrieval-strategies">Retrieval Strategies</a></li>
+      <li><a href="#grounding-prompt">Grounding &amp; Prompt Construction</a></li>
+      <li><a href="#e2e-foundry">End-to-End RAG with Azure AI Foundry</a></li>
+      <li><a href="#video">Video Walkthrough</a></li>
+      <li><a href="#mini-hack">Mini Hack Challenge</a></li>
+      <li><a href="#best-practices">Best Practices</a></li>
+      <li><a href="#summary">Summary &amp; Next Steps</a></li>
+    </ul>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <article class="main-content">
+
+    <!-- ============ INTRODUCTION ============ -->
+    <h2 id="introduction">Introduction</h2>
+    <p>Large language models (LLMs) are remarkably capable — but they only know what was in their training data. When you need answers grounded in <strong>your</strong> documents, databases, or knowledge bases, you need <strong>Retrieval-Augmented Generation (RAG)</strong>.</p>
+    <p>RAG is the most widely adopted pattern for building production AI applications that combine the reasoning power of an LLM with the factual accuracy of a retrieval system. In this module you will walk through every stage of a RAG pipeline — from raw documents to grounded, cited answers — using Azure AI Foundry and Azure AI Search.</p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Key Insight</div>
+      <p>RAG doesn't replace the model — it <strong>augments</strong> it. The model does the reasoning; retrieval supplies the facts. This separation is what makes RAG so powerful and composable.</p>
+    </div>
+
+    <p>By the end of this module you will understand the four phases of a RAG pipeline, be able to implement each phase with Azure services, and connect them end-to-end into a working question-answering system.</p>
+
+    <!-- ============ RAG ARCHITECTURE OVERVIEW ============ -->
+    <h2 id="rag-architecture">1 · RAG Architecture Overview</h2>
+    <p>Every RAG system, regardless of complexity, follows the same four-phase loop:</p>
+
+    <div class="pipeline-flow">
+      <div class="pipeline-step">📥 Ingestion</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step alt">🔍 Retrieval</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step teal">🧩 Augmentation</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step green">✨ Generation</div>
+    </div>
+
+    <h3>Phase 1 — Ingestion</h3>
+    <p>Raw data (PDFs, HTML, Markdown, databases) is loaded, split into semantically meaningful chunks, converted to vector embeddings, and stored in a search index. This phase runs <strong>offline</strong> — usually as a batch job or scheduled pipeline — and only needs to be repeated when the source data changes.</p>
+
+    <h3>Phase 2 — Retrieval</h3>
+    <p>When a user asks a question, the query is converted to a vector and used to search the index. The top-<em>k</em> most relevant chunks are returned. Retrieval can use pure vector search, keyword search, or — most commonly — <strong>hybrid search</strong> that combines both.</p>
+
+    <h3>Phase 3 — Augmentation</h3>
+    <p>The retrieved chunks are inserted into the model's prompt alongside the user's original question and a system instruction. This step is sometimes called <strong>grounding</strong> because it grounds the model in factual evidence rather than relying on parametric memory.</p>
+
+    <h3>Phase 4 — Generation</h3>
+    <p>The augmented prompt is sent to the LLM, which synthesizes a coherent answer. Because the model can see the retrieved text, it can cite sources, quote passages, and acknowledge when the context does not contain an answer.</p>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ Why RAG Beats Fine-Tuning for Most Use Cases</div>
+      <p>Fine-tuning bakes knowledge into model weights — it's expensive, hard to update, and difficult to audit. RAG keeps knowledge in a <strong>searchable index</strong> that you can update in minutes, version, and inspect. Use fine-tuning for style or format; use RAG for facts and recency.</p>
+    </div>
+
+    <div class="diagram-box">┌──────────────────────────────────────────────────────────────┐
+│                    RAG Pipeline — End to End                 │
+│                                                              │
+│   ┌────────────┐    ┌────────────┐    ┌────────────────────┐ │
+│   │  Documents  │───▸│  Chunking  │───▸│  Embedding + Index │ │
+│   │  (PDF, MD)  │    │  Strategy  │    │  (Azure AI Search) │ │
+│   └────────────┘    └────────────┘    └────────┬───────────┘ │
+│                                                │             │
+│   ┌────────────┐    ┌────────────┐    ┌────────▼───────────┐ │
+│   │  Grounded  │◂───│  Augmented │◂───│  Hybrid Retrieval  │ │
+│   │  Response   │    │   Prompt   │    │  (vector+keyword)  │ │
+│   └────────────┘    └────────────┘    └────────────────────┘ │
+│                                                              │
+│        User Query ─────────────────────────▸ ↑               │
+└──────────────────────────────────────────────────────────────┘</div>
+
+    <!-- ============ DOCUMENT INGESTION PIPELINE ============ -->
+    <h2 id="ingestion-pipeline">2 · Document Ingestion Pipeline</h2>
+    <p>Ingestion transforms raw, unstructured data into a searchable index. It consists of four sub-steps: <strong>loading</strong>, <strong>chunking</strong>, <strong>embedding</strong>, and <strong>indexing</strong>.</p>
+
+    <h3>2.1 Document Loading</h3>
+    <p>The first step is reading documents into a normalized text format. Azure AI Foundry supports loading from multiple sources:</p>
+    <ul>
+      <li><strong>Azure Blob Storage</strong> — PDFs, Word documents, images (with OCR)</li>
+      <li><strong>SharePoint / OneLake</strong> — enterprise content libraries</li>
+      <li><strong>Web crawlers</strong> — HTML pages via URL</li>
+      <li><strong>Databases</strong> — SQL or Cosmos DB rows</li>
+    </ul>
+
+    <p>For PDF extraction, Azure AI Document Intelligence provides layout-aware parsing that preserves tables, headers, and reading order — far superior to naive text extraction.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.ai.documentintelligence <span class="kw">import</span> <span class="type">DocumentIntelligenceClient</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+<span class="cm"># Initialize the Document Intelligence client</span>
+client = <span class="type">DocumentIntelligenceClient</span>(
+    endpoint=<span class="str">"https://&lt;your-resource&gt;.cognitiveservices.azure.com"</span>,
+    credential=<span class="type">DefaultAzureCredential</span>()
+)
+
+<span class="cm"># Analyze a PDF using the prebuilt layout model</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"company-handbook.pdf"</span>, <span class="str">"rb"</span>) <span class="kw">as</span> f:
+    poller = client.<span class="fn">begin_analyze_document</span>(
+        model_id=<span class="str">"prebuilt-layout"</span>,
+        body=f,
+        content_type=<span class="str">"application/pdf"</span>
+    )
+
+result = poller.<span class="fn">result</span>()
+<span class="cm"># result.content contains the full extracted text</span>
+<span class="cm"># result.tables contains structured table data</span>
+<span class="fn">print</span>(<span class="str">f"Extracted </span>{<span class="fn">len</span>(result.pages)}<span class="str"> pages"</span>)</code>
+    </div>
+
+    <h3>2.2 Chunking Strategies</h3>
+    <p>Raw documents must be split into smaller segments — <strong>chunks</strong> — that fit within the model's context window and carry self-contained meaning. The choice of chunking strategy dramatically impacts retrieval quality.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Strategy</th>
+          <th>Description</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fixed-size</strong></td>
+          <td>Split every <em>N</em> tokens with overlap</td>
+          <td>Simple documents, logs</td>
+        </tr>
+        <tr>
+          <td><strong>Sentence-based</strong></td>
+          <td>Split on sentence boundaries</td>
+          <td>Prose, articles</td>
+        </tr>
+        <tr>
+          <td><strong>Semantic</strong></td>
+          <td>Use embeddings to detect topic shifts</td>
+          <td>Mixed-format documents</td>
+        </tr>
+        <tr>
+          <td><strong>Document-aware</strong></td>
+          <td>Split on headings, sections, pages</td>
+          <td>Structured reports, manuals</td>
+        </tr>
+        <tr>
+          <td><strong>Recursive</strong></td>
+          <td>Hierarchical split: section → paragraph → sentence</td>
+          <td>Complex, nested documents</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ Chunk Size Matters</div>
+      <p>Chunks that are <strong>too large</strong> dilute relevance — the model sees noise alongside the answer. Chunks that are <strong>too small</strong> lose context — the answer fragment is meaningless in isolation. A common starting point is <strong>512–1024 tokens</strong> with <strong>10–15% overlap</strong>.</p>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.ai.generative <span class="kw">import</span> <span class="fn">split_documents</span>
+
+<span class="cm"># Fixed-size chunking with overlap</span>
+chunks = <span class="fn">split_documents</span>(
+    documents=documents,
+    chunk_size=<span class="num">1024</span>,         <span class="cm"># tokens per chunk</span>
+    chunk_overlap=<span class="num">128</span>,       <span class="cm"># overlapping tokens between chunks</span>
+    use_token_count=<span class="kw">True</span>
+)
+
+<span class="fn">print</span>(<span class="str">f"Created </span>{<span class="fn">len</span>(chunks)}<span class="str"> chunks from </span>{<span class="fn">len</span>(documents)}<span class="str"> documents"</span>)
+
+<span class="cm"># Each chunk retains metadata: source file, page, section</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> chunks[:<span class="num">3</span>]:
+    <span class="fn">print</span>(<span class="str">f"  Source: </span>{chunk.metadata[<span class="str">'source'</span>]}<span class="str">  |  Tokens: </span>{chunk.token_count}<span class="str">"</span>)</code>
+    </div>
+
+    <h3>2.3 Embedding Generation</h3>
+    <p>Each chunk is converted to a dense vector — a numerical fingerprint that captures its semantic meaning. Azure AI Foundry provides access to embedding models like <code>text-embedding-3-large</code> (3072 dimensions) and <code>text-embedding-3-small</code> (1536 dimensions).</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+project = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+<span class="cm"># Generate embeddings for a batch of chunks</span>
+response = project.inference.<span class="fn">embed</span>(
+    model=<span class="str">"text-embedding-3-large"</span>,
+    input=[chunk.text <span class="kw">for</span> chunk <span class="kw">in</span> chunks]
+)
+
+<span class="cm"># Each embedding is a list of floats</span>
+<span class="kw">for</span> i, item <span class="kw">in</span> <span class="fn">enumerate</span>(response.data):
+    chunks[i].embedding = item.embedding
+    <span class="fn">print</span>(<span class="str">f"Chunk </span>{i}<span class="str">: </span>{<span class="fn">len</span>(item.embedding)}<span class="str">-dim vector"</span>)</code>
+    </div>
+
+    <h3>2.4 Indexing in Azure AI Search</h3>
+    <p>The final ingestion step pushes the chunks and their embeddings into an Azure AI Search index. The index stores the text, metadata, and vector alongside keyword-searchable fields.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.search.documents <span class="kw">import</span> <span class="type">SearchClient</span>
+<span class="kw">from</span> azure.search.documents.indexes <span class="kw">import</span> <span class="type">SearchIndexClient</span>
+<span class="kw">from</span> azure.search.documents.indexes.models <span class="kw">import</span> (
+    <span class="type">SearchIndex</span>, <span class="type">SearchField</span>, <span class="type">SearchFieldDataType</span>,
+    <span class="type">VectorSearch</span>, <span class="type">HnswAlgorithmConfiguration</span>,
+    <span class="type">VectorSearchProfile</span>, <span class="type">SearchableField</span>,
+    <span class="type">SimpleField</span>
+)
+
+<span class="cm"># Define the index schema</span>
+index = <span class="type">SearchIndex</span>(
+    name=<span class="str">"rag-knowledge-base"</span>,
+    fields=[
+        <span class="type">SimpleField</span>(name=<span class="str">"id"</span>, type=<span class="type">SearchFieldDataType</span>.String, key=<span class="kw">True</span>),
+        <span class="type">SearchableField</span>(name=<span class="str">"content"</span>, type=<span class="type">SearchFieldDataType</span>.String),
+        <span class="type">SearchableField</span>(name=<span class="str">"title"</span>, type=<span class="type">SearchFieldDataType</span>.String),
+        <span class="type">SimpleField</span>(name=<span class="str">"source"</span>, type=<span class="type">SearchFieldDataType</span>.String, filterable=<span class="kw">True</span>),
+        <span class="type">SearchField</span>(
+            name=<span class="str">"content_vector"</span>,
+            type=<span class="type">SearchFieldDataType</span>.<span class="fn">Collection</span>(<span class="type">SearchFieldDataType</span>.Single),
+            searchable=<span class="kw">True</span>,
+            vector_search_dimensions=<span class="num">3072</span>,
+            vector_search_profile_name=<span class="str">"hnsw-profile"</span>
+        ),
+    ],
+    vector_search=<span class="type">VectorSearch</span>(
+        algorithms=[<span class="type">HnswAlgorithmConfiguration</span>(name=<span class="str">"hnsw-config"</span>)],
+        profiles=[<span class="type">VectorSearchProfile</span>(
+            name=<span class="str">"hnsw-profile"</span>,
+            algorithm_configuration_name=<span class="str">"hnsw-config"</span>
+        )]
+    )
+)
+
+<span class="cm"># Create the index</span>
+index_client = <span class="type">SearchIndexClient</span>(
+    endpoint=<span class="str">"https://&lt;search-service&gt;.search.windows.net"</span>,
+    credential=<span class="type">DefaultAzureCredential</span>()
+)
+index_client.<span class="fn">create_or_update_index</span>(index)
+
+<span class="cm"># Upload documents</span>
+search_client = <span class="type">SearchClient</span>(
+    endpoint=<span class="str">"https://&lt;search-service&gt;.search.windows.net"</span>,
+    index_name=<span class="str">"rag-knowledge-base"</span>,
+    credential=<span class="type">DefaultAzureCredential</span>()
+)
+
+docs = [
+    {
+        <span class="str">"id"</span>: chunk.id,
+        <span class="str">"content"</span>: chunk.text,
+        <span class="str">"title"</span>: chunk.metadata[<span class="str">"title"</span>],
+        <span class="str">"source"</span>: chunk.metadata[<span class="str">"source"</span>],
+        <span class="str">"content_vector"</span>: chunk.embedding
+    }
+    <span class="kw">for</span> chunk <span class="kw">in</span> chunks
+]
+
+result = search_client.<span class="fn">upload_documents</span>(documents=docs)
+<span class="fn">print</span>(<span class="str">f"Indexed </span>{<span class="fn">len</span>(docs)}<span class="str"> chunks"</span>)</code>
+    </div>
+
+    <!-- ============ RETRIEVAL STRATEGIES ============ -->
+    <h2 id="retrieval-strategies">3 · Retrieval Strategies</h2>
+    <p>Once documents are indexed, you need an effective retrieval strategy. The goal is to find the <strong>most relevant</strong> chunks for a given user query with high precision and recall.</p>
+
+    <h3>3.1 Vector Search</h3>
+    <p>Vector search converts the user query into an embedding and finds chunks with the most similar vectors using cosine similarity or dot product. It excels at finding semantically related content even when exact keywords don't match.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.search.documents.models <span class="kw">import</span> <span class="type">VectorizedQuery</span>
+
+<span class="cm"># Embed the user's question</span>
+query_embedding = project.inference.<span class="fn">embed</span>(
+    model=<span class="str">"text-embedding-3-large"</span>,
+    input=[<span class="str">"What is the company's parental leave policy?"</span>]
+).data[<span class="num">0</span>].embedding
+
+<span class="cm"># Pure vector search</span>
+results = search_client.<span class="fn">search</span>(
+    search_text=<span class="kw">None</span>,
+    vector_queries=[
+        <span class="type">VectorizedQuery</span>(
+            vector=query_embedding,
+            k_nearest_neighbors=<span class="num">5</span>,
+            fields=<span class="str">"content_vector"</span>
+        )
+    ]
+)
+
+<span class="kw">for</span> r <span class="kw">in</span> results:
+    <span class="fn">print</span>(<span class="str">f"Score: </span>{r[<span class="str">'@search.score'</span>]:.4f}<span class="str"> | </span>{r[<span class="str">'content'</span>][:<span class="num">80</span>]}<span class="str">..."</span>)</code>
+    </div>
+
+    <h3>3.2 Hybrid Search</h3>
+    <p>Hybrid search combines <strong>keyword (BM25)</strong> and <strong>vector</strong> results using Reciprocal Rank Fusion (RRF). This approach captures both exact keyword matches and semantic similarity — consistently outperforming either method alone.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="cm"># Hybrid search: keyword + vector combined</span>
+results = search_client.<span class="fn">search</span>(
+    search_text=<span class="str">"parental leave policy"</span>,        <span class="cm"># keyword component</span>
+    vector_queries=[
+        <span class="type">VectorizedQuery</span>(
+            vector=query_embedding,              <span class="cm"># vector component</span>
+            k_nearest_neighbors=<span class="num">5</span>,
+            fields=<span class="str">"content_vector"</span>
+        )
+    ],
+    top=<span class="num">5</span>
+)
+
+<span class="kw">for</span> r <span class="kw">in</span> results:
+    <span class="fn">print</span>(<span class="str">f"[Hybrid] Score: </span>{r[<span class="str">'@search.score'</span>]:.4f}<span class="str"> | </span>{r[<span class="str">'title'</span>]}<span class="str">"</span>)</code>
+    </div>
+
+    <h3>3.3 Semantic Ranking</h3>
+    <p>Azure AI Search offers a built-in <strong>semantic ranker</strong> — a cross-encoder model that re-scores the initial results for deeper relevance. Semantic ranking is applied as a second pass after hybrid retrieval and dramatically improves precision.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.search.documents.models <span class="kw">import</span> <span class="type">QueryType</span>
+
+<span class="cm"># Hybrid search with semantic ranking</span>
+results = search_client.<span class="fn">search</span>(
+    search_text=<span class="str">"parental leave policy"</span>,
+    vector_queries=[
+        <span class="type">VectorizedQuery</span>(
+            vector=query_embedding,
+            k_nearest_neighbors=<span class="num">50</span>,
+            fields=<span class="str">"content_vector"</span>
+        )
+    ],
+    query_type=<span class="type">QueryType</span>.SEMANTIC,
+    semantic_configuration_name=<span class="str">"my-semantic-config"</span>,
+    top=<span class="num">5</span>
+)
+
+<span class="kw">for</span> r <span class="kw">in</span> results:
+    <span class="fn">print</span>(<span class="str">f"Reranker Score: </span>{r[<span class="str">'@search.reranker_score'</span>]:.4f}<span class="str">"</span>)
+    <span class="fn">print</span>(<span class="str">f"  Caption: </span>{r[<span class="str">'@search.captions'</span>][<span class="num">0</span>].text}<span class="str">"</span>)</code>
+    </div>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="card-icon">🔑</div>
+        <h4>Keyword Search (BM25)</h4>
+        <p>Statistical term matching. Great for exact terms, product codes, and proper nouns that embed poorly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🧠</div>
+        <h4>Vector Search</h4>
+        <p>Semantic similarity via embeddings. Finds conceptually related content even without keyword overlap.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">⚡</div>
+        <h4>Hybrid Search</h4>
+        <p>Combines BM25 + vector via RRF fusion. Best of both worlds — the recommended default approach.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon">🎯</div>
+        <h4>Semantic Ranking</h4>
+        <p>Cross-encoder re-ranking on top of hybrid results. Highest precision for complex, nuanced queries.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Strategy</th>
+          <th>Precision</th>
+          <th>Latency</th>
+          <th>When to Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Keyword only</td>
+          <td>Medium</td>
+          <td>~5 ms</td>
+          <td>Exact term lookups, codes, IDs</td>
+        </tr>
+        <tr>
+          <td>Vector only</td>
+          <td>High</td>
+          <td>~15 ms</td>
+          <td>Conceptual / natural language queries</td>
+        </tr>
+        <tr>
+          <td>Hybrid (keyword + vector)</td>
+          <td>Higher</td>
+          <td>~20 ms</td>
+          <td>General-purpose retrieval (recommended default)</td>
+        </tr>
+        <tr>
+          <td>Hybrid + Semantic Ranking</td>
+          <td>Highest</td>
+          <td>~120 ms</td>
+          <td>Complex queries needing deep relevance</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ============ GROUNDING & PROMPT CONSTRUCTION ============ -->
+    <h2 id="grounding-prompt">4 · Grounding &amp; Prompt Construction</h2>
+    <p>Retrieval gives you the right chunks — but how you present them to the model matters just as much. <strong>Grounding</strong> is the practice of injecting retrieved context into the prompt so the model can reason over real data instead of hallucinating answers.</p>
+
+    <h3>4.1 The Grounded Prompt Pattern</h3>
+    <p>A well-structured RAG prompt has three components arranged in a specific order:</p>
+
+    <ol>
+      <li><strong>System Prompt</strong> — defines the assistant's role, behavior constraints, and citation rules</li>
+      <li><strong>Retrieved Context</strong> — the top-<em>k</em> chunks from the search index, clearly delimited</li>
+      <li><strong>User Query</strong> — the original question from the user</li>
+    </ol>
+
+    <div class="code-block">
+      <span class="code-label">Prompt Template</span>
+      <code><span class="cm">## System Prompt</span>
+You are an AI assistant for Contoso Corporation.
+Answer questions using ONLY the provided context.
+
+Rules:
+- If the context does not contain the answer, say "I don't have
+  enough information to answer that question."
+- Cite your sources using [Source: filename] notation.
+- Be concise and factual.
+- Never fabricate information.
+
+<span class="cm">## Retrieved Context</span>
+&lt;context&gt;
+<span class="str">[Source: handbook-section-4.pdf, Page 12]</span>
+Contoso provides 16 weeks of paid parental leave for all
+full-time employees, regardless of gender. Leave can be
+taken in a single block or split across the first year...
+
+<span class="str">[Source: benefits-faq.pdf, Page 3]</span>
+Parental leave is available to employees who have completed
+at least 90 days of employment. Both birth and adoptive
+parents qualify...
+&lt;/context&gt;
+
+<span class="cm">## User Query</span>
+What is the parental leave policy at Contoso?</code>
+    </div>
+
+    <h3>4.2 Prompt Construction Best Practices</h3>
+    <ul>
+      <li><strong>Delimiter retrieved context</strong> — use clear markers (<code>&lt;context&gt;</code> tags, markdown headers, or XML) so the model knows where context begins and ends</li>
+      <li><strong>Include source metadata</strong> — filenames, page numbers, and section titles enable accurate citations</li>
+      <li><strong>Limit context size</strong> — include only the top 3–5 most relevant chunks; more isn't always better</li>
+      <li><strong>Instruct the model to refuse</strong> — always include a fallback instruction for when the context is insufficient</li>
+      <li><strong>Order matters</strong> — place the most relevant chunks first; models pay more attention to early context</li>
+    </ul>
+
+    <div class="callout callout-red">
+      <div class="callout-title">🚨 Anti-Pattern: Stuffing the Context Window</div>
+      <p>Dumping 50 chunks into the prompt is counterproductive. Models suffer from the "lost in the middle" problem — they attend strongly to the beginning and end of the context but can miss information in the middle. Stick to 3–5 highly relevant chunks and let the retrieval system do the filtering.</p>
+    </div>
+
+    <h3>4.3 Building the Prompt in Code</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">def</span> <span class="fn">build_grounded_prompt</span>(query: <span class="type">str</span>, search_results) -> <span class="type">list</span>:
+    <span class="str">"""Construct a grounded prompt from search results."""</span>
+
+    <span class="cm"># Format retrieved chunks with source attribution</span>
+    context_parts = []
+    <span class="kw">for</span> i, result <span class="kw">in</span> <span class="fn">enumerate</span>(search_results):
+        source = result[<span class="str">"source"</span>]
+        content = result[<span class="str">"content"</span>]
+        context_parts.<span class="fn">append</span>(
+            <span class="str">f"[Source {i+1}: {source}]\n{content}"</span>
+        )
+
+    context_block = <span class="str">"\n\n"</span>.<span class="fn">join</span>(context_parts)
+
+    <span class="kw">return</span> [
+        {
+            <span class="str">"role"</span>: <span class="str">"system"</span>,
+            <span class="str">"content"</span>: <span class="str">"""You are an AI assistant for Contoso Corporation.
+Answer questions using ONLY the provided context.
+If the context doesn't contain the answer, say so.
+Cite sources using [Source N] notation."""</span>
+        },
+        {
+            <span class="str">"role"</span>: <span class="str">"user"</span>,
+            <span class="str">"content"</span>: <span class="str">f"""&lt;context&gt;
+{context_block}
+&lt;/context&gt;
+
+Question: {query}"""</span>
+        }
+    ]</code>
+    </div>
+
+    <!-- ============ END-TO-END RAG WITH AZURE AI FOUNDRY ============ -->
+    <h2 id="e2e-foundry">5 · End-to-End RAG with Azure AI Foundry</h2>
+    <p>Azure AI Foundry provides two streamlined paths to build production RAG systems: the <strong>Agents API</strong> with built-in file search, and a <strong>manual pipeline</strong> using AI Search + chat completions. Both approaches converge on the same architecture but differ in how much the platform handles for you.</p>
+
+    <h3>5.1 Option A — Agents API with File Search</h3>
+    <p>The Azure AI Foundry Agents API provides a fully managed RAG experience. You upload files, the platform handles chunking, embedding, and indexing automatically, and the agent performs retrieval-augmented generation at query time.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> (
+    <span class="type">FileSearchTool</span>,
+    <span class="type">FilePurpose</span>,
+    <span class="type">VectorStoreDataSource</span>,
+    <span class="type">VectorStoreDataSourceAssetType</span>,
+)
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+<span class="cm"># Connect to your AI Foundry project</span>
+project = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+<span class="cm"># Step 1 — Upload the PDF to the project</span>
+file = project.agents.<span class="fn">upload_file_and_poll</span>(
+    file_path=<span class="str">"company-handbook.pdf"</span>,
+    purpose=<span class="type">FilePurpose</span>.AGENTS
+)
+<span class="fn">print</span>(<span class="str">f"Uploaded file ID: </span>{file.id}<span class="str">"</span>)
+
+<span class="cm"># Step 2 — Create a vector store from the uploaded file</span>
+vector_store = project.agents.<span class="fn">create_vector_store_and_poll</span>(
+    file_ids=[file.id],
+    name=<span class="str">"company-knowledge-base"</span>
+)
+<span class="fn">print</span>(<span class="str">f"Vector store ID: </span>{vector_store.id}<span class="str">"</span>)
+
+<span class="cm"># Step 3 — Create an agent with file search enabled</span>
+agent = project.agents.<span class="fn">create_agent</span>(
+    model=<span class="str">"gpt-4o"</span>,
+    name=<span class="str">"handbook-assistant"</span>,
+    instructions=<span class="str">"""You are a helpful assistant that answers questions
+about the company handbook. Always cite the specific section
+or page when answering. If you cannot find the answer in the
+provided documents, say so clearly."""</span>,
+    tools=[<span class="type">FileSearchTool</span>()],
+    tool_resources={
+        <span class="str">"file_search"</span>: {
+            <span class="str">"vector_store_ids"</span>: [vector_store.id]
+        }
+    }
+)
+<span class="fn">print</span>(<span class="str">f"Agent ID: </span>{agent.id}<span class="str">"</span>)</code>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">Python — Querying the Agent</span>
+      <code><span class="cm"># Step 4 — Create a thread and ask a question</span>
+thread = project.agents.<span class="fn">create_thread</span>()
+
+project.agents.<span class="fn">create_message</span>(
+    thread_id=thread.id,
+    role=<span class="str">"user"</span>,
+    content=<span class="str">"What is the parental leave policy?"</span>
+)
+
+<span class="cm"># Step 5 — Run the agent (retrieval + generation)</span>
+run = project.agents.<span class="fn">create_and_process_run</span>(
+    thread_id=thread.id,
+    agent_id=agent.id
+)
+
+<span class="cm"># Step 6 — Read the grounded response</span>
+messages = project.agents.<span class="fn">list_messages</span>(thread_id=thread.id)
+<span class="kw">for</span> msg <span class="kw">in</span> messages:
+    <span class="kw">if</span> msg.role == <span class="str">"assistant"</span>:
+        <span class="kw">for</span> block <span class="kw">in</span> msg.content:
+            <span class="fn">print</span>(block.text.value)
+            <span class="cm"># Citations are included as annotations</span>
+            <span class="kw">for</span> ann <span class="kw">in</span> block.text.annotations:
+                <span class="fn">print</span>(<span class="str">f"  📎 </span>{ann.file_citation.file_id}<span class="str">"</span>)</code>
+    </div>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ When to Use the Agents API for RAG</div>
+      <p>The Agents API is ideal when you want <strong>minimal infrastructure</strong> — the platform handles chunking, embedding, indexing, and retrieval. It's the fastest path to a working RAG prototype. For production systems with custom retrieval logic, large-scale indexes, or hybrid search, use Option B with Azure AI Search directly.</p>
+    </div>
+
+    <h3>5.2 Option B — AI Search + Chat Completions</h3>
+    <p>For full control over the retrieval pipeline, use Azure AI Search for indexing and retrieval, then pass the results into a chat completion call. This approach lets you tune every parameter: chunk size, embedding model, search strategy, re-ranking, and prompt template.</p>
+
+    <div class="code-block">
+      <span class="code-label">Python</span>
+      <code><span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.search.documents <span class="kw">import</span> <span class="type">SearchClient</span>
+<span class="kw">from</span> azure.search.documents.models <span class="kw">import</span> <span class="type">VectorizedQuery</span>, <span class="type">QueryType</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+
+credential = <span class="type">DefaultAzureCredential</span>()
+
+<span class="cm"># Initialize clients</span>
+project = <span class="type">AIProjectClient</span>(
+    credential=credential,
+    endpoint=<span class="str">"https://&lt;your-project&gt;.services.ai.azure.com"</span>
+)
+
+search_client = <span class="type">SearchClient</span>(
+    endpoint=<span class="str">"https://&lt;search-service&gt;.search.windows.net"</span>,
+    index_name=<span class="str">"rag-knowledge-base"</span>,
+    credential=credential
+)
+
+<span class="cm"># Step 1 — Embed the user query</span>
+user_query = <span class="str">"What is the parental leave policy?"</span>
+query_vector = project.inference.<span class="fn">embed</span>(
+    model=<span class="str">"text-embedding-3-large"</span>,
+    input=[user_query]
+).data[<span class="num">0</span>].embedding
+
+<span class="cm"># Step 2 — Hybrid search with semantic ranking</span>
+results = search_client.<span class="fn">search</span>(
+    search_text=user_query,
+    vector_queries=[<span class="type">VectorizedQuery</span>(
+        vector=query_vector,
+        k_nearest_neighbors=<span class="num">50</span>,
+        fields=<span class="str">"content_vector"</span>
+    )],
+    query_type=<span class="type">QueryType</span>.SEMANTIC,
+    semantic_configuration_name=<span class="str">"default"</span>,
+    top=<span class="num">5</span>
+)
+
+<span class="cm"># Step 3 — Build the grounded prompt</span>
+messages = <span class="fn">build_grounded_prompt</span>(user_query, <span class="fn">list</span>(results))
+
+<span class="cm"># Step 4 — Generate the answer</span>
+response = project.inference.<span class="fn">complete</span>(
+    model=<span class="str">"gpt-4o"</span>,
+    messages=messages,
+    temperature=<span class="num">0.3</span>,
+    max_tokens=<span class="num">800</span>
+)
+
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)</code>
+    </div>
+
+    <h3>5.3 Comparing the Two Approaches</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Agents API (File Search)</th>
+          <th>AI Search + Chat Completions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Setup complexity</td>
+          <td>Low — upload files and go</td>
+          <td>Medium — create index, define schema</td>
+        </tr>
+        <tr>
+          <td>Chunking control</td>
+          <td>Automatic (platform-managed)</td>
+          <td>Full control over strategy and size</td>
+        </tr>
+        <tr>
+          <td>Search strategy</td>
+          <td>Built-in vector search</td>
+          <td>Keyword, vector, hybrid, semantic ranking</td>
+        </tr>
+        <tr>
+          <td>Scale</td>
+          <td>Hundreds of files</td>
+          <td>Millions of documents</td>
+        </tr>
+        <tr>
+          <td>Citations</td>
+          <td>Automatic annotations</td>
+          <td>Custom (prompt-driven)</td>
+        </tr>
+        <tr>
+          <td>Best for</td>
+          <td>Prototypes, small knowledge bases</td>
+          <td>Production systems, enterprise search</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ============ VIDEO WALKTHROUGH ============ -->
+    <h2 id="video">📺 Video Walkthrough</h2>
+    <p>Watch this comprehensive Microsoft Reactor session on building RAG solutions with Azure AI Foundry — covering architecture, implementation, and deployment:</p>
+
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/IXGrwWcLJuE"
+        title="RAG Solutions — Microsoft Reactor"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+
+    <!-- ============ MINI HACK ============ -->
+    <h2 id="mini-hack">🛠️ Mini Hack Challenge</h2>
+
+    <div class="mini-hack-banner">
+      <h3>🚀 Build a Complete RAG Pipeline</h3>
+      <p>Build an end-to-end RAG pipeline that answers questions about a PDF document using Azure AI Search and the Agents API.</p>
+    </div>
+
+    <h3>Challenge Requirements</h3>
+    <ol>
+      <li><strong>Ingest a PDF document</strong> — use Azure AI Document Intelligence or the Agents API file upload to extract and chunk the content</li>
+      <li><strong>Create a searchable index</strong> — embed the chunks and store them in Azure AI Search (or use the Agents API vector store)</li>
+      <li><strong>Implement hybrid retrieval</strong> — combine keyword and vector search to find relevant chunks</li>
+      <li><strong>Build a grounded prompt</strong> — construct a prompt that includes system instructions, retrieved context, and the user query</li>
+      <li><strong>Generate cited answers</strong> — use the LLM to produce a grounded answer with source citations</li>
+    </ol>
+
+    <h3>Starter Template</h3>
+
+    <div class="code-block">
+      <span class="code-label">Python — mini_hack_rag.py</span>
+      <code><span class="str">"""
+Module 13 Mini Hack — End-to-End RAG Pipeline
+Build a complete RAG system using Azure AI Foundry.
+"""</span>
+
+<span class="kw">from</span> azure.ai.projects <span class="kw">import</span> <span class="type">AIProjectClient</span>
+<span class="kw">from</span> azure.ai.projects.models <span class="kw">import</span> <span class="type">FileSearchTool</span>, <span class="type">FilePurpose</span>
+<span class="kw">from</span> azure.identity <span class="kw">import</span> <span class="type">DefaultAzureCredential</span>
+<span class="kw">import</span> os
+
+<span class="cm"># ── Configuration ──</span>
+ENDPOINT = os.environ[<span class="str">"PROJECT_ENDPOINT"</span>]
+PDF_PATH = <span class="str">"sample-document.pdf"</span>
+MODEL = <span class="str">"gpt-4o"</span>
+
+<span class="cm"># ── Step 1: Connect to the project ──</span>
+project = <span class="type">AIProjectClient</span>(
+    credential=<span class="type">DefaultAzureCredential</span>(),
+    endpoint=ENDPOINT
+)
+
+<span class="cm"># ── Step 2: Upload and index the PDF ──</span>
+file = project.agents.<span class="fn">upload_file_and_poll</span>(
+    file_path=PDF_PATH,
+    purpose=<span class="type">FilePurpose</span>.AGENTS
+)
+
+vector_store = project.agents.<span class="fn">create_vector_store_and_poll</span>(
+    file_ids=[file.id],
+    name=<span class="str">"mini-hack-kb"</span>
+)
+
+<span class="cm"># ── Step 3: Create the RAG agent ──</span>
+agent = project.agents.<span class="fn">create_agent</span>(
+    model=MODEL,
+    name=<span class="str">"rag-mini-hack"</span>,
+    instructions=<span class="str">"""You answer questions using the provided documents.
+Always cite the source document and section.
+If you cannot find the answer, say so."""</span>,
+    tools=[<span class="type">FileSearchTool</span>()],
+    tool_resources={
+        <span class="str">"file_search"</span>: {<span class="str">"vector_store_ids"</span>: [vector_store.id]}
+    }
+)
+
+<span class="cm"># ── Step 4: Ask questions ──</span>
+questions = [
+    <span class="str">"What are the key topics covered in this document?"</span>,
+    <span class="str">"Summarize the main recommendations."</span>,
+    <span class="str">"What data or evidence is presented?"</span>,
+]
+
+thread = project.agents.<span class="fn">create_thread</span>()
+
+<span class="kw">for</span> q <span class="kw">in</span> questions:
+    <span class="fn">print</span>(<span class="str">f"\n{'='*60}"</span>)
+    <span class="fn">print</span>(<span class="str">f"Q: </span>{q}<span class="str">"</span>)
+    <span class="fn">print</span>(<span class="str">"="</span> * <span class="num">60</span>)
+
+    project.agents.<span class="fn">create_message</span>(
+        thread_id=thread.id,
+        role=<span class="str">"user"</span>,
+        content=q
+    )
+
+    run = project.agents.<span class="fn">create_and_process_run</span>(
+        thread_id=thread.id,
+        agent_id=agent.id
+    )
+
+    messages = project.agents.<span class="fn">list_messages</span>(thread_id=thread.id)
+    <span class="kw">for</span> msg <span class="kw">in</span> messages:
+        <span class="kw">if</span> msg.role == <span class="str">"assistant"</span>:
+            <span class="kw">for</span> block <span class="kw">in</span> msg.content:
+                <span class="fn">print</span>(<span class="str">f"\nA: </span>{block.text.value}<span class="str">"</span>)
+            <span class="kw">break</span>
+
+<span class="cm"># ── Cleanup ──</span>
+project.agents.<span class="fn">delete_agent</span>(agent.id)
+project.agents.<span class="fn">delete_vector_store</span>(vector_store.id)
+<span class="fn">print</span>(<span class="str">"\n✅ Mini hack complete! Resources cleaned up."</span>)</code>
+    </div>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Stretch Goals</div>
+      <p><strong>Level 2:</strong> Replace the Agents API with a manual pipeline — use Azure AI Search for indexing and hybrid retrieval, then pass results to a chat completion call.<br>
+      <strong>Level 3:</strong> Add semantic ranking, implement a streaming response, and build a simple Gradio or Streamlit UI.</p>
+    </div>
+
+    <!-- ============ BEST PRACTICES ============ -->
+    <h2 id="best-practices">Best Practices</h2>
+    <p>Building a RAG pipeline that works in demos is easy. Building one that works in production requires attention to these details:</p>
+
+    <h3>Ingestion Best Practices</h3>
+    <ul>
+      <li><strong>Preserve document structure</strong> — use layout-aware extractors (Document Intelligence) instead of raw text extraction; tables, headers, and lists carry crucial context</li>
+      <li><strong>Enrich chunks with metadata</strong> — store source filename, page number, section heading, and creation date alongside each chunk for filtering and citations</li>
+      <li><strong>Use consistent chunk sizes</strong> — mixing 100-token and 5000-token chunks in the same index leads to uneven retrieval quality</li>
+      <li><strong>Add overlap</strong> — 10–15% token overlap between chunks prevents sentences from being split across boundaries</li>
+    </ul>
+
+    <h3>Retrieval Best Practices</h3>
+    <ul>
+      <li><strong>Start with hybrid search</strong> — pure vector or pure keyword search each have blind spots; hybrid search with RRF is the recommended baseline</li>
+      <li><strong>Use semantic ranking for complex queries</strong> — the cross-encoder re-ranker is slower but significantly more accurate for ambiguous or multi-part questions</li>
+      <li><strong>Retrieve more, present fewer</strong> — retrieve top-50, re-rank, then feed top-5 to the model</li>
+      <li><strong>Apply metadata filters</strong> — if the user specifies a date range, department, or document type, filter at the index level before ranking</li>
+    </ul>
+
+    <h3>Generation Best Practices</h3>
+    <ul>
+      <li><strong>Use low temperature</strong> — set <code>temperature=0.1–0.3</code> for factual Q&A to reduce hallucination</li>
+      <li><strong>Instruct the model to cite</strong> — explicitly ask for citations in the system prompt and provide source metadata in the context</li>
+      <li><strong>Handle "no answer" gracefully</strong> — the system prompt must instruct the model to decline when context is insufficient, rather than guessing</li>
+      <li><strong>Test with adversarial queries</strong> — ask questions the documents don't cover; verify the model correctly refuses to answer</li>
+    </ul>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ Common Pitfall: Ignoring Evaluation</div>
+      <p>A RAG pipeline is only as good as its retrieval quality. Track metrics like <strong>retrieval recall@k</strong> (does the right chunk appear in the top-k?), <strong>answer faithfulness</strong> (does the answer match the retrieved context?), and <strong>groundedness</strong> (does the answer avoid hallucination?). Azure AI Foundry's evaluation SDK makes this straightforward.</p>
+    </div>
+
+    <!-- ============ SUMMARY ============ -->
+    <h2 id="summary">Summary &amp; Next Steps</h2>
+    <p>In this module you learned the complete anatomy of a RAG pipeline — from document ingestion through retrieval, prompt construction, and grounded generation. Here's what we covered:</p>
+
+    <ul>
+      <li>✅ <strong>RAG Architecture</strong> — the four-phase loop: ingest → retrieve → augment → generate</li>
+      <li>✅ <strong>Document Ingestion</strong> — loading, chunking strategies, embedding generation, and index creation</li>
+      <li>✅ <strong>Retrieval Strategies</strong> — vector search, hybrid search, and semantic ranking with Azure AI Search</li>
+      <li>✅ <strong>Grounding &amp; Prompt Construction</strong> — building prompts with system instructions, retrieved context, and citation rules</li>
+      <li>✅ <strong>End-to-End Implementation</strong> — both the Agents API (managed) and AI Search + Chat Completions (manual) approaches</li>
+    </ul>
+
+    <p>In <strong>Module 14: Advanced RAG Patterns</strong>, you'll explore techniques for production-hardening your pipeline — including multi-index retrieval, query rewriting, agentic RAG with tool use, and evaluation-driven iteration.</p>
+
+    <!-- ============ MODULE NAVIGATION ============ -->
+    <div class="module-nav">
+      <a href="../module-12/blog.html" class="prev">
+        <span class="nav-label">← Previous Module</span>
+        <span class="nav-title">Module 12: Building Vector Indexes</span>
+      </a>
+      <a href="../module-14/blog.html" class="next">
+        <span class="nav-label">Next Module →</span>
+        <span class="nav-title">Module 14: Advanced RAG Patterns</span>
+      </a>
+    </div>
+
+  </article>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>&copy; 2026 AI Foundry Training — Zero to Hero. Built for the community.</p>
+    <ul class="footer-links">
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/" target="_blank" rel="noopener">Documentation</a></li>
+      <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<!-- ============================================================
+     JAVASCRIPT: Scroll Progress, TOC Highlighting, Back-to-Top
+     ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── Scroll Progress Bar ──
+  const progressBar = document.getElementById('scrollProgress');
+  function updateProgress() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+
+  // ── Back to Top Button ──
+  const backToTop = document.getElementById('backToTop');
+  function toggleBackToTop() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    if (scrollTop > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Throttled scroll handler
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        updateProgress();
+        toggleBackToTop();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // ── Sticky TOC with IntersectionObserver ──
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = [];
+  tocLinks.forEach(function(link) {
+    const id = link.getAttribute('href').substring(1);
+    const section = document.getElementById(id);
+    if (section) sections.push(section);
+  });
+
+  if (sections.length > 0 && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          tocLinks.forEach(function(link) {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, {
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    });
+
+    sections.forEach(function(section) {
+      observer.observe(section);
+    });
+  }
+
+  // ── Smooth scroll for TOC links ──
+  tocLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Initialize on load
+  updateProgress();
+  toggleBackToTop();
+})();
+</script>
+
+</body>
+</html>

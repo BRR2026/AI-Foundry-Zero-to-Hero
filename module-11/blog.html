@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Module 11: Connecting Data Sources — Learn how to integrate Azure Blob Storage, Azure SQL, Cosmos DB, SharePoint, and OneLake with Azure AI Foundry for building RAG-powered AI applications.">
+<meta name="author" content="Zero to Hero Training Team">
+<meta name="keywords" content="Azure AI Foundry, data sources, RAG, Blob Storage, Azure SQL, Cosmos DB, SharePoint, OneLake, data ingestion, indexing">
+<title>Module 11: Connecting Data Sources — Azure AI Foundry: Zero to Hero</title>
+
+<style>
+/* ============================================
+   CSS CUSTOM PROPERTIES
+   ============================================ */
+:root {
+  --ms-blue: #0078d4;
+  --ms-dark-blue: #004578;
+  --ms-purple: #5c2d91;
+  --ms-light-blue: #50e6ff;
+  --bg-white: #ffffff;
+  --bg-gray: #f6f6f6;
+  --bg-light: #faf9f8;
+  --bg-code: #f4f4f4;
+  --text-primary: #1a1a1a;
+  --text-secondary: #505050;
+  --text-muted: #6e6e6e;
+  --text-light: #8a8a8a;
+  --border-light: #e1dfdd;
+  --border-medium: #d2d0ce;
+  --callout-blue-bg: #f0f6ff;
+  --callout-blue-border: #0078d4;
+  --callout-yellow-bg: #fff8e1;
+  --callout-yellow-border: #ffb900;
+  --callout-green-bg: #f0fff0;
+  --callout-green-border: #107c10;
+  --callout-red-bg: #fff5f5;
+  --callout-red-border: #d13438;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --content-width: 780px;
+  --toc-width: 220px;
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img { max-width: 100%; height: auto; }
+a { color: var(--ms-blue); text-decoration: none; transition: color 0.2s ease; }
+a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
+
+/* ============================================
+   SCROLL PROGRESS BAR
+   ============================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ms-blue), var(--ms-purple));
+  z-index: 10000;
+  transition: width 0.1s linear;
+  width: 0%;
+}
+
+/* ============================================
+   TOP NAVIGATION BAR
+   ============================================ */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  background: #1b1b1b;
+  border-bottom: 1px solid #333;
+  padding: 0 24px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.top-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.ms-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.top-nav-title {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.top-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.top-nav-links a {
+  color: #cccccc;
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.top-nav-links a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.hero {
+  background: linear-gradient(135deg, #0078d4, #5c2d91);
+  color: white;
+  padding: 80px 24px 72px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.06) 0%, transparent 60%),
+              radial-gradient(circle at 70% 30%, rgba(255,255,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.hero h1 {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.hero .subtitle {
+  font-size: 20px;
+  font-weight: 300;
+  opacity: 0.92;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.hero-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  font-size: 14px;
+  opacity: 0.8;
+  flex-wrap: wrap;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================
+   MAIN LAYOUT
+   ============================================ */
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+}
+
+/* ============================================
+   STICKY TOC SIDEBAR
+   ============================================ */
+.toc-sidebar {
+  position: sticky;
+  top: 72px;
+  width: var(--toc-width);
+  height: fit-content;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  padding: 32px 0;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-light);
+  margin-right: 48px;
+}
+
+.toc-sidebar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 3px;
+}
+
+.toc-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding-right: 16px;
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list li {
+  margin-bottom: 2px;
+}
+
+.toc-list a {
+  display: block;
+  padding: 5px 16px 5px 12px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.toc-list a:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.toc-list a.active {
+  color: var(--ms-blue);
+  font-weight: 600;
+  border-left-color: var(--ms-blue);
+  background: var(--callout-blue-bg);
+}
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--content-width);
+  padding: 48px 0 80px;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+.main-content h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 56px 0 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-light);
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.main-content h2:first-child {
+  margin-top: 0;
+}
+
+.main-content h3 {
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 40px 0 14px;
+  line-height: 1.3;
+}
+
+.main-content h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 28px 0 10px;
+}
+
+.main-content p {
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.main-content ul, .main-content ol {
+  margin-bottom: 18px;
+  padding-left: 24px;
+}
+
+.main-content li {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.main-content li strong {
+  color: var(--text-primary);
+}
+
+.main-content strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.main-content code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--bg-code);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  color: #d63384;
+  border: 1px solid var(--border-light);
+}
+
+/* ============================================
+   CODE BLOCKS
+   ============================================ */
+.code-block-wrapper {
+  margin: 24px 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f8f8;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.code-block-content {
+  background: #1e1e1e;
+  padding: 20px 24px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  color: #d4d4d4;
+}
+
+.code-block-content .keyword { color: #569cd6; }
+.code-block-content .string { color: #ce9178; }
+.code-block-content .comment { color: #6a9955; }
+.code-block-content .function { color: #dcdcaa; }
+.code-block-content .type { color: #4ec9b0; }
+.code-block-content .number { color: #b5cea8; }
+.code-block-content .property { color: #9cdcfe; }
+
+/* ============================================
+   CALLOUT BOXES
+   ============================================ */
+.callout {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.callout p { margin-bottom: 8px; color: var(--text-secondary); }
+.callout p:last-child { margin-bottom: 0; }
+.callout strong { color: var(--text-primary); }
+
+.callout-title {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout-blue {
+  background: var(--callout-blue-bg);
+  border-left-color: var(--callout-blue-border);
+}
+.callout-blue .callout-title { color: var(--ms-blue); }
+
+.callout-yellow {
+  background: var(--callout-yellow-bg);
+  border-left-color: var(--callout-yellow-border);
+}
+.callout-yellow .callout-title { color: #996600; }
+
+.callout-green {
+  background: var(--callout-green-bg);
+  border-left-color: var(--callout-green-border);
+}
+.callout-green .callout-title { color: #107c10; }
+
+.callout-red {
+  background: var(--callout-red-bg);
+  border-left-color: var(--callout-red-border);
+}
+.callout-red .callout-title { color: #d13438; }
+
+/* ============================================
+   TABLES
+   ============================================ */
+.content-table-wrapper {
+  margin: 24px 0;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.content-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.content-table thead {
+  background: var(--bg-gray);
+}
+
+.content-table th {
+  text-align: left;
+  padding: 12px 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-medium);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.content-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.content-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.content-table tbody tr:hover {
+  background: var(--bg-light);
+}
+
+/* ============================================
+   CARDS GRID
+   ============================================ */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.feature-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-card:hover {
+  border-color: var(--ms-blue);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.feature-card .card-icon {
+  font-size: 32px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.feature-card h4 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+/* ============================================
+   VIDEO EMBED
+   ============================================ */
+.video-container {
+  margin: 24px 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+}
+
+.video-responsive {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+}
+
+.video-responsive iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-caption {
+  padding: 14px 20px;
+  background: var(--bg-gray);
+  font-size: 13px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-light);
+}
+
+/* ============================================
+   STEP-BY-STEP GUIDE
+   ============================================ */
+.steps-list {
+  counter-reset: step-counter;
+  list-style: none;
+  padding: 0;
+  margin: 24px 0;
+}
+
+.steps-list li {
+  counter-increment: step-counter;
+  position: relative;
+  padding: 20px 20px 20px 64px;
+  margin-bottom: 16px;
+  background: var(--bg-light);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.steps-list li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--ms-blue), var(--ms-purple));
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.steps-list li strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+/* ============================================
+   DIAGRAM / FLOW
+   ============================================ */
+.architecture-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 32px 0;
+  flex-wrap: wrap;
+  padding: 24px;
+  background: var(--bg-light);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+}
+
+.flow-node {
+  background: var(--bg-white);
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 120px;
+  box-shadow: var(--shadow-sm);
+}
+
+.flow-node.primary {
+  border-color: var(--ms-blue);
+  background: var(--callout-blue-bg);
+  color: var(--ms-blue);
+}
+
+.flow-node.accent {
+  border-color: var(--ms-purple);
+  background: #f3eef8;
+  color: var(--ms-purple);
+}
+
+.flow-arrow-icon {
+  color: var(--text-light);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* ============================================
+   BOTTOM MODULE NAVIGATION
+   ============================================ */
+.module-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 64px 0 0;
+  padding: 32px 0;
+  border-top: 2px solid var(--border-light);
+}
+
+.module-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ms-blue);
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.module-nav a:hover {
+  background: var(--callout-blue-bg);
+  border-color: var(--ms-blue);
+  text-decoration: none;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.site-footer {
+  background: #1b1b1b;
+  color: #999;
+  padding: 48px 24px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.site-footer a {
+  color: #ccc;
+}
+
+.site-footer a:hover {
+  color: white;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   BACK TO TOP BUTTON
+   ============================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  background: var(--ms-blue);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 9998;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  background: var(--ms-dark-blue);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   READING TIME / META BAR
+   ============================================ */
+.article-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.article-meta-bar .meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.article-meta-bar .divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-medium);
+}
+
+/* ============================================
+   CHECKLIST STYLE
+   ============================================ */
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+}
+
+.checklist li {
+  padding: 6px 0 6px 28px;
+  position: relative;
+  font-size: 15px;
+}
+
+.checklist li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--callout-green-border);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* ============================================
+   KEY TAKEAWAYS BOX
+   ============================================ */
+.takeaways-box {
+  background: linear-gradient(135deg, #f0f6ff 0%, #f3eef8 100%);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin: 32px 0;
+}
+
+.takeaways-box h3 {
+  font-size: 20px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--ms-dark-blue);
+}
+
+.takeaways-box ul {
+  list-style: none;
+  padding: 0;
+}
+
+.takeaways-box li {
+  padding: 8px 0 8px 28px;
+  position: relative;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.takeaways-box li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--ms-blue);
+  font-weight: 700;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 1024px) {
+  .toc-sidebar {
+    display: none;
+  }
+
+  .page-wrapper {
+    display: block;
+  }
+
+  .main-content {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 48px 20px 40px;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .hero .subtitle {
+    font-size: 16px;
+  }
+
+  .hero-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .main-content h2 {
+    font-size: 26px;
+    margin-top: 40px;
+  }
+
+  .main-content h3 {
+    font-size: 20px;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .architecture-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flow-arrow-icon {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+
+  .module-nav {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .module-nav a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .top-nav-links {
+    display: none;
+  }
+
+  .back-to-top {
+    bottom: 20px;
+    right: 20px;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  .top-nav,
+  .toc-sidebar,
+  .scroll-progress,
+  .back-to-top,
+  .module-nav,
+  .site-footer,
+  .video-container {
+    display: none !important;
+  }
+
+  .hero {
+    background: #f0f0f0 !important;
+    color: #1a1a1a !important;
+    padding: 32px 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .hero-badge {
+    background: #ddd !important;
+    color: #333 !important;
+  }
+
+  .page-wrapper {
+    display: block;
+  }
+
+  .main-content {
+    max-width: 100%;
+    padding: 24px 0;
+  }
+
+  .main-content h2 {
+    page-break-after: avoid;
+    margin-top: 32px;
+  }
+
+  .callout, .feature-card, .takeaways-box {
+    page-break-inside: avoid;
+    border: 1px solid #ccc;
+  }
+
+  .code-block-content {
+    background: #f5f5f5 !important;
+    color: #1a1a1a !important;
+    border: 1px solid #ccc;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS BAR -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- TOP NAVIGATION BAR -->
+<nav class="top-nav">
+  <a href="#" class="top-nav-brand">
+    <!-- Microsoft 4-color logo SVG -->
+    <svg class="ms-logo" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="11" height="11" fill="#f25022"/>
+      <rect x="12" y="0" width="11" height="11" fill="#7fba00"/>
+      <rect x="0" y="12" width="11" height="11" fill="#00a4ef"/>
+      <rect x="12" y="12" width="11" height="11" fill="#ffb900"/>
+    </svg>
+    <span class="top-nav-title">AI Foundry Training Blog</span>
+  </a>
+  <ul class="top-nav-links">
+    <li><a href="#">Curriculum</a></li>
+    <li><a href="#">Resources</a></li>
+    <li><a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO SECTION -->
+<header class="hero">
+  <div class="hero-content">
+    <span class="hero-badge">ARC 3 · DATA &amp; RAG</span>
+    <h1>Connecting Data Sources</h1>
+    <p class="subtitle">Integrate Azure Blob Storage, Azure SQL, Cosmos DB, SharePoint, and OneLake with Azure AI Foundry to build knowledge-grounded AI applications.</p>
+    <div class="hero-meta">
+      <span>📘 Module 11 of 45</span>
+      <span>✍️ Zero to Hero Training Team</span>
+      <span>📅 April 2026</span>
+      <span>⏱️ 25 min read</span>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE WRAPPER -->
+<div class="page-wrapper">
+
+  <!-- STICKY TOC SIDEBAR -->
+  <aside class="toc-sidebar" id="tocSidebar">
+    <div class="toc-title">On This Page</div>
+    <ul class="toc-list" id="tocList">
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#featured-video">Featured Video</a></li>
+      <li><a href="#data-sources-overview">Data Sources Overview</a></li>
+      <li><a href="#blob-storage">Azure Blob Storage</a></li>
+      <li><a href="#sql-cosmosdb">Azure SQL &amp; Cosmos DB</a></li>
+      <li><a href="#sharepoint-onelake">SharePoint &amp; OneLake</a></li>
+      <li><a href="#ingestion-patterns">Data Ingestion Patterns</a></li>
+      <li><a href="#data-preparation">Data Preparation</a></li>
+      <li><a href="#indexing-strategies">Indexing Strategies</a></li>
+      <li><a href="#mini-hack">Mini Hack</a></li>
+      <li><a href="#key-takeaways">Key Takeaways</a></li>
+      <li><a href="#module-12-preview">Module 12 Preview</a></li>
+      <li><a href="#resources">Resources</a></li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Article Meta Bar -->
+    <div class="article-meta-bar">
+      <span class="meta-item">✍️ Zero to Hero Training Team</span>
+      <span class="divider"></span>
+      <span class="meta-item">📅 April 2026</span>
+      <span class="divider"></span>
+      <span class="meta-item">⏱️ 25 min read</span>
+      <span class="divider"></span>
+      <span class="meta-item">📘 Module 11 of 45</span>
+    </div>
+
+    <!-- ============================================
+         SECTION: Introduction
+         ============================================ -->
+    <h2 id="introduction">Introduction</h2>
+
+    <p>Every AI application is only as powerful as the data it can access. Whether you're building a customer support chatbot that needs to reference product documentation, an internal assistant that surfaces HR policies, or an analytics tool that interprets sales data — the foundation of every successful AI project is <strong>well-connected, properly prepared data</strong>.</p>
+
+    <p>In this module, we explore how Azure AI Foundry enables you to connect a wide variety of data sources to your AI projects. We'll cover five key data connectors — Azure Blob Storage, Azure SQL Database, Azure Cosmos DB, SharePoint Online, and Microsoft OneLake — and dive deep into the patterns, strategies, and best practices that make data ingestion, preparation, and indexing effective for Retrieval-Augmented Generation (RAG) workloads.</p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Why This Matters</div>
+      <p>RAG (Retrieval-Augmented Generation) is the most common pattern for grounding AI responses in real-world data. Without proper data connectivity and indexing, your AI model operates in a vacuum — unable to provide accurate, contextual, and up-to-date responses. This module gives you the skills to bridge that gap.</p>
+    </div>
+
+    <p>By the end of this module, you will be able to connect multiple Azure data sources to AI Foundry, design effective ingestion pipelines, prepare your data for AI consumption, and create vector indexes that power high-quality RAG applications.</p>
+
+    <div class="architecture-flow">
+      <div class="flow-node">Data Sources</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Connectors</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node">Preparation</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Indexing</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node accent">Vector Index</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node accent">RAG Pipeline</div>
+    </div>
+
+    <!-- ============================================
+         SECTION: Featured Video
+         ============================================ -->
+    <h2 id="featured-video">Featured Video</h2>
+
+    <p>Before we dive into the technical details, watch this Microsoft Reactor session on building RAG solutions with Azure AI Foundry. This video covers the end-to-end process of connecting data sources, creating indexes, and integrating them with AI models.</p>
+
+    <div class="video-container">
+      <div class="video-responsive">
+        <iframe
+          src="https://www.youtube.com/embed/IXGrwWcLJuE"
+          title="Building RAG Solutions with Azure AI Foundry — Microsoft Reactor"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+      <div class="video-caption">
+        🎥 <strong>Building RAG Solutions with Azure AI Foundry</strong> — Microsoft Reactor · <a href="https://www.youtube.com/watch?v=IXGrwWcLJuE" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+      </div>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">📝 Video Notes</div>
+      <p>As you watch, pay attention to how data sources are connected in the AI Foundry portal, the chunking configuration options, and how the resulting index is used in a chat completion call. These concepts will be central to our hands-on lab later in this module.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Data Sources Overview
+         ============================================ -->
+    <h2 id="data-sources-overview">Data Sources Overview</h2>
+
+    <p>Azure AI Foundry supports multiple Azure data services as sources for your AI projects. Each data source has different strengths and is suited for different types of content. Understanding which source to use — and when to combine multiple sources — is critical for building comprehensive knowledge bases.</p>
+
+    <div class="cards-grid">
+      <div class="feature-card">
+        <span class="card-icon">📦</span>
+        <h4>Azure Blob Storage</h4>
+        <p>Object storage for unstructured data: PDFs, images, text files, Office documents, and more. The most versatile connector for file-based content.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">🗃️</span>
+        <h4>Azure SQL Database</h4>
+        <p>Relational database for structured business data. Query specific tables and columns to extract precisely the data your AI needs.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">🌍</span>
+        <h4>Azure Cosmos DB</h4>
+        <p>Globally distributed NoSQL database. Ideal for semi-structured document data with flexible schemas and real-time change feeds.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">📁</span>
+        <h4>SharePoint Online</h4>
+        <p>Enterprise document management in Microsoft 365. Access content where your teams already collaborate, with built-in permissions.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">🏞️</span>
+        <h4>Microsoft OneLake</h4>
+        <p>Unified data lake across Microsoft Fabric. A single data layer for all analytics workloads with built-in governance.</p>
+      </div>
+    </div>
+
+    <div class="content-table-wrapper">
+      <table class="content-table">
+        <thead>
+          <tr>
+            <th>Data Source</th>
+            <th>Data Type</th>
+            <th>Best Use Case</th>
+            <th>Authentication</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Azure Blob Storage</strong></td>
+            <td>Unstructured files</td>
+            <td>PDFs, docs, images, text</td>
+            <td>Managed Identity, SAS, Keys</td>
+          </tr>
+          <tr>
+            <td><strong>Azure SQL Database</strong></td>
+            <td>Structured relational</td>
+            <td>Business records, CRM data</td>
+            <td>Managed Identity, SQL Auth</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Cosmos DB</strong></td>
+            <td>Semi-structured NoSQL</td>
+            <td>JSON documents, catalogs</td>
+            <td>Managed Identity, Keys</td>
+          </tr>
+          <tr>
+            <td><strong>SharePoint Online</strong></td>
+            <td>Enterprise documents</td>
+            <td>Team docs, policies, wikis</td>
+            <td>Microsoft Entra ID (OAuth)</td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft OneLake</strong></td>
+            <td>Analytics data</td>
+            <td>Fabric workloads, data lake</td>
+            <td>Managed Identity</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============================================
+         SECTION: Azure Blob Storage Integration
+         ============================================ -->
+    <h2 id="blob-storage">Azure Blob Storage Integration</h2>
+
+    <p>Azure Blob Storage is the most commonly used data source for AI applications. It provides scalable, cost-effective storage for unstructured content — the kind of content that forms the backbone of most knowledge bases and RAG systems.</p>
+
+    <h3>Supported File Formats</h3>
+
+    <p>When connecting Blob Storage to Azure AI Foundry, the following file formats are supported for automatic text extraction and indexing:</p>
+
+    <ul>
+      <li><strong>Documents:</strong> PDF, DOCX, PPTX, XLSX, HTML, TXT, MD</li>
+      <li><strong>Data files:</strong> JSON, CSV, TSV, XML</li>
+      <li><strong>Images (with OCR):</strong> PNG, JPG, TIFF, BMP</li>
+    </ul>
+
+    <h3>Setting Up the Connection</h3>
+
+    <p>To connect Azure Blob Storage to your AI Foundry project, you need to configure authentication and specify which containers to index. Here's the recommended approach:</p>
+
+    <ol class="steps-list">
+      <li><strong>Create or identify your storage account</strong> — Ensure your storage account is in the same region as your AI Foundry project for optimal performance and to avoid cross-region data transfer charges.</li>
+      <li><strong>Organize your content in containers</strong> — Use separate containers for different content types or domains. For example, <code>product-docs</code>, <code>hr-policies</code>, and <code>technical-manuals</code>.</li>
+      <li><strong>Configure authentication</strong> — Assign the <code>Storage Blob Data Reader</code> RBAC role to your AI Foundry project's managed identity. This is the most secure approach for production.</li>
+      <li><strong>Create the connection in AI Foundry</strong> — Navigate to your project in the AI Foundry portal, go to <strong>Data</strong>, and add a new connection pointing to your storage account and container.</li>
+    </ol>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>Azure CLI — Assign RBAC Role</span>
+        <span>bash</span>
+      </div>
+      <div class="code-block-content">
+<span class="comment"># Get the managed identity principal ID of your AI Foundry project</span>
+<span class="property">PRINCIPAL_ID</span>=$(<span class="function">az</span> resource show \
+  --resource-group myResourceGroup \
+  --name myAIFoundryProject \
+  --resource-type <span class="string">"Microsoft.MachineLearningServices/workspaces"</span> \
+  --query <span class="string">"identity.principalId"</span> -o tsv)
+
+<span class="comment"># Assign Storage Blob Data Reader role</span>
+<span class="function">az</span> role assignment create \
+  --assignee <span class="property">$PRINCIPAL_ID</span> \
+  --role <span class="string">"Storage Blob Data Reader"</span> \
+  --scope <span class="string">"/subscriptions/{sub-id}/resourceGroups/{rg}/providers/Microsoft.Storage/storageAccounts/{account}"</span>
+      </div>
+    </div>
+
+    <h3>Container Organization Best Practices</h3>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ Best Practice</div>
+      <p>Organize your blob containers by content domain rather than file type. This makes it easier to create targeted indexes and manage access permissions. For example, use containers like <code>product-documentation</code> and <code>customer-support-kb</code> rather than <code>all-pdfs</code> and <code>all-docx-files</code>.</p>
+    </div>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>Recommended Container Structure</span>
+        <span>text</span>
+      </div>
+      <div class="code-block-content">
+Storage Account: contoso-ai-data
+├── 📁 product-documentation/
+│   ├── user-guide-v3.pdf
+│   ├── api-reference.pdf
+│   └── release-notes/
+│       ├── 2026-q1.md
+│       └── 2026-q2.md
+├── 📁 customer-support-kb/
+│   ├── troubleshooting-guide.pdf
+│   ├── faq-database.json
+│   └── known-issues.csv
+├── 📁 hr-policies/
+│   ├── employee-handbook.pdf
+│   ├── benefits-guide.docx
+│   └── onboarding-checklist.pdf
+└── 📁 training-materials/
+    ├── onboarding-deck.pptx
+    └── compliance-training.pdf
+      </div>
+    </div>
+
+    <!-- ============================================
+         SECTION: Azure SQL & Cosmos DB
+         ============================================ -->
+    <h2 id="sql-cosmosdb">Azure SQL &amp; Cosmos DB</h2>
+
+    <p>While Blob Storage handles unstructured files, Azure SQL Database and Cosmos DB serve as connectors for structured and semi-structured data. These sources are essential when your AI application needs to reference business data, product catalogs, customer records, or any data stored in databases.</p>
+
+    <h3>Azure SQL Database</h3>
+
+    <p>Azure SQL Database is ideal when your knowledge base includes structured, relational data. Common scenarios include:</p>
+
+    <ul>
+      <li><strong>Product catalogs</strong> — SKU numbers, descriptions, pricing, specifications</li>
+      <li><strong>Customer records</strong> — Account details, support history, preferences</li>
+      <li><strong>Knowledge articles</strong> — Structured FAQ databases with categories and tags</li>
+      <li><strong>Business metrics</strong> — Sales data, KPIs, financial records</li>
+    </ul>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>SQL Query — Extracting Knowledge Articles</span>
+        <span>sql</span>
+      </div>
+      <div class="code-block-content">
+<span class="comment">-- Extract published knowledge articles for indexing</span>
+<span class="keyword">SELECT</span>
+    <span class="property">ka</span>.article_id,
+    <span class="property">ka</span>.title,
+    <span class="property">ka</span>.content,
+    <span class="property">ka</span>.category,
+    <span class="property">ka</span>.last_updated,
+    <span class="property">ka</span>.author
+<span class="keyword">FROM</span> knowledge_articles <span class="property">ka</span>
+<span class="keyword">WHERE</span> <span class="property">ka</span>.status = <span class="string">'published'</span>
+    <span class="keyword">AND</span> <span class="property">ka</span>.last_updated >= <span class="string">'2025-01-01'</span>
+<span class="keyword">ORDER BY</span> <span class="property">ka</span>.last_updated <span class="keyword">DESC</span>;
+      </div>
+    </div>
+
+    <h3>Azure Cosmos DB</h3>
+
+    <p>Cosmos DB excels when your data has flexible schemas, requires global distribution, or benefits from the change feed feature for real-time ingestion. It supports multiple APIs (SQL/Core, MongoDB, Cassandra, Gremlin, Table), with the SQL API being most commonly used with AI Foundry.</p>
+
+    <div class="content-table-wrapper">
+      <table class="content-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Azure SQL</th>
+            <th>Cosmos DB</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Schema</strong></td>
+            <td>Fixed, relational</td>
+            <td>Flexible, document-based</td>
+          </tr>
+          <tr>
+            <td><strong>Query Language</strong></td>
+            <td>T-SQL</td>
+            <td>SQL-like API, MongoDB, etc.</td>
+          </tr>
+          <tr>
+            <td><strong>Best For</strong></td>
+            <td>Structured business data</td>
+            <td>Semi-structured, JSON documents</td>
+          </tr>
+          <tr>
+            <td><strong>Real-time Updates</strong></td>
+            <td>Change tracking</td>
+            <td>Change feed (built-in)</td>
+          </tr>
+          <tr>
+            <td><strong>Global Distribution</strong></td>
+            <td>Geo-replication</td>
+            <td>Multi-region writes (native)</td>
+          </tr>
+          <tr>
+            <td><strong>Consistency</strong></td>
+            <td>Strong (ACID)</td>
+            <td>5 consistency levels</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>Cosmos DB Query — Product Catalog</span>
+        <span>sql</span>
+      </div>
+      <div class="code-block-content">
+<span class="comment">-- Query product documents for indexing</span>
+<span class="keyword">SELECT</span>
+    c.id,
+    c.productName,
+    c.description,
+    c.category,
+    c.specifications,
+    c._ts <span class="keyword">AS</span> lastModified
+<span class="keyword">FROM</span> c
+<span class="keyword">WHERE</span> c.type = <span class="string">"product"</span>
+    <span class="keyword">AND</span> c.isActive = <span class="keyword">true</span>
+<span class="keyword">ORDER BY</span> c._ts <span class="keyword">DESC</span>
+      </div>
+    </div>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Tip: Change Feed for Real-time Indexing</div>
+      <p>Cosmos DB's change feed provides a sorted list of documents that were changed, in the order in which they were modified. You can use this feature with Azure Functions to trigger automatic re-indexing whenever your product catalog, knowledge base, or customer data is updated — keeping your AI application's knowledge always current.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: SharePoint & OneLake
+         ============================================ -->
+    <h2 id="sharepoint-onelake">SharePoint &amp; OneLake</h2>
+
+    <h3>SharePoint Online</h3>
+
+    <p>SharePoint Online is where many enterprises store their critical business documents — from HR policies and compliance manuals to project documentation and departmental wikis. Connecting SharePoint to Azure AI Foundry allows you to unlock this content for AI-powered search and retrieval without requiring users to migrate their files.</p>
+
+    <p>Key capabilities of the SharePoint connector include:</p>
+
+    <ul>
+      <li><strong>Site-level and library-level connections</strong> — Connect an entire SharePoint site or specific document libraries</li>
+      <li><strong>Automatic metadata extraction</strong> — SharePoint document properties (author, created date, custom columns) are preserved as metadata in the index</li>
+      <li><strong>Permission awareness</strong> — Respects Microsoft 365 permissions so users only see search results they have access to</li>
+      <li><strong>Version support</strong> — Can index the latest version of documents that have version history enabled</li>
+    </ul>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">⚠️ Authentication Requirement</div>
+      <p>The SharePoint connector uses Microsoft Entra ID (formerly Azure Active Directory) for authentication. You need to register an application in Entra ID and grant it the <code>Sites.Read.All</code> permission (application-level) to enable the AI Foundry connector to read documents from your SharePoint sites.</p>
+    </div>
+
+    <h3>Microsoft OneLake</h3>
+
+    <p>Microsoft OneLake is the unified data lake that underpins all of Microsoft Fabric. If your organization uses Fabric for analytics, data engineering, or data science, OneLake provides a seamless way to make that data available for AI applications without duplication.</p>
+
+    <p>Key advantages of OneLake as a data source:</p>
+
+    <ul>
+      <li><strong>One copy of data</strong> — No need to duplicate data from your analytics platform into a separate storage account. OneLake serves as a single source of truth.</li>
+      <li><strong>Shortcuts to external data</strong> — OneLake shortcuts let you reference data stored in Azure Data Lake Storage Gen2, Amazon S3, or Google Cloud Storage without copying it.</li>
+      <li><strong>Built-in governance</strong> — OneLake inherits Fabric's security model, including row-level security, sensitivity labels, and data lineage tracking.</li>
+      <li><strong>Cross-workload access</strong> — Data used for Power BI reports, Data Factory pipelines, or Synapse analytics can simultaneously serve as a knowledge base for your AI applications.</li>
+    </ul>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ When to Use OneLake</div>
+      <p>Choose OneLake when your organization already uses Microsoft Fabric and you want to avoid duplicating data. OneLake is particularly powerful when the same data is used for both traditional analytics (Power BI dashboards) and AI-powered applications (chatbots, assistants) — it eliminates data silos and ensures consistency.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Data Ingestion Patterns
+         ============================================ -->
+    <h2 id="ingestion-patterns">Data Ingestion Patterns</h2>
+
+    <p>Once your data sources are connected, the next decision is <em>how</em> to move data from those sources into your AI Foundry index. The ingestion pattern you choose depends on factors like data volume, update frequency, latency requirements, and cost constraints.</p>
+
+    <h3>Pattern 1: Batch Processing</h3>
+
+    <p>Batch processing is the simplest and most common ingestion pattern. You process all documents at once (or at scheduled intervals) to build or refresh your index. This pattern is ideal for:</p>
+
+    <ul>
+      <li>Initial index creation from a large document corpus</li>
+      <li>Content that changes infrequently (policies, manuals, reference docs)</li>
+      <li>Scenarios where a few hours of data staleness is acceptable</li>
+    </ul>
+
+    <div class="architecture-flow">
+      <div class="flow-node">Blob Storage</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Scheduled Trigger</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node">Extract &amp; Chunk</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Generate Embeddings</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node accent">Update Index</div>
+    </div>
+
+    <h3>Pattern 2: Real-time Streaming</h3>
+
+    <p>Real-time ingestion processes data as soon as it arrives or changes. This pattern uses event-driven architectures to keep your index continuously updated. Use this when:</p>
+
+    <ul>
+      <li>Data changes frequently and users need the latest information</li>
+      <li>You're working with Cosmos DB change feed or Event Grid notifications</li>
+      <li>Your application serves time-sensitive queries (stock data, news, live support)</li>
+    </ul>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>Event-driven Ingestion with Azure Functions</span>
+        <span>python</span>
+      </div>
+      <div class="code-block-content">
+<span class="keyword">import</span> azure.functions <span class="keyword">as</span> func
+<span class="keyword">from</span> azure.search.documents <span class="keyword">import</span> SearchClient
+<span class="keyword">from</span> openai <span class="keyword">import</span> AzureOpenAI
+
+<span class="keyword">def</span> <span class="function">process_new_document</span>(blob: func.InputStream):
+    <span class="string">"""Triggered when a new document is uploaded to Blob Storage."""</span>
+
+    <span class="comment"># 1. Extract text from the document</span>
+    text = <span class="function">extract_text</span>(blob)
+
+    <span class="comment"># 2. Split into chunks</span>
+    chunks = <span class="function">chunk_text</span>(text, chunk_size=<span class="number">1024</span>, overlap=<span class="number">128</span>)
+
+    <span class="comment"># 3. Generate embeddings for each chunk</span>
+    client = <span class="type">AzureOpenAI</span>(...)
+    embeddings = [
+        client.embeddings.create(
+            model=<span class="string">"text-embedding-3-small"</span>,
+            input=chunk
+        ).data[<span class="number">0</span>].embedding
+        <span class="keyword">for</span> chunk <span class="keyword">in</span> chunks
+    ]
+
+    <span class="comment"># 4. Upload to search index</span>
+    search_client = <span class="type">SearchClient</span>(...)
+    documents = [
+        {
+            <span class="string">"id"</span>: <span class="function">generate_id</span>(blob.name, i),
+            <span class="string">"content"</span>: chunk,
+            <span class="string">"embedding"</span>: emb,
+            <span class="string">"source"</span>: blob.name,
+            <span class="string">"timestamp"</span>: <span class="function">datetime.utcnow</span>().isoformat()
+        }
+        <span class="keyword">for</span> i, (chunk, emb) <span class="keyword">in</span> <span class="function">enumerate</span>(<span class="function">zip</span>(chunks, embeddings))
+    ]
+    search_client.<span class="function">upload_documents</span>(documents)
+      </div>
+    </div>
+
+    <h3>Pattern 3: Incremental Refresh</h3>
+
+    <p>Incremental refresh is a hybrid approach that processes only new or modified data since the last sync. This pattern balances freshness with efficiency:</p>
+
+    <ul>
+      <li><strong>Track changes</strong> using timestamps, ETags, or change tracking features</li>
+      <li><strong>Process only deltas</strong> — new, modified, and deleted documents</li>
+      <li><strong>Schedule regularly</strong> — every hour, every few hours, or daily depending on needs</li>
+      <li><strong>Lower cost</strong> than full reprocessing since only changed documents generate new embeddings</li>
+    </ul>
+
+    <div class="content-table-wrapper">
+      <table class="content-table">
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>Latency</th>
+            <th>Cost</th>
+            <th>Complexity</th>
+            <th>Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Batch</strong></td>
+            <td>Hours</td>
+            <td>Low–Medium</td>
+            <td>Low</td>
+            <td>Static content, initial loads</td>
+          </tr>
+          <tr>
+            <td><strong>Real-time</strong></td>
+            <td>Seconds</td>
+            <td>Higher</td>
+            <td>High</td>
+            <td>Frequently changing data</td>
+          </tr>
+          <tr>
+            <td><strong>Incremental</strong></td>
+            <td>Minutes–Hours</td>
+            <td>Medium</td>
+            <td>Medium</td>
+            <td>Balanced freshness &amp; cost</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 Recommendation</div>
+      <p>For most production scenarios, start with <strong>batch ingestion</strong> to build your initial index, then implement <strong>incremental refresh</strong> to keep it current. Reserve real-time streaming for use cases where latency is critical and the data source supports event-based notifications (like Cosmos DB change feed or Blob Storage Event Grid).</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Data Preparation & Cleaning
+         ============================================ -->
+    <h2 id="data-preparation">Data Preparation &amp; Cleaning</h2>
+
+    <p>Raw data is rarely ready for AI consumption. Before your documents can be effectively indexed and retrieved, they need to go through a preparation pipeline that includes text extraction, cleaning, chunking, and metadata enrichment. The quality of this preparation directly impacts the quality of your AI application's responses.</p>
+
+    <h3>Text Extraction</h3>
+
+    <p>The first step in data preparation is extracting clean text from your source documents. Different file formats require different extraction approaches:</p>
+
+    <ul>
+      <li><strong>PDF documents</strong> — Use Azure AI Document Intelligence (formerly Form Recognizer) for high-quality text extraction, including tables, headers, and layout preservation</li>
+      <li><strong>Office documents</strong> — DOCX and PPTX files can be parsed using their XML-based internal structure</li>
+      <li><strong>HTML content</strong> — Strip HTML tags while preserving semantic structure (headings, lists, tables)</li>
+      <li><strong>Scanned documents</strong> — Apply OCR (Optical Character Recognition) before indexing; Azure AI Document Intelligence handles this automatically</li>
+    </ul>
+
+    <h3>Chunking Strategies</h3>
+
+    <p>Chunking is one of the most critical decisions in data preparation. How you split your documents into chunks directly affects retrieval quality. Here are the most common strategies:</p>
+
+    <div class="cards-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="feature-card">
+        <span class="card-icon">📐</span>
+        <h4>Fixed-size Chunking</h4>
+        <p>Split text into equal-sized segments based on token count. Simple but may break sentences or paragraphs mid-thought. Use 512–2048 tokens with 10–15% overlap.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">📝</span>
+        <h4>Sentence-based Chunking</h4>
+        <p>Split at sentence boundaries, grouping sentences until reaching the target size. Preserves natural language flow and improves retrieval quality.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">📄</span>
+        <h4>Paragraph/Section Chunking</h4>
+        <p>Use document structure (headings, sections, paragraphs) as natural break points. Best for well-structured documents with clear hierarchy.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">🧠</span>
+        <h4>Semantic Chunking</h4>
+        <p>Use AI to identify topic boundaries within the text. Most sophisticated but also most compute-intensive. Best for complex, multi-topic documents.</p>
+      </div>
+    </div>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>Chunking Configuration in Azure AI Foundry</span>
+        <span>json</span>
+      </div>
+      <div class="code-block-content">
+{
+  <span class="string">"chunking_settings"</span>: {
+    <span class="string">"strategy"</span>: <span class="string">"sentence"</span>,
+    <span class="string">"chunk_size"</span>: <span class="number">1024</span>,
+    <span class="string">"chunk_overlap"</span>: <span class="number">128</span>,
+    <span class="string">"max_chunk_size"</span>: <span class="number">2048</span>
+  },
+  <span class="string">"metadata_extraction"</span>: {
+    <span class="string">"fields"</span>: [
+      <span class="string">"filename"</span>,
+      <span class="string">"page_number"</span>,
+      <span class="string">"section_heading"</span>,
+      <span class="string">"file_path"</span>,
+      <span class="string">"last_modified"</span>
+    ]
+  },
+  <span class="string">"preprocessing"</span>: {
+    <span class="string">"remove_headers_footers"</span>: <span class="keyword">true</span>,
+    <span class="string">"remove_watermarks"</span>: <span class="keyword">true</span>,
+    <span class="string">"normalize_whitespace"</span>: <span class="keyword">true</span>,
+    <span class="string">"extract_tables_as_text"</span>: <span class="keyword">true</span>
+  }
+}
+      </div>
+    </div>
+
+    <h3>Data Cleaning Checklist</h3>
+
+    <p>Before indexing, ensure your data passes these quality checks:</p>
+
+    <ul class="checklist">
+      <li>Remove duplicate documents and near-duplicates</li>
+      <li>Strip headers, footers, and page numbers from PDFs</li>
+      <li>Remove watermarks and irrelevant boilerplate text</li>
+      <li>Normalize whitespace and fix encoding issues (UTF-8)</li>
+      <li>Extract and preserve tables in a readable text format</li>
+      <li>Tag content with relevant metadata (source, date, author, category)</li>
+      <li>Handle multilingual content — identify language per document</li>
+      <li>Validate that OCR output is accurate for scanned documents</li>
+      <li>Remove sensitive or PII data that should not be in the index</li>
+      <li>Verify that extracted text is complete — no truncated content</li>
+    </ul>
+
+    <div class="callout callout-red">
+      <div class="callout-title">⛔ Common Mistake</div>
+      <p>Don't skip the data cleaning step. Indexing poorly prepared data leads to irrelevant search results, hallucinations, and frustrated users. A well-prepared small dataset will outperform a large but messy one every time. Invest the time in quality data preparation — it pays dividends in retrieval accuracy.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Indexing Strategies
+         ============================================ -->
+    <h2 id="indexing-strategies">Indexing Strategies</h2>
+
+    <p>Once your data is prepared and chunked, the next step is creating a searchable index. Azure AI Foundry uses Azure AI Search under the hood to provide powerful indexing and retrieval capabilities. Understanding the different indexing strategies helps you optimize for your specific use case.</p>
+
+    <h3>Vector Index</h3>
+
+    <p>A vector index stores numerical representations (embeddings) of your text chunks. When a user queries the system, their query is also converted to a vector, and the most similar document vectors are retrieved using cosine similarity or other distance metrics.</p>
+
+    <ul>
+      <li><strong>Embedding models:</strong> <code>text-embedding-ada-002</code>, <code>text-embedding-3-small</code>, or <code>text-embedding-3-large</code></li>
+      <li><strong>Dimensions:</strong> 1536 (ada-002), 1536 (3-small), 3072 (3-large)</li>
+      <li><strong>Similarity metric:</strong> Cosine similarity (default)</li>
+      <li><strong>Strength:</strong> Captures semantic meaning — finds relevant content even when exact keywords don't match</li>
+    </ul>
+
+    <h3>Keyword Index</h3>
+
+    <p>A keyword index uses traditional full-text search (BM25/TF-IDF) to match query terms against indexed content. This approach is fast and precise for exact term matches.</p>
+
+    <ul>
+      <li><strong>Strength:</strong> Exact matches, technical terms, product names, error codes</li>
+      <li><strong>Weakness:</strong> Cannot find semantically related content without exact keyword overlap</li>
+    </ul>
+
+    <h3>Hybrid Search (Recommended)</h3>
+
+    <p>Hybrid search combines vector and keyword retrieval, then uses <strong>Reciprocal Rank Fusion (RRF)</strong> to merge and re-rank results from both methods. This approach consistently outperforms either method alone.</p>
+
+    <div class="architecture-flow">
+      <div class="flow-node">User Query</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Keyword Search (BM25)</div>
+      <span class="flow-arrow-icon" style="visibility:hidden;">→</span>
+      <div class="flow-node" style="visibility:hidden;"></div>
+    </div>
+
+    <div class="architecture-flow" style="margin-top:-16px;">
+      <div class="flow-node" style="visibility:hidden;">User Query</div>
+      <span class="flow-arrow-icon" style="visibility:hidden;">→</span>
+      <div class="flow-node accent">Rank Fusion (RRF)</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Final Results</div>
+    </div>
+
+    <div class="architecture-flow" style="margin-top:-16px;">
+      <div class="flow-node">User Query</div>
+      <span class="flow-arrow-icon">→</span>
+      <div class="flow-node primary">Vector Search (Cosine)</div>
+      <span class="flow-arrow-icon" style="visibility:hidden;">→</span>
+      <div class="flow-node" style="visibility:hidden;"></div>
+    </div>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header">
+        <span>Index Schema Configuration</span>
+        <span>json</span>
+      </div>
+      <div class="code-block-content">
+{
+  <span class="string">"name"</span>: <span class="string">"module11-pdf-index"</span>,
+  <span class="string">"fields"</span>: [
+    { <span class="string">"name"</span>: <span class="string">"id"</span>, <span class="string">"type"</span>: <span class="string">"Edm.String"</span>, <span class="string">"key"</span>: <span class="keyword">true</span> },
+    { <span class="string">"name"</span>: <span class="string">"content"</span>, <span class="string">"type"</span>: <span class="string">"Edm.String"</span>, <span class="string">"searchable"</span>: <span class="keyword">true</span> },
+    { <span class="string">"name"</span>: <span class="string">"content_vector"</span>, <span class="string">"type"</span>: <span class="string">"Collection(Edm.Single)"</span>,
+      <span class="string">"dimensions"</span>: <span class="number">1536</span>, <span class="string">"vectorSearchProfile"</span>: <span class="string">"default"</span> },
+    { <span class="string">"name"</span>: <span class="string">"source"</span>, <span class="string">"type"</span>: <span class="string">"Edm.String"</span>, <span class="string">"filterable"</span>: <span class="keyword">true</span> },
+    { <span class="string">"name"</span>: <span class="string">"page_number"</span>, <span class="string">"type"</span>: <span class="string">"Edm.Int32"</span>, <span class="string">"filterable"</span>: <span class="keyword">true</span> },
+    { <span class="string">"name"</span>: <span class="string">"last_modified"</span>, <span class="string">"type"</span>: <span class="string">"Edm.DateTimeOffset"</span>, <span class="string">"sortable"</span>: <span class="keyword">true</span> }
+  ],
+  <span class="string">"vectorSearch"</span>: {
+    <span class="string">"algorithms"</span>: [
+      { <span class="string">"name"</span>: <span class="string">"hnsw"</span>, <span class="string">"kind"</span>: <span class="string">"hnsw"</span>,
+        <span class="string">"parameters"</span>: { <span class="string">"metric"</span>: <span class="string">"cosine"</span>, <span class="string">"m"</span>: <span class="number">4</span>, <span class="string">"efConstruction"</span>: <span class="number">400</span> }
+      }
+    ],
+    <span class="string">"profiles"</span>: [
+      { <span class="string">"name"</span>: <span class="string">"default"</span>, <span class="string">"algorithm"</span>: <span class="string">"hnsw"</span> }
+    ]
+  }
+}
+      </div>
+    </div>
+
+    <h3>Index Design Best Practices</h3>
+
+    <div class="callout callout-green">
+      <div class="callout-title">✅ Best Practices for Index Design</div>
+      <p><strong>Always include filterable metadata fields</strong> (source file, date, category) — this enables scoped searches that dramatically improve relevance. <strong>Use hybrid search</strong> (vector + keyword) as your default configuration. <strong>Start with HNSW algorithm</strong> for vector search — it provides the best balance of speed and recall. <strong>Plan for incremental updates</strong> — design your index schema with an ID field that maps to source documents so you can update specific chunks without rebuilding the entire index.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Mini Hack
+         ============================================ -->
+    <h2 id="mini-hack">Mini Hack: Upload &amp; Index PDF Documents</h2>
+
+    <p>Now it's time to put theory into practice! In this hands-on mini hack, you'll upload a collection of PDF documents to Azure Blob Storage, connect that storage to Azure AI Foundry, and create a searchable vector index.</p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">🛠️ Lab Details</div>
+      <p><strong>Duration:</strong> 60 minutes &nbsp;|&nbsp; <strong>Prerequisites:</strong> Azure subscription, AI Foundry project, Blob Storage account &nbsp;|&nbsp; <strong>Detailed instructions:</strong> See <a href="lab/hands-on-lab.md">lab/hands-on-lab.md</a></p>
+    </div>
+
+    <h3>Exercise Overview</h3>
+
+    <ol class="steps-list">
+      <li>
+        <strong>Prepare Your Data</strong>
+        Gather 5–10 PDF documents and upload them to an Azure Blob Storage container called <code>module11-pdf-docs</code>. Organize your files logically and verify they are text-based (not scanned without OCR).
+      </li>
+      <li>
+        <strong>Create a Data Connection</strong>
+        In the Azure AI Foundry portal (<a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>), navigate to your project's Data section and add a new Azure Blob Storage connection. Use Managed Identity or account keys for authentication.
+      </li>
+      <li>
+        <strong>Configure Indexing</strong>
+        Create a new index with the following settings: chunk size of 1024 tokens, chunk overlap of 128 tokens, sentence-based chunking strategy, and hybrid search (vector + keyword) enabled.
+      </li>
+      <li>
+        <strong>Monitor and Validate</strong>
+        Watch the indexing progress in the portal. Once complete, test your index with keyword queries, vector queries, and hybrid queries. Compare the results across all three search types.
+      </li>
+      <li>
+        <strong>Document Your Findings</strong>
+        Record which search type returned the most relevant results for different query types. Note the total chunks created and any issues encountered during indexing.
+      </li>
+    </ol>
+
+    <h3>Expected Outcomes</h3>
+
+    <p>By the end of this mini hack, you should have:</p>
+
+    <ul class="checklist">
+      <li>A Blob Storage container with 5–10 PDF documents</li>
+      <li>A working data connection in Azure AI Foundry</li>
+      <li>A vector index with hybrid search enabled</li>
+      <li>Validated search results across keyword, vector, and hybrid search modes</li>
+      <li>Understanding of how chunk size affects retrieval quality</li>
+    </ul>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">💪 Bonus Challenge</div>
+      <p>If you finish early, try creating a second index with a different chunk size (512 or 2048 tokens) and compare search quality. Then, navigate to the AI Foundry Playground and use your index as a data source for a grounded chat session — ask questions and evaluate how well the AI cites your documents.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Key Takeaways
+         ============================================ -->
+    <h2 id="key-takeaways">Key Takeaways</h2>
+
+    <div class="takeaways-box">
+      <h3>🎯 What You've Learned in Module 11</h3>
+      <ul>
+        <li><strong>Five data sources are supported</strong> — Azure Blob Storage, Azure SQL, Cosmos DB, SharePoint Online, and Microsoft OneLake each serve different data types and use cases.</li>
+        <li><strong>Authentication matters</strong> — Use Managed Identity with RBAC roles for production workloads. Avoid storing keys in code or using anonymous access.</li>
+        <li><strong>Three ingestion patterns</strong> — Batch for initial loads, incremental for ongoing updates, real-time for latency-critical scenarios. Start simple and evolve.</li>
+        <li><strong>Data preparation is critical</strong> — Quality chunking, cleaning, and metadata enrichment directly determine retrieval quality. Invest time here.</li>
+        <li><strong>Hybrid search is the default choice</strong> — Combining vector and keyword search with reciprocal rank fusion delivers the best results for most use cases.</li>
+        <li><strong>Chunk size affects everything</strong> — 1024 tokens with 128 overlap is a solid starting point. Smaller chunks increase precision; larger chunks preserve context.</li>
+        <li><strong>Metadata enables filtering</strong> — Always include source file, page number, and category metadata. This allows scoped searches that dramatically improve relevance.</li>
+        <li><strong>Azure AI Foundry handles the heavy lifting</strong> — The portal provides a guided experience for connecting data sources, configuring indexing, and testing search — no custom code required for basic scenarios.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================
+         SECTION: Module 12 Preview
+         ============================================ -->
+    <h2 id="module-12-preview">Module 12 Preview</h2>
+
+    <p>In <strong>Module 12</strong>, we'll build on the indexed data you created in this module to implement full <strong>RAG (Retrieval-Augmented Generation) pipelines</strong>. You'll learn how to:</p>
+
+    <ul>
+      <li><strong>Connect your vector index to AI models</strong> — Configure chat completions with data grounding using the index you just created</li>
+      <li><strong>Design effective system prompts</strong> — Write prompts that guide the AI to use retrieved context effectively and cite sources</li>
+      <li><strong>Handle citation and attribution</strong> — Ensure your AI application clearly references which documents it used to generate each response</li>
+      <li><strong>Implement conversation memory</strong> — Maintain context across multi-turn conversations while keeping retrieval relevant</li>
+      <li><strong>Evaluate retrieval quality</strong> — Measure precision, recall, and relevance scores to continuously improve your RAG pipeline</li>
+    </ul>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">🔜 Coming Up</div>
+      <p>Module 12 is the natural next step from data connectivity to data utilization. Keep your indexed data from this module's Mini Hack — we'll use it directly in Module 12's exercises. The transition from "data in an index" to "AI responses grounded in your data" is where the magic happens.</p>
+    </div>
+
+    <!-- ============================================
+         SECTION: Resources
+         ============================================ -->
+    <h2 id="resources">Resources</h2>
+
+    <h3>Official Documentation</h3>
+
+    <ul>
+      <li><a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">Azure AI Foundry Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-studio/how-to/data-add" target="_blank" rel="noopener">Add Data to Azure AI Foundry Projects</a></li>
+      <li><a href="https://learn.microsoft.com/azure/search/" target="_blank" rel="noopener">Azure AI Search Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/azure/search/vector-search-overview" target="_blank" rel="noopener">Vector Search Overview</a></li>
+      <li><a href="https://learn.microsoft.com/azure/search/hybrid-search-overview" target="_blank" rel="noopener">Hybrid Search in Azure AI Search</a></li>
+    </ul>
+
+    <h3>Data Source Documentation</h3>
+
+    <ul>
+      <li><a href="https://learn.microsoft.com/azure/storage/blobs/" target="_blank" rel="noopener">Azure Blob Storage Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/azure/azure-sql/" target="_blank" rel="noopener">Azure SQL Database Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/azure/cosmos-db/" target="_blank" rel="noopener">Azure Cosmos DB Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/sharepoint/" target="_blank" rel="noopener">SharePoint Online Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/fabric/onelake/" target="_blank" rel="noopener">Microsoft OneLake Documentation</a></li>
+    </ul>
+
+    <h3>Video Resource</h3>
+
+    <ul>
+      <li><a href="https://www.youtube.com/watch?v=IXGrwWcLJuE" target="_blank" rel="noopener">Building RAG Solutions with Azure AI Foundry — Microsoft Reactor (YouTube)</a></li>
+    </ul>
+
+    <h3>Tools</h3>
+
+    <ul>
+      <li><a href="https://ai.azure.com" target="_blank" rel="noopener">Azure AI Foundry Portal</a></li>
+      <li><a href="https://portal.azure.com" target="_blank" rel="noopener">Azure Portal</a></li>
+      <li><a href="https://learn.microsoft.com/azure/ai-services/document-intelligence/" target="_blank" rel="noopener">Azure AI Document Intelligence</a></li>
+    </ul>
+
+    <!-- BOTTOM MODULE NAVIGATION -->
+    <nav class="module-nav">
+      <a href="../module-10/blog.html">← Module 10</a>
+      <a href="../module-12/blog.html">Module 12 →</a>
+    </nav>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-links">
+    <a href="#">Curriculum</a>
+    <a href="#">Resources</a>
+    <a href="https://ai.azure.com" target="_blank" rel="noopener">AI Foundry Portal</a>
+    <a href="https://learn.microsoft.com/azure/ai-studio/" target="_blank" rel="noopener">Documentation</a>
+  </div>
+  <p>Azure AI Foundry: Zero to Hero Training Course &mdash; Module 11: Connecting Data Sources</p>
+  <p>&copy; 2026 Zero to Hero Training Team. Built for learning purposes.</p>
+</footer>
+
+<!-- BACK TO TOP BUTTON -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">↑</button>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Scroll Progress Bar ----
+  const scrollProgress = document.getElementById('scrollProgress');
+
+  function updateScrollProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = scrollPercent + '%';
+  }
+
+  // ---- Back to Top Button ----
+  const backToTop = document.getElementById('backToTop');
+
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---- Sticky TOC Active State (IntersectionObserver) ----
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = [];
+
+  tocLinks.forEach(function(link) {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      const section = document.getElementById(href.substring(1));
+      if (section) {
+        sections.push({ element: section, link: link });
+      }
+    }
+  });
+
+  function clearActiveToc() {
+    tocLinks.forEach(function(link) {
+      link.classList.remove('active');
+    });
+  }
+
+  if ('IntersectionObserver' in window && sections.length > 0) {
+    const observerOptions = {
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          clearActiveToc();
+          const matchedSection = sections.find(function(s) {
+            return s.element === entry.target;
+          });
+          if (matchedSection) {
+            matchedSection.link.classList.add('active');
+          }
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(function(s) {
+      observer.observe(s.element);
+    });
+  }
+
+  // ---- Scroll Event Handler (throttled) ----
+  let ticking = false;
+
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        updateScrollProgress();
+        updateBackToTop();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ---- Initial state ----
+  updateScrollProgress();
+  updateBackToTop();
+
+  // ---- Smooth scroll for TOC links ----
+  tocLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+        const target = document.getElementById(href.substring(1));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.pushState(null, '', href);
+        }
+      }
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>

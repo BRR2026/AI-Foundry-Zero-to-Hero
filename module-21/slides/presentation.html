@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 21: Prompt Flow — Visual Orchestration | Presentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --bg: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --text-subtle: #6e7681;
+            --blue: #58a6ff;
+            --blue-dark: #1f6feb;
+            --green: #3fb950;
+            --green-dark: #238636;
+            --orange: #f0883e;
+            --orange-dark: #bd561d;
+            --purple: #bc8cff;
+            --red: #f85149;
+            --pink: #f778ba;
+            --yellow: #d29922;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+            --slide-transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--blue), var(--purple));
+            z-index: 10000;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 4px;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 9999;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .top-bar .module-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .top-bar .module-label span {
+            color: var(--blue);
+        }
+
+        .top-bar .arc-badge {
+            margin-left: 12px;
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--blue);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Slide Container */
+        .slides-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 80px 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: opacity var(--slide-transition), transform var(--slide-transition);
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .slide.exit-left {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-text-green {
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-text-orange {
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 720px;
+        }
+
+        /* Bullets */
+        .bullet-list {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .bullet-list li {
+            padding: 10px 0;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            color: var(--text);
+        }
+
+        .bullet-list li .icon {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .bullet-list li .icon.blue { background: rgba(88,166,255,0.15); }
+        .bullet-list li .icon.green { background: rgba(63,185,80,0.15); }
+        .bullet-list li .icon.orange { background: rgba(240,136,62,0.15); }
+        .bullet-list li .icon.purple { background: rgba(188,140,255,0.15); }
+
+        /* Code */
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            overflow-x: auto;
+            white-space: pre;
+            margin: 16px 0;
+        }
+
+        .code-label {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-subtle);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hl-keyword { color: var(--red); }
+        .hl-string { color: var(--green); }
+        .hl-function { color: var(--purple); }
+        .hl-comment { color: var(--text-subtle); font-style: italic; }
+        .hl-type { color: var(--blue); }
+        .hl-decorator { color: var(--orange); }
+
+        code {
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin: 16px 0;
+        }
+
+        .col {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .col h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card .card-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Flow Diagram */
+        .flow-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-node {
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid;
+            text-align: center;
+        }
+
+        .flow-node.input { background: rgba(63,185,80,0.1); border-color: var(--green); color: var(--green); }
+        .flow-node.llm { background: rgba(88,166,255,0.1); border-color: var(--blue); color: var(--blue); }
+        .flow-node.python { background: rgba(240,136,62,0.1); border-color: var(--orange); color: var(--orange); }
+        .flow-node.output { background: rgba(188,140,255,0.1); border-color: var(--purple); color: var(--purple); }
+
+        .flow-arrow {
+            color: var(--text-subtle);
+            font-size: 22px;
+        }
+
+        /* Table */
+        .slide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+
+        .slide-table th {
+            background: var(--bg-tertiary);
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--blue);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .slide-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .slide-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tag.blue { background: rgba(88,166,255,0.15); color: var(--blue); }
+        .tag.green { background: rgba(63,185,80,0.15); color: var(--green); }
+        .tag.orange { background: rgba(240,136,62,0.15); color: var(--orange); }
+        .tag.purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+        .tag.red { background: rgba(248,81,73,0.15); color: var(--red); }
+
+        /* Slide Counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 24px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-subtle);
+            z-index: 9999;
+        }
+
+        /* Nav Hint */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 24px;
+            font-size: 12px;
+            color: var(--text-subtle);
+            z-index: 9999;
+        }
+
+        .nav-hint kbd {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        /* Title slide special */
+        .title-slide {
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-slide .module-number {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .title-slide h1 {
+            font-size: 3.2rem;
+            max-width: 800px;
+        }
+
+        .title-slide .subtitle {
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .title-slide .meta-row {
+            display: flex;
+            gap: 24px;
+            margin-top: 32px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background: rgba(88,166,255,0.08);
+            border: 1px solid rgba(88,166,255,0.2);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            font-size: 0.95rem;
+        }
+
+        .highlight-box.warn {
+            background: rgba(240,136,62,0.08);
+            border-color: rgba(240,136,62,0.2);
+        }
+
+        .highlight-box.success {
+            background: rgba(63,185,80,0.08);
+            border-color: rgba(63,185,80,0.2);
+        }
+
+        /* ASCII diagram */
+        .ascii-diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--text-muted);
+            white-space: pre;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="top-bar">
+        <div class="module-label"><span>Module 21</span> — Prompt Flow: Visual Orchestration</div>
+        <div class="arc-badge">ARC 5 · ORCHESTRATION & INTEGRATION</div>
+    </div>
+
+    <div class="slides-container" id="slidesContainer">
+
+        <!-- ============ SLIDE 1: Title ============ -->
+        <div class="slide title-slide active" data-slide="0">
+            <div class="module-number">Module 21 of 45 · Zero to Hero</div>
+            <h1><span class="gradient-text">Prompt Flow</span><br>Visual Orchestration</h1>
+            <p class="subtitle">Build, test, debug, and deploy AI workflows using Azure AI Foundry's visual Prompt Flow designer</p>
+            <div class="meta-row">
+                <span>🔀 ARC 5: Orchestration & Integration</span>
+                <span>📅 April 2026</span>
+                <span>⏱️ ~45 min</span>
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 2: Agenda ============ -->
+        <div class="slide" data-slide="1">
+            <h2><span class="gradient-text">Agenda</span></h2>
+            <ul class="bullet-list">
+                <li><span class="icon blue">01</span>What is Prompt Flow & when to use it</li>
+                <li><span class="icon green">02</span>Building flows — inputs, nodes, outputs</li>
+                <li><span class="icon orange">03</span>Node types deep dive — LLM, Python, Prompt</li>
+                <li><span class="icon purple">04</span>Testing & debugging flows</li>
+                <li><span class="icon blue">05</span>Deploying flows as managed endpoints</li>
+                <li><span class="icon green">06</span>Mini Hack — Customer support flow with routing</li>
+            </ul>
+        </div>
+
+        <!-- ============ SLIDE 3: What is Prompt Flow? ============ -->
+        <div class="slide" data-slide="2">
+            <h2>What is <span class="gradient-text">Prompt Flow</span>?</h2>
+            <p class="subtitle" style="margin-bottom: 24px;">A development tool and runtime engine for building LLM applications using directed acyclic graphs (DAGs)</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3>Visual Designer</h3>
+                    <p>Drag-and-drop canvas to design node-based workflows with typed connections</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🧪</div>
+                    <h3>Integrated Testing</h3>
+                    <p>Interactive & batch testing with variant comparison and execution traces</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🚀</div>
+                    <h3>One-Click Deploy</h3>
+                    <p>Deploy flows as managed online endpoints with auto-scaling and monitoring</p>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                💡 Prompt Flow is <strong>not</strong> Azure ML pipelines. It's purpose-built for LLM orchestration within Azure AI Foundry.
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 4: When to Use ============ -->
+        <div class="slide" data-slide="3">
+            <h2>When to Use <span class="gradient-text">Prompt Flow</span></h2>
+
+            <div class="two-col">
+                <div class="col" style="border-color: var(--green);">
+                    <h3>✅ Ideal For</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon green">→</span>Multi-step LLM pipelines with branching</li>
+                        <li><span class="icon green">→</span>Rapid prototyping of prompt strategies</li>
+                        <li><span class="icon green">→</span>Visual debugging of intermediate outputs</li>
+                        <li><span class="icon green">→</span>Batch evaluations across datasets</li>
+                        <li><span class="icon green">→</span>Team collaboration on AI logic</li>
+                    </ul>
+                </div>
+                <div class="col" style="border-color: var(--orange);">
+                    <h3>⚠️ Consider Alternatives</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon orange">→</span>Simple single-call apps → SDK</li>
+                        <li><span class="icon orange">→</span>Complex agent systems → Semantic Kernel</li>
+                        <li><span class="icon orange">→</span>Data processing → Data pipelines</li>
+                        <li><span class="icon orange">→</span>Model training → Azure ML</li>
+                        <li><span class="icon orange">→</span>Real-time streaming → Custom code</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 5: Flow Types ============ -->
+        <div class="slide" data-slide="4">
+            <h2><span class="gradient-text">Flow Types</span></h2>
+
+            <table class="slide-table">
+                <thead>
+                    <tr>
+                        <th>Flow Type</th>
+                        <th>Purpose</th>
+                        <th>Use Cases</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag blue">Standard</span></td>
+                        <td>General-purpose LLM app development</td>
+                        <td>Q&A, RAG, classification, extraction</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag green">Chat</span></td>
+                        <td>Conversation-oriented with chat history</td>
+                        <td>Chatbots, multi-turn agents, support</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag purple">Evaluation</span></td>
+                        <td>Quality assessment of other flows</td>
+                        <td>Groundedness, relevance, coherence</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box">
+                💡 <strong>Tip:</strong> Start with Standard Flow for most use cases. Switch to Chat Flow only when you need built-in conversation history management.
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 6: Building a Flow ============ -->
+        <div class="slide" data-slide="5">
+            <h2>Building a <span class="gradient-text">Flow</span></h2>
+            <p class="subtitle" style="margin-bottom: 20px;">Every flow follows the DAG pattern: Inputs → Nodes → Outputs</p>
+
+            <div class="flow-visual">
+                <div class="flow-node input">📥 Inputs</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node python">🐍 Preprocess</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node llm">🤖 LLM Call</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node python">🐍 Validate</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node output">📤 Outputs</div>
+            </div>
+
+            <div class="code-label">flow.dag.yaml</div>
+            <div class="code-block"><span class="hl-type">inputs</span>:
+  <span class="hl-string">question</span>:
+    type: string
+    default: <span class="hl-string">"What is Azure AI Foundry?"</span>
+  <span class="hl-string">context</span>:
+    type: string
+
+<span class="hl-type">outputs</span>:
+  <span class="hl-string">answer</span>:
+    type: string
+    reference: <span class="hl-function">${generate_answer.output}</span></div>
+        </div>
+
+        <!-- ============ SLIDE 7: LLM Nodes ============ -->
+        <div class="slide" data-slide="6">
+            <h2><span class="gradient-text">LLM Nodes</span> — Calling Models</h2>
+            <p class="subtitle" style="margin-bottom: 16px;">Use Jinja2 templates with variable substitution to build prompts</p>
+
+            <div class="two-col">
+                <div class="col">
+                    <h3>Jinja2 Prompt Template</h3>
+                    <div class="code-block" style="font-size:13px;"><span class="hl-keyword">system:</span>
+You are a helpful assistant.
+Answer based on provided context.
+
+<span class="hl-keyword">user:</span>
+Context: <span class="hl-function">{{context}}</span>
+Question: <span class="hl-function">{{question}}</span>
+
+Provide a clear answer.</div>
+                </div>
+                <div class="col">
+                    <h3>Configuration</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon blue">🔗</span><strong>Connection:</strong> Azure OpenAI</li>
+                        <li><span class="icon blue">📡</span><strong>API:</strong> Chat completion</li>
+                        <li><span class="icon blue">🤖</span><strong>Model:</strong> gpt-4o</li>
+                        <li><span class="icon blue">🌡️</span><strong>Temperature:</strong> 0.7</li>
+                        <li><span class="icon blue">📏</span><strong>Max tokens:</strong> 1000</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 8: Python Nodes ============ -->
+        <div class="slide" data-slide="7">
+            <h2><span class="gradient-text-green">Python Nodes</span> — Custom Logic</h2>
+            <p class="subtitle" style="margin-bottom: 16px;">Run custom code with the <code>@tool</code> decorator for data processing, routing, and validation</p>
+
+            <div class="code-block"><span class="hl-keyword">from</span> promptflow <span class="hl-keyword">import</span> tool
+<span class="hl-keyword">from</span> typing <span class="hl-keyword">import</span> List
+
+<span class="hl-decorator">@tool</span>
+<span class="hl-keyword">def</span> <span class="hl-function">validate_response</span>(llm_output: <span class="hl-type">str</span>, context: <span class="hl-type">str</span>) -> <span class="hl-type">str</span>:
+    <span class="hl-string">"""Validate LLM response against source context."""</span>
+    
+    <span class="hl-keyword">if</span> <span class="hl-keyword">not</span> llm_output <span class="hl-keyword">or</span> len(llm_output.strip()) < <span class="hl-string">10</span>:
+        <span class="hl-keyword">return</span> <span class="hl-string">"low_confidence"</span>
+    
+    <span class="hl-comment"># Check context overlap for grounding</span>
+    overlap = len(<span class="hl-function">set</span>(context.lower().split()) &
+                  <span class="hl-function">set</span>(llm_output.lower().split()))
+    
+    <span class="hl-keyword">return</span> <span class="hl-string">"high"</span> <span class="hl-keyword">if</span> overlap > <span class="hl-string">20</span> <span class="hl-keyword">else</span> <span class="hl-string">"medium"</span></div>
+
+            <div class="highlight-box">
+                ⚡ <strong>Key rules:</strong> Always use <code>@tool</code> decorator · Type hints on all params · One return value · Never hardcode secrets
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 9: Other Node Types ============ -->
+        <div class="slide" data-slide="8">
+            <h2>All <span class="gradient-text">Node Types</span></h2>
+
+            <table class="slide-table">
+                <thead>
+                    <tr>
+                        <th>Node</th>
+                        <th>Purpose</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag blue">LLM</span></td>
+                        <td>Call language models via Jinja2 prompts</td>
+                        <td>Generate answers, classify intent</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag orange">Python</span></td>
+                        <td>Custom code with <code>@tool</code> decorator</td>
+                        <td>Data transform, routing, validation</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag purple">Prompt</span></td>
+                        <td>Render Jinja2 templates (no LLM call)</td>
+                        <td>Dynamic prompt assembly</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag green">Embedding</span></td>
+                        <td>Generate vector embeddings</td>
+                        <td>Semantic search, similarity</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag red">Content Safety</span></td>
+                        <td>Filter harmful content</td>
+                        <td>Pre/post moderation</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag blue">Index Lookup</span></td>
+                        <td>Retrieve from AI Search indexes</td>
+                        <td>RAG document retrieval</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============ SLIDE 10: Testing ============ -->
+        <div class="slide" data-slide="9">
+            <h2>Testing & <span class="gradient-text-green">Debugging</span></h2>
+
+            <div class="two-col">
+                <div class="col">
+                    <h3>🧪 Interactive Testing</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon green">1</span>Click <strong>Run</strong> in editor</li>
+                        <li><span class="icon green">2</span>Enter test inputs</li>
+                        <li><span class="icon green">3</span>Watch real-time execution</li>
+                        <li><span class="icon green">4</span>Click nodes to inspect I/O</li>
+                        <li><span class="icon green">5</span>View trace for timing & tokens</li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <h3>📊 Batch Testing</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon blue">1</span>Prepare JSONL/CSV dataset</li>
+                        <li><span class="icon blue">2</span>Click <strong>Batch Run</strong></li>
+                        <li><span class="icon blue">3</span>Select dataset + variants</li>
+                        <li><span class="icon blue">4</span>Review results dashboard</li>
+                        <li><span class="icon blue">5</span>Export metrics for analysis</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box success">
+                ✅ <strong>Pro Tip:</strong> Create <strong>variants</strong> of LLM nodes to test different prompts side-by-side. Run batch evaluations to statistically compare performance.
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 11: Common Issues ============ -->
+        <div class="slide" data-slide="10">
+            <h2><span class="gradient-text-orange">Debugging</span> Common Issues</h2>
+
+            <table class="slide-table">
+                <thead>
+                    <tr>
+                        <th>Issue</th>
+                        <th>Symptom</th>
+                        <th>Fix</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Missing connection</td>
+                        <td>Red node outline</td>
+                        <td>Configure in project settings</td>
+                    </tr>
+                    <tr>
+                        <td>Type mismatch</td>
+                        <td>Serialization error</td>
+                        <td>Match output → input types</td>
+                    </tr>
+                    <tr>
+                        <td>Token limit</td>
+                        <td>Timeout / API error</td>
+                        <td>Truncate context or raise limit</td>
+                    </tr>
+                    <tr>
+                        <td>Import error</td>
+                        <td><code>ModuleNotFoundError</code></td>
+                        <td>Add to <code>requirements.txt</code></td>
+                    </tr>
+                    <tr>
+                        <td>Empty response</td>
+                        <td>Blank LLM output</td>
+                        <td>Check template variable mapping</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box warn">
+                ⚠️ <strong>Most common mistake:</strong> Forgetting to start a compute session before testing. Check the status indicator in the top-right corner.
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 12: Deployment ============ -->
+        <div class="slide" data-slide="11">
+            <h2><span class="gradient-text">Deploying</span> as Endpoints</h2>
+
+            <div class="flow-visual" style="margin-bottom: 24px;">
+                <div class="flow-node input" style="font-size:13px;">✅ Validate</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node llm" style="font-size:13px;">🚀 Deploy</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node python" style="font-size:13px;">⚙️ Configure</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node output" style="font-size:13px;">📊 Monitor</div>
+            </div>
+
+            <div class="two-col">
+                <div class="col">
+                    <h3>⚙️ Configuration</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon blue">📛</span>Endpoint name</li>
+                        <li><span class="icon blue">🔐</span>Auth: Key or Azure AD</li>
+                        <li><span class="icon blue">💻</span>Instance type & count</li>
+                        <li><span class="icon blue">📈</span>Auto-scaling rules</li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <h3>📊 Monitoring</h3>
+                    <ul class="bullet-list">
+                        <li><span class="icon green">⏱️</span>P50/P95/P99 latency</li>
+                        <li><span class="icon green">❌</span>Error rates & codes</li>
+                        <li><span class="icon green">🪙</span>Token consumption</li>
+                        <li><span class="icon green">🔄</span>Traffic splitting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 13: Mini Hack ============ -->
+        <div class="slide" data-slide="12">
+            <h2>🛠️ Mini Hack: <span class="gradient-text-orange">Customer Support Flow</span></h2>
+            <p class="subtitle" style="margin-bottom: 16px;">Build a flow that classifies intent and routes to specialized handlers</p>
+
+            <div class="ascii-diagram">  Input (message, id)
+       │
+       ▼
+  ┌────────────┐     ┌────────────────────────────┐
+  │  CLASSIFY  │────▶│     ROUTE BY INTENT        │
+  │  INTENT    │     │  billing → Billing LLM     │
+  │  (LLM)     │     │  technical → Tech LLM      │
+  └────────────┘     │  general → General LLM     │
+                     └──────────┬─────────────────┘
+                                │
+                     ┌──────────▼─────────────────┐
+                     │   FORMAT RESPONSE (Python)  │
+                     └──────────┬─────────────────┘
+                                ▼
+                     Output (response + metadata)</div>
+
+            <div class="highlight-box">
+                🎯 <strong>Success criteria:</strong> 90%+ intent accuracy · Correct routing · Tone matches intent · Structured metadata output
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 14: Best Practices ============ -->
+        <div class="slide" data-slide="13">
+            <h2><span class="gradient-text-green">Best Practices</span></h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">📐</div>
+                    <h3>Keep Flows Focused</h3>
+                    <p>One task per flow. Split flows with 10+ nodes into sub-flows.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <h3>Use Variants</h3>
+                    <p>Test different prompts and models. Use batch runs to compare quantitatively.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🛡️</div>
+                    <h3>Validate Everything</h3>
+                    <p>Add validation nodes after LLM calls. Fail gracefully with fallbacks.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box warn">
+                🛑 <strong>Anti-patterns to avoid:</strong> Monolith flows (20+ nodes) · Hardcoded secrets · Skipping batch tests · Ignoring latency budgets · No error handling
+            </div>
+        </div>
+
+        <!-- ============ SLIDE 15: Summary ============ -->
+        <div class="slide title-slide" data-slide="14">
+            <div class="module-number">Key Takeaways</div>
+            <h1><span class="gradient-text">Prompt Flow</span> in Action</h1>
+            <p class="subtitle">
+                Visual DAG-based orchestration for LLM apps · LLM + Python + Prompt nodes ·
+                Integrated testing with variants · One-click deployment · Routing patterns for multi-intent apps
+            </p>
+            <div class="meta-row">
+                <span>← Module 20: SDK & API Integration</span>
+                <span>|</span>
+                <span>Module 22: Semantic Kernel →</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Slide Counter -->
+    <div class="slide-counter" id="slideCounter">1 / 15</div>
+
+    <!-- Nav Hint -->
+    <div class="nav-hint">
+        <kbd>←</kbd> <kbd>→</kbd> or <kbd>Space</kbd> to navigate
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let currentSlide = 0;
+
+        function showSlide(n) {
+            if (n < 0 || n >= totalSlides) return;
+
+            const prev = slides[currentSlide];
+            const next = slides[n];
+
+            if (n > currentSlide) {
+                prev.classList.remove('active');
+                prev.classList.add('exit-left');
+            } else {
+                prev.classList.remove('active');
+                prev.style.transform = 'translateX(60px)';
+                prev.style.opacity = '0';
+            }
+
+            setTimeout(() => {
+                prev.classList.remove('exit-left');
+                prev.style.transform = '';
+                prev.style.opacity = '';
+            }, 500);
+
+            next.classList.add('active');
+            currentSlide = n;
+
+            // Update progress
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                showSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                showSlide(currentSlide - 1);
+            }
+        });
+
+        // Touch support
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) showSlide(currentSlide + 1);
+                else showSlide(currentSlide - 1);
+            }
+        });
+
+        // Initialize
+        document.getElementById('progressBar').style.width = (1 / totalSlides * 100) + '%';
+    </script>
+</body>
+</html>
