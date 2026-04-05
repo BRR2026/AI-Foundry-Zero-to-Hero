@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4: Responsible AI Principles in Foundry — Slide Deck</title>
+<style>
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #252525;
+    --bg-card: #2d2d2d;
+    --accent: #0078d4;
+    --accent-light: #4da3e8;
+    --accent-dark: #005a9e;
+    --text-primary: #f0f0f0;
+    --text-secondary: #b0b0b0;
+    --text-muted: #888888;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --danger: #f44336;
+    --purple: #5c2d91;
+    --gradient: linear-gradient(135deg, var(--accent), var(--purple));
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .slide-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(100px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  .slide.exiting {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+
+  .slide-content {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  h1 {
+    font-size: 3em;
+    font-weight: 700;
+    line-height: 1.1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h2 {
+    font-size: 2.2em;
+    font-weight: 600;
+    color: var(--accent-light);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+  }
+
+  p, li {
+    font-size: 1.25em;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  ul, ol { padding-left: 30px; }
+  li { margin-bottom: 12px; }
+  li strong { color: var(--text-primary); }
+
+  .subtitle {
+    font-size: 1.4em;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: var(--purple);
+    color: #fff;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+  }
+
+  /* Title slide */
+  .title-slide {
+    background: var(--gradient);
+    text-align: center;
+  }
+  .title-slide h1 {
+    font-size: 3.5em;
+    background: none;
+    -webkit-text-fill-color: #fff;
+    color: #fff;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .title-slide .subtitle { color: rgba(255,255,255,0.85); font-size: 1.6em; }
+  .title-slide .badge { background: rgba(255,255,255,0.2); }
+  .title-slide .meta { color: rgba(255,255,255,0.7); font-size: 1em; margin-top: 20px; }
+
+  /* Two-column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    width: 100%;
+  }
+
+  .col { display: flex; flex-direction: column; gap: 15px; }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #3a3a3a;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+  .card-accent { border-left: 4px solid var(--accent); }
+  .card-danger { border-left: 4px solid var(--danger); }
+  .card-success { border-left: 4px solid var(--success); }
+  .card-warning { border-left: 4px solid var(--warning); }
+
+  .card .icon {
+    font-size: 2em;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .card h3 { font-size: 1.2em; margin-bottom: 6px; }
+  .card p { font-size: 1em; color: var(--text-muted); margin: 0; }
+
+  /* Three-column card grid */
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+  }
+
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th {
+    background: var(--accent-dark);
+    color: #fff;
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 1em;
+    font-weight: 600;
+  }
+  td {
+    padding: 12px 18px;
+    font-size: 0.95em;
+    border-bottom: 1px solid #3a3a3a;
+    color: var(--text-secondary);
+  }
+  tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+  tr:hover { background: rgba(0,120,212,0.1); }
+
+  /* Pipeline diagram */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 20px 0;
+  }
+  .pipeline-box {
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 22px;
+    text-align: center;
+    min-width: 140px;
+    transition: transform 0.2s;
+  }
+  .pipeline-box:hover { transform: scale(1.05); }
+  .pipeline-box .label { font-size: 0.85em; color: var(--text-muted); }
+  .pipeline-box .name { font-size: 1.05em; font-weight: 600; color: var(--text-primary); }
+  .pipeline-arrow { font-size: 1.8em; color: var(--accent); }
+
+  /* Severity bar */
+  .severity-bar {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 50px;
+    width: 100%;
+    margin: 10px 0;
+  }
+  .severity-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.95em;
+    flex: 1;
+    color: #fff;
+  }
+  .sev-safe { background: #4caf50; }
+  .sev-low { background: #ffc107; color: #333; }
+  .sev-med { background: #ff9800; }
+  .sev-high { background: #f44336; }
+
+  /* Principle icon cards */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    width: 100%;
+  }
+  .principle-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 22px;
+    text-align: center;
+    border: 1px solid #3a3a3a;
+    transition: transform 0.2s, border-color 0.3s;
+  }
+  .principle-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .principle-card .p-icon { font-size: 2.4em; margin-bottom: 10px; display: block; }
+  .principle-card .p-name { font-size: 1.1em; font-weight: 700; color: var(--accent-light); margin-bottom: 6px; }
+  .principle-card .p-desc { font-size: 0.85em; color: var(--text-muted); line-height: 1.5; }
+
+  /* Callout */
+  .callout {
+    background: rgba(0,120,212,0.1);
+    border-left: 4px solid var(--accent);
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 10px 0;
+  }
+  .callout p { font-size: 1.1em; color: var(--text-secondary); margin: 0; }
+  .callout strong { color: var(--accent-light); }
+
+  /* End slide */
+  .end-slide { background: var(--gradient); text-align: center; }
+  .end-slide h1 { background: none; -webkit-text-fill-color: #fff; color: #fff; font-size: 3em; }
+  .end-slide p { color: rgba(255,255,255,0.85); font-size: 1.3em; }
+
+  /* Navigation */
+  .nav-controls {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(30,30,30,0.9);
+    padding: 12px 30px;
+    border-radius: 40px;
+    border: 1px solid #3a3a3a;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+  }
+
+  .nav-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .nav-btn:hover { background: var(--accent-light); transform: scale(1.1); }
+  .nav-btn:disabled { background: #444; cursor: not-allowed; transform: none; }
+
+  .slide-counter {
+    color: var(--text-secondary);
+    font-size: 1em;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 4px;
+    background: var(--gradient);
+    transition: width 0.4s ease;
+    z-index: 200;
+  }
+
+  /* Keyboard hint */
+  .keyboard-hint {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-muted);
+    font-size: 0.8em;
+    opacity: 0.6;
+    z-index: 100;
+  }
+
+  .highlight { color: var(--accent-light); font-weight: 600; }
+  .highlight-warn { color: var(--warning); font-weight: 600; }
+  .highlight-danger { color: var(--danger); font-weight: 600; }
+  .highlight-success { color: var(--success); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-container" id="slideContainer">
+
+  <!-- SLIDE 1: Title Slide -->
+  <div class="slide title-slide active" data-slide="1">
+    <div class="slide-content" style="align-items: center;">
+      <span class="badge">Arc 1: Foundations</span>
+      <h1>Responsible AI Principles in Foundry</h1>
+      <p class="subtitle">Module 4 of 45 — Azure AI Foundry: Zero to Hero</p>
+      <p class="meta">Building AI that is fair, reliable, safe, private, inclusive, transparent, and accountable</p>
+    </div>
+  </div>
+  <!-- Speaker Notes: Welcome to Module 4. Today we move beyond the technical capabilities of AI Foundry to explore the ethical and safety foundations that underpin every responsible AI deployment. This is arguably the most important module in Arc 1 because everything we build going forward must be built responsibly. -->
+
+  <!-- SLIDE 2: Why Responsible AI Matters -->
+  <div class="slide" data-slide="2">
+    <div class="slide-content">
+      <h2>Why Responsible AI Matters</h2>
+      <div class="two-col">
+        <div class="col">
+          <div class="card card-danger">
+            <span class="icon">⚠️</span>
+            <h3>Real Consequences</h3>
+            <p>AI failures affect hiring, healthcare, lending, and criminal justice — impacting millions of lives</p>
+          </div>
+          <div class="card card-warning">
+            <span class="icon">💰</span>
+            <h3>Business Risk</h3>
+            <p>Reputational damage from AI failures costs $1.5M–$50M+ per incident</p>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card card-accent">
+            <span class="icon">📜</span>
+            <h3>Regulatory Pressure</h3>
+            <p>EU AI Act fines: up to €35M or 7% of global revenue for non-compliance</p>
+          </div>
+          <div class="card card-success">
+            <span class="icon">🏆</span>
+            <h3>Competitive Advantage</h3>
+            <p>Organizations with strong AI ethics attract talent, customers, and trust</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Before we discuss the principles, let's understand WHY this matters. AI isn't just code — it's code that makes decisions about people. When a hiring AI rejects qualified candidates due to bias, that affects livelihoods. When a healthcare AI misdiagnoses due to underrepresentation, that affects health outcomes. The stakes are real, and so is the regulatory environment. The EU AI Act is now law. -->
+
+  <!-- SLIDE 3: Microsoft's Six Principles -->
+  <div class="slide" data-slide="3">
+    <div class="slide-content">
+      <h2>Microsoft's Six Responsible AI Principles</h2>
+      <div class="principle-grid">
+        <div class="principle-card">
+          <span class="p-icon">⚖️</span>
+          <div class="p-name">Fairness</div>
+          <div class="p-desc">AI should treat all people equitably without reinforcing biases</div>
+        </div>
+        <div class="principle-card">
+          <span class="p-icon">🛡️</span>
+          <div class="p-name">Reliability &amp; Safety</div>
+          <div class="p-desc">AI should perform reliably and safely under all conditions</div>
+        </div>
+        <div class="principle-card">
+          <span class="p-icon">🔒</span>
+          <div class="p-name">Privacy &amp; Security</div>
+          <div class="p-desc">AI should respect privacy and be resilient to attacks</div>
+        </div>
+        <div class="principle-card">
+          <span class="p-icon">🌍</span>
+          <div class="p-name">Inclusiveness</div>
+          <div class="p-desc">AI should empower and engage the broadest range of people</div>
+        </div>
+        <div class="principle-card">
+          <span class="p-icon">🔍</span>
+          <div class="p-name">Transparency</div>
+          <div class="p-desc">AI should be understandable with clear documentation</div>
+        </div>
+        <div class="principle-card">
+          <span class="p-icon">📋</span>
+          <div class="p-name">Accountability</div>
+          <div class="p-desc">People must be accountable for how AI systems operate</div>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Key Insight:</strong> These principles are interdependent — like six pillars holding up a building. Remove any one and the structure becomes unstable.</p>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: These six principles form the foundation of Microsoft's approach to AI ethics. They're not just theoretical — they're embedded into the engineering practices, tools, and governance structures at Microsoft, and they're baked into Azure AI Foundry. Notice these are interdependent. Fairness without Transparency means you can't verify fairness. Accountability without Reliability means you can't trust the outcomes people are accountable for. -->
+
+  <!-- SLIDE 4: AI Failures — Case Studies -->
+  <div class="slide" data-slide="4">
+    <div class="slide-content">
+      <h2>When AI Goes Wrong — Real-World Failures</h2>
+      <div class="card-grid-2">
+        <div class="card card-danger">
+          <span class="icon">📄</span>
+          <h3>Biased Hiring Tool (2018)</h3>
+          <p>AI trained on historical data penalized resumes containing "women's" — amplified existing gender bias in tech hiring</p>
+        </div>
+        <div class="card card-danger">
+          <span class="icon">📸</span>
+          <h3>Facial Recognition Disparities</h3>
+          <p>Error rates up to 34.7% for darker-skinned women vs. 0.8% for lighter-skinned men — unrepresentative training data</p>
+        </div>
+        <div class="card card-danger">
+          <span class="icon">🤖</span>
+          <h3>Chatbot Manipulation (2016)</h3>
+          <p>Microsoft Tay generated offensive content within 16 hours — no content safety filters or adversarial testing</p>
+        </div>
+        <div class="card card-danger">
+          <span class="icon">🏥</span>
+          <h3>Healthcare Bias (2019)</h3>
+          <p>Algorithm underestimated health needs of Black patients by using spending as a proxy for health — systemic bias in proxy variables</p>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Every one of these failures</strong> could have been mitigated with proper Responsible AI practices and the tools we'll explore today.</p>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: These aren't hypothetical scenarios. Amazon scrapped their hiring AI. Multiple cities banned facial recognition. Tay was taken offline within a day. And the healthcare algorithm affected millions of patients. The common thread: none of these teams deliberately created biased systems. The biases were in the data, the design, and the evaluation gaps. This is exactly why we need systematic Responsible AI practices — not just good intentions. -->
+
+  <!-- SLIDE 5: AI Foundry's Safety Architecture -->
+  <div class="slide" data-slide="5">
+    <div class="slide-content">
+      <h2>AI Foundry Content Safety Pipeline</h2>
+      <p style="text-align:center;margin-bottom:10px;color:var(--text-muted);">Dual-layer filtering: both input prompts and model outputs are evaluated</p>
+      <div class="pipeline">
+        <div class="pipeline-box">
+          <div class="label">User</div>
+          <div class="name">📝 Prompt</div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-box" style="border-color: var(--warning);">
+          <div class="label">Stage 1</div>
+          <div class="name">🔍 Input Filter</div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-box" style="border-color: var(--purple);">
+          <div class="label">Processing</div>
+          <div class="name">🤖 LLM</div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-box" style="border-color: var(--warning);">
+          <div class="label">Stage 2</div>
+          <div class="name">🔍 Output Filter</div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-box" style="border-color: var(--success);">
+          <div class="label">Delivered</div>
+          <div class="name">✅ Safe Response</div>
+        </div>
+      </div>
+      <div class="card-grid-3" style="margin-top: 10px;">
+        <div class="card card-accent">
+          <h3>Input Checks</h3>
+          <p>Content Safety (4 categories) • Jailbreak Detection • Custom Blocklists</p>
+        </div>
+        <div class="card card-warning">
+          <h3>Model Layer</h3>
+          <p>System message guardrails • RAG grounding • Model behavior controls</p>
+        </div>
+        <div class="card card-success">
+          <h3>Output Checks</h3>
+          <p>Content Safety • Protected Material • Groundedness Detection</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: This is the architecture that protects every API call in Azure AI Foundry. Notice it's a DUAL-LAYER system — filtering happens twice. The input filter catches harmful prompts, jailbreak attempts, and blocklisted terms BEFORE the model sees them. Then the output filter catches harmful content in the model's response, checks for copyrighted material, and verifies groundedness. Even if something gets past the input filter, the output filter provides a second line of defense. -->
+
+  <!-- SLIDE 6: Content Safety Categories -->
+  <div class="slide" data-slide="6">
+    <div class="slide-content">
+      <h2>Content Safety: Four Harm Categories</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Examples</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🔴 Violence</strong></td>
+            <td>Physical harm, threats, weapons</td>
+            <td>Graphic violence, threat instructions</td>
+          </tr>
+          <tr>
+            <td><strong>🟠 Hate</strong></td>
+            <td>Identity-based attacks, discrimination</td>
+            <td>Slurs, stereotyping, dehumanization</td>
+          </tr>
+          <tr>
+            <td><strong>🟡 Sexual</strong></td>
+            <td>Sexually explicit or suggestive content</td>
+            <td>Explicit descriptions, solicitation</td>
+          </tr>
+          <tr>
+            <td><strong>🟣 Self-Harm</strong></td>
+            <td>Self-injury, suicide, eating disorders</td>
+            <td>Self-harm instructions, promotion</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3 style="margin-top: 25px;">Severity Levels (0-7)</h3>
+      <div class="severity-bar">
+        <div class="severity-segment sev-safe">Safe (0-1)</div>
+        <div class="severity-segment sev-low">Low (2-3)</div>
+        <div class="severity-segment sev-med">Medium (4-5)</div>
+        <div class="severity-segment sev-high">High (6-7)</div>
+      </div>
+      <p style="text-align: center; font-size: 1em; color: var(--text-muted);">Default threshold: <span class="highlight">Medium and above</span> are blocked. Each category is independently configurable.</p>
+    </div>
+  </div>
+  <!-- Speaker Notes: Each harm category is evaluated on a 0-7 severity scale, grouped into four levels. By default, Medium and High severity content is blocked. You can tune these thresholds per category. For a children's app, you'd set everything to Low. For a medical education platform, you might allow more clinical content in certain categories while keeping others strict. The key is that these are independently configurable per category, per direction (input vs output). -->
+
+  <!-- SLIDE 7: Groundedness Detection -->
+  <div class="slide" data-slide="7">
+    <div class="slide-content">
+      <h2>Groundedness Detection</h2>
+      <div class="two-col">
+        <div class="col">
+          <h3>The Hallucination Problem</h3>
+          <p>LLMs generate plausible-sounding text without verifying factual accuracy. Groundedness detection checks if responses are supported by provided source documents.</p>
+          <div class="card card-warning" style="margin-top: 15px;">
+            <span class="icon">⚠️</span>
+            <h3>Key Distinction</h3>
+            <p><strong>Grounded ≠ Accurate.</strong> A response can be grounded (supported by sources) but wrong if sources are incorrect.</p>
+          </div>
+        </div>
+        <div class="col">
+          <h3>How It Works</h3>
+          <div class="card card-accent">
+            <h3>1. Source Documents</h3>
+            <p>Provide context via RAG retrieval</p>
+          </div>
+          <div class="card card-accent">
+            <h3>2. Response Analysis</h3>
+            <p>Each claim checked against sources</p>
+          </div>
+          <div class="card card-accent">
+            <h3>3. Scoring</h3>
+            <p>1-5 scale: 5 = fully grounded, 1 = fully hallucinated</p>
+          </div>
+          <div class="card card-success" style="margin-top: 5px;">
+            <h3>Result</h3>
+            <p>Ungrounded responses can be blocked or flagged for review</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Groundedness is critical for enterprise AI. A lawyer citing fake cases, a financial advisor quoting fabricated numbers, a medical AI inventing symptoms — all of these are groundedness failures. Azure AI Foundry's groundedness detection works with RAG to verify that every claim in the model's response is backed by the retrieved source documents. Remember the key distinction: grounded doesn't mean accurate. If your source documents are wrong, the grounded response will also be wrong — but at least it's consistently traceable. -->
+
+  <!-- SLIDE 8: Jailbreak Protection -->
+  <div class="slide" data-slide="8">
+    <div class="slide-content">
+      <h2>Jailbreak Protection</h2>
+      <div class="two-col">
+        <div class="col">
+          <h3>Common Attack Vectors</h3>
+          <table>
+            <thead><tr><th>Attack Type</th><th>Method</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Direct Injection</strong></td><td>"Ignore all previous instructions..."</td></tr>
+              <tr><td><strong>Role-Playing</strong></td><td>"Pretend you're an unrestricted AI..."</td></tr>
+              <tr><td><strong>Encoding</strong></td><td>Base64 or other encodings to bypass filters</td></tr>
+              <tr><td><strong>Multi-Turn</strong></td><td>Gradually escalating over messages</td></tr>
+              <tr><td><strong>Indirect</strong></td><td>Hidden instructions in retrieved docs</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col">
+          <h3>AI Foundry's Defense</h3>
+          <div class="card card-success">
+            <span class="icon">🛡️</span>
+            <h3>Multi-Layer Detection</h3>
+            <p>Pattern analysis, intent classification, and semantic understanding work together to detect manipulation attempts.</p>
+          </div>
+          <div class="card card-accent" style="margin-top: 15px;">
+            <span class="icon">🔄</span>
+            <h3>Defense in Depth</h3>
+            <p>Even if an attack bypasses input detection, output content safety filters provide a second line of defense.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Jailbreaking is the biggest security threat to deployed LLMs. Attackers try to make the model ignore its safety instructions and generate harmful content. The techniques are creative and constantly evolving — from simple "ignore previous instructions" to sophisticated multi-turn escalation and encoding tricks. AI Foundry detects these using a combination of pattern matching, intent classification, and semantic analysis. But remember: defense in depth. Even if the jailbreak gets past input filters, the output filters catch harmful content on the way out. -->
+
+  <!-- SLIDE 9: Protected Material & Custom Blocklists -->
+  <div class="slide" data-slide="9">
+    <div class="slide-content">
+      <h2>Additional Safety Tools</h2>
+      <div class="two-col">
+        <div class="col">
+          <h3>🔏 Protected Material Detection</h3>
+          <div class="card card-accent">
+            <h3>Text Mode</h3>
+            <p>Detects known copyrighted text — books, articles, song lyrics, and other protected content</p>
+          </div>
+          <div class="card card-accent" style="margin-top: 15px;">
+            <h3>Code Mode</h3>
+            <p>Identifies licensed source code from known repositories — GPL, MIT, Apache, etc.</p>
+          </div>
+          <div class="callout" style="margin-top: 15px;">
+            <p><strong>Why it matters:</strong> Protects your organization from IP infringement and legal exposure</p>
+          </div>
+        </div>
+        <div class="col">
+          <h3>📋 Custom Blocklists</h3>
+          <div class="card card-warning">
+            <h3>Domain-Specific Blocking</h3>
+            <p>Block terms, phrases, or regex patterns specific to your use case</p>
+          </div>
+          <p style="margin-top: 15px;"><strong>Common Uses:</strong></p>
+          <ul>
+            <li><strong>Brand protection</strong> — competitor names, brand variations</li>
+            <li><strong>Regulatory</strong> — restricted terms in finance/healthcare</li>
+            <li><strong>PII protection</strong> — SSN, phone number patterns</li>
+            <li><strong>Policy enforcement</strong> — organization-specific rules</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Two more tools round out the safety suite. Protected Material Detection is your IP shield — it detects when the model generates content that matches known copyrighted text or licensed code. This is critical for any organization generating content or code at scale. Custom Blocklists let you tailor safety to your domain. A healthcare company might block diagnostic terms to prevent unauthorized medical advice. A financial firm might block specific product names to avoid compliance issues. These are applied to both input and output. -->
+
+  <!-- SLIDE 10: Configuring Filters -->
+  <div class="slide" data-slide="10">
+    <div class="slide-content">
+      <h2>Configuring Content Filters</h2>
+      <div class="two-col">
+        <div class="col">
+          <h3>Configuration Steps</h3>
+          <ol>
+            <li>Navigate to <strong>Safety + Security</strong> → <strong>Content Filters</strong></li>
+            <li>Click <strong>+ Create content filter</strong></li>
+            <li>Set <strong>input thresholds</strong> for each category</li>
+            <li>Set <strong>output thresholds</strong> for each category</li>
+            <li>Enable additional features (jailbreak, protected material, groundedness)</li>
+            <li>Add <strong>custom blocklists</strong> if needed</li>
+            <li>Associate filter with your <strong>deployment</strong></li>
+          </ol>
+        </div>
+        <div class="col">
+          <h3>Best Practices</h3>
+          <div class="card card-success">
+            <h3>✅ Environment-Specific Filters</h3>
+            <p><strong>Dev:</strong> Annotate-only mode for testing<br>
+               <strong>Staging:</strong> Production-like for validation<br>
+               <strong>Prod:</strong> Strict, tuned for your use case</p>
+          </div>
+          <div class="card card-warning" style="margin-top: 15px;">
+            <h3>⚠️ Never Disable All Filters</h3>
+            <p>Even in development, maintain minimum safety thresholds. Use annotate-only mode instead of disabling.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Let's talk about practical configuration. In AI Foundry, content filters are associated with deployments — so you can have different filter configurations for different models or environments. The key best practice is environment-specific filters. In dev, use annotate-only mode so you can SEE what would be filtered without actually blocking it. In staging, match production settings. In production, tune for your specific use case. And never, ever disable all filters in production. If you need to understand filter behavior, use annotate-only mode. -->
+
+  <!-- SLIDE 11: Evaluation Metrics -->
+  <div class="slide" data-slide="11">
+    <div class="slide-content">
+      <h2>Evaluation Metrics for Safety</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>What It Measures</th>
+            <th>Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Safety Score</strong></td>
+            <td>Overall adherence to safety guidelines</td>
+            <td class="highlight-success">&gt; 90%</td>
+          </tr>
+          <tr>
+            <td><strong>Groundedness Score</strong></td>
+            <td>Claims supported by source documents (1-5)</td>
+            <td class="highlight-success">&gt; 4.0</td>
+          </tr>
+          <tr>
+            <td><strong>Content Harm Defect Rate</strong></td>
+            <td>% of responses with harmful content</td>
+            <td class="highlight-success">&lt; 2%</td>
+          </tr>
+          <tr>
+            <td><strong>Jailbreak Resistance</strong></td>
+            <td>% of jailbreak attempts blocked</td>
+            <td class="highlight-success">&gt; 95%</td>
+          </tr>
+          <tr>
+            <td><strong>Protected Material Hit Rate</strong></td>
+            <td>Frequency of copyrighted content</td>
+            <td class="highlight-success">&lt; 1%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout" style="margin-top: 20px;">
+        <p><strong>Run evaluations regularly</strong> — not just at deployment time. Model behavior can drift, user patterns change, and new attack vectors emerge. Use AI Foundry's built-in evaluation tools for continuous monitoring.</p>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: You can't improve what you don't measure. These are the key safety metrics you should track for every AI deployment. Safety Score is your overall health metric. Groundedness Score tells you how well your RAG pipeline is working. Content Harm Defect Rate measures how often unsafe content slips through. Jailbreak Resistance measures how well your defenses hold against prompt injection. Run these evaluations regularly — quarterly at minimum, monthly for high-stakes applications. -->
+
+  <!-- SLIDE 12: Regulatory Landscape -->
+  <div class="slide" data-slide="12">
+    <div class="slide-content">
+      <h2>Regulatory Landscape</h2>
+      <div class="card-grid-3">
+        <div class="card card-accent">
+          <span class="icon">🇪🇺</span>
+          <h3>EU AI Act</h3>
+          <p>World's first comprehensive AI law. Risk-based framework: Unacceptable → High → Limited → Minimal. Fines up to €35M or 7% revenue.</p>
+        </div>
+        <div class="card card-accent">
+          <span class="icon">🇺🇸</span>
+          <h3>NIST AI RMF</h3>
+          <p>Voluntary US framework. Four functions: Govern, Map, Measure, Manage. Practical guidance for risk management.</p>
+        </div>
+        <div class="card card-accent">
+          <span class="icon">🌐</span>
+          <h3>OECD Principles</h3>
+          <p>International AI principles adopted by 40+ countries. Foundation for national AI policies worldwide.</p>
+        </div>
+      </div>
+      <h3 style="margin-top: 25px;">Industry-Specific Requirements</h3>
+      <div class="card-grid-2" style="margin-top:10px;">
+        <div class="card card-warning">
+          <h3>🏥 Healthcare</h3>
+          <p>HIPAA compliance, FDA AI/ML guidance, clinical validation requirements</p>
+        </div>
+        <div class="card card-warning">
+          <h3>🏦 Finance</h3>
+          <p>Fair lending laws, model explainability requirements, SEC AI guidance</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: The regulatory environment is evolving rapidly. The EU AI Act is the most significant — it's now law and companies must comply. It classifies AI systems by risk level: hiring tools, medical devices, and credit scoring are High Risk and require conformity assessments. The NIST AI RMF provides voluntary but influential US guidance. And industry-specific regulations like HIPAA and fair lending laws add additional requirements. Azure AI Foundry's safety tools help you meet these requirements — but tools alone aren't enough. You need the processes and governance to back them up. -->
+
+  <!-- SLIDE 13: Impact Assessment -->
+  <div class="slide" data-slide="13">
+    <div class="slide-content">
+      <h2>Responsible AI Impact Assessment</h2>
+      <p style="margin-bottom:15px;">A structured evaluation of AI system risks — complete this <span class="highlight">before deployment</span></p>
+      <div class="card-grid-3">
+        <div class="card card-accent">
+          <span class="icon">📋</span>
+          <h3>1. System Overview</h3>
+          <p>Purpose, users, decisions influenced, data processed</p>
+        </div>
+        <div class="card card-accent">
+          <span class="icon">👥</span>
+          <h3>2. Stakeholder Analysis</h3>
+          <p>Who benefits? Who could be harmed? Who was consulted?</p>
+        </div>
+        <div class="card card-accent">
+          <span class="icon">⚖️</span>
+          <h3>3. Fairness Assessment</h3>
+          <p>Demographic testing, disparate impact analysis</p>
+        </div>
+        <div class="card card-warning">
+          <span class="icon">🛡️</span>
+          <h3>4. Safety Review</h3>
+          <p>Failure modes, fallbacks, human oversight mechanisms</p>
+        </div>
+        <div class="card card-warning">
+          <span class="icon">🔒</span>
+          <h3>5. Privacy Review</h3>
+          <p>Data handling, retention policies, security measures</p>
+        </div>
+        <div class="card card-warning">
+          <span class="icon">🔍</span>
+          <h3>6. Transparency Check</h3>
+          <p>User notification, explainability, documentation</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top: 15px;">
+        <p><strong>Required sign-offs:</strong> Engineering Lead → Ethics Review Board → Legal Review → Deployment Authorization</p>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Before any AI system goes to production, you should complete a Responsible AI Impact Assessment. This is a structured process that forces you to think through the risks across all six principles. Microsoft requires this internally for all AI products, and it's increasingly becoming an industry standard. The key sections are system overview, stakeholder analysis, fairness assessment, safety review, privacy review, and transparency check. Each section requires specific evidence, not just checkboxes. And it requires sign-off from engineering, ethics, and legal. In this module's lab, you'll practice completing one of these for a realistic scenario. -->
+
+  <!-- SLIDE 14: Building RAI Culture -->
+  <div class="slide" data-slide="14">
+    <div class="slide-content">
+      <h2>Building a Responsible AI Culture</h2>
+      <div class="two-col">
+        <div class="col">
+          <h3>Organizational Layers</h3>
+          <div class="card card-accent">
+            <h3>🏢 Executive Leadership</h3>
+            <p>Set policy, allocate resources, champion RAI publicly</p>
+          </div>
+          <div class="card card-accent">
+            <h3>👥 AI Ethics Board</h3>
+            <p>Cross-functional oversight, review high-risk deployments</p>
+          </div>
+          <div class="card card-accent">
+            <h3>💻 Development Teams</h3>
+            <p>Implement tools, conduct testing, report concerns</p>
+          </div>
+          <div class="card card-accent">
+            <h3>🌐 All Employees</h3>
+            <p>AI literacy, know how to report concerns</p>
+          </div>
+        </div>
+        <div class="col">
+          <h3>Decision Framework</h3>
+          <p>Before deploying AI, ask:</p>
+          <ul>
+            <li>Is there a <strong>clear problem</strong> to solve?</li>
+            <li>Do we have <strong>quality data</strong>?</li>
+            <li>Can we <strong>explain decisions</strong>?</li>
+            <li>Have we assessed <strong>all 6 principles</strong>?</li>
+            <li>Do we have <strong>monitoring</strong> in place?</li>
+            <li>Is there <strong>human oversight</strong>?</li>
+          </ul>
+          <div class="card card-danger" style="margin-top:15px;">
+            <h3>When NOT to Use AI</h3>
+            <p>No quality data • Can't explain decisions • No human oversight • Task requires moral judgment</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Speaker Notes: Technology alone doesn't make AI responsible — culture does. Every level of the organization plays a role. Executives set the tone and resources. An AI Ethics Board provides oversight. Development teams implement the practices. And every employee should understand AI basics and know how to raise concerns. And sometimes the most responsible decision is NOT to use AI. If you don't have quality data, can't explain decisions, or there's no human oversight mechanism, AI may not be appropriate for that use case. -->
+
+  <!-- SLIDE 15: Key Takeaways & next module -->
+  <div class="slide end-slide" data-slide="15">
+    <div class="slide-content" style="align-items: center; text-align: center;">
+      <span class="badge" style="background: rgba(255,255,255,0.2);">Key Takeaways</span>
+      <h1>Build AI That You're Proud Of</h1>
+      <div style="text-align: left; max-width: 700px; margin: 0 auto;">
+        <p>✅ <strong>Six Principles</strong> — Fairness, Reliability, Privacy, Inclusiveness, Transparency, Accountability</p>
+        <p>✅ <strong>Built-In Tools</strong> — Content filters, groundedness, jailbreak protection, blocklists</p>
+        <p>✅ <strong>Measure Safety</strong> — Safety scores, groundedness scores, defect rates</p>
+        <p>✅ <strong>Know the Law</strong> — EU AI Act, NIST AI RMF, industry regulations</p>
+        <p>✅ <strong>Culture First</strong> — Tools enable, but culture sustains Responsible AI</p>
+      </div>
+      <p style="margin-top: 30px; font-size: 1.1em; opacity: 0.85;">
+        <strong>next module:</strong> Module 5 — Prompt Engineering Fundamentals<br>
+        Crafting effective prompts that work within safety guardrails
+      </p>
+      <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.6;">Azure AI Foundry: Zero to Hero | Arc 1: Foundations</p>
+    </div>
+  </div>
+  <!-- Speaker Notes: Let's wrap up with the key takeaways. Responsible AI is built on six interdependent principles. Azure AI Foundry provides powerful built-in tools to implement these principles. But tools are only as effective as the culture that supports them. next module, we'll move into Prompt Engineering — learning how to craft prompts that are both effective and safe. The safety guardrails you learned about today will directly inform how we design prompts. For homework, complete the hands-on lab and the assessment quiz. See you next module! -->
+
+</div>
+
+<!-- Navigation -->
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>◀</button>
+  <span class="slide-counter" id="slideCounter">1 / 15</span>
+  <button class="nav-btn" id="nextBtn" onclick="navigate(1)">▶</button>
+</div>
+<div class="keyboard-hint">Use ← → arrow keys or click buttons to navigate</div>
+
+<script>
+  let currentSlide = 1;
+  const totalSlides = 15;
+
+  function navigate(direction) {
+    const newSlide = currentSlide + direction;
+    if (newSlide < 1 || newSlide > totalSlides) return;
+    goToSlide(newSlide);
+  }
+
+  function goToSlide(n) {
+    const current = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+    const next = document.querySelector(`.slide[data-slide="${n}"]`);
+    if (!current || !next) return;
+
+    current.classList.remove('active');
+    current.classList.add('exiting');
+    setTimeout(() => current.classList.remove('exiting'), 600);
+
+    next.classList.add('active');
+    currentSlide = n;
+
+    document.getElementById('slideCounter').textContent = `${currentSlide} / ${totalSlides}`;
+    document.getElementById('prevBtn').disabled = currentSlide === 1;
+    document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+    document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') { e.preventDefault(); goToSlide(1); }
+    if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides); }
+  });
+
+  // Initialize progress bar
+  document.getElementById('progressBar').style.width = `${(1 / totalSlides) * 100}%`;
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
+  });
+</script>
+
+</body>
+</html>

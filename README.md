@@ -1,5 +1,5 @@
 # 🎓 Azure AI Foundry — Zero to Hero
-## 45-Week Training Program
+## 45-Module Training Program
 
 > A comprehensive, beginner-friendly training program that takes technical professionals from zero AI experience to AI Foundry mastery.
 
@@ -9,7 +9,7 @@
 
 | Property | Details |
 |----------|---------|
-| **Duration** | 45 weeks |
+| **Duration** | 45 modules |
 | **Arcs** | 9 learning arcs |
 | **Audience** | Technical professionals (developers, IT pros) new to AI |
 | **Format** | Weekly modules: Training Guide + Slides + Hands-on Lab + Quiz |
@@ -21,25 +21,25 @@
 ## 🗺️ Course Map
 
 ```
-ARC 1: Foundations          ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Weeks 1-5
-ARC 2: Data & Prep          ░░░░░██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Weeks 6-10
-ARC 3: Model Building       ░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Weeks 11-15
-ARC 4: Deployment & MLOps   ░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░░░░░░░ Weeks 16-20
-ARC 5: Agents & Copilot     ░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░░ Weeks 21-25
-ARC 6: Security & Gov       ░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░ Weeks 26-30
-ARC 7: Advanced AI          ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░ Weeks 31-35
-ARC 8: Partner Scenarios    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░ Weeks 36-40
-ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█████ Weeks 41-45
+ARC 1: Foundations          ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Modules 1-5
+ARC 2: Data & Prep          ░░░░░██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Modules 6-10
+ARC 3: Model Building       ░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Modules 11-15
+ARC 4: Deployment & MLOps   ░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░░░░░░░ Modules 16-20
+ARC 5: Agents & Copilot     ░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░░ Modules 21-25
+ARC 6: Security & Gov       ░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░ Modules 26-30
+ARC 7: Advanced AI          ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░ Modules 31-35
+ARC 8: Partner Scenarios    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░ Modules 36-40
+ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█████ Modules 41-45
 ```
 
 ---
 
 ## 📚 Detailed Curriculum
 
-### 🏗️ ARC 1: Foundations (Weeks 1-5)
+### 🏗️ ARC 1: Foundations (Modules 1-5)
 *Build your AI vocabulary and get comfortable with the platform.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 1 | What is AI Foundry? | Understand the platform, explore the portal |
 | 2 | Understanding the AI Lifecycle | Map data → model → deployment → monitoring |
@@ -49,10 +49,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 📊 ARC 2: Data & Prep (Weeks 6-10)
+### 📊 ARC 2: Data & Prep (Modules 6-10)
 *Data is the fuel. Learn how Foundry handles it.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 6 | Connecting Data Sources | Link Azure Storage, SQL, APIs |
 | 7 | Data Labeling & Annotation Workflows | Label data for ML training |
@@ -62,10 +62,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 🧠 ARC 3: Model Building (Weeks 11-15)
+### 🧠 ARC 3: Model Building (Modules 11-15)
 *Start training models and understanding the tooling.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 11 | Intro to Model Training | Train your first custom model |
 | 12 | Pre-built Models vs. Custom Models | Choose the right approach |
@@ -75,10 +75,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 🚀 ARC 4: Deployment & MLOps (Weeks 16-20)
+### 🚀 ARC 4: Deployment & MLOps (Modules 16-20)
 *Move from experimentation to production.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 16 | What is MLOps in AI Foundry? | Understand the ops lifecycle |
 | 17 | Deploying Your First Model Endpoint | Live API endpoint |
@@ -88,10 +88,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 🤖 ARC 5: Agents & Copilot Integration (Weeks 21-25)
+### 🤖 ARC 5: Agents & Copilot Integration (Modules 21-25)
 *Where AI Foundry meets the Microsoft ecosystem.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 21 | Intro to AI Agents | Build your first agent |
 | 22 | Connecting AI Foundry to Copilot Studio | Bridge models to Copilot |
@@ -101,10 +101,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 🔒 ARC 6: Security, Governance & Compliance (Weeks 26-30)
+### 🔒 ARC 6: Security, Governance & Compliance (Modules 26-30)
 *Critical for enterprise and partner scenarios.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 26 | Identity & Access Management | RBAC, Managed Identity, Entra ID |
 | 27 | Data Governance & Purview Integration | Data classification & lineage |
@@ -114,10 +114,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### ⚡ ARC 7: Advanced AI (Weeks 31-35)
+### ⚡ ARC 7: Advanced AI (Modules 31-35)
 *Level up into more complex AI patterns.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 31 | RAG (Retrieval-Augmented Generation) | Build a RAG pipeline |
 | 32 | Multi-Model Orchestration | Chain multiple models |
@@ -127,10 +127,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 💼 ARC 8: Partner & Business Scenarios (Weeks 36-40)
+### 💼 ARC 8: Partner & Business Scenarios (Modules 36-40)
 *Turn your technical skills into partner value.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 36 | Building Repeatable AI Offerings | Templatize solutions |
 | 37 | Packaging AI Foundry for Customers | Go-to-market readiness |
@@ -140,10 +140,10 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-### 🏆 ARC 9: Capstone & Mastery (Weeks 41-45)
+### 🏆 ARC 9: Capstone & Mastery (Modules 41-45)
 *Bring it all together with a real project.*
 
-| Week | Topic | Key Outcome |
+| module | Topic | Key Outcome |
 |------|-------|-------------|
 | 41 | Choose Your Capstone Project | Define scope & plan |
 | 42 | Build the Data + Model | Implement core AI pipeline |
@@ -153,7 +153,7 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ---
 
-## 📦 Each Week Includes
+## 📦 Each module Includes
 
 | Material | Format | Purpose |
 |----------|--------|---------|
@@ -167,11 +167,11 @@ ARC 9: Capstone & Mastery   ░░░░░░░░░░░░░░░░░�
 
 ## 🚀 Getting Started
 
-1. **Start with Week 1** → `week-01/training-guide.md`
-2. **Present the slides** → `week-01/slides/presentation.html`
-3. **Do the lab** → `week-01/lab/hands-on-lab.md`
-4. **Take the quiz** → `week-01/quiz/assessment.md`
-5. **Move to Week 2** when ready!
+1. **Start with Module 1** → `module-01/training-guide.md`
+2. **Present the slides** → `module-01/slides/presentation.html`
+3. **Do the lab** → `module-01/lab/hands-on-lab.md`
+4. **Take the quiz** → `module-01/quiz/assessment.md`
+5. **Move to Module 2** when ready!
 
 ---
 

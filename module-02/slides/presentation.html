@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 2: Understanding the AI Lifecycle — Slide Deck</title>
+    <style>
+        :root {
+            --bg: #1a1a1a;
+            --bg-slide: #1e1e1e;
+            --accent: #0078d4;
+            --accent-light: #4da3e8;
+            --accent-glow: rgba(0, 120, 212, 0.3);
+            --purple: #5c2d91;
+            --green: #107c10;
+            --orange: #ff8c00;
+            --red: #d13438;
+            --text: #e8e8e8;
+            --text-dim: #a0a0a0;
+            --text-bright: #ffffff;
+            --border: #333;
+            --code-bg: #2d2d2d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; background: var(--bg); }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+        }
+
+        /* Slide Container */
+        .slide-deck { position: relative; width: 100%; height: 100%; }
+        .slide {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 80px;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none;
+            background: var(--bg);
+        }
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+        .slide.exit-left {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 24px;
+            right: 32px;
+            font-size: 14px;
+            color: var(--text-dim);
+            z-index: 100;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Progress bar */
+        .progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            z-index: 100;
+            transition: width 0.4s ease;
+        }
+
+        /* Navigation hint */
+        .nav-hint {
+            position: fixed;
+            bottom: 24px;
+            left: 32px;
+            font-size: 12px;
+            color: var(--text-dim);
+            z-index: 100;
+            opacity: 0.6;
+        }
+
+        /* ── Cover Slide ── */
+        .slide-cover {
+            background: linear-gradient(135deg, #0a1628 0%, #1a1a2e 40%, #16213e 100%);
+            text-align: center;
+        }
+        .slide-cover .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .slide-cover h1 {
+            font-size: 52px;
+            font-weight: 700;
+            color: var(--text-bright);
+            line-height: 1.2;
+            margin-bottom: 16px;
+            max-width: 900px;
+        }
+        .slide-cover .subtitle {
+            font-size: 22px;
+            color: var(--accent-light);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+        .slide-cover .meta {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+        .slide-cover .accent-line {
+            width: 80px;
+            height: 3px;
+            background: var(--accent);
+            margin: 24px auto;
+            border-radius: 2px;
+        }
+
+        /* ── Content Slides ── */
+        .slide-content {
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 50px 80px;
+        }
+        .slide-content .slide-header {
+            width: 100%;
+            margin-bottom: 36px;
+        }
+        .slide-content .slide-number {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .slide-content h2 {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--text-bright);
+            line-height: 1.2;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 12px;
+        }
+        .slide-body {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+        .slide-body p {
+            font-size: 20px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        .slide-body ul, .slide-body ol {
+            font-size: 20px;
+            line-height: 1.8;
+            margin-left: 28px;
+            color: var(--text);
+        }
+        .slide-body li { margin-bottom: 8px; }
+        .slide-body li strong { color: var(--accent-light); }
+        .slide-body .highlight {
+            color: var(--accent-light);
+            font-weight: 600;
+        }
+
+        /* Diagram blocks */
+        .diagram {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px 28px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--accent-light);
+            white-space: pre;
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        /* Tables */
+        .slide-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 17px;
+        }
+        .slide-table th {
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .slide-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        .slide-table tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+        .slide-table tr:hover td { background: rgba(0,120,212,0.08); }
+
+        /* Two-column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            width: 100%;
+        }
+        .col { }
+        .col h3 {
+            font-size: 22px;
+            color: var(--accent-light);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+        .card {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .card .icon { font-size: 36px; margin-bottom: 10px; }
+        .card h4 {
+            font-size: 16px;
+            color: var(--accent-light);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .card p { font-size: 14px; color: var(--text-dim); line-height: 1.5; }
+
+        /* Metric bars */
+        .metric-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .metric-label {
+            width: 140px;
+            font-size: 16px;
+            color: var(--text);
+            text-align: right;
+        }
+        .metric-bar-bg {
+            flex: 1;
+            height: 28px;
+            background: var(--code-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .metric-bar {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 13px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Key point callout */
+        .key-point {
+            background: rgba(0,120,212,0.1);
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 19px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .key-point strong { color: var(--accent-light); }
+
+        /* Flow arrows */
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .flow-step .icon { font-size: 28px; margin-bottom: 6px; }
+        .flow-step .label { font-size: 13px; color: var(--text); font-weight: 600; }
+        .flow-arrow { font-size: 24px; color: var(--accent); }
+
+        /* 2-col equal */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+        }
+
+        /* Summary slide */
+        .slide-summary {
+            background: linear-gradient(135deg, #0a1628 0%, #1a1a2e 40%, #16213e 100%);
+        }
+        .takeaway-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+        }
+        .takeaway-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .takeaway-list li:last-child { border-bottom: none; }
+        .takeaway-check {
+            color: var(--green);
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+<div class="nav-hint">← → Arrow keys to navigate</div>
+
+<div class="slide-deck" id="deck">
+
+    <!-- ─── SLIDE 1: Cover ─── -->
+    <!-- Speaker notes: Welcome everyone to Module 2 of our Zero to Hero Azure AI Foundry training. last module we learned WHAT AI Foundry is. this module we'll learn HOW AI applications are built — the complete lifecycle from data to deployment to monitoring. -->
+    <div class="slide slide-cover active" data-slide="1">
+        <div class="badge">ARC 1: FOUNDATIONS</div>
+        <h1>Understanding the AI Lifecycle</h1>
+        <div class="accent-line"></div>
+        <div class="subtitle">Data → Model → Deployment → Monitoring</div>
+        <div class="meta">Module 2 of 45 · Zero to Hero: Azure AI Foundry · April 2025</div>
+    </div>
+
+    <!-- ─── SLIDE 2: Agenda ─── -->
+    <!-- Speaker notes: Here's our agenda for today. We'll start with the big picture — the 6 stages of the AI lifecycle. Then we'll dive into each stage, connecting each one to specific AI Foundry tools. We'll wrap up with MLOps concepts and a real-world example. -->
+    <div class="slide slide-content" data-slide="2">
+        <div class="slide-header">
+            <div class="slide-number">Module 2</div>
+            <h2>Today's Agenda</h2>
+        </div>
+        <div class="slide-body">
+            <ol>
+                <li><strong>The Big Picture</strong> — The AI Development Lifecycle</li>
+                <li><strong>Stage 1-2</strong> — Data Collection &amp; Preparation</li>
+                <li><strong>Stage 3</strong> — Model Selection Strategies</li>
+                <li><strong>Training vs Fine-Tuning vs Prompt Engineering</strong></li>
+                <li><strong>Stage 4</strong> — Evaluation Metrics</li>
+                <li><strong>Stage 5</strong> — Deployment Patterns</li>
+                <li><strong>Stage 6</strong> — Monitoring &amp; Feedback Loops</li>
+                <li><strong>MLOps</strong> — Why It Matters</li>
+                <li><strong>Real-World Example</strong> — Full Lifecycle Walkthrough</li>
+                <li><strong>Hands-On</strong> — Set Up Azure &amp; Deploy Your First Model</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 3: The AI Lifecycle Overview ─── -->
+    <!-- Speaker notes: This is the most important diagram in today's session. Every AI application follows these 6 stages. Notice the arrow going from Monitoring back to Data Collection — this is NOT a straight line, it's a continuous loop. Your AI gets better over time through this feedback cycle. -->
+    <div class="slide slide-content" data-slide="3">
+        <div class="slide-header">
+            <div class="slide-number">THE BIG PICTURE</div>
+            <h2>The 6 Stages of the AI Lifecycle</h2>
+        </div>
+        <div class="slide-body">
+            <div class="flow">
+                <div class="flow-step"><div class="icon">📊</div><div class="label">1. Data<br>Collection</div></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step"><div class="icon">🔧</div><div class="label">2. Data<br>Preparation</div></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step"><div class="icon">🧠</div><div class="label">3. Model<br>Selection</div></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step"><div class="icon">✅</div><div class="label">4. Evaluation</div></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step"><div class="icon">🚀</div><div class="label">5. Deployment</div></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step"><div class="icon">👁️</div><div class="label">6. Monitoring</div></div>
+            </div>
+            <div class="key-point" style="margin-top:20px;">
+                <strong>💡 Key Insight:</strong> The lifecycle is a <strong>continuous loop</strong>, not a straight line. Monitoring feeds back into data collection, creating an improvement cycle.
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 4: Data — Types and Sources ─── -->
+    <!-- Speaker notes: Data is the foundation of everything. Let's look at the three types of data. Structured data is the easiest to work with — think rows and columns. Semi-structured has some organization, like JSON. Unstructured is the most common in the real world but the hardest to process — think PDFs, images, free-form text. AI Foundry can handle all three. -->
+    <div class="slide slide-content" data-slide="4">
+        <div class="slide-header">
+            <div class="slide-number">STAGES 1 & 2</div>
+            <h2>Data: Types &amp; Sources</h2>
+        </div>
+        <div class="slide-body">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="icon">📊</div>
+                    <h4>Structured</h4>
+                    <p>Databases, CSV, SQL tables, spreadsheets. Fixed rows &amp; columns. Easiest to process.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">📋</div>
+                    <h4>Semi-Structured</h4>
+                    <p>JSON, XML, YAML, log files, emails. Has tags &amp; hierarchies. Moderate complexity.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">📝</div>
+                    <h4>Unstructured</h4>
+                    <p>PDFs, images, audio, video, free-form text. No fixed format. Most common, hardest to handle.</p>
+                </div>
+            </div>
+            <div class="key-point" style="margin-top: 16px;">
+                <strong>⚠️ Remember:</strong> Data scientists spend <strong>60–80%</strong> of their time on data preparation. Good data = good AI.
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 5: Data Preparation Steps ─── -->
+    <!-- Speaker notes: Here are the key steps in data preparation. For RAG applications, AI Foundry can automate chunking and indexing. For fine-tuning, you prepare JSONL files. The point is: this stage takes the most time, so plan accordingly. -->
+    <div class="slide slide-content" data-slide="5">
+        <div class="slide-header">
+            <div class="slide-number">STAGE 2</div>
+            <h2>Data Preparation Steps</h2>
+        </div>
+        <div class="slide-body">
+            <table class="slide-table">
+                <tr><th>Step</th><th>What It Means</th><th>Example</th></tr>
+                <tr><td><strong>Cleaning</strong></td><td>Remove errors, duplicates, invalid entries</td><td>Remove rows with missing IDs</td></tr>
+                <tr><td><strong>Normalization</strong></td><td>Standardize formats</td><td>All dates → YYYY-MM-DD</td></tr>
+                <tr><td><strong>Labeling</strong></td><td>Tag data with categories/answers</td><td>Mark emails as spam / not spam</td></tr>
+                <tr><td><strong>Splitting</strong></td><td>Divide into train / validation / test</td><td>80% / 10% / 10%</td></tr>
+                <tr><td><strong>Chunking</strong></td><td>Split large documents into pieces</td><td>100-page PDF → 500-word chunks</td></tr>
+                <tr><td><strong>Enrichment</strong></td><td>Add additional context or metadata</td><td>Add product categories to sales data</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 6: Model Selection Strategies ─── -->
+    <!-- Speaker notes: This is a critical decision point. Most people think they need to train a model from scratch. The reality is 90% of projects work great with pre-built models plus prompt engineering and RAG. Fine-tuning is sometimes needed for domain-specific tasks. Training from scratch is almost never necessary for business applications. -->
+    <div class="slide slide-content" data-slide="6">
+        <div class="slide-header">
+            <div class="slide-number">STAGE 3</div>
+            <h2>Model Selection Strategies</h2>
+        </div>
+        <div class="slide-body">
+            <div class="card-grid">
+                <div class="card" style="border-top: 3px solid var(--green);">
+                    <div class="icon">📦</div>
+                    <h4>Pre-Built Model</h4>
+                    <p>Use as-is from the catalog. Minutes to deploy. Pay per use. <strong>90% of projects.</strong></p>
+                </div>
+                <div class="card" style="border-top: 3px solid var(--orange);">
+                    <div class="icon">🎯</div>
+                    <h4>Fine-Tuned Model</h4>
+                    <p>Pre-built + your data. Hours to days. Domain specialization. <strong>~9% of projects.</strong></p>
+                </div>
+                <div class="card" style="border-top: 3px solid var(--red);">
+                    <div class="icon">🔬</div>
+                    <h4>Custom Model</h4>
+                    <p>Train from scratch. modules to months. Massive data needed. <strong>&lt;1% of projects.</strong></p>
+                </div>
+            </div>
+            <div class="key-point" style="margin-top: 16px;">
+                <strong>💡 Rule of Thumb:</strong> Always start with a pre-built model + prompt engineering + RAG. Only fine-tune if that doesn't meet your quality bar.
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 7: Training vs Fine-Tuning vs Prompt Engineering ─── -->
+    <!-- Speaker notes: This is one of the most commonly confused topics for beginners. Prompt engineering changes the INPUT. Fine-tuning changes the model's WEIGHTS slightly. Training from scratch creates a brand new model. The analogy I like: prompt engineering is talking to a smart employee, fine-tuning is sending them to a training course, and training from scratch is raising a child. -->
+    <div class="slide slide-content" data-slide="7">
+        <div class="slide-header">
+            <div class="slide-number">KEY CONCEPTS</div>
+            <h2>Training vs Fine-Tuning vs Prompt Engineering</h2>
+        </div>
+        <div class="slide-body">
+            <table class="slide-table">
+                <tr><th>Aspect</th><th>Prompt Engineering</th><th>Fine-Tuning</th><th>Training from Scratch</th></tr>
+                <tr><td><strong>What changes</strong></td><td>The input text</td><td>Model weights (slightly)</td><td>Entire model</td></tr>
+                <tr><td><strong>Data needed</strong></td><td>Zero</td><td>100s–1000s examples</td><td>Millions+</td></tr>
+                <tr><td><strong>Time</strong></td><td>Minutes–hours</td><td>Hours–days</td><td>modules–months</td></tr>
+                <tr><td><strong>Cost</strong></td><td>Free (just API calls)</td><td>Moderate</td><td>Very high</td></tr>
+                <tr><td><strong>Expertise</strong></td><td>Beginner</td><td>Intermediate</td><td>Expert</td></tr>
+                <tr><td><strong>Model modified?</strong></td><td>No</td><td>Yes (adapted)</td><td>Yes (created)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 8: Evaluation Metrics ─── -->
+    <!-- Speaker notes: Evaluation is your quality control checkpoint. AI Foundry measures these key metrics. Groundedness is especially important — it tells you if the AI is making things up. Safety is pass/fail: any harmful content is a failure. Think of this like crash testing a car — you would never ship without it. -->
+    <div class="slide slide-content" data-slide="8">
+        <div class="slide-header">
+            <div class="slide-number">STAGE 4</div>
+            <h2>Evaluation Metrics</h2>
+        </div>
+        <div class="slide-body">
+            <div class="grid-2">
+                <div class="col">
+                    <h3>Quality Metrics (1–5 scale)</h3>
+                    <div class="metric-row"><span class="metric-label">Groundedness</span><div class="metric-bar-bg"><div class="metric-bar" style="width:85%">4.3</div></div></div>
+                    <div class="metric-row"><span class="metric-label">Relevance</span><div class="metric-bar-bg"><div class="metric-bar" style="width:92%">4.6</div></div></div>
+                    <div class="metric-row"><span class="metric-label">Coherence</span><div class="metric-bar-bg"><div class="metric-bar" style="width:88%">4.4</div></div></div>
+                    <div class="metric-row"><span class="metric-label">Fluency</span><div class="metric-bar-bg"><div class="metric-bar" style="width:94%">4.7</div></div></div>
+                    <div class="metric-row"><span class="metric-label">Similarity</span><div class="metric-bar-bg"><div class="metric-bar" style="width:78%">3.9</div></div></div>
+                </div>
+                <div class="col">
+                    <h3>Safety Metrics (Pass / Fail)</h3>
+                    <table class="slide-table" style="font-size:16px;">
+                        <tr><td>Hate Speech</td><td style="color:var(--green);font-weight:600;">✅ PASS</td></tr>
+                        <tr><td>Violence</td><td style="color:var(--green);font-weight:600;">✅ PASS</td></tr>
+                        <tr><td>Self-Harm</td><td style="color:var(--green);font-weight:600;">✅ PASS</td></tr>
+                        <tr><td>Sexual Content</td><td style="color:var(--green);font-weight:600;">✅ PASS</td></tr>
+                        <tr><td>Jailbreak</td><td style="color:var(--green);font-weight:600;">✅ PASS</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 9: Deployment Patterns ─── -->
+    <!-- Speaker notes: Once your model passes evaluation, it's time to deploy. AI Foundry offers three deployment patterns. Serverless API is the easiest — no infrastructure to manage, pay per token. Managed Compute gives you a dedicated VM with more control. Container deployment lets you run models anywhere, including offline. Most of you will start with Serverless. -->
+    <div class="slide slide-content" data-slide="9">
+        <div class="slide-header">
+            <div class="slide-number">STAGE 5</div>
+            <h2>Deployment Patterns</h2>
+        </div>
+        <div class="slide-body">
+            <div class="card-grid">
+                <div class="card" style="border-top: 3px solid var(--accent);">
+                    <div class="icon">☁️</div>
+                    <h4>Serverless API (MaaS)</h4>
+                    <p>Pay-per-token. No infra management. Instant deploy. Best for prototyping &amp; variable traffic.</p>
+                </div>
+                <div class="card" style="border-top: 3px solid var(--purple);">
+                    <div class="icon">🖥️</div>
+                    <h4>Managed Compute (MaaP)</h4>
+                    <p>Dedicated VM. Full control. Custom scaling. Best for production &amp; consistent workloads.</p>
+                </div>
+                <div class="card" style="border-top: 3px solid var(--green);">
+                    <div class="icon">📦</div>
+                    <h4>Container Deployment</h4>
+                    <p>Your infrastructure. Full portability. Offline capable. Best for hybrid &amp; edge scenarios.</p>
+                </div>
+            </div>
+            <table class="slide-table" style="margin-top:16px; font-size:15px;">
+                <tr><th>Feature</th><th>Serverless</th><th>Managed</th><th>Container</th></tr>
+                <tr><td>Setup Time</td><td>Minutes</td><td>10–30 min</td><td>Hours</td></tr>
+                <tr><td>Billing</td><td>Per token</td><td>VM uptime</td><td>Your costs</td></tr>
+                <tr><td>Scaling</td><td>Automatic</td><td>Configurable</td><td>Manual</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 10: Monitoring & Feedback Loops ─── -->
+    <!-- Speaker notes: Deployment is the starting line, not the finish line. You need to monitor performance, safety, costs, and user feedback continuously. When monitoring reveals issues, you loop back to earlier stages. This feedback loop is what makes great AI applications — they get better over time. -->
+    <div class="slide slide-content" data-slide="10">
+        <div class="slide-header">
+            <div class="slide-number">STAGE 6</div>
+            <h2>Monitoring &amp; Feedback Loops</h2>
+        </div>
+        <div class="slide-body">
+            <div class="grid-2">
+                <div class="col">
+                    <h3>What to Monitor</h3>
+                    <ul>
+                        <li><strong>Performance:</strong> Latency, throughput, error rates</li>
+                        <li><strong>Quality:</strong> Groundedness, relevance scores</li>
+                        <li><strong>Safety:</strong> Content filter triggers, jailbreaks</li>
+                        <li><strong>Usage:</strong> Request volume, token consumption</li>
+                        <li><strong>Costs:</strong> Spending vs budget</li>
+                        <li><strong>User Feedback:</strong> 👍/👎 ratings, escalations</li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <h3>Feedback Loop Actions</h3>
+                    <ul>
+                        <li><strong>Low quality?</strong> → Update data, retune prompts</li>
+                        <li><strong>High latency?</strong> → Scale up or use faster model</li>
+                        <li><strong>Safety issues?</strong> → Tighten content filters</li>
+                        <li><strong>New questions?</strong> → Expand knowledge base</li>
+                        <li><strong>Cost spike?</strong> → Optimize tokens, smaller model</li>
+                        <li><strong>Model drift?</strong> → Re-evaluate, retrain</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="key-point" style="margin-top:12px;">
+                <strong>🔄 Key Insight:</strong> The best AI applications have <strong>tight feedback loops</strong>. The faster you detect and fix issues, the better your AI performs.
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 11: MLOps ─── -->
+    <!-- Speaker notes: MLOps is the discipline that brings order to all of this. It's DevOps for AI. Version your models, automate your pipelines, monitor continuously. You don't need full MLOps from day one — start with the basics and grow. Most teams should aim for Level 2 on the maturity model. -->
+    <div class="slide slide-content" data-slide="11">
+        <div class="slide-header">
+            <div class="slide-number">BEST PRACTICES</div>
+            <h2>MLOps — Why It Matters</h2>
+        </div>
+        <div class="slide-body">
+            <p style="font-size:20px; margin-bottom:12px;"><strong>MLOps</strong> = Applying DevOps principles (automation, version control, CI/CD) to the AI lifecycle.</p>
+            <table class="slide-table" style="font-size:16px;">
+                <tr><th>Level</th><th>Name</th><th>Characteristics</th></tr>
+                <tr><td>0</td><td>Manual</td><td>Everything by hand, no automation</td></tr>
+                <tr><td>1</td><td>Basic</td><td>Some automated testing, manual deployment</td></tr>
+                <tr><td style="background:rgba(0,120,212,0.15);"><strong>2</strong></td><td style="background:rgba(0,120,212,0.15);"><strong>Intermediate ← Target</strong></td><td style="background:rgba(0,120,212,0.15);"><strong>Automated CI/CD, monitoring dashboards</strong></td></tr>
+                <tr><td>3</td><td>Advanced</td><td>Full automation, A/B testing, auto-scaling</td></tr>
+                <tr><td>4</td><td>Expert</td><td>Auto-retraining, drift detection, self-healing</td></tr>
+            </table>
+            <div class="key-point" style="margin-top:12px;">
+                <strong>💡 Start simple:</strong> Version your prompts. Evaluate before deploying. Monitor in production. Add more automation as you grow.
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 12: AI Foundry Lifecycle Mapping ─── -->
+    <!-- Speaker notes: Here's where it all comes together. Every stage of the lifecycle maps to a specific AI Foundry tool. You don't need to leave the platform — AI Foundry covers the entire journey. This is the unified platform concept we introduced in Module 1. -->
+    <div class="slide slide-content" data-slide="12">
+        <div class="slide-header">
+            <div class="slide-number">PUTTING IT ALL TOGETHER</div>
+            <h2>Lifecycle → AI Foundry Mapping</h2>
+        </div>
+        <div class="slide-body">
+            <table class="slide-table" style="font-size:16px;">
+                <tr><th>Lifecycle Stage</th><th>AI Foundry Tool</th><th>What It Does</th></tr>
+                <tr><td>📊 Data Collection</td><td>Data connections, Storage</td><td>Connect to your data sources</td></tr>
+                <tr><td>🔧 Data Preparation</td><td>Index creation, Data assets</td><td>Chunk, index, manage datasets</td></tr>
+                <tr><td>🧠 Model Selection</td><td>Model Catalog (1,800+ models)</td><td>Browse, compare, deploy models</td></tr>
+                <tr><td>🎯 Fine-Tuning</td><td>Fine-tuning tools</td><td>Train models on your data</td></tr>
+                <tr><td>✏️ Prompt Engineering</td><td>Playground</td><td>Craft &amp; iterate on prompts</td></tr>
+                <tr><td>✅ Evaluation</td><td>Evaluation tools</td><td>Automated quality &amp; safety testing</td></tr>
+                <tr><td>🚀 Deployment</td><td>Endpoints (Serverless/Managed)</td><td>Deploy models as APIs</td></tr>
+                <tr><td>👁️ Monitoring</td><td>Azure Monitor, Content Safety</td><td>Track performance &amp; safety</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 13: Real-World Example ─── -->
+    <!-- Speaker notes: Let's walk through a real example. A retail company built a customer support chatbot using every stage of the lifecycle. They collected 50,000 support tickets, cleaned and indexed them, used GPT-4o with RAG, evaluated with a 200-question test set, deployed as a serverless API, and monitored continuously. Result: 45% fewer tickets, 92% customer satisfaction, $2.1M saved annually. -->
+    <div class="slide slide-content" data-slide="13">
+        <div class="slide-header">
+            <div class="slide-number">REAL-WORLD EXAMPLE</div>
+            <h2>Customer Support Chatbot — Full Lifecycle</h2>
+        </div>
+        <div class="slide-body">
+            <table class="slide-table" style="font-size:15px;">
+                <tr><th>Stage</th><th>What They Did</th><th>Result</th></tr>
+                <tr><td>📊 Data</td><td>Exported 50K support tickets, manuals, FAQs</td><td>Rich knowledge base</td></tr>
+                <tr><td>🔧 Prep</td><td>Cleaned PII, chunked docs, AI Search index</td><td>Searchable data</td></tr>
+                <tr><td>🧠 Model</td><td>GPT-4o + RAG pattern</td><td>Grounded answers</td></tr>
+                <tr><td>✅ Eval</td><td>200 test questions, 4.3/5 groundedness</td><td>Quality verified</td></tr>
+                <tr><td>🚀 Deploy</td><td>Serverless API + content safety</td><td>Live endpoint</td></tr>
+                <tr><td>👁️ Monitor</td><td>Resolution rate, CSAT, cost tracking</td><td>Continuous improvement</td></tr>
+            </table>
+            <div class="key-point" style="margin-top:16px;">
+                <strong>📈 Results:</strong> 45% fewer support tickets · 92% customer satisfaction · $2.1M annual savings
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 14: Hands-On Preview ─── -->
+    <!-- Speaker notes: Time for hands-on work! In today's lab, you'll set up your Azure account, create your first AI Foundry project, deploy GPT-4o-mini from the model catalog, send your first prompts in the Playground, and review monitoring metrics. This maps to lifecycle stages 3 through 6 — model selection, evaluation, deployment, and monitoring. -->
+    <div class="slide slide-content" data-slide="14">
+        <div class="slide-header">
+            <div class="slide-number">HANDS-ON LAB</div>
+            <h2>Today's Lab: Your First AI Foundry Project</h2>
+        </div>
+        <div class="slide-body">
+            <div class="card-grid" style="grid-template-columns: 1fr 1fr; max-width:700px;">
+                <div class="card">
+                    <div class="icon">1️⃣</div>
+                    <h4>Create Azure Account</h4>
+                    <p>Free tier with $200 credits</p>
+                </div>
+                <div class="card">
+                    <div class="icon">2️⃣</div>
+                    <h4>Create AI Foundry Project</h4>
+                    <p>Hub + project + resources</p>
+                </div>
+                <div class="card">
+                    <div class="icon">3️⃣</div>
+                    <h4>Deploy GPT-4o-mini</h4>
+                    <p>From the Model Catalog</p>
+                </div>
+                <div class="card">
+                    <div class="icon">4️⃣</div>
+                    <h4>Send Prompts</h4>
+                    <p>Playground + system prompts</p>
+                </div>
+            </div>
+            <div class="key-point" style="margin-top:20px;">
+                <strong>🎯 Lifecycle Stages Covered:</strong> Model Selection (3) → Evaluation in Playground (4) → Deployment (5) → Monitoring (6)
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SLIDE 15: Summary & next module ─── -->
+    <!-- Speaker notes: Let's recap our key takeaways. The AI lifecycle is a loop, not a line. Start with pre-built models — they work for 90% of cases. Evaluation is not optional. Monitoring is the starting line, not the finish line. MLOps brings order to the process. And AI Foundry covers the entire lifecycle in one platform. next module, we'll go deeper into the AI Foundry portal with a guided tour of every feature. Great job today! -->
+    <div class="slide slide-content slide-summary" data-slide="15">
+        <div class="slide-header">
+            <div class="slide-number">WRAP-UP</div>
+            <h2>Key Takeaways &amp; next module</h2>
+        </div>
+        <div class="slide-body">
+            <div class="grid-2">
+                <div class="col">
+                    <h3>Key Takeaways</h3>
+                    <ul class="takeaway-list">
+                        <li><span class="takeaway-check">✅</span> The lifecycle is a <strong>loop</strong>, not a line</li>
+                        <li><span class="takeaway-check">✅</span> Start with <strong>pre-built models</strong> (90% of cases)</li>
+                        <li><span class="takeaway-check">✅</span> <strong>Evaluation</strong> is not optional</li>
+                        <li><span class="takeaway-check">✅</span> <strong>Monitoring</strong> is the starting line</li>
+                        <li><span class="takeaway-check">✅</span> <strong>MLOps</strong> brings order to chaos</li>
+                        <li><span class="takeaway-check">✅</span> AI Foundry covers the <strong>entire lifecycle</strong></li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <h3>next module (Module 3)</h3>
+                    <p style="font-size:20px; margin-bottom:16px;"><strong>Navigating the AI Foundry Portal</strong></p>
+                    <ul style="font-size:17px;">
+                        <li>Guided tour of every section</li>
+                        <li>Projects, hubs, and resources</li>
+                        <li>Model Catalog deep-dive</li>
+                        <li>Playground exploration</li>
+                        <li>Settings and configuration</li>
+                    </ul>
+                    <p style="margin-top:20px; font-size:14px; color:var(--text-dim);">Module 2 of 45 · ARC 1: Foundations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('counter');
+    const progress = document.getElementById('progress');
+    const total = slides.length;
+    let current = 0;
+
+    function showSlide(index) {
+        slides.forEach((s, i) => {
+            s.classList.remove('active', 'exit-left');
+            if (i < index) s.classList.add('exit-left');
+        });
+        slides[index].classList.add('active');
+        counter.textContent = `${index + 1} / ${total}`;
+        progress.style.width = `${((index + 1) / total) * 100}%`;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            e.preventDefault();
+            if (current < total - 1) { current++; showSlide(current); }
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            if (current > 0) { current--; showSlide(current); }
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            current = 0; showSlide(current);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            current = total - 1; showSlide(current);
+        }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 60) {
+            if (diff > 0 && current < total - 1) { current++; showSlide(current); }
+            else if (diff < 0 && current > 0) { current--; showSlide(current); }
+        }
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

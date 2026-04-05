@@ -1,0 +1,438 @@
+================================================================================
+   AZURE AI FOUNDRY: ZERO TO HERO — 45 MODULES
+   Complete Course Curriculum
+================================================================================
+
+Program:        Azure AI Foundry: Zero to Hero
+Format:         Blog-style modules with hands-on Mini Hacks
+Total Modules:  45
+Total ARCs:     9 (3 per difficulty level)
+Deliverables:   5 per module (Blog, Training Guide, Slides, Lab, Quiz)
+Total Assets:   225
+
+Difficulty Levels:
+  🟢 Beginner      Modules 1–15    New to AI & Azure
+  🟡 Intermediate  Modules 16–30   Can build basic AI apps
+  🔴 Advanced      Modules 31–45   Production-ready & enterprise
+
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟢 BEGINNER (Modules 1–15)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 1: FOUNDATIONS (Modules 1–5)
+Get grounded in what AI Foundry is and why it matters.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 1:  What is AI Foundry?
+           - Overview of the platform and its place in the Azure ecosystem
+           - Key use cases: GenAI apps, chatbots, agents, enterprise AI
+           - How AI Foundry differs from Azure ML
+           - Mini Hack: Explore the AI Foundry portal
+
+Module 2:  Understanding the AI Lifecycle
+           - Data → Model → Deployment → Monitoring pipeline
+           - How AI Foundry supports each stage
+           - Roles in an AI project (data scientist, developer, ops)
+           - Mini Hack: Map an AI project lifecycle on a whiteboard
+
+Module 3:  AI Foundry Architecture & Components
+           - Hub, Project, Resource Group structure
+           - Key services: Azure OpenAI, AI Search, Content Safety
+           - How components connect together
+           - Mini Hack: Draw the architecture diagram from the portal
+
+Module 4:  Responsible AI Principles in Foundry
+           - Microsoft's 6 Responsible AI principles
+           - Content Safety filters and configuration
+           - Fairness, transparency, accountability in AI apps
+           - Mini Hack: Configure content filters on a model deployment
+
+Module 5:  Setting Up Your Environment + Hello World
+           - Azure subscription setup and resource provisioning
+           - AI Foundry project creation
+           - Deploy your first model (GPT-4o-mini)
+           - Mini Hack: Build a "Hello World" chat completion app
+
+Status: ✅ BUILT (all 5 modules published)
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 2: PROMPT ENGINEERING & MODELS (Modules 6–10)
+Master the art of prompting and explore the model catalog.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 6:  Prompt Engineering Fundamentals
+           - System prompts, user prompts, and assistant messages
+           - Techniques: zero-shot, few-shot, chain-of-thought
+           - Prompt templates and best practices
+           - Temperature, top-p, and other parameters
+           - Mini Hack: Build a prompt that classifies customer feedback
+
+Module 7:  The Model Catalog Deep Dive
+           - Exploring 1,800+ models in the catalog
+           - Model families: OpenAI, Meta Llama, Mistral, Phi, Cohere
+           - Choosing the right model for your use case
+           - Model cards, benchmarks, and licensing
+           - Mini Hack: Compare 3 models on the same task using the playground
+
+Module 8:  Deploying & Comparing Models — Including Multimodal
+           - Deployment types: managed, serverless, provisioned throughput
+           - Deploying GPT-4o for text + vision
+           - Working with images, audio, and documents
+           - Model benchmarking and A/B testing
+           - Mini Hack: Build an app that analyzes images using GPT-4o vision
+
+Module 9:  Fine-Tuning Models with Your Data
+           - When to fine-tune vs. prompt engineer vs. RAG
+           - Preparing training data (JSONL format)
+           - Fine-tuning workflow in AI Foundry
+           - Validating fine-tuned model performance
+           - Mini Hack: Fine-tune GPT-4o-mini on a custom Q&A dataset
+
+Module 10: Evaluation, Content Safety & Testing
+           - Evaluation metrics: groundedness, relevance, coherence, fluency
+           - Content safety deep dive: filters, blocklists, jailbreak detection
+           - Red-teaming your AI application
+           - Automated evaluation pipelines
+           - Mini Hack: Run an evaluation on your fine-tuned model with safety checks
+
+Status: 🔲 TO BUILD
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 3: DATA & RAG (Modules 11–15)
+Data is the fuel. Learn how to ground AI in your own knowledge.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 11: Connecting Data Sources
+           - Supported data sources: Azure Blob, SQL, SharePoint, OneLake
+           - Data ingestion patterns for AI apps
+           - Indexing strategies and data preparation
+           - Mini Hack: Upload and index a set of PDF documents
+
+Module 12: Azure AI Search & Vector Indexes
+           - What is Azure AI Search and why it matters for AI
+           - Creating vector indexes (embeddings)
+           - Hybrid search: keyword + semantic + vector
+           - Index schema design best practices
+           - Mini Hack: Create a vector index and run hybrid search queries
+
+Module 13: Building Your First RAG Application
+           - RAG architecture: retrieve → augment → generate
+           - Connecting AI Search to your model deployment
+           - Grounding responses in your own data
+           - Handling citations and source attribution
+           - Mini Hack: Build a RAG chatbot over your company docs
+
+Module 14: Advanced RAG Patterns
+           - Chunking strategies (fixed, semantic, sliding window)
+           - Reranking and relevance tuning
+           - Multi-index RAG and cross-source retrieval
+           - Handling large documents and tables
+           - Mini Hack: Optimize your RAG app with semantic chunking + reranking
+
+Module 15: Evaluation Datasets & Quality Measurement
+           - Building evaluation datasets from real conversations
+           - Golden datasets and ground truth
+           - Automated quality measurement pipelines
+           - Tracking quality metrics over time
+           - Mini Hack: Create an eval dataset and run a quality benchmark
+
+Status: 🔲 TO BUILD
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟡 INTERMEDIATE (Modules 16–30)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 4: AI AGENTS (Modules 16–20)
+Build intelligent agents that can reason, act, and use tools.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 16: Intro to AI Agents & Agent Framework
+           - What are AI agents and how they differ from chatbots
+           - Azure AI Agent Service overview
+           - Agent architecture: model + tools + memory + instructions
+           - Agent types: prompt agents vs. hosted agents
+           - Mini Hack: Create your first prompt agent in the portal
+
+Module 17: Building Your First Agent
+           - Configuring agent instructions and persona
+           - Built-in tools: Code Interpreter, File Search, Bing Search
+           - Testing agents in the playground
+           - Agent SDKs (Python & .NET)
+           - Mini Hack: Build a data analyst agent with Code Interpreter
+
+Module 18: Multi-Turn Conversations & Memory
+           - Threads and conversation management
+           - Short-term vs. long-term memory patterns
+           - Context window management and truncation strategies
+           - Persistent storage for agent state
+           - Mini Hack: Build an agent that remembers user preferences across sessions
+
+Module 19: Custom Tools & Function Calling
+           - Defining custom functions for agents
+           - Function calling patterns and schemas
+           - Connecting agents to external APIs and databases
+           - Error handling and fallback strategies
+           - Mini Hack: Build an agent that checks live weather + books meetings
+
+Module 20: Agent Evaluation, Tracing & Debugging
+           - Evaluating agent quality (task completion, accuracy)
+           - App Insights integration for agent tracing
+           - Debugging agent failures and unexpected behavior
+           - Logging, observability, and trace analysis
+           - Mini Hack: Set up end-to-end tracing for your agent with App Insights
+
+Status: 🔲 TO BUILD
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 5: ORCHESTRATION & INTEGRATION (Modules 21–25)
+Connect AI Foundry to the Microsoft ecosystem and beyond.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 21: Prompt Flow — Visual Orchestration
+           - What is Prompt Flow and when to use it
+           - Building flows: inputs, LLM nodes, Python nodes, outputs
+           - Testing and debugging flows
+           - Deploying flows as endpoints
+           - Mini Hack: Build a customer support flow with routing logic
+
+Module 22: Multi-Model Orchestration & Routing
+           - When to use multiple models in one application
+           - Router patterns: cost-based, capability-based, fallback
+           - Orchestrating GPT-4o + Phi + Llama in one pipeline
+           - Performance vs. cost trade-offs
+           - Mini Hack: Build a smart router that picks the cheapest capable model
+
+Module 23: Connecting AI Foundry to Copilot Studio
+           - Copilot Studio overview and capabilities
+           - Publishing AI Foundry models as Copilot plugins
+           - Building conversational experiences in Copilot Studio
+           - Authentication and data flow between services
+           - Mini Hack: Publish your RAG agent as a Copilot Studio bot
+
+Module 24: Integrating with Microsoft 365 Copilot
+           - M365 Copilot extensibility model
+           - Building message extensions and plugins
+           - Connecting AI Foundry intelligence to Office apps
+           - Compliance and data residency considerations
+           - Mini Hack: Create a M365 Copilot plugin that queries your knowledge base
+
+Module 25: Real-World Integration Patterns
+           - Teams bot integration
+           - Power Platform connectors (Power Automate, Power Apps)
+           - REST API patterns for external applications
+           - Webhook and event-driven architectures
+           - Mini Hack: Build a Teams bot powered by your AI Foundry agent
+
+Status: 🔲 TO BUILD
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 6: DEPLOYMENT & MLOPS (Modules 26–30)
+Move from experimentation to production-grade AI.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 26: Deploying Model Endpoints
+           - Deployment types: managed compute, serverless API, provisioned
+           - Endpoint configuration and scaling options
+           - Blue/green deployments and traffic splitting
+           - API key management and authentication
+           - Mini Hack: Deploy a model with blue/green traffic splitting
+
+Module 27: CI/CD Pipelines for AI
+           - GitHub Actions for AI Foundry deployments
+           - Azure DevOps pipeline integration
+           - Infrastructure as Code (Bicep/Terraform) for AI resources
+           - Automated testing in CI/CD
+           - Mini Hack: Set up a GitHub Actions pipeline that deploys and evaluates
+
+Module 28: Monitoring, Observability & Drift Detection
+           - Azure Monitor integration for AI workloads
+           - Key metrics: latency, token usage, error rates
+           - Detecting model drift and quality degradation
+           - Alerting and dashboards
+           - Mini Hack: Build a monitoring dashboard for your deployed model
+
+Module 29: Scaling Deployments Across Environments
+           - Dev → Staging → Production promotion patterns
+           - Multi-region deployment strategies
+           - Load balancing and failover
+           - Environment-specific configuration management
+           - Mini Hack: Deploy your agent to dev and prod environments
+
+Module 30: Cost Optimization & Quota Management
+           - Understanding AI Foundry pricing (PTU vs. pay-as-you-go)
+           - Token usage optimization strategies
+           - Quota management and capacity planning
+           - Cost dashboards and budget alerts
+           - Mini Hack: Analyze your token usage and implement cost-saving strategies
+
+Status: 🔲 TO BUILD
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 ADVANCED (Modules 31–45)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 7: SECURITY, GOVERNANCE & COMPLIANCE (Modules 31–35)
+Critical for enterprise and partner scenarios.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 31: Identity & Access Management
+           - RBAC roles for AI Foundry (Owner, Contributor, Reader, custom)
+           - Managed Identity for service-to-service auth
+           - Service principals and CI/CD authentication
+           - Least-privilege access patterns
+           - Mini Hack: Configure RBAC and Managed Identity for your project
+
+Module 32: Data Governance & Purview Integration
+           - Microsoft Purview for AI data governance
+           - Data classification and sensitivity labels
+           - Data lineage tracking for AI pipelines
+           - Compliance with GDPR, HIPAA, SOC 2
+           - Mini Hack: Set up data classification for your AI data sources
+
+Module 33: Model Governance & Audit Trails
+           - Model versioning and registry
+           - Audit logs for model deployments and access
+           - Change management and approval workflows
+           - Model documentation and model cards
+           - Mini Hack: Implement model versioning with approval gates
+
+Module 34: Responsible AI Dashboards & Content Safety at Scale
+           - Responsible AI dashboard configuration
+           - Content safety at enterprise scale (custom blocklists, policies)
+           - Monitoring for bias, fairness, and harmful outputs
+           - Incident response for AI safety events
+           - Mini Hack: Build an enterprise content safety policy with custom blocklists
+
+Module 35: Securing AI Workloads End-to-End
+           - Virtual Network (VNet) integration
+           - Private Endpoints for AI services
+           - Network security groups and firewall rules
+           - Key Vault for secrets management
+           - Mini Hack: Deploy AI Foundry with Private Endpoints in a VNet
+
+Status: 🔲 TO BUILD
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 8: ADVANCED PATTERNS & ENTERPRISE (Modules 36–40)
+Level up into complex AI architectures and partner scenarios.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 36: Multi-Agent Systems & Orchestration
+           - Designing multi-agent architectures
+           - Agent-to-agent communication patterns
+           - Supervisor, router, and swarm patterns
+           - Error handling in multi-agent workflows
+           - Mini Hack: Build a 3-agent system (researcher + writer + reviewer)
+
+Module 37: Foundry Local — Edge & On-Device AI
+           - What is Foundry Local and when to use it
+           - Running models on NPU, GPU, and CPU
+           - Offline and low-connectivity scenarios
+           - IoT and edge deployment patterns
+           - Mini Hack: Run a Phi model locally using Foundry Local
+
+Module 38: Building Repeatable AI Offerings for Customers
+           - Packaging AI solutions as products
+           - White-label and multi-tenant patterns
+           - Solution templates and accelerators
+           - Pricing and licensing strategies for AI offerings
+           - Mini Hack: Create a solution template for a customer FAQ bot
+
+Module 39: AI Foundry in CSP & Managed Services
+           - Cloud Solution Provider (CSP) integration
+           - Managing AI workloads for multiple customers
+           - Cross-tenant governance and isolation
+           - SLA management and support tiers
+           - Mini Hack: Design a multi-tenant AI architecture for a CSP scenario
+
+Module 40: Enterprise Case Studies & Partner Success Patterns
+           - Real-world success stories from Microsoft partners
+           - Common patterns: customer support, document processing, analytics
+           - Lessons learned and pitfalls to avoid
+           - Building your AI practice roadmap
+           - Mini Hack: Present a case study of your own AI Foundry project
+
+Status: 🔲 TO BUILD
+
+
+────────────────────────────────────────────────────────────────────────────────
+ARC 9: CAPSTONE & MASTERY (Modules 41–45)
+Bring it all together with a real project.
+────────────────────────────────────────────────────────────────────────────────
+
+Module 41: Choose Your Capstone Project
+           - Project ideas and scope definition
+           - Requirements gathering and architecture planning
+           - Success criteria and evaluation plan
+           - Mini Hack: Write your project proposal and architecture diagram
+
+Module 42: Build the Data + Model + RAG Pipeline
+           - Set up data sources and vector indexes
+           - Deploy and configure models
+           - Build the RAG pipeline
+           - Mini Hack: Complete your data + model pipeline
+
+Module 43: Deploy & Integrate with Agents/Copilot
+           - Build agents on top of your RAG pipeline
+           - Integrate with Copilot Studio or Teams
+           - Set up API endpoints for external consumers
+           - Mini Hack: Deploy your integrated solution
+
+Module 44: Add Governance, Monitoring & Security
+           - Implement RBAC and Managed Identity
+           - Set up monitoring dashboards and alerts
+           - Configure content safety and compliance
+           - Mini Hack: Complete your governance and security layer
+
+Module 45: Publish Your Final Blog — "What I Learned in 45 Modules"
+           - Reflect on your learning journey
+           - Document your capstone project
+           - Share insights and advice for others
+           - Mini Hack: Publish your blog and present your capstone
+
+Status: 🔲 TO BUILD
+
+
+================================================================================
+SUMMARY
+================================================================================
+
+Total Modules:      45
+Total ARCs:         9
+Total Deliverables: 225 (5 per module)
+
+Per Module Deliverables:
+  1. blog.html           — Dev Blog-style HTML article
+  2. training-guide.md   — Detailed written guide
+  3. slides/presentation.html — Interactive slide deck
+  4. lab/hands-on-lab.md — Step-by-step hands-on lab
+  5. quiz/assessment.md  — Knowledge assessment
+
+Build Status:
+  ✅ Modules 1–5   (ARC 1: Foundations)        — COMPLETE
+  🔲 Modules 6–10  (ARC 2: Prompts & Models)   — NEXT
+  🔲 Modules 11–15 (ARC 3: Data & RAG)
+  🔲 Modules 16–20 (ARC 4: AI Agents)
+  🔲 Modules 21–25 (ARC 5: Orchestration)
+  🔲 Modules 26–30 (ARC 6: Deployment & MLOps)
+  🔲 Modules 31–35 (ARC 7: Security & Governance)
+  🔲 Modules 36–40 (ARC 8: Enterprise Patterns)
+  🔲 Modules 41–45 (ARC 9: Capstone)
+
+================================================================================

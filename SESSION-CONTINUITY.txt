@@ -1,0 +1,404 @@
+================================================================================
+   SESSION CONTINUITY GUIDE
+   Azure AI Foundry: Zero to Hero — 45 Modules
+================================================================================
+   
+   PURPOSE: Paste this file's content into a NEW Copilot CLI session so it
+   can continue building modules with IDENTICAL style, quality, and structure.
+   
+   HOW TO USE:
+   1. Start a new Copilot CLI session
+   2. Say: "Read the file C:\Users\brana\GItHub Agency\AI-Foundry-Training\SESSION-CONTINUITY.txt and continue the work described in it."
+
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PROJECT OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Project:        Azure AI Foundry: Zero to Hero — 45 Modules
+Owner:          brana (Microsoft employee)
+GitHub Repo:    BRR2026/AI-Foundry-Zero-to-Hero (public)
+GitHub Pages:   https://brr2026.github.io/AI-Foundry-Zero-to-Hero/
+Local Path:     C:\Users\brana\GItHub Agency\AI-Foundry-Training\
+gh CLI:         Requires PATH refresh: $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+IMPORTANT RULES:
+- Do NOT commit/push to GitHub unless user explicitly asks
+- Videos must be from OFFICIAL Microsoft channels only (Microsoft Mechanics, Microsoft Developer, Azure Friday, Microsoft Events)
+- Content must represent Microsoft quality — professional, accurate, polished
+- All content must be about AI Foundry features that ACTUALLY EXIST (not Azure ML features)
+- Use "Module" not "Week" in all new content
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. BUILD STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✅ Modules 1–5   (ARC 1: Foundations)        — COMPLETE & published
+  🔲 Modules 6–10  (ARC 2: Prompts & Models)   — NEXT TO BUILD
+  🔲 Modules 11–15 (ARC 3: Data & RAG)
+  🔲 Modules 16–20 (ARC 4: AI Agents)
+  🔲 Modules 21–25 (ARC 5: Orchestration)
+  🔲 Modules 26–30 (ARC 6: Deployment & MLOps)
+  🔲 Modules 31–35 (ARC 7: Security & Governance)
+  🔲 Modules 36–40 (ARC 8: Enterprise Patterns)
+  🔲 Modules 41–45 (ARC 9: Capstone)
+
+NOTE: Modules 1-5 still use "Week" naming in their files (built before rename).
+New modules 6+ should use "Module" naming throughout.
+
+Full curriculum details: C:\Users\brana\GItHub Agency\AI-Foundry-Training\COURSE-CURRICULUM.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DIRECTORY STRUCTURE (per module)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each module folder follows this exact structure:
+
+  module-XX/
+  ├── blog.html                    (~60-80KB, self-contained HTML)
+  ├── training-guide.md            (~30-65KB, detailed markdown guide)
+  ├── slides/
+  │   └── presentation.html        (~40-70KB, self-contained HTML slides)
+  ├── lab/
+  │   └── hands-on-lab.md          (~15-50KB, step-by-step lab)
+  └── quiz/
+      └── assessment.md            (~15-19KB, 20-question assessment)
+
+ALL modules use "module-XX" folder names (renamed from "week-XX" on April 5, 2025).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. STYLE GUIDE — blog.html
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Template reference: week-01/blog.html (read this file to replicate style exactly)
+
+Design: Microsoft Dev Blog style
+- Font: 'Segoe UI', system-ui, -apple-system, sans-serif
+- Max content width: 780px
+- Background: #f5f5f5 (page), #fff (content card)
+- Line height: 1.75, font-size: 16px
+
+CSS Custom Properties (MUST use these exact values):
+  --ms-blue: #0078d4
+  --ms-dark-blue: #004578
+  --ms-purple: #5c2d91
+  --ms-light-blue: #deecf9
+  --ms-bg: #ffffff
+  --ms-text: #1a1a1a
+  --ms-text-secondary: #505050
+  --ms-border: #e1e1e1
+  --ms-code-bg: #1e1e1e
+  --ms-callout-blue: #f0f8ff
+  --ms-callout-yellow: #fffbeb
+  --ms-callout-green: #f0fdf4
+  --ms-callout-red: #fef2f2
+  --ms-success: #107c10
+  --ms-warning: #ff8c00
+  --ms-error: #d13438
+  --content-width: 780px
+
+Key UI Components (all self-contained in single HTML file, no external deps):
+  1. Scroll progress bar — fixed top, gradient blue→purple, 3px height
+  2. Top nav — #1a1a1a sticky, Microsoft logo (4-color SVG), blog title
+  3. Hero section — linear-gradient(135deg, #0078d4, #5c2d91), white text
+  4. Series navigation — "← Previous Module | Module X of 45 | Next Module →"
+  5. Meta info bar — Author, date, read time, difficulty badge
+  6. Sticky Table of Contents — left sidebar on desktop, collapses on mobile
+  7. Content sections — h2 with left border (4px blue), proper spacing
+  8. Callout boxes — 4 types:
+     - 💡 Key Concept (blue, --ms-callout-blue)
+     - ⚠️ Important (yellow, --ms-callout-yellow)  
+     - ✅ Best Practice (green, --ms-callout-green)
+     - 🚨 Warning (red, --ms-callout-red)
+  9. Code blocks — dark theme (#1e1e1e bg), syntax highlighted, copy button
+  10. Tables — striped rows, blue header
+  11. YouTube embeds — 16:9 responsive iframe, ONLY official Microsoft channels
+  12. Mini Hack section — highlighted hands-on exercise
+  13. Related posts — 2 cards linking to adjacent modules
+  14. Back-to-top button — appears on scroll
+  15. Print-friendly styles
+
+JavaScript (inline, no external libraries):
+  - IntersectionObserver for TOC active state highlighting
+  - Scroll progress bar calculation
+  - Back-to-top button visibility toggle
+
+Navigation links pattern:
+  - Module 6 → Previous: ../week-05/blog.html | Next: ../module-07/blog.html
+  - Module 7 → Previous: ../module-06/blog.html | Next: ../module-08/blog.html
+  - Last module in an ARC → Next still links to next module number
+  
+Author: "Azure AI Foundry Team"
+Read time: Calculate based on ~200 words/minute
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. STYLE GUIDE — training-guide.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Template reference: week-01/training-guide.md
+
+Structure:
+  # Module X: [Title]
+  ## **ARC Y: [Arc Name]** | Module X of 45 — Zero to Hero: Azure AI Foundry
+
+  Metadata table:
+  | Detail             | Info                              |
+  |--------------------|-----------------------------------|
+  | **Arc**            | ARC Y — [Arc Name] (Modules X–Z) |
+  | **Module**         | X                                 |
+  | **Title**          | [Title]                           |
+  | **Estimated Time** | 2–3 hours                         |
+  | **Difficulty**     | ⭐/⭐⭐/⭐⭐⭐                       |
+  | **Last Updated**   | [Month Year]                      |
+
+  ## 🎯 Learning Objectives (5 items, Bloom's taxonomy verbs)
+  ## 📋 Prerequisites
+  ## [Content sections with emoji headers]
+  ## 🧠 Key Takeaways
+  ## 📚 Additional Resources (official Microsoft links)
+  ## ⏭️ What's Next
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. STYLE GUIDE — slides/presentation.html
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Template reference: week-01/slides/presentation.html
+
+Design: Dark theme slide deck
+- Background: #0d1117
+- Text: #e6edf3
+- Font: 'Inter' (Google Fonts CDN) + 'JetBrains Mono' for code
+- Full viewport slides (100vw × 100vh)
+- Arrow key navigation + slide counter
+
+CSS Custom Properties:
+  --bg: #0d1117
+  --bg-secondary: #161b22
+  --bg-tertiary: #21262d
+  --border: #30363d
+  --text: #e6edf3
+  --text-muted: #8b949e
+  --blue: #58a6ff
+  --green: #3fb950
+  --orange: #f0883e
+  --purple: #bc8cff
+  --red: #f85149
+
+Slide types: Title, content, code, diagram, comparison, summary
+Typical: 15-25 slides per module
+Self-contained HTML, no external JS libraries
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. STYLE GUIDE — lab/hands-on-lab.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Template reference: week-01/lab/hands-on-lab.md
+
+Structure:
+  # Lab X: [Title]
+  
+  Metadata table: Estimated Time, Difficulty, Module number
+  
+  ## Prerequisites (table format)
+  ## Learning Objectives (✅ checkmarks)
+  ## Exercise 1: [Title]
+    ### Step 1.1: [Action]
+    ### Step 1.2: [Action]
+  ## Exercise 2: [Title]
+  ...
+  ## 🎉 Congratulations!
+  ## 🧹 Clean Up Resources
+  ## 📚 Additional Resources
+
+Guidelines:
+- Step-by-step with screenshots descriptions
+- Code blocks with language tags (```python, ```bash, ```json)
+- Callout boxes for tips and warnings
+- Each exercise builds on the previous
+- Clean-up section at end (avoid surprise Azure charges)
+- 3-5 exercises per lab
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. STYLE GUIDE — quiz/assessment.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Template reference: week-01/quiz/assessment.md
+
+Structure:
+  # Module X Assessment: [Title]
+  
+  Metadata table: Total Questions (20), Types, Estimated Time, Passing Score (70%)
+  
+  ## Section A: Multiple Choice (10 Questions)
+  ## Section B: True/False (5 Questions)
+  ## Section C: Short Answer (3 Questions)
+  ## Section D: Matching (2 Questions)
+  
+  ## 📝 Answer Key
+  (Complete answers with explanations)
+
+Guidelines:
+- 20 questions total per module
+- Difficulty progression: Easy → Medium → Hard within each section
+- Each question tagged with difficulty: *(Easy)*, *(Medium)*, *(Hard)*
+- Answer key at bottom with detailed explanations
+- Passing score: 70% (14/20)
+- Estimated time: 20-25 minutes
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. BUILD PROCESS (how to build a batch of modules)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Create directory structure
+  For each module N (e.g., 06-10):
+    module-XX/
+    module-XX/slides/
+    module-XX/lab/
+    module-XX/quiz/
+
+Step 2: Launch parallel sub-agents (one per module)
+  Use general-purpose agents with detailed prompts including:
+  - The exact module topic and subtopics from COURSE-CURRICULUM.txt
+  - Reference to template files (week-01/) for style matching
+  - The ARC name, module number, difficulty level
+  - Adjacent module titles for navigation links
+  - Mini Hack description
+
+Step 3: Fix navigation links
+  After agents complete, verify and fix:
+  - Series nav: Previous/Next links with correct paths and titles
+  - Related posts: Links to 2 adjacent modules with correct titles
+  - Never use "#" placeholder links
+
+Step 4: Update index.html
+  Add new modules to the landing page cards
+
+Step 5: (Only when user asks) Commit and push to GitHub
+
+IMPORTANT: Each sub-agent takes 15-48 minutes. Build 5 at a time (one ARC).
+Sub-agents sometimes use wrong titles in nav links — always verify after completion.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. FULL 45-MODULE CURRICULUM (for quick reference)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🟢 BEGINNER
+
+ARC 1: Foundations (1-5) ✅ BUILT
+  1  What is AI Foundry?
+  2  Understanding the AI Lifecycle
+  3  AI Foundry Architecture & Components
+  4  Responsible AI Principles in Foundry
+  5  Setting Up Your Environment + Hello World
+
+ARC 2: Prompt Engineering & Models (6-10) 🔲 NEXT
+  6  Prompt Engineering Fundamentals
+  7  The Model Catalog Deep Dive
+  8  Deploying & Comparing Models + Multimodal
+  9  Fine-Tuning Models with Your Data
+  10 Evaluation, Content Safety & Testing
+
+ARC 3: Data & RAG (11-15) 🔲
+  11 Connecting Data Sources
+  12 Azure AI Search & Vector Indexes
+  13 Building Your First RAG Application
+  14 Advanced RAG Patterns
+  15 Evaluation Datasets & Quality Measurement
+
+🟡 INTERMEDIATE
+
+ARC 4: AI Agents (16-20) 🔲
+  16 Intro to AI Agents & Agent Framework
+  17 Building Your First Agent
+  18 Multi-Turn Conversations & Memory
+  19 Custom Tools & Function Calling
+  20 Agent Evaluation, Tracing & Debugging
+
+ARC 5: Orchestration & Integration (21-25) 🔲
+  21 Prompt Flow — Visual Orchestration
+  22 Multi-Model Orchestration & Routing
+  23 Connecting AI Foundry to Copilot Studio
+  24 Integrating with Microsoft 365 Copilot
+  25 Real-World Integration Patterns (Teams, Power Platform, APIs)
+
+ARC 6: Deployment & MLOps (26-30) 🔲
+  26 Deploying Model Endpoints
+  27 CI/CD Pipelines for AI
+  28 Monitoring, Observability & Drift Detection
+  29 Scaling Deployments Across Environments
+  30 Cost Optimization & Quota Management
+
+🔴 ADVANCED
+
+ARC 7: Security, Governance & Compliance (31-35) 🔲
+  31 Identity & Access Management (RBAC, Managed Identity)
+  32 Data Governance & Purview Integration
+  33 Model Governance & Audit Trails
+  34 Responsible AI Dashboards & Content Safety at Scale
+  35 Securing AI Workloads End-to-End (VNet, Private Endpoints)
+
+ARC 8: Advanced Patterns & Enterprise (36-40) 🔲
+  36 Multi-Agent Systems & Orchestration
+  37 Foundry Local — Edge & On-Device AI
+  38 Building Repeatable AI Offerings for Customers
+  39 AI Foundry in CSP & Managed Services
+  40 Enterprise Case Studies & Partner Success Patterns
+
+ARC 9: Capstone & Mastery (41-45) 🔲
+  41 Choose Your Capstone Project
+  42 Build the Data + Model + RAG Pipeline
+  43 Deploy & Integrate with Agents/Copilot
+  44 Add Governance, Monitoring & Security
+  45 Publish Your Final Blog: "What I Learned in 45 Modules"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. THINGS THAT GO WRONG (lessons learned)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Sub-agents use WRONG titles in navigation (e.g., "Prompt Engineering" for Week 3)
+   → ALWAYS verify nav links after agents complete
+
+2. Sub-agents use "#" placeholder for Previous/Next links
+   → ALWAYS replace with actual ../module-XX/blog.html paths
+
+3. Sub-agents sometimes include Azure ML features (data labeling, feature engineering)
+   → EXPLICITLY tell agents: "AI Foundry is a GenAI/LLM platform, NOT Azure ML"
+
+4. Week 5 agent took 48 minutes due to extensive code examples
+   → Large labs with lots of Python code take longest
+
+5. YouTube video links — user REJECTED non-Microsoft creators
+   → ONLY use: Microsoft Mechanics, Microsoft Developer, Azure Friday, Microsoft Events
+
+6. User does NOT want auto-commit to GitHub
+   → NEVER push unless explicitly asked
+
+7. ALL modules now use "module-XX" naming consistently
+   → Navigation between modules is uniform (../module-XX/blog.html)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. AZURE ENVIRONMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Subscription ID: cd2b75b7-e9e0-4cd4-97e2-966ec1b34022
+Tenant ID:       e0bd76e8-af7a-41a1-833f-6d4b54b50d78
+User:            brana@MngEnvMCAP841657.onmicrosoft.com
+GitHub Account:  BRR2026 (personal, for public repos)
+GitHub EMU:      brana_microsoft (can't create public repos)
+
+================================================================================
+END OF CONTINUITY GUIDE
+================================================================================
