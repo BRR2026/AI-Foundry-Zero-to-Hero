@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Module 8 of the Azure AI Foundry Zero to Hero training series — Deploying & Comparing Models Including Multimodal capabilities with GPT-4o.">
+    <meta name="description" content="Module 8 of the Azure AI Foundry Zero to Hero training series — Deploying & Comparing Models Including Multimodal capabilities with GPT-5.1.">
     <meta name="author" content="Zero to Hero Training Team">
     <meta name="date" content="2026-04">
     <title>Module 8 — Deploying &amp; Comparing Models — Including Multimodal | AI Foundry Zero to Hero</title>
@@ -539,7 +539,7 @@
 <section class="hero">
     <div class="series-badge">ARC 2 · PROMPT ENGINEERING &amp; MODELS</div>
     <h1>Module 8 — Deploying &amp; Comparing Models — Including Multimodal</h1>
-    <p class="subtitle">Master the three deployment strategies in Azure AI Foundry, unlock GPT-4o's multimodal superpowers, and learn to benchmark models against each other.</p>
+    <p class="subtitle">Master the three deployment strategies in Azure AI Foundry, unlock GPT-5.1's multimodal superpowers, and learn to benchmark models against each other.</p>
     <div class="meta">
         <span>✍️ Zero to Hero Training Team</span>
         <span>📅 April 2026</span>
@@ -559,7 +559,7 @@
             <li><a href="#featured-video">Featured Video</a></li>
             <li><a href="#deployment-types">Deployment Types</a></li>
             <li><a href="#step-by-step">Step-by-Step Deploy</a></li>
-            <li><a href="#multimodal">Multimodal with GPT-4o</a></li>
+            <li><a href="#multimodal">Multimodal with GPT-5.1</a></li>
             <li><a href="#working-images">Working with Images</a></li>
             <li><a href="#audio-speech">Audio &amp; Speech</a></li>
             <li><a href="#document-understanding">Document Understanding</a></li>
@@ -579,19 +579,19 @@
         <h2 id="introduction">1. Beyond Text — The Multimodal Era</h2>
         <p>Until recently, deploying an AI model meant spinning up a text-in-text-out endpoint. You sent a prompt, you got words back. That was powerful — but it was also limiting. The real world is not made of text alone; it's a rich tapestry of images, sounds, documents, and videos. Customers send photos of defective products. Doctors share X-rays. Field engineers snap images of damaged equipment.</p>
 
-        <p>With <strong>GPT-4o</strong> and the broader model catalog in <strong>Azure AI Foundry</strong>, you now have the ability to deploy a single model that understands <em>text, images, and audio natively</em> — a truly multimodal AI endpoint. This module dives deep into how to deploy these models, how to send multimodal payloads, and how to compare different models head-to-head so you can make data-driven decisions about which model best fits your workload.</p>
+        <p>With <strong>GPT-5.1</strong> and the broader model catalog in <strong>Azure AI Foundry</strong>, you now have the ability to deploy a single model that understands <em>text, images, and audio natively</em> — a truly multimodal AI endpoint. This module dives deep into how to deploy these models, how to send multimodal payloads, and how to compare different models head-to-head so you can make data-driven decisions about which model best fits your workload.</p>
 
         <div class="callout info">
             <div class="callout-title">ℹ️ What You'll Learn</div>
             <ul>
                 <li>The three deployment types in AI Foundry: <strong>Managed Compute</strong>, <strong>Serverless API</strong>, and <strong>Provisioned Throughput</strong></li>
-                <li>How to deploy GPT-4o for multimodal use (text + vision + audio)</li>
+                <li>How to deploy GPT-5.1 for multimodal use (text + vision + audio)</li>
                 <li>Techniques for sending images (base64 &amp; URL), audio, and documents to your endpoint</li>
                 <li>How to benchmark and A/B test models for quality, latency, and cost</li>
             </ul>
         </div>
 
-        <p>By the end of this module, you will have deployed your own multimodal model and built a Mini Hack application that analyzes images using GPT-4o's vision capabilities.</p>
+        <p>By the end of this module, you will have deployed your own multimodal model and built a Mini Hack application that analyzes images using GPT-5.1's vision capabilities.</p>
 
         <!-- Section 2: Featured Video -->
         <h2 id="featured-video">2. Featured Video</h2>
@@ -712,7 +712,7 @@
 
         <!-- Section 4: Step-by-Step -->
         <h2 id="step-by-step">4. Step-by-Step: Deploying a Model in AI Foundry</h2>
-        <p>Let's walk through deploying GPT-4o as a serverless API endpoint — the fastest way to get a multimodal model running.</p>
+        <p>Let's walk through deploying GPT-5.1 as a serverless API endpoint — the fastest way to get a multimodal model running.</p>
 
         <ol class="step-list">
             <li>
@@ -721,7 +721,7 @@
             </li>
             <li>
                 <strong>Navigate to the Model Catalog</strong><br>
-                In the left sidebar, click <strong>Model catalog</strong>. Use the search bar or filters to find <strong>GPT-4o</strong>. Click on the model card.
+                In the left sidebar, click <strong>Model catalog</strong>. Use the search bar or filters to find <strong>GPT-5.1</strong>. Click on the model card.
             </li>
             <li>
                 <strong>Click "Deploy"</strong><br>
@@ -729,7 +729,7 @@
             </li>
             <li>
                 <strong>Configure the Deployment</strong><br>
-                Provide a deployment name (e.g., <code>gpt-4o-multimodal</code>). Set the API version and any content filters. Review the pricing information.
+                Provide a deployment name (e.g., <code>gpt-5.1-multimodal</code>). Set the API version and any content filters. Review the pricing information.
             </li>
             <li>
                 <strong>Deploy and Get Your Endpoint</strong><br>
@@ -743,14 +743,14 @@
 
         <div class="callout success">
             <div class="callout-title">✅ Checkpoint</div>
-            <p>At this point, you should have a running GPT-4o endpoint. Try sending it a simple text prompt in the Playground to confirm it responds correctly before moving on to multimodal payloads.</p>
+            <p>At this point, you should have a running GPT-5.1 endpoint. Try sending it a simple text prompt in the Playground to confirm it responds correctly before moving on to multimodal payloads.</p>
         </div>
 
         <!-- Section 5: Multimodal -->
-        <h2 id="multimodal">5. Multimodal Capabilities with GPT-4o</h2>
-        <p>GPT-4o is a natively multimodal model, meaning it was trained from the ground up to understand text, images, and audio within a single architecture. This is fundamentally different from systems that pipeline separate models together — GPT-4o processes all modalities in a unified latent space, yielding better cross-modal understanding and faster responses.</p>
+        <h2 id="multimodal">5. Multimodal Capabilities with GPT-5.1</h2>
+        <p>GPT-5.1 is a natively multimodal model, meaning it was trained from the ground up to understand text, images, and audio within a single architecture. This is fundamentally different from systems that pipeline separate models together — GPT-5.1 processes all modalities in a unified latent space, yielding better cross-modal understanding and faster responses.</p>
 
-        <h3>What Makes GPT-4o Multimodal?</h3>
+        <h3>What Makes GPT-5.1 Multimodal?</h3>
         <ul>
             <li><strong>Text</strong> — Standard chat and completion, instruction following, reasoning, and code generation</li>
             <li><strong>Vision</strong> — Analyze images, read text in photos (OCR), describe scenes, interpret charts and diagrams</li>
@@ -788,7 +788,7 @@
 
         <!-- Section 6: Working with Images -->
         <h2 id="working-images">6. Working with Images</h2>
-        <p>There are two primary ways to send images to GPT-4o: via a publicly accessible <strong>URL</strong> or as <strong>base64-encoded</strong> data embedded directly in the request.</p>
+        <p>There are two primary ways to send images to GPT-5.1: via a publicly accessible <strong>URL</strong> or as <strong>base64-encoded</strong> data embedded directly in the request.</p>
 
         <h3>Method 1: URL Reference</h3>
         <p>The simplest approach — pass a URL that the model can fetch at inference time:</p>
@@ -860,7 +860,7 @@ message = {
         </table>
 
         <h3>Multiple Images in One Request</h3>
-        <p>GPT-4o can process multiple images in a single turn. Include several <code>image_url</code> content blocks in the <code>content</code> array to compare images, detect differences, or analyze a batch:</p>
+        <p>GPT-5.1 can process multiple images in a single turn. Include several <code>image_url</code> content blocks in the <code>content</code> array to compare images, detect differences, or analyze a batch:</p>
 
 <pre>{
   "messages": [
@@ -877,7 +877,7 @@ message = {
 
         <!-- Section 7: Audio & Speech -->
         <h2 id="audio-speech">7. Working with Audio &amp; Speech</h2>
-        <p>While GPT-4o handles text and vision natively in a single call, audio workflows in AI Foundry typically use specialized models deployed alongside your primary model.</p>
+        <p>While GPT-5.1 handles text and vision natively in a single call, audio workflows in AI Foundry typically use specialized models deployed alongside your primary model.</p>
 
         <h3>Speech-to-Text with Whisper</h3>
         <p>Deploy the <strong>Whisper</strong> model from the AI Foundry Model Catalog for transcription and translation:</p>
@@ -919,15 +919,15 @@ response = requests.post(url, headers={<span style="color:#ce9178">"api-key"</sp
 
         <div class="callout info">
             <div class="callout-title">ℹ️ Audio Pipeline Pattern</div>
-            <p>A common pattern is to chain <strong>Whisper → GPT-4o → TTS</strong> to build voice-driven AI assistants. Audio comes in via Whisper, GPT-4o reasons over the transcript (plus optional images or documents), and TTS speaks the response back.</p>
+            <p>A common pattern is to chain <strong>Whisper → GPT-5.1 → TTS</strong> to build voice-driven AI assistants. Audio comes in via Whisper, GPT-5.1 reasons over the transcript (plus optional images or documents), and TTS speaks the response back.</p>
         </div>
 
         <!-- Section 8: Document Understanding -->
         <h2 id="document-understanding">8. Document Understanding</h2>
-        <p>GPT-4o's vision capabilities extend beyond photographs — it excels at understanding structured documents like PDFs rendered as images, scanned forms, and multi-page reports.</p>
+        <p>GPT-5.1's vision capabilities extend beyond photographs — it excels at understanding structured documents like PDFs rendered as images, scanned forms, and multi-page reports.</p>
 
         <h3>Processing PDFs as Images</h3>
-        <p>Convert each page of a PDF to an image, then send the images to GPT-4o:</p>
+        <p>Convert each page of a PDF to an image, then send the images to GPT-5.1:</p>
 
 <pre><span style="color:#c586c0">from</span> pdf2image <span style="color:#c586c0">import</span> convert_from_path
 <span style="color:#c586c0">import</span> base64, io
@@ -953,7 +953,7 @@ messages = [{
 }]</pre>
 
         <h3>Form Data Extraction</h3>
-        <p>For structured form extraction (insurance forms, tax documents, invoices), combine GPT-4o vision with a structured output schema to get consistent JSON responses:</p>
+        <p>For structured form extraction (insurance forms, tax documents, invoices), combine GPT-5.1 vision with a structured output schema to get consistent JSON responses:</p>
 
 <pre>{
   "messages": [...],
@@ -987,7 +987,7 @@ messages = [{
 
         <div class="callout tip">
             <div class="callout-title">💡 Tip: Combine with Azure AI Document Intelligence</div>
-            <p>For high-volume document processing with pre-built extraction models, consider pairing GPT-4o with <strong>Azure AI Document Intelligence</strong>. Use Document Intelligence for reliable field extraction and GPT-4o for reasoning, summarization, and answering questions about the content.</p>
+            <p>For high-volume document processing with pre-built extraction models, consider pairing GPT-5.1 with <strong>Azure AI Document Intelligence</strong>. Use Document Intelligence for reliable field extraction and GPT-5.1 for reasoning, summarization, and answering questions about the content.</p>
         </div>
 
         <!-- Section 9: Benchmarking & A/B Testing -->
@@ -1005,7 +1005,7 @@ messages = [{
         <h3>Benchmarking Approach</h3>
         <ol>
             <li><strong>Build an evaluation dataset</strong> — Curate 50-200 representative queries with expected outputs or quality criteria</li>
-            <li><strong>Deploy candidate models</strong> — Deploy 2-3 models (e.g., GPT-4o, GPT-4o-mini, Llama 3) as serverless endpoints</li>
+            <li><strong>Deploy candidate models</strong> — Deploy 2-3 models (e.g., GPT-5.1, GPT-5-mini, Llama 3) as serverless endpoints</li>
             <li><strong>Run batch evaluations</strong> — Use AI Foundry's evaluation framework to score each model's responses</li>
             <li><strong>Compare metrics</strong> — Review scores for groundedness, relevance, coherence, fluency, and safety</li>
             <li><strong>Measure latency &amp; cost</strong> — Record response times and token consumption per model</li>
@@ -1109,7 +1109,7 @@ results = evaluate(
         </ul>
 
         <h3>Cost Calculation Example</h3>
-<pre><span style="color:#6a9955"># Estimating monthly cost for a serverless GPT-4o deployment</span>
+<pre><span style="color:#6a9955"># Estimating monthly cost for a serverless GPT-5.1 deployment</span>
 <span style="color:#6a9955"># Scenario: Customer support chatbot, 100K conversations/month</span>
 
 avg_input_tokens = 500
@@ -1136,14 +1136,14 @@ total_monthly = monthly_input_cost + monthly_output_cost
 
         <div class="mini-hack-banner">
             <h3>🛠️ Mini Hack Challenge</h3>
-            <p>Build a Python application that accepts an image (URL or file path), sends it to GPT-4o's vision endpoint, and returns a structured analysis including: description, detected objects, any text found (OCR), and a sentiment assessment.</p>
+            <p>Build a Python application that accepts an image (URL or file path), sends it to GPT-5.1's vision endpoint, and returns a structured analysis including: description, detected objects, any text found (OCR), and a sentiment assessment.</p>
         </div>
 
         <h3>Requirements</h3>
         <ol>
             <li>Accept an image from the user (URL or local file)</li>
             <li>If local file, encode as base64</li>
-            <li>Send to your deployed GPT-4o endpoint with a structured analysis prompt</li>
+            <li>Send to your deployed GPT-5.1 endpoint with a structured analysis prompt</li>
             <li>Return a JSON response with: <code>description</code>, <code>objects</code>, <code>extracted_text</code>, <code>sentiment</code></li>
             <li>Handle errors gracefully (invalid image, API errors, etc.)</li>
         </ol>
@@ -1158,7 +1158,7 @@ client = AzureOpenAI(
     api_version=<span style="color:#ce9178">"2024-12-01-preview"</span>
 )
 
-DEPLOYMENT = <span style="color:#ce9178">"gpt-4o-multimodal"</span>
+DEPLOYMENT = <span style="color:#ce9178">"gpt-5.1-multimodal"</span>
 
 ANALYSIS_PROMPT = <span style="color:#ce9178">"""Analyze this image and return a JSON object with:
 - "description": A 2-3 sentence description of the image
@@ -1178,7 +1178,7 @@ Return ONLY valid JSON, no markdown."""</span>
 
 
 <span style="color:#c586c0">def</span> <span style="color:#dcdcaa">analyze_image</span>(image_source: str) -> dict:
-    <span style="color:#ce9178">"""Send an image to GPT-4o and return structured analysis."""</span>
+    <span style="color:#ce9178">"""Send an image to GPT-5.1 and return structured analysis."""</span>
     <span style="color:#c586c0">if</span> image_source.startswith((<span style="color:#ce9178">"http://"</span>, <span style="color:#ce9178">"https://"</span>)):
         image_url = image_source
     <span style="color:#c586c0">else</span>:
@@ -1212,7 +1212,7 @@ Return ONLY valid JSON, no markdown."""</span>
         <ul>
             <li>Add a <strong>Streamlit</strong> or <strong>Gradio</strong> web UI for drag-and-drop image upload</li>
             <li>Support multiple images in a single analysis</li>
-            <li>Compare GPT-4o results against GPT-4o-mini for the same image</li>
+            <li>Compare GPT-5.1 results against GPT-5-mini for the same image</li>
             <li>Add cost tracking — calculate and display the token cost of each analysis</li>
         </ul>
 
@@ -1225,10 +1225,10 @@ Return ONLY valid JSON, no markdown."""</span>
         <h2 id="key-takeaways">12. Key Takeaways</h2>
         <ol>
             <li><strong>Three deployment types</strong> — Managed Compute for control, Serverless API for agility, Provisioned Throughput for guaranteed performance at scale.</li>
-            <li><strong>GPT-4o is natively multimodal</strong> — text, vision, and audio in one model, one API, one call.</li>
+            <li><strong>GPT-5.1 is natively multimodal</strong> — text, vision, and audio in one model, one API, one call.</li>
             <li><strong>Images can be sent via URL or base64</strong> — choose based on your security and latency requirements.</li>
-            <li><strong>Audio workflows</strong> use specialized Whisper and TTS deployments that chain with GPT-4o for end-to-end voice AI.</li>
-            <li><strong>Document understanding</strong> — render PDFs as images and leverage GPT-4o's vision for extraction and reasoning.</li>
+            <li><strong>Audio workflows</strong> use specialized Whisper and TTS deployments that chain with GPT-5.1 for end-to-end voice AI.</li>
+            <li><strong>Document understanding</strong> — render PDFs as images and leverage GPT-5.1's vision for extraction and reasoning.</li>
             <li><strong>Always benchmark with your own data</strong> — public leaderboards don't reflect your workload; use AI Foundry's evaluation framework.</li>
             <li><strong>Cost varies significantly by deployment type</strong> — model your expected traffic to choose the most cost-effective strategy.</li>
             <li><strong>A/B testing</strong> in production gives you real-world signal that offline benchmarks can't provide.</li>
@@ -1254,8 +1254,8 @@ Return ONLY valid JSON, no markdown."""</span>
                 <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a>
             </div>
             <div class="resource-card">
-                <h4>📖 GPT-4o Vision Documentation</h4>
-                <p>Official guide to using GPT-4o's vision capabilities via the API.</p>
+                <h4>📖 GPT-5.1 Vision Documentation</h4>
+                <p>Official guide to using GPT-5.1's vision capabilities via the API.</p>
                 <a href="https://learn.microsoft.com/azure/ai-services/openai/how-to/gpt-with-vision" target="_blank" rel="noopener">Microsoft Learn</a>
             </div>
             <div class="resource-card">

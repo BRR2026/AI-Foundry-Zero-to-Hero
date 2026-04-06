@@ -1040,7 +1040,7 @@ outputs:
 │  ┌──────────┐    ┌──────────────┐    ┌──────────┐    ┌───────────┐ │
 │  │  INPUTS   │───▶│  PREPARE     │───▶│  LLM     │───▶│ VALIDATE  │ │
 │  │           │    │  PROMPT      │    │  CALL     │    │ RESPONSE  │ │
-│  │ question  │    │  (Python)    │    │ (GPT-4o) │    │ (Python)  │ │
+│  │ question  │    │  (Python)    │    │ (GPT-5.1) │    │ (Python)  │ │
 │  │ context   │    │              │    │          │    │           │ │
 │  │ history   │    └──────────────┘    └──────────┘    └─────┬─────┘ │
 │  └──────────┘                                              │       │
@@ -1087,7 +1087,7 @@ Provide a detailed, accurate answer based on the context above.</div>
                 <h4>🤖 LLM Node Configuration</h4>
                 <p><strong>Connection:</strong> Select your Azure OpenAI resource<br>
                 <strong>API:</strong> Chat or Completion<br>
-                <strong>Deployment:</strong> gpt-4o, gpt-4o-mini, etc.<br>
+                <strong>Deployment:</strong> GPT-5.1, GPT-5-mini, etc.<br>
                 <strong>Parameters:</strong> temperature, max_tokens, top_p, presence_penalty<br>
                 <strong>Inputs:</strong> Map flow variables to template placeholders</p>
             </div>
@@ -1491,7 +1491,7 @@ def format_response(
             "priority": routing_info.get("priority", "low"),
             "customer_id": routing_info.get("customer_id", ""),
             "timestamp": datetime.utcnow().isoformat(),
-            "model": "gpt-4o"
+            "model": "GPT-5.1"
         }
     }
     

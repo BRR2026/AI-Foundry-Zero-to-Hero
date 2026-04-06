@@ -1303,16 +1303,16 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>GPT-4o</strong></td>
+                                <td><strong>GPT-5.1</strong></td>
                                 <td>General-purpose, multimodal</td>
                                 <td>128K tokens</td>
-                                <td>Fastest GPT-4 class; text + image input</td>
+                                <td>Fastest GPT-5 class; text + image input</td>
                             </tr>
                             <tr>
-                                <td><strong>GPT-4o mini</strong></td>
+                                <td><strong>GPT-5-mini</strong></td>
                                 <td>Cost-efficient tasks</td>
                                 <td>128K tokens</td>
-                                <td>80% cheaper than GPT-4o; great for classification</td>
+                                <td>80% cheaper than GPT-5.1; great for classification</td>
                             </tr>
                             <tr>
                                 <td><strong>o1</strong></td>
@@ -1687,7 +1687,7 @@
                         <div class="decision-step__num">2</div>
                         <div class="decision-step__content">
                             <h4>Set Quality Requirements</h4>
-                            <p>Do you need frontier-class accuracy (GPT-4o, o3, Llama 405B) or is "good enough" acceptable? Higher quality generally means higher cost and latency. Define your minimum acceptable quality bar.</p>
+                            <p>Do you need frontier-class accuracy (GPT-5.1, o3, Llama 405B) or is "good enough" acceptable? Higher quality generally means higher cost and latency. Define your minimum acceptable quality bar.</p>
                         </div>
                     </div>
 
@@ -1695,7 +1695,7 @@
                         <div class="decision-step__num">3</div>
                         <div class="decision-step__content">
                             <h4>Evaluate Latency Needs</h4>
-                            <p>Is this user-facing (needs &lt;2 second response) or batch processing (latency doesn't matter)? Smaller models like Phi-4-mini or GPT-4o mini excel in low-latency scenarios.</p>
+                            <p>Is this user-facing (needs &lt;2 second response) or batch processing (latency doesn't matter)? Smaller models like Phi-4-mini or GPT-5-mini excel in low-latency scenarios.</p>
                         </div>
                     </div>
 
@@ -1737,7 +1737,7 @@
                         <tbody>
                             <tr>
                                 <td>General-purpose chatbot</td>
-                                <td>GPT-4o, Llama 3.1 70B</td>
+                                <td>GPT-5.1, Llama 3.1 70B</td>
                                 <td>Excellent instruction following and conversation quality</td>
                             </tr>
                             <tr>
@@ -1752,12 +1752,12 @@
                             </tr>
                             <tr>
                                 <td>High-volume classification</td>
-                                <td>GPT-4o mini, Phi-4-mini</td>
+                                <td>GPT-5-mini, Phi-4-mini</td>
                                 <td>Low cost per token, fast inference</td>
                             </tr>
                             <tr>
                                 <td>RAG / search-grounded chat</td>
-                                <td>Command R+, GPT-4o</td>
+                                <td>Command R+, GPT-5.1</td>
                                 <td>Strong at grounded generation with citations</td>
                             </tr>
                             <tr>
@@ -1777,7 +1777,7 @@
                             </tr>
                             <tr>
                                 <td>Image understanding</td>
-                                <td>GPT-4o, Llama 3.2 11B Vision</td>
+                                <td>GPT-5.1, Llama 3.2 11B Vision</td>
                                 <td>Multimodal input (text + image)</td>
                             </tr>
                         </tbody>
@@ -1786,7 +1786,7 @@
 
                 <div class="callout callout--success">
                     <div class="callout__title"><span class="icon">✅</span> The "Cascade" Strategy</div>
-                    <p>Many production systems use a <strong>model cascade</strong>: route simple queries to a cheap, fast model (GPT-4o mini) and only escalate complex queries to an expensive model (o3). This can reduce costs by 60–80% while maintaining quality where it matters most.</p>
+                    <p>Many production systems use a <strong>model cascade</strong>: route simple queries to a cheap, fast model (GPT-5-mini) and only escalate complex queries to an expensive model (o3). This can reduce costs by 60–80% while maintaining quality where it matters most.</p>
                 </div>
             </section>
 
@@ -1828,7 +1828,7 @@
                             </tr>
                             <tr>
                                 <td class="license-proprietary">Proprietary</td>
-                                <td>GPT-4o, o3, Command R+</td>
+                                <td>GPT-5.1, o3, Command R+</td>
                                 <td>✅ Via API terms</td>
                                 <td>⚠️ Limited</td>
                                 <td>No weight access; usage governed by API ToS</td>
@@ -1839,7 +1839,7 @@
 
                 <h3>Cost Optimization Strategies</h3>
                 <ol>
-                    <li><strong>Right-size your model</strong> — Don't use GPT-4o for tasks that GPT-4o mini handles just as well</li>
+                    <li><strong>Right-size your model</strong> — Don't use GPT-5.1 for tasks that GPT-5-mini handles just as well</li>
                     <li><strong>Use Provisioned Throughput</strong> — For predictable workloads, PTUs can be 40–60% cheaper than pay-per-token</li>
                     <li><strong>Implement caching</strong> — Cache common responses to reduce redundant API calls</li>
                     <li><strong>Optimize prompts</strong> — Shorter, well-crafted prompts reduce input tokens without sacrificing quality</li>
@@ -1874,7 +1874,7 @@
                 <h3>Side-by-Side Comparison Workflow</h3>
                 <p>To effectively compare models, follow this workflow:</p>
                 <ol>
-                    <li><strong>Deploy 2–3 candidate models</strong> from the Model Catalog (e.g., GPT-4o, Llama 3.1 70B, Mistral Large)</li>
+                    <li><strong>Deploy 2–3 candidate models</strong> from the Model Catalog (e.g., GPT-5.1, Llama 3.1 70B, Mistral Large)</li>
                     <li><strong>Prepare a test suite</strong> — Create 5–10 representative prompts that reflect your actual use case</li>
                     <li><strong>Use identical prompts</strong> — Send the exact same system prompt and user message to each model</li>
                     <li><strong>Evaluate dimensions</strong> — Score each response on accuracy, relevance, coherence, formatting, and latency</li>
@@ -1928,7 +1928,7 @@ and I need a refund for the duplicate payment.
                             <strong>Deploy 3 Models</strong><br>
                             Choose three models from different families. Suggested combination:
                             <ul>
-                                <li>GPT-4o mini (OpenAI — Serverless API)</li>
+                                <li>GPT-5-mini (OpenAI — Serverless API)</li>
                                 <li>Phi-4 (Microsoft — Serverless API or Managed Compute)</li>
                                 <li>Mistral Small (Mistral — Serverless API)</li>
                             </ul>

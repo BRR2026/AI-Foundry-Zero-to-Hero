@@ -989,7 +989,7 @@
                     <div class="step-number">3</div>
                     <div class="step-body">
                         <h4>Select the Base Model</h4>
-                        <p>Choose from supported models (e.g., <code>gpt-4o-mini</code>, <code>gpt-4o</code>, <code>gpt-4.1-mini</code>). The model catalog shows which models support fine-tuning and in which regions.</p>
+                        <p>Choose from supported models (e.g., <code>GPT-5-mini</code>, <code>GPT-5.1</code>, <code>gpt-4.1-mini</code>). The model catalog shows which models support fine-tuning and in which regions.</p>
                     </div>
                 </div>
 
@@ -1042,13 +1042,13 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>gpt-4o-mini</code></td>
+                            <td><code>GPT-5-mini</code></td>
                             <td>Chat</td>
                             <td>65,536 per example</td>
                             <td>Cost-effective fine-tuning, most use cases</td>
                         </tr>
                         <tr>
-                            <td><code>gpt-4o</code></td>
+                            <td><code>GPT-5.1</code></td>
                             <td>Chat</td>
                             <td>65,536 per example</td>
                             <td>Maximum quality, complex tasks</td>
@@ -1066,7 +1066,7 @@
                             <td>Lightweight, edge-optimized tasks</td>
                         </tr>
                         <tr>
-                            <td><code>gpt-3.5-turbo</code></td>
+                            <td><code>gpt-4.1-mini</code></td>
                             <td>Chat</td>
                             <td>16,385 per example</td>
                             <td>Legacy workloads, budget-constrained</td>
@@ -1352,7 +1352,7 @@ print(response.choices[0].message.content)
             <h3>When Fine-Tuning Saves Money</h3>
             <ul>
                 <li><strong>High-volume workloads</strong> — if you're sending long system prompts with every request, fine-tuning can reduce per-request token costs significantly</li>
-                <li><strong>Model downsizing</strong> — fine-tuning a smaller model (e.g., <code>gpt-4o-mini</code>) to match the quality of a larger model on your specific task</li>
+                <li><strong>Model downsizing</strong> — fine-tuning a smaller model (e.g., <code>GPT-5-mini</code>) to match the quality of a larger model on your specific task</li>
                 <li><strong>Latency reduction</strong> — shorter prompts = faster responses = better user experience and lower compute costs</li>
             </ul>
 
@@ -1366,14 +1366,14 @@ print(response.choices[0].message.content)
 
             <div class="callout callout-tip">
                 <div class="callout-title">💡 Cost Optimization Strategy</div>
-                <p>Start by fine-tuning <code>gpt-4o-mini</code> rather than <code>gpt-4o</code>. The smaller model is significantly cheaper to train and host, and for many specialized tasks, a fine-tuned mini model can match or exceed the performance of the larger base model. Only upgrade to <code>gpt-4o</code> if the mini model doesn't meet your quality bar.</p>
+                <p>Start by fine-tuning <code>GPT-5-mini</code> rather than <code>GPT-5.1</code>. The smaller model is significantly cheaper to train and host, and for many specialized tasks, a fine-tuned mini model can match or exceed the performance of the larger base model. Only upgrade to <code>GPT-5.1</code> if the mini model doesn't meet your quality bar.</p>
             </div>
 
             <!-- SECTION: Mini Hack -->
-            <h2 id="mini-hack">Mini Hack: Fine-Tune GPT-4o-mini on a Custom Q&amp;A Dataset</h2>
+            <h2 id="mini-hack">Mini Hack: Fine-Tune GPT-5-mini on a Custom Q&amp;A Dataset</h2>
             <div class="mini-hack">
                 <h3>🧪 Hands-On Challenge</h3>
-                <p>In this Mini Hack, you'll fine-tune <code>gpt-4o-mini</code> on a custom question-and-answer dataset to create a domain-specific assistant.</p>
+                <p>In this Mini Hack, you'll fine-tune <code>GPT-5-mini</code> on a custom question-and-answer dataset to create a domain-specific assistant.</p>
 
                 <h4>Objective</h4>
                 <p>Create a fine-tuned model that answers product support questions for a fictional SaaS company "CloudFlow" with accurate, branded responses.</p>
@@ -1382,11 +1382,11 @@ print(response.choices[0].message.content)
                 <ol>
                     <li><strong>Create Training Data</strong> — write 50+ Q&amp;A pairs in JSONL chat format covering CloudFlow product features, troubleshooting, pricing, and setup</li>
                     <li><strong>Create Validation Data</strong> — set aside 10–15 examples that aren't in the training set</li>
-                    <li><strong>Upload to AI Foundry</strong> — navigate to Fine-tuning, select <code>gpt-4o-mini</code> as the base model, and upload both JSONL files</li>
+                    <li><strong>Upload to AI Foundry</strong> — navigate to Fine-tuning, select <code>GPT-5-mini</code> as the base model, and upload both JSONL files</li>
                     <li><strong>Configure &amp; Train</strong> — use default hyperparameters (auto epochs, auto learning rate), submit the job</li>
                     <li><strong>Monitor Progress</strong> — watch the loss curves; training should take approximately 15–30 minutes</li>
                     <li><strong>Deploy &amp; Test</strong> — deploy the fine-tuned model and test in the Playground with new questions</li>
-                    <li><strong>Evaluate</strong> — compare responses from your fine-tuned model vs. the base <code>gpt-4o-mini</code> with a simple prompt</li>
+                    <li><strong>Evaluate</strong> — compare responses from your fine-tuned model vs. the base <code>GPT-5-mini</code> with a simple prompt</li>
                 </ol>
 
                 <h4>Sample Training Data</h4>
@@ -1404,7 +1404,7 @@ print(response.choices[0].message.content)
 
                 <div class="callout callout-info">
                     <div class="callout-title">ℹ️ Time &amp; Cost Estimate</div>
-                    <p>Training 50 examples on <code>gpt-4o-mini</code> typically takes 15–30 minutes and costs under $1 in training charges. Deployment hosting costs apply while the model is active.</p>
+                    <p>Training 50 examples on <code>GPT-5-mini</code> typically takes 15–30 minutes and costs under $1 in training charges. Deployment hosting costs apply while the model is active.</p>
                 </div>
             </div>
 
@@ -1420,7 +1420,7 @@ print(response.choices[0].message.content)
                     <li>Monitor training/validation loss curves to detect overfitting, underfitting, and convergence</li>
                     <li>Always validate against a held-out test set and compare with the base model</li>
                     <li>Fine-tuning reduces prompt tokens, latency, and can improve accuracy by 10–30% on specialized tasks</li>
-                    <li>Start with <code>gpt-4o-mini</code> — it's cost-effective and often sufficient when fine-tuned</li>
+                    <li>Start with <code>GPT-5-mini</code> — it's cost-effective and often sufficient when fine-tuned</li>
                     <li>Combine fine-tuning + RAG for production systems that need both style consistency and data freshness</li>
                     <li>Deploy directly from AI Foundry and call via the standard Azure OpenAI API</li>
                 </ul>

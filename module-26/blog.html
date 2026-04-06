@@ -1036,8 +1036,8 @@ tbody tr:hover { background: var(--primary-light); }
 
 <span class="cm"># Deploy a serverless (pay-per-token) model</span>
 <span class="param">deployment</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
-    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>,
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"GPT-5.1-production"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">model_version</span>=<span class="str">"2024-11-20"</span>,
     <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,    <span class="cm"># Serverless API tier</span>
     <span class="param">sku_capacity</span>=<span class="num">50</span>,              <span class="cm"># Rate limit: 50K tokens/min</span>
@@ -1051,10 +1051,10 @@ tbody tr:hover { background: var(--primary-light); }
 
 <pre><code><span class="cm"># Deploy a model to a Foundry project via Azure CLI</span>
 az ai model deployment create \
-  --name gpt-4o-production \
+  --name GPT-5.1-production \
   --project-name my-ai-project \
   --resource-group my-rg \
-  --model-id azureml://registries/azure-openai/models/gpt-4o/versions/2024-11-20 \
+  --model-id azureml://registries/azure-openai/models/GPT-5.1/versions/2024-11-20 \
   --sku-name GlobalStandard \
   --sku-capacity 50
 <span class="code-label">Bash</span></code></pre>
@@ -1118,8 +1118,8 @@ az ai model deployment create \
     <p>Serverless deployments scale automatically. You control throughput via <strong>rate limits</strong> (tokens per minute):</p>
     <pre><code><span class="cm"># Update rate limit for a serverless deployment</span>
 <span class="param">updated</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
-    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>,
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"GPT-5.1-production"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
     <span class="param">sku_capacity</span>=<span class="num">120</span>,  <span class="cm"># Increase to 120K TPM</span>
 ).<span class="fn">result</span>()
@@ -1153,14 +1153,14 @@ az ai model deployment create \
     <p>Provisioned Throughput provides fixed, guaranteed capacity measured in <strong>PTUs</strong>. Capacity is reserved and billed hourly:</p>
     <pre><code><span class="cm"># Deploy with Provisioned Throughput Units (PTUs)</span>
 <span class="param">deployment</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
-    <span class="param">name</span>=<span class="str">"gpt-4o-ptu-prod"</span>,
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"GPT-5.1-ptu-prod"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">sku_name</span>=<span class="str">"ProvisionedManaged"</span>,
     <span class="param">sku_capacity</span>=<span class="num">100</span>,  <span class="cm"># 100 PTUs</span>
 ).<span class="fn">result</span>()
 
 <span class="cm"># PTU Sizing Guide:</span>
-<span class="cm"># ~10 PTUs ≈ 6 requests/min for GPT-4o</span>
+<span class="cm"># ~10 PTUs ≈ 6 requests/min for GPT-5.1</span>
 <span class="cm"># Use the Capacity Calculator in the Foundry Portal</span>
 <span class="code-label">Python</span></code></pre>
   </div>
@@ -1216,7 +1216,7 @@ az ai model deployment create \
 <pre><code><span class="cm"># Step 1: Create the "blue" deployment (current production model)</span>
 <span class="param">blue</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
     <span class="param">name</span>=<span class="str">"gpt4o-blue"</span>,
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">model_version</span>=<span class="str">"2024-08-06"</span>,
     <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
     <span class="param">sku_capacity</span>=<span class="num">80</span>,
@@ -1225,7 +1225,7 @@ az ai model deployment create \
 <span class="cm"># Step 2: Create the "green" deployment (new model version)</span>
 <span class="param">green</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
     <span class="param">name</span>=<span class="str">"gpt4o-green"</span>,
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">model_version</span>=<span class="str">"2024-11-20"</span>,
     <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
     <span class="param">sku_capacity</span>=<span class="num">30</span>,
@@ -1376,7 +1376,7 @@ az ai model deployment show-traffic \
 
 <pre><code><span class="cm"># Retrieve API keys for a deployment</span>
 <span class="param">keys</span> = project_client.deployments.<span class="fn">list_keys</span>(
-    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>
+    <span class="param">name</span>=<span class="str">"GPT-5.1-production"</span>
 )
 
 <span class="fn">print</span>(<span class="str">f"Primary Key:   <span class="op">{</span>keys.primary_key[:8]<span class="op">}</span>..."</span>)
@@ -1384,7 +1384,7 @@ az ai model deployment show-traffic \
 
 <span class="cm"># Rotate the primary key (secondary stays active for zero-downtime)</span>
 project_client.deployments.<span class="fn">regenerate_key</span>(
-    <span class="param">name</span>=<span class="str">"gpt-4o-production"</span>,
+    <span class="param">name</span>=<span class="str">"GPT-5.1-production"</span>,
     <span class="param">key_type</span>=<span class="str">"primary"</span>
 )
 <span class="fn">print</span>(<span class="str">"✅ Primary key rotated. Update your clients to use the new key."</span>)
@@ -1404,7 +1404,7 @@ project_client.deployments.<span class="fn">regenerate_key</span>(
         <span class="str">"api-key"</span>: api_key,
     },
     <span class="param">json</span>={
-        <span class="str">"model"</span>: <span class="str">"gpt-4o-production"</span>,
+        <span class="str">"model"</span>: <span class="str">"GPT-5.1-production"</span>,
         <span class="str">"messages"</span>: [
             {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Explain blue/green deployments."</span>}
         ],
@@ -1430,7 +1430,7 @@ project_client.deployments.<span class="fn">regenerate_key</span>(
 )
 
 <span class="param">completion</span> = client.chat.completions.<span class="fn">create</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o-production"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1-production"</span>,
     <span class="param">messages</span>=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Hello!"</span>}],
 )
 <span class="fn">print</span>(completion.choices[<span class="num">0</span>].message.content)
@@ -1478,8 +1478,8 @@ project_client.deployments.<span class="fn">regenerate_key</span>(
 
 <pre><code><span class="cm"># Example: Configure a deployment with private endpoint</span>
 <span class="param">deployment</span> = project_client.deployments.<span class="fn">begin_create_or_update</span>(
-    <span class="param">name</span>=<span class="str">"gpt-4o-secure"</span>,
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">name</span>=<span class="str">"GPT-5.1-secure"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">sku_name</span>=<span class="str">"GlobalStandard"</span>,
     <span class="param">sku_capacity</span>=<span class="num">50</span>,
     <span class="param">properties</span>={
@@ -1705,7 +1705,7 @@ project_client.deployments.<span class="fn">regenerate_key</span>(
 </thead>
 <tbody>
   <tr>
-    <td>Prototyping a chatbot with GPT-4o</td>
+    <td>Prototyping a chatbot with GPT-5.1</td>
     <td>Serverless API</td>
     <td><code>GlobalStandard</code>, 30K TPM</td>
   </tr>

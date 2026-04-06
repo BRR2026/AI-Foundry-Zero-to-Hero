@@ -716,7 +716,7 @@
                     <svg class="callout-icon" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5v1m0 3v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                     <div class="callout-content">
                         <strong>Prerequisites</strong>
-                        <p>You need an Azure AI Foundry project with a deployed GPT-4o or GPT-4.1 model. Module 16 covers project setup if you haven't completed it yet.</p>
+                        <p>You need an Azure AI Foundry project with a deployed GPT-5.1 or GPT-4.1 model. Module 16 covers project setup if you haven't completed it yet.</p>
                     </div>
                 </div>
 
@@ -871,7 +871,7 @@ market trends and portfolio analysis.</span>
 
 <span class="cm"># Create agent with Code Interpreter</span>
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"data-analyst"</span>,
     <span class="param">instructions</span>=<span class="str">"You are a data analyst. Analyze files and create visualizations."</span>,
     <span class="param">tools</span>=[<span class="fn">CodeInterpreterTool</span>()]
@@ -895,7 +895,7 @@ market trends and portfolio analysis.</span>
 
 <span class="cm"># Create agent with File Search</span>
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"support-agent"</span>,
     <span class="param">instructions</span>=<span class="str">"Answer questions using the product documentation."</span>,
     <span class="param">tools</span>=[<span class="fn">FileSearchTool</span>()],
@@ -912,7 +912,7 @@ market trends and portfolio analysis.</span>
 
 <span class="cm"># Create agent with Bing Search</span>
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"research-agent"</span>,
     <span class="param">instructions</span>=<span class="str">"Search the web for the latest information to answer questions."</span>,
     <span class="param">tools</span>=[<span class="fn">BingGroundingTool</span>(<span class="param">connection_id</span>=bing_connection.id)]
@@ -982,7 +982,7 @@ market trends and portfolio analysis.</span>
                     </li>
                     <li>
                         <h4>Configure the Agent</h4>
-                        <p>Enter the agent name, select a model deployment (e.g., <code>gpt-4o</code>), and write your system instructions in the Instructions field.</p>
+                        <p>Enter the agent name, select a model deployment (e.g., <code>GPT-5.1</code>), and write your system instructions in the Instructions field.</p>
                     </li>
                     <li>
                         <h4>Enable Tools</h4>
@@ -1028,7 +1028,7 @@ pip install azure-ai-projects azure-identity</pre>
 
 <span class="cm"># 2. Create an agent</span>
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"data-analyst"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a data analyst. When given data files:
     1. Load and inspect the data
@@ -1086,7 +1086,7 @@ dotnet add package Azure.Identity</pre>
 
 <span class="cm">// 2. Create an agent with Code Interpreter</span>
 <span class="kw">var</span> <span class="param">agent</span> = <span class="kw">await</span> client.<span class="fn">CreateAgentAsync</span>(
-    <span class="param">model</span>: <span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>: <span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>: <span class="str">"data-analyst-dotnet"</span>,
     <span class="param">instructions</span>: <span class="str">"Analyze data files and provide insights with charts."</span>,
     <span class="param">tools</span>: [<span class="kw">new</span> <span class="type">CodeInterpreterToolDefinition</span>()]
@@ -1142,7 +1142,7 @@ dotnet add package Azure.Identity</pre>
 
 <span class="cm"># ── Configuration ──</span>
 <span class="param">ENDPOINT</span> = os.environ[<span class="str">"AZURE_AI_FOUNDRY_ENDPOINT"</span>]
-<span class="param">MODEL</span> = <span class="str">"gpt-4o"</span>
+<span class="param">MODEL</span> = <span class="str">"GPT-5.1"</span>
 
 <span class="param">INSTRUCTIONS</span> = <span class="str">"""You are an expert data analyst. When given a dataset:
 

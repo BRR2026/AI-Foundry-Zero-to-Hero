@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Module 22: Multi-Model Orchestration & Routing — Learn how to orchestrate GPT-4o, Phi-4, and Llama models in Azure AI Foundry with smart routing patterns for cost optimization and performance.">
+<meta name="description" content="Module 22: Multi-Model Orchestration & Routing — Learn how to orchestrate GPT-5.1, Phi-4, and Llama models in Azure AI Foundry with smart routing patterns for cost optimization and performance.">
 <meta name="author" content="Zero to Hero Training Team">
-<meta name="keywords" content="Azure AI Foundry, multi-model, orchestration, model routing, GPT-4o, Phi-4, Llama, cost optimization, fallback, cascade, capability routing">
+<meta name="keywords" content="Azure AI Foundry, multi-model, orchestration, model routing, GPT-5.1, Phi-4, Llama, cost optimization, fallback, cascade, capability routing">
 <title>Module 22: Multi-Model Orchestration &amp; Routing — Azure AI Foundry: Zero to Hero</title>
 
 <style>
@@ -1098,7 +1098,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
   <div class="hero-content">
     <span class="hero-badge">ARC 5 · ORCHESTRATION &amp; INTEGRATION</span>
     <h1>Multi-Model Orchestration &amp; Routing</h1>
-    <p class="subtitle">Route intelligently across GPT-4o, Phi-4, and Llama in Azure AI Foundry — optimizing for cost, capability, and performance in every request.</p>
+    <p class="subtitle">Route intelligently across GPT-5.1, Phi-4, and Llama in Azure AI Foundry — optimizing for cost, capability, and performance in every request.</p>
     <div class="hero-meta">
       <span>📘 Module 22 of 45</span>
       <span>✍️ Zero to Hero Training Team</span>
@@ -1146,7 +1146,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
     <!-- ========== SECTION: Introduction ========== -->
     <h2 id="introduction">Introduction</h2>
 
-    <p>Modern AI applications rarely rely on a single model. Different models offer different strengths — <strong>GPT-4o</strong> excels at complex reasoning and code generation, <strong>Phi-4</strong> delivers blazing-fast responses for simple tasks at a fraction of the cost, and <strong>Meta-Llama-3.1-8B</strong> provides strong open-weight performance for summarization and extraction workloads.</p>
+    <p>Modern AI applications rarely rely on a single model. Different models offer different strengths — <strong>GPT-5.1</strong> excels at complex reasoning and code generation, <strong>Phi-4</strong> delivers blazing-fast responses for simple tasks at a fraction of the cost, and <strong>Meta-Llama-3.1-8B</strong> provides strong open-weight performance for summarization and extraction workloads.</p>
 
     <p>The challenge isn't choosing one model — it's <strong>building a system that intelligently selects the right model for each request</strong>. This is multi-model orchestration: a design pattern where a routing layer analyzes incoming requests and dispatches them to the most appropriate model based on task complexity, cost constraints, latency requirements, and capability needs.</p>
 
@@ -1161,7 +1161,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
     <ul class="checklist">
       <li>When multi-model architectures outperform single-model designs</li>
       <li>Three production-ready routing patterns: cost-based, capability-based, and fallback cascade</li>
-      <li>How to deploy and orchestrate GPT-4o, Phi-4, and Llama in Azure AI Foundry</li>
+      <li>How to deploy and orchestrate GPT-5.1, Phi-4, and Llama in Azure AI Foundry</li>
       <li>Techniques for measuring and optimizing performance-to-cost ratios</li>
       <li>How to build a smart router that selects the cheapest capable model</li>
     </ul>
@@ -1234,11 +1234,11 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
 
     <h3>Common Multi-Model Use Cases</h3>
     <ul>
-      <li><strong>Customer support platforms</strong> — Route FAQ answers to Phi-4, complex troubleshooting to GPT-4o</li>
-      <li><strong>Document processing pipelines</strong> — Use Llama for extraction and summarization, GPT-4o for analysis</li>
-      <li><strong>Code assistants</strong> — Phi-4 for autocomplete suggestions, GPT-4o for complex refactoring</li>
-      <li><strong>Content platforms</strong> — Llama for content classification, GPT-4o for content generation</li>
-      <li><strong>Search applications</strong> — Phi-4 for query understanding, GPT-4o for answer synthesis</li>
+      <li><strong>Customer support platforms</strong> — Route FAQ answers to Phi-4, complex troubleshooting to GPT-5.1</li>
+      <li><strong>Document processing pipelines</strong> — Use Llama for extraction and summarization, GPT-5.1 for analysis</li>
+      <li><strong>Code assistants</strong> — Phi-4 for autocomplete suggestions, GPT-5.1 for complex refactoring</li>
+      <li><strong>Content platforms</strong> — Llama for content classification, GPT-5.1 for content generation</li>
+      <li><strong>Search applications</strong> — Phi-4 for query understanding, GPT-5.1 for answer synthesis</li>
     </ul>
 
     <!-- ========== SECTION: Router Patterns ========== -->
@@ -1252,7 +1252,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
       <div class="flow-node primary">Smart Router</div>
       <span class="flow-arrow-icon">→</span>
       <div class="flow-branch">
-        <div class="flow-node accent">GPT-4o</div>
+        <div class="flow-node accent">GPT-5.1</div>
         <div class="flow-node green">Phi-4</div>
         <div class="flow-node">Llama 3.1</div>
       </div>
@@ -1293,11 +1293,11 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
         <span class="string">"max_tokens"</span>: <span class="number">1024</span>
     },
     <span class="string">"complex_reasoning"</span>: {
-        <span class="string">"models"</span>: [<span class="string">"gpt-4o"</span>],
+        <span class="string">"models"</span>: [<span class="string">"GPT-5.1"</span>],
         <span class="string">"max_tokens"</span>: <span class="number">4096</span>
     },
     <span class="string">"code_generation"</span>: {
-        <span class="string">"models"</span>: [<span class="string">"gpt-4o"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
+        <span class="string">"models"</span>: [<span class="string">"GPT-5.1"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
         <span class="string">"max_tokens"</span>: <span class="number">2048</span>
     },
 }
@@ -1341,7 +1341,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
         <tbody>
           <tr>
             <td><strong>Complex reasoning</strong></td>
-            <td>GPT-4o</td>
+            <td>GPT-5.1</td>
             <td>—</td>
             <td>Strongest chain-of-thought capability</td>
           </tr>
@@ -1359,13 +1359,13 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
           </tr>
           <tr>
             <td><strong>Code generation</strong></td>
-            <td>GPT-4o</td>
+            <td>GPT-5.1</td>
             <td>Llama 3.1</td>
             <td>Best code quality and debugging</td>
           </tr>
           <tr>
             <td><strong>Translation</strong></td>
-            <td>GPT-4o</td>
+            <td>GPT-5.1</td>
             <td>Llama 3.1</td>
             <td>Broadest language support</td>
           </tr>
@@ -1390,8 +1390,8 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
         <span class="property">self</span>.capability_map = {
             <span class="string">"classification"</span>: [<span class="string">"Phi-4"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
             <span class="string">"summarization"</span>:  [<span class="string">"Meta-Llama-3.1-8B"</span>, <span class="string">"Phi-4"</span>],
-            <span class="string">"reasoning"</span>:      [<span class="string">"gpt-4o"</span>],
-            <span class="string">"code_gen"</span>:       [<span class="string">"gpt-4o"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
+            <span class="string">"reasoning"</span>:      [<span class="string">"GPT-5.1"</span>],
+            <span class="string">"code_gen"</span>:       [<span class="string">"GPT-5.1"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
             <span class="string">"extraction"</span>:     [<span class="string">"Phi-4"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
         }
 
@@ -1411,7 +1411,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
 
     <span class="keyword">def</span> <span class="function">route</span>(<span class="property">self</span>, prompt):
         task = <span class="property">self</span>.classify_task(prompt)
-        models = <span class="property">self</span>.capability_map.get(task, [<span class="string">"gpt-4o"</span>])
+        models = <span class="property">self</span>.capability_map.get(task, [<span class="string">"GPT-5.1"</span>])
         <span class="keyword">return</span> models[<span class="number">0</span>]  <span class="comment"># Return primary model</span>
       </div>
     </div>
@@ -1435,7 +1435,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
       <span class="flow-arrow-icon">→</span>
       <div class="flow-node">Quality Check</div>
       <span class="flow-arrow-icon">→</span>
-      <div class="flow-node primary">GPT-4o (premium)</div>
+      <div class="flow-node primary">GPT-5.1 (premium)</div>
     </div>
 
     <div class="code-block-wrapper">
@@ -1450,7 +1450,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
 
 <span class="keyword">async def</span> <span class="function">cascade_completion</span>(prompt, endpoint, credential):
     <span class="string">"""Try models cheapest-first, escalate on failure."""</span>
-    models = [<span class="string">"Phi-4"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>, <span class="string">"gpt-4o"</span>]
+    models = [<span class="string">"Phi-4"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>, <span class="string">"GPT-5.1"</span>]
 
     <span class="keyword">for</span> model_name <span class="keyword">in</span> models:
         <span class="keyword">try</span>:
@@ -1486,7 +1486,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
     </div>
 
     <!-- ========== SECTION: Orchestrating Models ========== -->
-    <h2 id="orchestrating-models">Orchestrating GPT-4o + Phi + Llama</h2>
+    <h2 id="orchestrating-models">Orchestrating GPT-5.1 + Phi + Llama</h2>
 
     <p>Azure AI Foundry's <strong>model catalog</strong> provides unified access to models from Microsoft, Meta, Mistral, and other providers. You can deploy multiple models as serverless API endpoints and access them all through the <code>azure-ai-inference</code> SDK with a consistent interface.</p>
 
@@ -1497,7 +1497,7 @@ a:hover { color: var(--ms-dark-blue); text-decoration: underline; }
     <div class="cards-grid">
       <div class="feature-card">
         <span class="card-icon">🧠</span>
-        <h4>GPT-4o</h4>
+        <h4>GPT-5.1</h4>
         <p>OpenAI's flagship. Best for complex reasoning, multi-step analysis, code generation, and creative tasks requiring nuanced understanding.</p>
       </div>
       <div class="feature-card">
@@ -1535,7 +1535,7 @@ logger = logging.getLogger(__name__)
         <span class="property">self</span>.endpoint = endpoint
         <span class="property">self</span>.credential = DefaultAzureCredential()
         <span class="property">self</span>.models = {
-            <span class="string">"gpt-4o"</span>: {
+            <span class="string">"GPT-5.1"</span>: {
                 <span class="string">"cost_per_1k_input"</span>: <span class="number">0.005</span>,
                 <span class="string">"cost_per_1k_output"</span>: <span class="number">0.015</span>,
                 <span class="string">"capability"</span>: <span class="string">"high"</span>,
@@ -1580,7 +1580,7 @@ logger = logging.getLogger(__name__)
                 <span class="keyword">if</span> <span class="property">self</span>.models[m][<span class="string">"cost_per_1k_input"</span>] &lt;= max_cost
             ]
         <span class="keyword">if not</span> candidates:
-            <span class="keyword">return</span> <span class="string">"gpt-4o"</span>  <span class="comment"># Always fall back</span>
+            <span class="keyword">return</span> <span class="string">"GPT-5.1"</span>  <span class="comment"># Always fall back</span>
         <span class="keyword">return</span> sorted(
             candidates,
             key=<span class="keyword">lambda</span> m: <span class="property">self</span>.models[m][<span class="string">"cost_per_1k_input"</span>]
@@ -1615,7 +1615,7 @@ logger = logging.getLogger(__name__)
 
     <div class="callout callout-blue">
       <div class="callout-title">💡 Azure AI Foundry Advantage</div>
-      <p>The <code>azure-ai-inference</code> SDK provides a unified <code>ChatCompletionsClient</code> that works identically across all model providers. Whether you're calling GPT-4o, Phi-4, or Llama, the API interface is the same — only the <code>model</code> parameter changes.</p>
+      <p>The <code>azure-ai-inference</code> SDK provides a unified <code>ChatCompletionsClient</code> that works identically across all model providers. Whether you're calling GPT-5.1, Phi-4, or Llama, the API interface is the same — only the <code>model</code> parameter changes.</p>
     </div>
 
     <!-- ========== SECTION: Performance vs Cost ========== -->
@@ -1630,7 +1630,7 @@ logger = logging.getLogger(__name__)
         <thead>
           <tr>
             <th>Metric</th>
-            <th>GPT-4o</th>
+            <th>GPT-5.1</th>
             <th>Phi-4</th>
             <th>Llama 3.1 8B</th>
           </tr>
@@ -1698,7 +1698,7 @@ logger = logging.getLogger(__name__)
           <tr>
             <th>Task Type</th>
             <th>% of Traffic</th>
-            <th>All GPT-4o Cost</th>
+            <th>All GPT-5.1 Cost</th>
             <th>Smart-Routed Cost</th>
             <th>Savings</th>
           </tr>
@@ -1722,14 +1722,14 @@ logger = logging.getLogger(__name__)
             <td><strong>Complex tasks</strong></td>
             <td>20%</td>
             <td>$100/day</td>
-            <td>$100/day (GPT-4o)</td>
+            <td>$100/day (GPT-5.1)</td>
             <td>0%</td>
           </tr>
           <tr>
             <td><strong>Code generation</strong></td>
             <td>10%</td>
             <td>$50/day</td>
-            <td>$50/day (GPT-4o)</td>
+            <td>$50/day (GPT-5.1)</td>
             <td>0%</td>
           </tr>
           <tr>
@@ -1775,7 +1775,7 @@ logger = logging.getLogger(__name__)
     <ol class="steps-list">
       <li>
         <strong>Deploy Models from the Model Catalog</strong>
-        Navigate to <a href="https://ai.azure.com" target="_blank">ai.azure.com</a>, open your project, and deploy GPT-4o, Phi-4, and Meta-Llama-3.1-8B as serverless API endpoints from the model catalog.
+        Navigate to <a href="https://ai.azure.com" target="_blank">ai.azure.com</a>, open your project, and deploy GPT-5.1, Phi-4, and Meta-Llama-3.1-8B as serverless API endpoints from the model catalog.
       </li>
       <li>
         <strong>Install the Azure AI Inference SDK</strong>
@@ -1818,7 +1818,7 @@ logger = logging.getLogger(__name__)
       <div class="code-block-content">
 {
   <span class="property">"models"</span>: {
-    <span class="property">"gpt-4o"</span>: {
+    <span class="property">"GPT-5.1"</span>: {
       <span class="property">"endpoint"</span>: <span class="string">"https://&lt;project&gt;.services.ai.azure.com/models"</span>,
       <span class="property">"cost_input_1k"</span>: <span class="number">0.005</span>,
       <span class="property">"cost_output_1k"</span>: <span class="number">0.015</span>,
@@ -1842,8 +1842,8 @@ logger = logging.getLogger(__name__)
   },
   <span class="property">"routing_rules"</span>: {
     <span class="property">"simple"</span>:   [<span class="string">"Phi-4"</span>, <span class="string">"Meta-Llama-3.1-8B"</span>],
-    <span class="property">"moderate"</span>: [<span class="string">"Meta-Llama-3.1-8B"</span>, <span class="string">"Phi-4"</span>, <span class="string">"gpt-4o"</span>],
-    <span class="property">"complex"</span>:  [<span class="string">"gpt-4o"</span>]
+    <span class="property">"moderate"</span>: [<span class="string">"Meta-Llama-3.1-8B"</span>, <span class="string">"Phi-4"</span>, <span class="string">"GPT-5.1"</span>],
+    <span class="property">"complex"</span>:  [<span class="string">"GPT-5.1"</span>]
   }
 }
       </div>
@@ -1874,7 +1874,7 @@ logger = logging.getLogger(__name__)
       <div class="feature-card">
         <span class="card-icon">🏗️</span>
         <h4>Deploy 3 Models</h4>
-        <p>Deploy GPT-4o, Phi-4, and Meta-Llama-3.1-8B from the Azure AI Foundry model catalog as serverless endpoints.</p>
+        <p>Deploy GPT-5.1, Phi-4, and Meta-Llama-3.1-8B from the Azure AI Foundry model catalog as serverless endpoints.</p>
       </div>
       <div class="feature-card">
         <span class="card-icon">🔍</span>
@@ -1889,7 +1889,7 @@ logger = logging.getLogger(__name__)
       <div class="feature-card">
         <span class="card-icon">📊</span>
         <h4>Measure Savings</h4>
-        <p>Run a mixed workload through your router and calculate the real cost savings vs an all-GPT-4o baseline.</p>
+        <p>Run a mixed workload through your router and calculate the real cost savings vs an all-GPT-5.1 baseline.</p>
       </div>
     </div>
 
@@ -1913,7 +1913,7 @@ logger = logging.getLogger(__name__)
     <div class="takeaways-box">
       <h3>🎯 Module 22 — Key Takeaways</h3>
       <ul>
-        <li><strong>No single model rules them all</strong> — GPT-4o, Phi-4, and Llama each excel at different task categories.</li>
+        <li><strong>No single model rules them all</strong> — GPT-5.1, Phi-4, and Llama each excel at different task categories.</li>
         <li><strong>Cost-based routing</strong> sends each request to the cheapest model that meets the quality bar, saving 60–80% on typical workloads.</li>
         <li><strong>Capability-based routing</strong> matches task types to models optimized for that specific capability.</li>
         <li><strong>Fallback cascade</strong> tries the cheapest model first and escalates only when needed — providing both cost savings and resilience.</li>

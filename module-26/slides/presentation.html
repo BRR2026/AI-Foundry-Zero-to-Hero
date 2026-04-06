@@ -441,8 +441,8 @@ Monitor → Scale → Update</pre>
 <span class="ck">from</span> azure.ai.projects <span class="ck">import</span> AIProjectClient
 
 <span class="cp">deployment</span> = project_client.deployments.<span class="cf">begin_create_or_update</span>(
-    <span class="cp">name</span>=<span class="cs">"gpt-4o-production"</span>,
-    <span class="cp">model</span>=<span class="cs">"gpt-4o"</span>,
+    <span class="cp">name</span>=<span class="cs">"GPT-5.1-production"</span>,
+    <span class="cp">model</span>=<span class="cs">"GPT-5.1"</span>,
     <span class="cp">model_version</span>=<span class="cs">"2024-11-20"</span>,
     <span class="cp">sku_name</span>=<span class="cs">"GlobalStandard"</span>,
     <span class="cp">sku_capacity</span>=<span class="cn">50</span>,  <span class="cc"># 50K tokens/min</span>
@@ -490,7 +490,7 @@ Monitor → Scale → Update</pre>
     </div>
     <div class="card">
       <h4>Provisioned (PTU)</h4>
-      <p>Fixed PTU allocation. Use the <strong>Capacity Calculator</strong> for sizing. ~10 PTUs ≈ 6 req/min (GPT-4o).</p>
+      <p>Fixed PTU allocation. Use the <strong>Capacity Calculator</strong> for sizing. ~10 PTUs ≈ 6 req/min (GPT-5.1).</p>
     </div>
   </div>
   <div class="slide-footer">

@@ -892,7 +892,7 @@
 
 <span class="cm"># Create the agent with grounded knowledge</span>
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"product-support-agent"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a product support specialist.
 Use the search tool to find relevant information before answering.
@@ -930,7 +930,7 @@ toolset.<span class="fn">add</span>(search_tool)
 
 <span class="cm"># Create agent with combined toolset</span>
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"full-support-agent"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a support agent that can:
 1. Search the knowledge base for product information

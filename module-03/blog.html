@@ -1077,7 +1077,7 @@ client = ChatCompletionsClient(
 )
 
 response = client.complete(
-    model=<span class="code-string">"gpt-4o"</span>,
+    model=<span class="code-string">"GPT-5.1"</span>,
     messages=[
         {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">"You are a helpful assistant."</span>},
         {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: <span class="code-string">"What is Azure AI Foundry?"</span>}
@@ -1144,7 +1144,7 @@ response = client.complete(
                     <li>Key Vault: ~$1</li>
                     <li>App Insights (2 GB): $0</li>
                     <li>Container Registry (Basic): ~$5</li>
-                    <li>GPT-4o (1M tokens): ~$8</li>
+                    <li>GPT-5.1 (1M tokens): ~$8</li>
                     <li>Compute (40 hrs): ~$15</li>
                 </ul>
             </div>
@@ -1181,7 +1181,7 @@ response = client.complete(
 │  │  │  [<span class="hl4">Storage</span>]   [<span class="hl4">Key Vault</span>]   [<span class="hl4">App Insights</span>]   [<span class="hl4">ACR</span>]       │  │   │
 │  │  │                        │                                   │  │   │
 │  │  │  ┌──── Project A ────┐    ┌──── Project B ────┐           │  │   │
-│  │  │  │ • GPT-4o (Std)    │    │ • Llama-3 (Managed)│           │  │   │
+│  │  │  │ • GPT-5.1 (Std)    │    │ • Llama-3 (Managed)│           │  │   │
 │  │  │  │ • AI Search conn  │    │ • Blob Storage conn│           │  │   │
 │  │  │  │ • Prompt Flow     │    │ • Evaluations      │           │  │   │
 │  │  │  └───────────────────┘    └────────────────────┘           │  │   │
@@ -1227,7 +1227,7 @@ response = client.complete(
                 <p><strong>Scenario:</strong> Customer support chatbot using company knowledge base.</p>
                 <ul>
                     <li><strong>Hub:</strong> hub-contoso-support → <strong>Project:</strong> proj-support-chatbot</li>
-                    <li><strong>Models:</strong> GPT-4o (Standard) + text-embedding-3-large</li>
+                    <li><strong>Models:</strong> GPT-5.1 (Standard) + text-embedding-3-large</li>
                     <li><strong>Connections:</strong> Azure AI Search (knowledge base), Blob Storage (documents), CosmosDB (chat history)</li>
                     <li><strong>Networking:</strong> Private endpoints (production)</li>
                     <li><strong>Identity:</strong> Managed Identity + RBAC</li>
@@ -1239,7 +1239,7 @@ response = client.complete(
                 <p><strong>Scenario:</strong> Central AI platform serving multiple business units.</p>
                 <ul>
                     <li><strong>Hub:</strong> hub-enterprise-ai → 4 Projects (marketing, legal, analytics, HR)</li>
-                    <li><strong>Shared:</strong> GPT-4o via Hub-level connection</li>
+                    <li><strong>Shared:</strong> GPT-5.1 via Hub-level connection</li>
                     <li><strong>Per-team:</strong> Separate data connections, flows, and evaluations</li>
                     <li><strong>Networking:</strong> Managed VNet (fully private)</li>
                     <li><strong>Cost:</strong> ~$8,000/month (mix of Standard + Provisioned)</li>

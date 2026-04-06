@@ -728,11 +728,11 @@ latency_hist  = meter.create_histogram("ai.request.duration",
 Trace: agent-invocation-abc123
 │
 ├─ Span: agent.run (12.4s)
-│  ├─ Span: llm.chat (2.1s)     [model: gpt-4o, tokens: 847]
+│  ├─ Span: llm.chat (2.1s)     [model: GPT-5.1, tokens: 847]
 │  ├─ Span: tool.search (3.2s)  [tool: azure_search]
-│  ├─ Span: llm.chat (1.8s)     [model: gpt-4o, tokens: 1,203]
+│  ├─ Span: llm.chat (1.8s)     [model: GPT-5.1, tokens: 1,203]
 │  ├─ Span: tool.code (4.1s)    [tool: code_interpreter]
-│  └─ Span: llm.chat (1.2s)     [model: gpt-4o, tokens: 624]
+│  └─ Span: llm.chat (1.2s)     [model: GPT-5.1, tokens: 624]
 │
 └─ Events:
    ├─ guardrail.input_check  → PASS

@@ -559,7 +559,7 @@
             <li><a href="#azure-auth">Azure CLI Auth</a></li>
             <li><a href="#hub-project">Hub &amp; Project Setup</a></li>
             <li><a href="#python-env">Python Environment</a></li>
-            <li><a href="#deploy-model">Deploying GPT-4o-mini</a></li>
+            <li><a href="#deploy-model">Deploying GPT-5-mini</a></li>
             <li><a href="#hello-world">Hello World — 4 Ways</a></li>
             <li><a href="#response">Understanding Responses</a></li>
             <li><a href="#system-prompts">System Prompts</a></li>
@@ -584,7 +584,7 @@
 
         <div class="callout callout-green">
             <strong>✅ What You'll Accomplish Today:</strong><br>
-            Install Python, VS Code, and Azure CLI • Create an AI Foundry Hub and Project • Deploy GPT-4o-mini • Send your first prompt four different ways • Build an interactive chatbot • Understand tokens, costs, and parameters
+            Install Python, VS Code, and Azure CLI • Create an AI Foundry Hub and Project • Deploy GPT-5-mini • Send your first prompt four different ways • Build an interactive chatbot • Understand tokens, costs, and parameters
         </div>
 
         <div class="card">
@@ -814,7 +814,7 @@ pip list | findstr azure</code></pre>
 
 AZURE_AI_ENDPOINT=<span class="str">https://your-endpoint.openai.azure.com/</span>
 AZURE_OPENAI_API_KEY=<span class="str">your-api-key-here</span>
-AZURE_OPENAI_DEPLOYMENT_NAME=<span class="str">gpt-4o-mini</span>
+AZURE_OPENAI_DEPLOYMENT_NAME=<span class="str">GPT-5-mini</span>
 AZURE_OPENAI_API_VERSION=<span class="str">2024-12-01-preview</span></code></pre>
 
         <div class="callout callout-red">
@@ -824,18 +824,18 @@ AZURE_OPENAI_API_VERSION=<span class="str">2024-12-01-preview</span></code></pre
         <!-- Section 7: Deploy Model -->
         <h2 id="deploy-model">Deploying Your First Model</h2>
 
-        <h3>Why GPT-4o-mini?</h3>
-        <p>For development and learning, GPT-4o-mini is the ideal choice. It's fast, cheap, and surprisingly capable for most tasks.</p>
+        <h3>Why GPT-5-mini?</h3>
+        <p>For development and learning, GPT-5-mini is the ideal choice. It's fast, cheap, and surprisingly capable for most tasks.</p>
 
         <table class="styled-table">
             <thead>
                 <tr><th>Model</th><th>Input (per 1M tokens)</th><th>Output (per 1M tokens)</th><th>Best For</th></tr>
             </thead>
             <tbody>
-                <tr><td><strong>GPT-4o-mini</strong></td><td>$0.15</td><td>$0.60</td><td>Development, testing ⭐</td></tr>
+                <tr><td><strong>GPT-5-mini</strong></td><td>$0.15</td><td>$0.60</td><td>Development, testing ⭐</td></tr>
                 <tr><td>GPT-4.1-nano</td><td>$0.10</td><td>$0.40</td><td>Cheapest, basic tasks</td></tr>
                 <tr><td>GPT-4.1-mini</td><td>$0.40</td><td>$1.60</td><td>Balance of cost &amp; power</td></tr>
-                <tr><td>GPT-4o</td><td>$2.50</td><td>$10.00</td><td>Complex reasoning</td></tr>
+                <tr><td>GPT-5.1</td><td>$2.50</td><td>$10.00</td><td>Complex reasoning</td></tr>
                 <tr><td>GPT-4.1</td><td>$2.00</td><td>$8.00</td><td>Advanced, long context</td></tr>
             </tbody>
         </table>
@@ -844,15 +844,15 @@ AZURE_OPENAI_API_VERSION=<span class="str">2024-12-01-preview</span></code></pre
         <ol>
             <li>Go to <a href="https://ai.azure.com">ai.azure.com</a> → Your project</li>
             <li>Click <strong>"Models + endpoints"</strong> → <strong>"+ Deploy model"</strong> → <strong>"Deploy base model"</strong></li>
-            <li>Search for <strong>"gpt-4o-mini"</strong> and select it</li>
-            <li>Set deployment name: <code>gpt-4o-mini</code></li>
+            <li>Search for <strong>"GPT-5-mini"</strong> and select it</li>
+            <li>Set deployment name: <code>GPT-5-mini</code></li>
             <li>Choose <strong>Global Standard</strong> deployment type</li>
             <li>Click <strong>"Deploy"</strong> and wait for <strong>"Succeeded"</strong> status</li>
             <li>Copy the <strong>Target URI</strong> and <strong>API Key</strong> to your <code>.env</code> file</li>
         </ol>
 
         <div class="callout callout-blue">
-            <strong>💡 Cost Tip:</strong> A typical "Hello World" session costs less than $0.01 with GPT-4o-mini. You could run thousands of test prompts for under a dollar.
+            <strong>💡 Cost Tip:</strong> A typical "Hello World" session costs less than $0.01 with GPT-5-mini. You could run thousands of test prompts for under a dollar.
         </div>
 
         <!-- Section 8: Hello World -->
@@ -866,7 +866,7 @@ AZURE_OPENAI_API_VERSION=<span class="str">2024-12-01-preview</span></code></pre
             <ol>
                 <li>Navigate to <strong>ai.azure.com</strong> → Your project → <strong>Playground</strong></li>
                 <li>Select the <strong>Chat</strong> playground</li>
-                <li>Choose your deployed model: <code>gpt-4o-mini</code></li>
+                <li>Choose your deployed model: <code>GPT-5-mini</code></li>
                 <li>Set system message: <em>"You are a helpful assistant."</em></li>
                 <li>Type: <em>"Say 'Hello, World!' and explain what Azure AI Foundry is in one sentence."</em></li>
                 <li>Click <strong>Send</strong> — read your first AI response!</li>
@@ -894,7 +894,7 @@ client = <span class="fn">ChatCompletionsClient</span>(
 
 <span class="cm"># Send your first prompt!</span>
 response = client.<span class="fn">complete</span>(
-    model=<span class="str">"gpt-4o-mini"</span>,
+    model=<span class="str">"GPT-5-mini"</span>,
     messages=[
         <span class="fn">SystemMessage</span>(content=<span class="str">"You are a helpful assistant."</span>),
         <span class="fn">UserMessage</span>(content=<span class="str">"Say 'Hello, World!' and explain what Azure AI Foundry is in one sentence."</span>)
@@ -919,7 +919,7 @@ response = client.<span class="fn">complete</span>(
 
         <h3>Method 3: REST API (curl)</h3>
         <pre class="code-block"><code><span class="cm"># Linux/macOS</span>
-curl -X POST <span class="str">"${AZURE_AI_ENDPOINT}openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-12-01-preview"</span> \
+curl -X POST <span class="str">"${AZURE_AI_ENDPOINT}openai/deployments/GPT-5-mini/chat/completions?api-version=2024-12-01-preview"</span> \
   -H <span class="str">"Content-Type: application/json"</span> \
   -H <span class="str">"api-key: ${AZURE_OPENAI_API_KEY}"</span> \
   -d <span class="str">'{
@@ -946,7 +946,7 @@ curl -X POST <span class="str">"${AZURE_AI_ENDPOINT}openai/deployments/gpt-4o-mi
     max_tokens = <span class="num">200</span>
 } | <span class="fn">ConvertTo-Json</span> -Depth <span class="num">3</span>
 
-<span class="fn">Invoke-RestMethod</span> -Uri <span class="str">"$($env:AZURE_AI_ENDPOINT)openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-12-01-preview"</span> `
+<span class="fn">Invoke-RestMethod</span> -Uri <span class="str">"$($env:AZURE_AI_ENDPOINT)openai/deployments/GPT-5-mini/chat/completions?api-version=2024-12-01-preview"</span> `
     -Method POST -Headers <span class="kw">$headers</span> -Body <span class="kw">$body</span></code></pre>
 
         <!-- Section 9: Understanding the Response -->
@@ -956,7 +956,7 @@ curl -X POST <span class="str">"${AZURE_AI_ENDPOINT}openai/deployments/gpt-4o-mi
 
         <pre class="code-block"><code>{
   <span class="str">"id"</span>: <span class="str">"chatcmpl-abc123def456"</span>,
-  <span class="str">"model"</span>: <span class="str">"gpt-4o-mini"</span>,
+  <span class="str">"model"</span>: <span class="str">"GPT-5-mini"</span>,
   <span class="str">"choices"</span>: [{
     <span class="str">"index"</span>: <span class="num">0</span>,
     <span class="str">"message"</span>: {
@@ -1110,7 +1110,7 @@ total_tokens = <span class="num">0</span>
     conversation.<span class="fn">append</span>(<span class="fn">UserMessage</span>(content=user_input))
 
     response = client.<span class="fn">complete</span>(
-        model=<span class="str">"gpt-4o-mini"</span>,
+        model=<span class="str">"GPT-5-mini"</span>,
         messages=conversation,
         temperature=<span class="num">0.7</span>,
         max_tokens=<span class="num">500</span>
@@ -1133,7 +1133,7 @@ total_tokens = <span class="num">0</span>
         <h3>How Much Will This Cost?</h3>
         <table class="styled-table">
             <thead>
-                <tr><th>Activity</th><th>Est. Tokens</th><th>Est. Cost (GPT-4o-mini)</th></tr>
+                <tr><th>Activity</th><th>Est. Tokens</th><th>Est. Cost (GPT-5-mini)</th></tr>
             </thead>
             <tbody>
                 <tr><td>this module's labs</td><td>~10,000</td><td>~$0.005</td></tr>
@@ -1145,7 +1145,7 @@ total_tokens = <span class="num">0</span>
 
         <h3>Cost Optimization Tips</h3>
         <ol>
-            <li><strong>Use GPT-4o-mini for development</strong> — Only upgrade for production tasks</li>
+            <li><strong>Use GPT-5-mini for development</strong> — Only upgrade for production tasks</li>
             <li><strong>Set appropriate max_tokens</strong> — Don't default to 4096 when 200 suffices</li>
             <li><strong>Use temperature 0 for testing</strong> — Deterministic outputs enable caching</li>
             <li><strong>Monitor token usage</strong> — Check <code>response.usage</code> after every call</li>
@@ -1231,7 +1231,7 @@ total_tokens = <span class="num">0</span>
 <span class="kw">class</span> <span class="builtin">Config</span>:
     ENDPOINT = os.<span class="fn">getenv</span>(<span class="str">"AZURE_AI_ENDPOINT"</span>)
     API_KEY = os.<span class="fn">getenv</span>(<span class="str">"AZURE_OPENAI_API_KEY"</span>)
-    MODEL = os.<span class="fn">getenv</span>(<span class="str">"AZURE_OPENAI_DEPLOYMENT_NAME"</span>, <span class="str">"gpt-4o-mini"</span>)
+    MODEL = os.<span class="fn">getenv</span>(<span class="str">"AZURE_OPENAI_DEPLOYMENT_NAME"</span>, <span class="str">"GPT-5-mini"</span>)
     MAX_TOKENS = <span class="fn">int</span>(os.<span class="fn">getenv</span>(<span class="str">"MAX_TOKENS"</span>, <span class="str">"500"</span>))
     TEMPERATURE = <span class="fn">float</span>(os.<span class="fn">getenv</span>(<span class="str">"TEMPERATURE"</span>, <span class="str">"0.7"</span>))
 
@@ -1249,7 +1249,7 @@ total_tokens = <span class="num">0</span>
             <li>✅ Installed Python, VS Code, Azure CLI, and Git</li>
             <li>✅ Configured Azure CLI authentication</li>
             <li>✅ Created an AI Foundry Hub and Project</li>
-            <li>✅ Deployed GPT-4o-mini model</li>
+            <li>✅ Deployed GPT-5-mini model</li>
             <li>✅ Sent your first prompt via Playground, Python SDK, REST API, and CLI</li>
             <li>✅ Understood tokens, usage, and finish reasons</li>
             <li>✅ Experimented with system prompts and temperature</li>
@@ -1286,7 +1286,7 @@ total_tokens = <span class="num">0</span>
             <span class="tag">SDK</span>
             <span class="tag">Hello World</span>
             <span class="tag">environment-setup</span>
-            <span class="tag">GPT-4o-mini</span>
+            <span class="tag">GPT-5-mini</span>
             <span class="tag">chatbot</span>
             <span class="tag">Azure CLI</span>
         </div>

@@ -372,7 +372,7 @@
   <div class="slide-content" style="text-align:center;">
     <div class="badge purple">ARC 5 · ORCHESTRATION &amp; INTEGRATION</div>
     <h1 class="slide-title gradient" style="font-size:52px;">Multi-Model Orchestration<br>&amp; Routing</h1>
-    <p class="slide-subtitle">Route intelligently across GPT-4o, Phi &amp; Llama in Azure AI Foundry</p>
+    <p class="slide-subtitle">Route intelligently across GPT-5.1, Phi &amp; Llama in Azure AI Foundry</p>
     <p class="slide-meta">Module 22 of 45 · April 2026 · Zero to Hero Training</p>
   </div>
 </div>
@@ -399,7 +399,7 @@
     <h2>The Multi-Model Reality</h2>
     <p class="description">No single model rules them all. Different models excel at different tasks — and smart routing lets you leverage each model's strengths while controlling costs.</p>
     <ul class="bullet-list">
-      <li><span class="dot"></span>GPT-4o excels at complex reasoning &amp; creative generation</li>
+      <li><span class="dot"></span>GPT-5.1 excels at complex reasoning &amp; creative generation</li>
       <li><span class="dot"></span>Phi-4 delivers fast, cost-efficient results for simpler tasks</li>
       <li><span class="dot" style="background:var(--accent-cyan);"></span>Llama 3.1 offers strong open-weight summarization &amp; extraction</li>
     </ul>
@@ -409,7 +409,7 @@
       <div class="flow-node purple" style="border-width:2px;">🧠 Smart Router</div>
       <span class="flow-arrow">→</span>
       <div class="flow-branch">
-        <div class="flow-node highlight" style="font-size:13px;">🔷 GPT-4o</div>
+        <div class="flow-node highlight" style="font-size:13px;">🔷 GPT-5.1</div>
         <div class="flow-node green" style="font-size:13px;">🟢 Phi-4</div>
         <div class="flow-node cyan" style="font-size:13px;">🔶 Llama 3.1</div>
       </div>
@@ -466,7 +466,7 @@
       <div class="flow-node cyan">✅ Response</div>
     </div>
     <div class="callout">
-      <strong>Example:</strong> Simple Q&amp;A routed to Phi-4 (<span style="font-family:'JetBrains Mono',monospace;">$0.0002/1K tokens</span>) instead of GPT-4o (<span style="font-family:'JetBrains Mono',monospace;">$0.005/1K tokens</span>)
+      <strong>Example:</strong> Simple Q&amp;A routed to Phi-4 (<span style="font-family:'JetBrains Mono',monospace;">$0.0002/1K tokens</span>) instead of GPT-5.1 (<span style="font-family:'JetBrains Mono',monospace;">$0.005/1K tokens</span>)
     </div>
     <div class="savings-box">= 25× cost savings per request</div>
   </div>
@@ -499,12 +499,12 @@
         </tr>
         <tr>
           <td>🧠 Complex Reasoning</td>
-          <td style="color:var(--ms-blue);font-weight:600;">GPT-4o</td>
+          <td style="color:var(--ms-blue);font-weight:600;">GPT-5.1</td>
           <td style="color:var(--text-secondary);">Best multi-step reasoning &amp; nuanced generation</td>
         </tr>
         <tr>
           <td>💻 Code Generation</td>
-          <td style="color:var(--ms-blue);font-weight:600;">GPT-4o</td>
+          <td style="color:var(--ms-blue);font-weight:600;">GPT-5.1</td>
           <td style="color:var(--text-secondary);">Superior code quality &amp; debugging ability</td>
         </tr>
         <tr>
@@ -541,12 +541,12 @@
         <span class="check-arrow">→</span>
       </div>
       <div class="cascade-node" style="border-color:var(--ms-blue);">
-        <div class="model-name" style="color:var(--ms-blue);">GPT-4o</div>
+        <div class="model-name" style="color:var(--ms-blue);">GPT-5.1</div>
         <div class="model-cost">$0.005/1K</div>
       </div>
     </div>
     <div class="callout" style="margin-top:16px;">
-      <strong>Benefit:</strong> Most requests (70-80%) are handled by Phi-4. Only complex edge cases escalate to GPT-4o. Average cost drops <strong>60–70%</strong> compared to GPT-4o-only.
+      <strong>Benefit:</strong> Most requests (70-80%) are handled by Phi-4. Only complex edge cases escalate to GPT-5.1. Average cost drops <strong>60–70%</strong> compared to GPT-5.1-only.
     </div>
     <div class="flow-diagram" style="margin-top:20px;gap:16px;">
       <div style="text-align:center;">
@@ -559,7 +559,7 @@
       </div>
       <div style="text-align:center;">
         <div style="font-size:32px;font-weight:800;color:var(--ms-blue);">~7%</div>
-        <div style="font-size:12px;color:var(--text-muted);">Handled by GPT-4o</div>
+        <div style="font-size:12px;color:var(--text-muted);">Handled by GPT-5.1</div>
       </div>
     </div>
   </div>
@@ -573,7 +573,7 @@
     <div class="cards-row">
       <div class="model-card" style="border-top:3px solid var(--ms-blue);">
         <div class="icon">🔷</div>
-        <div class="name">GPT-4o</div>
+        <div class="name">GPT-5.1</div>
         <div class="stat">Cost: <span>$0.005/1K tokens</span></div>
         <div class="stat">Latency: <span>~800ms</span></div>
         <div class="stat">Context: <span>128K tokens</span></div>
@@ -670,7 +670,7 @@
 <span class="kw">class</span> <span class="fn">SmartModelRouter</span>:
     <span class="kw">def</span> <span class="fn">__init__</span>(<span class="self">self</span>):
         <span class="self">self</span>.<span class="var">models</span> = {
-            <span class="str">"gpt-4o"</span>:    {<span class="str">"cost"</span>: <span class="num">0.005</span>, <span class="str">"capability"</span>: <span class="num">5</span>},
+            <span class="str">"GPT-5.1"</span>:    {<span class="str">"cost"</span>: <span class="num">0.005</span>, <span class="str">"capability"</span>: <span class="num">5</span>},
             <span class="str">"llama-3.1"</span>: {<span class="str">"cost"</span>: <span class="num">0.001</span>, <span class="str">"capability"</span>: <span class="num">4</span>},
             <span class="str">"phi-4"</span>:     {<span class="str">"cost"</span>: <span class="num">0.0002</span>, <span class="str">"capability"</span>: <span class="num">3</span>},
         }
@@ -709,7 +709,7 @@
       </thead>
       <tbody>
         <tr>
-          <td style="font-weight:700;color:var(--ms-blue);">GPT-4o</td>
+          <td style="font-weight:700;color:var(--ms-blue);">GPT-5.1</td>
           <td style="font-family:'JetBrains Mono',monospace;">$0.005</td>
           <td>~800ms</td>
           <td style="color:var(--accent-green);">95/100</td>
@@ -747,7 +747,7 @@
       <div class="step">
         <div class="step-num">01</div>
         <div class="step-title">Deploy 3 Models</div>
-        <div class="step-desc">Deploy GPT-4o, Phi-4 &amp; Llama 3.1 in Azure AI Foundry</div>
+        <div class="step-desc">Deploy GPT-5.1, Phi-4 &amp; Llama 3.1 in Azure AI Foundry</div>
       </div>
       <div class="step">
         <div class="step-num">02</div>

@@ -310,7 +310,7 @@
                 <div class="flow">
                     <div class="flow-node">Instructions</div>
                     <div class="flow-arrow">+</div>
-                    <div class="flow-node purple">Model (GPT-4o)</div>
+                    <div class="flow-node purple">Model (GPT-5.1)</div>
                     <div class="flow-arrow">+</div>
                     <div class="flow-node green">Tools</div>
                     <div class="flow-arrow">=</div>
@@ -442,7 +442,7 @@
 )
 
 <span class="param">agent</span> = client.agents.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"data-analyst"</span>,
     <span class="param">instructions</span>=<span class="str">"Analyze data and create visualizations."</span>,
     <span class="param">tools</span>=[<span class="fn">CodeInterpreterTool</span>()]
@@ -489,7 +489,7 @@
                 <h2>Testing in the Playground</h2>
                 <ol>
                     <li>Open AI Foundry portal → <strong>Agents</strong> → <strong>+ New Agent</strong></li>
-                    <li>Set name, model (<code>gpt-4o</code>), and paste instructions</li>
+                    <li>Set name, model (<code>GPT-5.1</code>), and paste instructions</li>
                     <li>Toggle on desired tools (Code Interpreter, etc.)</li>
                     <li>Send test messages in the chat panel</li>
                     <li>Enable <strong>"Show tool calls"</strong> for transparency</li>
@@ -541,7 +541,7 @@ dotnet add package Azure.Identity
 <span class="kw">var</span> <span class="param">client</span> = <span class="kw">new</span> <span class="type">AgentsClient</span>(connStr, <span class="kw">new</span> <span class="type">DefaultAzureCredential</span>());
 
 <span class="kw">var</span> <span class="param">agent</span> = <span class="kw">await</span> client.<span class="fn">CreateAgentAsync</span>(
-    <span class="param">model</span>: <span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>: <span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>: <span class="str">"analyst"</span>,
     <span class="param">instructions</span>: <span class="str">"Analyze data..."</span>,
     <span class="param">tools</span>: [<span class="kw">new</span> <span class="type">CodeInterpreterToolDefinition</span>()]

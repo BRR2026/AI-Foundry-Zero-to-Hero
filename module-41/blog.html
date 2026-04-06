@@ -1026,7 +1026,7 @@ body {
         </div>
 <pre><span class="comment"># AI Foundry Capstone Agent Configuration</span>
 <span class="keyword">name</span>: <span class="string">"capstone-agent"</span>
-<span class="keyword">model</span>: <span class="string">"gpt-4o"</span>
+<span class="keyword">model</span>: <span class="string">"GPT-5.1"</span>
 <span class="keyword">description</span>: <span class="string">"Your capstone project agent"</span>
 
 <span class="keyword">instructions</span>: |
@@ -1250,7 +1250,7 @@ body {
 
     <span class="comment"># Create the agent</span>
     agent = client.agents.create_agent(
-        model=<span class="string">"gpt-4o"</span>,
+        model=<span class="string">"GPT-5.1"</span>,
         name=<span class="string">"capstone-agent"</span>,
         instructions=<span class="function">load_system_prompt</span>(),
         tools=[search_tool, code_tool, custom_tools],
@@ -1308,7 +1308,7 @@ You are an AI assistant for [YOUR DOMAIN].
 |----------------------|----------------------------------|
 | Agent Service        | Core conversational agent        |
 | Azure AI Search      | Knowledge retrieval (RAG)        |
-| Model Deployments    | GPT-4o / custom model            |
+| Model Deployments    | GPT-5.1 / custom model            |
 | Content Safety       | Input/output filtering           |
 | Evaluation           | Quality &amp; safety metrics         |
 

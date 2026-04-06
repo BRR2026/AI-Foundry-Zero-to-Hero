@@ -1412,13 +1412,13 @@ vector_store = project_client.agents.<span class="code-function">create_vector_s
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>GPT-4o</strong></td>
+                            <td><strong>GPT-5.1</strong></td>
                             <td>128K tokens</td>
                             <td>Complex reasoning, multi-step RAG</td>
                             <td>Standard / Provisioned</td>
                         </tr>
                         <tr>
-                            <td><strong>GPT-4o mini</strong></td>
+                            <td><strong>GPT-5-mini</strong></td>
                             <td>128K tokens</td>
                             <td>Cost-efficient RAG at scale</td>
                             <td>Standard / Global</td>
@@ -1450,7 +1450,7 @@ chat_client = project_client.inference.<span class="code-function">get_chat_comp
 
 <span class="code-comment"># Test the deployed model</span>
 response = chat_client.<span class="code-function">complete</span>(
-    model=<span class="code-string">"gpt-4o"</span>,
+    model=<span class="code-string">"GPT-5.1"</span>,
     messages=[
         {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">"You are a helpful assistant."</span>},
         {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: <span class="code-string">"What is retrieval-augmented generation?"</span>},
@@ -1524,7 +1524,7 @@ query_vector = embedding_response.data[<span class="code-number">0</span>].embed
                         <span class="arch-connector">→</span>
                         <div class="arch-node">
                             <div class="arch-node-label">Generate</div>
-                            GPT-4o Response
+                            GPT-5.1 Response
                         </div>
                     </div>
                 </div>
@@ -1565,7 +1565,7 @@ query_vector = embedding_response.data[<span class="code-number">0</span>].embed
 
 <span class="code-comment"># Create the RAG agent with file_search tool</span>
 <span class="code-variable">agent</span> = project_client.<span class="code-function">agents</span>.<span class="code-function">create_agent</span>(
-    <span class="code-variable">model</span>=<span class="code-string">"gpt-4o"</span>,
+    <span class="code-variable">model</span>=<span class="code-string">"GPT-5.1"</span>,
     <span class="code-variable">name</span>=<span class="code-string">"rag-pipeline-agent"</span>,
     <span class="code-variable">instructions</span>=<span class="code-string">"""You are a knowledgeable assistant that answers questions
 using ONLY the provided knowledge base. Always cite your sources.
@@ -1627,7 +1627,7 @@ context = <span class="code-string">"\n---\n"</span>.join(
 
 <span class="code-comment"># Step 3: Generate grounded response</span>
 response = chat_client.<span class="code-function">complete</span>(
-    model=<span class="code-string">"gpt-4o"</span>,
+    model=<span class="code-string">"GPT-5.1"</span>,
     messages=[
         {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">f"Answer using ONLY this context:\n{context}"</span>},
         {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: user_query},
@@ -1791,7 +1791,7 @@ results = <span class="code-function">evaluate</span>(
                     </li>
                     <li>
                         <span class="hack-check">☐</span>
-                        <span>Deploy both an embedding model (text-embedding-3-large) and a generation model (GPT-4o)</span>
+                        <span>Deploy both an embedding model (text-embedding-3-large) and a generation model (GPT-5.1)</span>
                     </li>
                     <li>
                         <span class="hack-check">☐</span>

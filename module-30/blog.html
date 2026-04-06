@@ -346,7 +346,7 @@ a:hover { text-decoration: underline; }
          ============================================================ -->
     <h2 id="introduction">1. Introduction — Why Cost Optimization Matters</h2>
 
-    <p>As organizations scale their AI initiatives on Azure AI Foundry, costs can escalate rapidly. A single GPT-4o deployment handling millions of requests per day can generate tens of thousands of dollars in monthly charges. Without deliberate cost management, what begins as an exciting proof-of-concept can quietly become a significant budget concern.</p>
+    <p>As organizations scale their AI initiatives on Azure AI Foundry, costs can escalate rapidly. A single GPT-5.1 deployment handling millions of requests per day can generate tens of thousands of dollars in monthly charges. Without deliberate cost management, what begins as an exciting proof-of-concept can quietly become a significant budget concern.</p>
 
     <div class="highlight-box">
       💰 <strong>Organizations that implement AI cost optimization strategies typically reduce their AI spending by 30–60%</strong> — without sacrificing application quality or user experience.
@@ -468,7 +468,7 @@ def calculate_ptu_breakeven(
         )
     }
 
-# Example: GPT-4o production workload
+# Example: GPT-5.1 production workload
 result = calculate_ptu_breakeven(
     avg_input_tokens=800, avg_output_tokens=400,
     requests_per_hour=5000,
@@ -485,8 +485,8 @@ print(result)</div>
 
     <table>
       <tr><th>Model</th><th>Input (per 1M tokens)</th><th>Output (per 1M tokens)</th><th>Context Window</th></tr>
-      <tr><td><strong>GPT-4o</strong></td><td>$2.50</td><td>$10.00</td><td>128K</td></tr>
-      <tr><td><strong>GPT-4o-mini</strong></td><td>$0.15</td><td>$0.60</td><td>128K</td></tr>
+      <tr><td><strong>GPT-5.1</strong></td><td>$2.50</td><td>$10.00</td><td>128K</td></tr>
+      <tr><td><strong>GPT-5-mini</strong></td><td>$0.15</td><td>$0.60</td><td>128K</td></tr>
       <tr><td><strong>GPT-4.1</strong></td><td>$2.00</td><td>$8.00</td><td>1M</td></tr>
       <tr><td><strong>GPT-4.1-mini</strong></td><td>$0.40</td><td>$1.60</td><td>1M</td></tr>
       <tr><td><strong>GPT-4.1-nano</strong></td><td>$0.10</td><td>$0.40</td><td>1M</td></tr>
@@ -502,7 +502,7 @@ print(result)</div>
 
     <p>The significant price difference between input and output tokens has critical implications for your optimization strategy:</p>
 
-    <div class="code-block">Token Cost Breakdown (GPT-4o)
+    <div class="code-block">Token Cost Breakdown (GPT-5.1)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Input:  1,000 tokens × $2.50/1M  = $0.0025
 Output:   500 tokens × $10.00/1M = $0.0050
@@ -527,17 +527,17 @@ Total:  1,500 tokens               $0.0075
     <div class="code-header">Python — Token Counting with tiktoken</div>
     <div class="code-block">import tiktoken
 
-def count_tokens(text: str, model: str = "gpt-4o") -> int:
+def count_tokens(text: str, model: str = "GPT-5.1") -> int:
     """Count tokens for a given text and model."""
     encoding = tiktoken.encoding_for_model(model)
     return len(encoding.encode(text))
 
 def estimate_cost(input_text: str, output_tokens: int,
-                  model: str = "gpt-4o") -> dict:
+                  model: str = "GPT-5.1") -> dict:
     """Estimate API call cost based on token counts."""
     pricing = {
-        "gpt-4o":       {"input": 2.50,  "output": 10.00},
-        "gpt-4o-mini":  {"input": 0.15,  "output": 0.60},
+        "GPT-5.1":       {"input": 2.50,  "output": 10.00},
+        "GPT-5-mini":  {"input": 0.15,  "output": 0.60},
         "gpt-4.1":      {"input": 2.00,  "output": 8.00},
         "gpt-4.1-mini": {"input": 0.40,  "output": 1.60},
         "gpt-4.1-nano": {"input": 0.10,  "output": 0.40},
@@ -557,7 +557,7 @@ def estimate_cost(input_text: str, output_tokens: int,
     }
 
 prompt = "Explain the benefits of cloud computing in three sentences."
-result = estimate_cost(prompt, output_tokens=100, model="gpt-4o")
+result = estimate_cost(prompt, output_tokens=100, model="GPT-5.1")
 print(f"Input: {result['input_tokens']} tokens (${result['input_cost']})")
 print(f"Output: {result['output_tokens']} tokens (${result['output_cost']})")
 print(f"Total: ${result['total_cost']}")</div>
@@ -622,9 +622,9 @@ print(f"Total: ${result['total_cost']}")</div>
 
     <table>
       <tr><th>Task Complexity</th><th>Recommended Model</th><th>Relative Cost</th><th>Use Cases</th></tr>
-      <tr><td><strong>Simple</strong></td><td>GPT-4.1-nano / GPT-4o-mini</td><td>1× (baseline)</td><td>Classification, extraction, formatting</td></tr>
+      <tr><td><strong>Simple</strong></td><td>GPT-4.1-nano / GPT-5-mini</td><td>1× (baseline)</td><td>Classification, extraction, formatting</td></tr>
       <tr><td><strong>Medium</strong></td><td>GPT-4.1-mini</td><td>3–4×</td><td>Summarization, translation, Q&amp;A</td></tr>
-      <tr><td><strong>Complex</strong></td><td>GPT-4o / GPT-4.1</td><td>15–25×</td><td>Reasoning, analysis, code generation</td></tr>
+      <tr><td><strong>Complex</strong></td><td>GPT-5.1 / GPT-4.1</td><td>15–25×</td><td>Reasoning, analysis, code generation</td></tr>
       <tr><td><strong>Advanced</strong></td><td>o3-mini / o4-mini</td><td>8–10×</td><td>Math, logic, multi-step reasoning</td></tr>
     </table>
 
@@ -638,10 +638,10 @@ class CostAwareModelRouter:
         "extract":   "gpt-4.1-nano",
         "summarize": "gpt-4.1-mini",
         "translate": "gpt-4.1-mini",
-        "analyze":   "gpt-4o",
+        "analyze":   "GPT-5.1",
         "reason":    "o3-mini",
         "code":      "gpt-4.1",
-        "default":   "gpt-4o-mini",
+        "default":   "GPT-5-mini",
     }
     
     def __init__(self, client: AzureOpenAI):
@@ -665,7 +665,7 @@ router = CostAwareModelRouter(client)
 result = router.route("classify", [
     {"role": "user", "content": "Is this email spam? 'You won $1M!'"}
 ])
-# Uses gpt-4.1-nano instead of gpt-4o → 95% cheaper!</div>
+# Uses gpt-4.1-nano instead of GPT-5.1 → 95% cheaper!</div>
 
     <!-- ============================================================
          SECTION: CACHING
@@ -744,8 +744,8 @@ class SemanticCache:
 
     <table>
       <tr><th>Model</th><th>Default TPM</th><th>Max TPM (Requestable)</th><th>RPM</th></tr>
-      <tr><td>GPT-4o</td><td>150K</td><td>10M</td><td>25K</td></tr>
-      <tr><td>GPT-4o-mini</td><td>200K</td><td>20M</td><td>33K</td></tr>
+      <tr><td>GPT-5.1</td><td>150K</td><td>10M</td><td>25K</td></tr>
+      <tr><td>GPT-5-mini</td><td>200K</td><td>20M</td><td>33K</td></tr>
       <tr><td>GPT-4.1</td><td>150K</td><td>10M</td><td>25K</td></tr>
       <tr><td>GPT-4.1-mini</td><td>200K</td><td>20M</td><td>33K</td></tr>
       <tr><td>GPT-4.1-nano</td><td>300K</td><td>30M</td><td>50K</td></tr>
@@ -914,7 +914,7 @@ az monitor action-group create \
       <tr><td><code>environment</code></td><td>production</td><td>Filter dev/staging/prod costs</td></tr>
       <tr><td><code>project</code></td><td>customer-support-bot</td><td>Project-level cost tracking</td></tr>
       <tr><td><code>team</code></td><td>ai-platform</td><td>Team-level cost visibility</td></tr>
-      <tr><td><code>ai-model</code></td><td>gpt-4o</td><td>Model-level cost analysis</td></tr>
+      <tr><td><code>ai-model</code></td><td>GPT-5.1</td><td>Model-level cost analysis</td></tr>
     </table>
 
     <div class="code-header">Azure CLI — Tag Enforcement with Azure Policy</div>
@@ -987,8 +987,8 @@ from openai import AzureOpenAI
 class UsageTracker:
     """Track and log all API usage for cost analysis."""
     PRICING = {
-        "gpt-4o":       {"input": 2.50,  "output": 10.00},
-        "gpt-4o-mini":  {"input": 0.15,  "output": 0.60},
+        "GPT-5.1":       {"input": 2.50,  "output": 10.00},
+        "GPT-5-mini":  {"input": 0.15,  "output": 0.60},
         "gpt-4.1-mini": {"input": 0.40,  "output": 1.60},
         "gpt-4.1-nano": {"input": 0.10,  "output": 0.40},
     }
@@ -1057,7 +1057,7 @@ class UsageTracker:
       <ol>
         <li><strong>Choose the right pricing model:</strong> PTU for steady high-volume workloads (40–70% savings), pay-as-you-go for variable or development workloads. Many organizations use both.</li>
         <li><strong>Output tokens are the cost driver:</strong> At 3–5× the input price, controlling response length via <code>max_tokens</code> and structured output formats yields the highest cost-saving ROI.</li>
-        <li><strong>Route tasks to the cheapest capable model:</strong> A smart model router using GPT-4.1-nano for simple tasks can reduce per-call costs by 95% compared to GPT-4o.</li>
+        <li><strong>Route tasks to the cheapest capable model:</strong> A smart model router using GPT-4.1-nano for simple tasks can reduce per-call costs by 95% compared to GPT-5.1.</li>
         <li><strong>Implement caching strategically:</strong> Exact-match caching for deterministic queries, semantic caching for FAQ patterns, and leverage built-in prompt caching for automatic 50% input discounts.</li>
         <li><strong>Monitor proactively with budget alerts:</strong> Set multiple alert thresholds (50%, 75%, 90%, 100%) with escalating notification channels and automated remediation.</li>
         <li><strong>Enforce governance with tags and policies:</strong> Consistent tagging enables chargeback, cost allocation, and FinOps practices. Use Azure Policy to enforce requirements organization-wide.</li>

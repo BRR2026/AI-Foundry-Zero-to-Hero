@@ -274,7 +274,7 @@
         <h2>📋 Today's Agenda</h2>
         <ol>
             <li>Deployment Types: Managed, Serverless, Provisioned</li>
-            <li>Step-by-Step: Deploy GPT-4o</li>
+            <li>Step-by-Step: Deploy GPT-5.1</li>
             <li>Multimodal Capabilities — Text + Vision + Audio</li>
             <li>Working with Images: URL vs Base64</li>
             <li>Audio &amp; Document Understanding</li>
@@ -340,12 +340,12 @@
 
     <!-- Slide 6: Deploy Step-by-Step -->
     <div class="slide" data-index="5">
-        <h2>Deploy GPT-4o in AI Foundry</h2>
+        <h2>Deploy GPT-5.1 in AI Foundry</h2>
         <ol>
             <li>Open <code>ai.azure.com</code> → select your project</li>
-            <li>Navigate to <strong>Model catalog</strong> → search <strong>GPT-4o</strong></li>
+            <li>Navigate to <strong>Model catalog</strong> → search <strong>GPT-5.1</strong></li>
             <li>Click <strong>Deploy</strong> → choose <strong>Serverless API</strong></li>
-            <li>Name it <code>gpt-4o-multimodal</code></li>
+            <li>Name it <code>gpt-5.1-multimodal</code></li>
             <li>Configure content filters &amp; API version</li>
             <li>Click <strong>Deploy</strong> → copy endpoint + key</li>
             <li>Test in the <strong>Playground</strong></li>
@@ -355,7 +355,7 @@
 
     <!-- Slide 7: Section Divider -->
     <div class="slide section-divider" data-index="6">
-        <h2>Multimodal with GPT-4o</h2>
+        <h2>Multimodal with GPT-5.1</h2>
         <p>One model. Text + Vision + Audio. One API call.</p>
     </div>
 
@@ -416,7 +416,7 @@
                 <h3>🎙️ Audio Pipeline</h3>
                 <ul>
                     <li><strong>Whisper</strong> → Speech-to-text</li>
-                    <li><strong>GPT-4o</strong> → Reasoning</li>
+                    <li><strong>GPT-5.1</strong> → Reasoning</li>
                     <li><strong>TTS</strong> → Text-to-speech</li>
                 </ul>
                 <p>Chain for voice assistants</p>
@@ -425,7 +425,7 @@
                 <h3>📄 Documents</h3>
                 <ul>
                     <li>Render PDF pages as images</li>
-                    <li>Send to GPT-4o vision</li>
+                    <li>Send to GPT-5.1 vision</li>
                     <li>Use JSON schema for structured extraction</li>
                     <li>Pair with Document Intelligence for volume</li>
                 </ul>
@@ -438,7 +438,7 @@
         <h2>Model Benchmarking &amp; A/B Testing</h2>
         <ol>
             <li><strong>Build eval dataset</strong> — 50–200 representative queries</li>
-            <li><strong>Deploy candidates</strong> — GPT-4o, GPT-4o-mini, Llama 3, etc.</li>
+            <li><strong>Deploy candidates</strong> — GPT-5.1, GPT-5-mini, Llama 3, etc.</li>
             <li><strong>Run batch evaluation</strong> — AI Foundry evaluation framework</li>
             <li><strong>Compare metrics</strong> — Groundedness, relevance, coherence, fluency</li>
             <li><strong>Measure cost &amp; latency</strong> — Tokens/request, P50/P95/P99</li>
@@ -469,18 +469,18 @@
     <!-- Slide 13: Mini Hack -->
     <div class="slide" data-index="12">
         <h2>🧪 Mini Hack: Image Analysis App</h2>
-        <p>Build a Python app that analyzes images with GPT-4o vision:</p>
+        <p>Build a Python app that analyzes images with GPT-5.1 vision:</p>
         <ol>
             <li>Accept image (URL or local file)</li>
             <li>Encode local files as base64</li>
-            <li>Send to GPT-4o with structured analysis prompt</li>
+            <li>Send to GPT-5.1 with structured analysis prompt</li>
             <li>Return JSON: <code>description</code>, <code>objects</code>, <code>extracted_text</code>, <code>sentiment</code></li>
         </ol>
         <div class="card" style="margin-top: 16px;">
             <h3>🚀 Stretch Goals</h3>
             <ul>
                 <li>Add Streamlit/Gradio web UI</li>
-                <li>Compare GPT-4o vs GPT-4o-mini results</li>
+                <li>Compare GPT-5.1 vs GPT-5-mini results</li>
                 <li>Track token cost per analysis</li>
             </ul>
         </div>
@@ -491,9 +491,9 @@
         <h2>Key Takeaways</h2>
         <ul>
             <li><strong>3 deployment types</strong> — Managed, Serverless, Provisioned — each for different needs</li>
-            <li><strong>GPT-4o</strong> is natively multimodal: text + vision + audio in one call</li>
+            <li><strong>GPT-5.1</strong> is natively multimodal: text + vision + audio in one call</li>
             <li><strong>Images</strong> via URL or base64; use <code>detail</code> to balance quality vs cost</li>
-            <li><strong>Audio</strong> pipelines: Whisper → GPT-4o → TTS</li>
+            <li><strong>Audio</strong> pipelines: Whisper → GPT-5.1 → TTS</li>
             <li><strong>Benchmark with your data</strong> — not public leaderboards</li>
             <li><strong>Cost</strong> varies dramatically — model your traffic</li>
         </ul>

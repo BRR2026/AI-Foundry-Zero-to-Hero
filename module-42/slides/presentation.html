@@ -546,8 +546,8 @@
                 <table class="slide-table">
                     <thead><tr><th>Model</th><th>Context</th><th>Use Case</th></tr></thead>
                     <tbody>
-                        <tr><td>GPT-4o</td><td>128K</td><td>Complex RAG</td></tr>
-                        <tr><td>GPT-4o mini</td><td>128K</td><td>Cost-efficient</td></tr>
+                        <tr><td>GPT-5.1</td><td>128K</td><td>Complex RAG</td></tr>
+                        <tr><td>GPT-5-mini</td><td>128K</td><td>Cost-efficient</td></tr>
                         <tr><td>Phi-4</td><td>16K</td><td>Low latency</td></tr>
                         <tr><td>Mistral Large</td><td>128K</td><td>Multilingual</td></tr>
                     </tbody>
@@ -577,7 +577,7 @@
         <div class="code-slide" style="font-size:0.82rem;">
 <span class="hl-cm"># Create a RAG agent with automatic retrieval</span>
 <span class="hl-var">agent</span> = <span class="hl-var">project_client</span>.<span class="hl-fn">agents</span>.<span class="hl-fn">create_agent</span>(
-    <span class="hl-var">model</span>=<span class="hl-str">"gpt-4o"</span>,
+    <span class="hl-var">model</span>=<span class="hl-str">"GPT-5.1"</span>,
     <span class="hl-var">name</span>=<span class="hl-str">"rag-pipeline-agent"</span>,
     <span class="hl-var">instructions</span>=<span class="hl-str">"Answer using ONLY the knowledge base. Cite sources."</span>,
     <span class="hl-var">tools</span>=<span class="hl-tp">FileSearchTool</span>().<span class="hl-fn">definitions</span>,
@@ -612,7 +612,7 @@
             </div>
             <div class="card">
                 <h4>3. Generate</h4>
-                <p>Call GPT-4o with low temperature (0.1–0.3) for factual, grounded responses</p>
+                <p>Call GPT-5.1 with low temperature (0.1–0.3) for factual, grounded responses</p>
             </div>
         </div>
         <div class="highlight-box" style="margin-top:1.5rem;">

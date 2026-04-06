@@ -807,8 +807,8 @@
 <span class="cm"># Step 4: Deploy model for the customer</span>
 <span class="fn">az</span> ai foundry model deployment create \
   <span class="op">--project-name</span> <span class="st">"acme-customer-service-bot"</span> \
-  <span class="op">--name</span> <span class="st">"gpt-4o-acme"</span> \
-  <span class="op">--model-id</span> <span class="st">"azureai://openai/gpt-4o/2026-02"</span> \
+  <span class="op">--name</span> <span class="st">"GPT-5.1-acme"</span> \
+  <span class="op">--model-id</span> <span class="st">"azureai://openai/GPT-5.1/2026-02"</span> \
   <span class="op">--sku-name</span> <span class="st">"GlobalStandard"</span> \
   <span class="op">--sku-capacity</span> <span class="nr">50</span></pre>
 
@@ -1290,7 +1290,7 @@ AzureDiagnostics
 │  │                                                        │   │
 │  │  Shared Model Deployments:                             │   │
 │  │  ┌───────────┐ ┌───────────┐ ┌───────────────┐       │   │
-│  │  │ GPT-4o    │ │ GPT-4o    │ │ text-embedding │       │   │
+│  │  │ GPT-5.1    │ │ GPT-5.1    │ │ text-embedding │       │   │
 │  │  │ (Std PTU) │ │ mini      │ │ -3-large       │       │   │
 │  │  └───────────┘ └───────────┘ └───────────────┘       │   │
 │  └────────────────────────────────────────────────────────┘   │

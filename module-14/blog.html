@@ -968,7 +968,7 @@ import tiktoken
 
 def fixed_size_chunk(text: str, chunk_size: int = 512, overlap: int = 50):
     """Split text into fixed-size token chunks with overlap."""
-    encoding = tiktoken.encoding_for_model("gpt-4o")
+    encoding = tiktoken.encoding_for_model("GPT-5.1")
     splitter = CharacterTextSplitter(
         separator="\n",
         chunk_size=chunk_size,
@@ -1355,7 +1355,7 @@ def hybrid_search_with_reranking(query: str, search_client, embeddings_client):
 def route_query(query: str, client: AzureOpenAI) -> list[str]:
     """Use an LLM to classify query intent and select indexes."""
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="GPT-5.1",
         messages=[
             {"role": "system", "content": """Classify the user query and return
             relevant indexes as a JSON array. Available indexes:
@@ -1635,7 +1635,7 @@ project_client = AIProjectClient(
 
 # Create an agent with retrieval tools
 agent = project_client.agents.create_agent(
-    model="gpt-4o",
+    model="GPT-5.1",
     name="rag-agent",
     instructions="""You are a helpful assistant with access to multiple
     data sources. For each query:
@@ -1719,7 +1719,7 @@ agent = project_client.agents.create_agent(
                     <li><strong>Tiered retrieval:</strong> Use cheaper keyword search first, only invoke vector search and reranking for complex queries</li>
                     <li><strong>Smart caching:</strong> Cache LLM responses for identical queries (with TTL for freshness)</li>
                     <li><strong>Chunk size tuning:</strong> Larger chunks mean fewer chunks to embed and store, but potentially lower retrieval precision</li>
-                    <li><strong>Model selection:</strong> Use GPT-4o-mini for query routing and classification; reserve GPT-4o for final generation</li>
+                    <li><strong>Model selection:</strong> Use GPT-5-mini for query routing and classification; reserve GPT-5.1 for final generation</li>
                 </ul>
             </section>
 

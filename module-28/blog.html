@@ -1154,7 +1154,7 @@ latency_hist = meter.<span class="fn">create_histogram</span>(<span class="str">
     <span class="kw">def</span> <span class="fn">__init__</span>(<span class="param">self</span>, <span class="param">project_client</span>: <span class="type">AIProjectClient</span>):
         <span class="param">self</span>.client = project_client
 
-    <span class="kw">def</span> <span class="fn">complete</span>(<span class="param">self</span>, <span class="param">messages</span>, <span class="param">model</span>=<span class="str">"gpt-4o"</span>, **<span class="param">kwargs</span>):
+    <span class="kw">def</span> <span class="fn">complete</span>(<span class="param">self</span>, <span class="param">messages</span>, <span class="param">model</span>=<span class="str">"GPT-5.1"</span>, **<span class="param">kwargs</span>):
         <span class="kw">with</span> tracer.<span class="fn">start_as_current_span</span>(<span class="str">"model.completion"</span>) <span class="kw">as</span> span:
             span.<span class="fn">set_attribute</span>(<span class="str">"ai.model"</span>, model)
             span.<span class="fn">set_attribute</span>(<span class="str">"ai.message_count"</span>, <span class="fn">len</span>(messages))
@@ -1524,11 +1524,11 @@ DRIFT_THRESHOLD = <span class="num">0.10</span>  <span class="cmt"># 10% drop tr
 Trace: agent-invocation-abc123
 │
 ├── Span: agent.run (12.4s)
-│   ├── Span: llm.chat (2.1s)        [model: gpt-4o, tokens: 847]
+│   ├── Span: llm.chat (2.1s)        [model: GPT-5.1, tokens: 847]
 │   ├── Span: tool.search (3.2s)     [tool: azure_search, results: 5]
-│   ├── Span: llm.chat (1.8s)        [model: gpt-4o, tokens: 1,203]
+│   ├── Span: llm.chat (1.8s)        [model: GPT-5.1, tokens: 1,203]
 │   ├── Span: tool.code_exec (4.1s)  [tool: code_interpreter]
-│   └── Span: llm.chat (1.2s)        [model: gpt-4o, tokens: 624]
+│   └── Span: llm.chat (1.2s)        [model: GPT-5.1, tokens: 624]
 │
 └── Custom Events:
     ├── guardrail.input_check (PASS)

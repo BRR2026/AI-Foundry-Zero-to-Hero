@@ -986,7 +986,7 @@
                 • Keep the supervisor's system prompt focused on <em>routing and evaluation</em>, not domain tasks<br>
                 • Set a maximum revision count to avoid infinite loops<br>
                 • Log every dispatch and result for debugging and tracing<br>
-                • Use a smaller, faster model for the supervisor (e.g., GPT-4o-mini) since it primarily makes routing decisions
+                • Use a smaller, faster model for the supervisor (e.g., GPT-5-mini) since it primarily makes routing decisions
             </div>
 
             <!-- Router Pattern -->
@@ -1016,7 +1016,7 @@
     <span class="kw">def</span> <span class="fn">_create_router</span>(<span class="param">self</span>) -> Agent:
         <span class="str">"""Create the routing classifier agent."""</span>
         <span class="kw">return</span> <span class="param">self</span>.client.agents.create_agent(
-            <span class="param">model</span>=<span class="str">"gpt-4o-mini"</span>,
+            <span class="param">model</span>=<span class="str">"GPT-5-mini"</span>,
             <span class="param">name</span>=<span class="str">"RequestRouter"</span>,
             <span class="param">instructions</span>=<span class="str">"""You are a request classifier.
 Analyze the user's message and respond with EXACTLY one
@@ -1241,7 +1241,7 @@ Respond with ONLY the category name, nothing else."""</span>
 
 <span class="cm"># 🔬 Researcher Agent — Gathers and synthesizes information</span>
 <span class="param">researcher</span> = <span class="param">client</span>.agents.create_agent(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"ResearchAgent"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a meticulous research analyst.
 Your job is to:
@@ -1265,7 +1265,7 @@ Output format:
 
 <span class="cm"># ✍️ Writer Agent — Creates polished content from research</span>
 <span class="param">writer</span> = <span class="param">client</span>.agents.create_agent(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"WriterAgent"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a professional technical writer.
 Your job is to:
@@ -1283,7 +1283,7 @@ Style guidelines:
 
 <span class="cm"># 📝 Reviewer Agent — Quality assurance and feedback</span>
 <span class="param">reviewer</span> = <span class="param">client</span>.agents.create_agent(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"ReviewerAgent"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a senior content reviewer.
 Evaluate the submitted draft on these criteria:
@@ -1346,7 +1346,7 @@ APPROVED or REVISION_NEEDED"""</span>
 
                 <h3>Prerequisites</h3>
                 <ul>
-                    <li>Azure AI Foundry project with GPT-4o deployed</li>
+                    <li>Azure AI Foundry project with GPT-5.1 deployed</li>
                     <li>Python 3.10+ with <code>azure-ai-projects</code> and <code>azure-identity</code> packages</li>
                     <li>Azure CLI authenticated (<code>az login</code>)</li>
                     <li>Bing Grounding connection configured in your project (for the researcher)</li>

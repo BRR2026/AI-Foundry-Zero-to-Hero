@@ -1459,7 +1459,7 @@ vector_store = project.agents.<span class="fn">create_vector_store_and_poll</spa
 
 <span class="cm"># Step 3 — Create an agent with file search enabled</span>
 agent = project.agents.<span class="fn">create_agent</span>(
-    model=<span class="str">"gpt-4o"</span>,
+    model=<span class="str">"GPT-5.1"</span>,
     name=<span class="str">"handbook-assistant"</span>,
     instructions=<span class="str">"""You are a helpful assistant that answers questions
 about the company handbook. Always cite the specific section
@@ -1557,7 +1557,7 @@ messages = <span class="fn">build_grounded_prompt</span>(user_query, <span class
 
 <span class="cm"># Step 4 — Generate the answer</span>
 response = project.inference.<span class="fn">complete</span>(
-    model=<span class="str">"gpt-4o"</span>,
+    model=<span class="str">"GPT-5.1"</span>,
     messages=messages,
     temperature=<span class="num">0.3</span>,
     max_tokens=<span class="num">800</span>
@@ -1658,7 +1658,7 @@ Build a complete RAG system using Azure AI Foundry.
 <span class="cm"># ── Configuration ──</span>
 ENDPOINT = os.environ[<span class="str">"PROJECT_ENDPOINT"</span>]
 PDF_PATH = <span class="str">"sample-document.pdf"</span>
-MODEL = <span class="str">"gpt-4o"</span>
+MODEL = <span class="str">"GPT-5.1"</span>
 
 <span class="cm"># ── Step 1: Connect to the project ──</span>
 project = <span class="type">AIProjectClient</span>(

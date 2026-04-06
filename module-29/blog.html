@@ -1226,7 +1226,7 @@ body {
               │ Hub + Project│  │ Hub + Project│
               │              │  │              │
               │ Agent API    │  │ Agent API    │
-              │ GPT-4o       │  │ GPT-4o       │
+              │ GPT-5.1       │  │ GPT-5.1       │
               └──────────────┘  └──────────────┘
     </div>
 
@@ -1422,12 +1422,12 @@ app = <span class="fn">FastAPI</span>()
       <code><span class="cm"># Set config values with environment labels</span>
 az appconfig kv set --name appconfig-ai-agent \
   --key <span class="str">"Agent:ModelDeployment"</span> \
-  --value <span class="str">"gpt-4o-dev"</span> \
+  --value <span class="str">"GPT-5.1-dev"</span> \
   --label <span class="str">"dev"</span> --yes
 
 az appconfig kv set --name appconfig-ai-agent \
   --key <span class="str">"Agent:ModelDeployment"</span> \
-  --value <span class="str">"gpt-4o-prod"</span> \
+  --value <span class="str">"GPT-5.1-prod"</span> \
   --label <span class="str">"prod"</span> --yes
 
 <span class="cm"># Set Key Vault reference for secrets</span>
@@ -1487,9 +1487,9 @@ model_deployment = config[<span class="str">"Agent:ModelDeployment"</span>]</cod
       <tbody>
         <tr>
           <td><code>Agent:ModelDeployment</code></td>
-          <td>gpt-4o-mini-dev</td>
-          <td>gpt-4o-staging</td>
-          <td>gpt-4o-prod</td>
+          <td>GPT-5-mini-dev</td>
+          <td>GPT-5.1-staging</td>
+          <td>GPT-5.1-prod</td>
         </tr>
         <tr>
           <td><code>Agent:MaxTokens</code></td>

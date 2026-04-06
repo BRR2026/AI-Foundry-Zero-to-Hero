@@ -244,7 +244,7 @@ body { font-family: var(--font-sans); color: var(--text-primary); background: va
     <!-- SECTION 2: MESSAGE ROLES -->
     <h2 id="message-roles">Understanding Message Roles</h2>
 
-    <p>Every call to a chat-completion model (GPT-4o, GPT-4.1, and similar models deployed in AI Foundry) uses an array of <strong>messages</strong>. Each message has a <strong>role</strong> and <strong>content</strong>. There are three roles you need to know:</p>
+    <p>Every call to a chat-completion model (GPT-5.1, GPT-4.1, and similar models deployed in AI Foundry) uses an array of <strong>messages</strong>. Each message has a <strong>role</strong> and <strong>content</strong>. There are three roles you need to know:</p>
 
     <h3>The System Message</h3>
 
@@ -854,14 +854,14 @@ print(prompt)</code></pre>
       <li>Go to <a href="https://ai.azure.com" target="_blank" rel="noopener">ai.azure.com</a> and sign in.</li>
       <li>Select your project from the dashboard.</li>
       <li>In the left navigation, click <strong>Playgrounds</strong> &rarr; <strong>Chat</strong>.</li>
-      <li>In the deployment dropdown at the top, select your deployed model (e.g., GPT-4o, GPT-4.1).</li>
+      <li>In the deployment dropdown at the top, select your deployed model (e.g., GPT-5.1, GPT-4.1).</li>
     </ol>
 
     <h3>Playground Layout</h3>
 
     <div class="diagram">
 &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
-&#9474;  MODEL DEPLOYMENT SELECTOR             [GPT-4o &#9660;]   &#9474;
+&#9474;  MODEL DEPLOYMENT SELECTOR             [GPT-5.1 &#9660;]   &#9474;
 &#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
 &#9474;                &#9474;                             &#9474;                  &#9474;
 &#9474;  SYSTEM MSG     &#9474;  CHAT WINDOW                &#9474;  PARAMETERS       &#9474;
@@ -900,7 +900,7 @@ print(prompt)</code></pre>
 
     <div class="callout info">
       <div class="callout-title">&#8505;&#65039; Token Counter</div>
-      <p>The Playground displays a <strong>token count</strong> for each request and response. Use this to monitor costs and ensure your prompts fit within the model&rsquo;s context window. A GPT-4o deployment supports up to 128K tokens of context, but costs scale with usage.</p>
+      <p>The Playground displays a <strong>token count</strong> for each request and response. Use this to monitor costs and ensure your prompts fit within the model&rsquo;s context window. A GPT-5.1 deployment supports up to 128K tokens of context, but costs scale with usage.</p>
     </div>
 
     <h3>Exporting from the Playground</h3>
@@ -917,7 +917,7 @@ client = AIProjectClient(
 )
 
 response = client.inference.get_chat_completions(
-    model=<span class="str">"gpt-4o"</span>,
+    model=<span class="str">"GPT-5.1"</span>,
     messages=[
         {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"You are a feedback classifier..."</span>},
         {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"The battery died after 2 days."</span>}

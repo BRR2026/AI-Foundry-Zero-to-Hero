@@ -942,7 +942,7 @@
                 <span class="code-label">eval_dataset.jsonl</span>
 <pre><code>{"query": "What is the SLA for Azure OpenAI Service?", "context": "Azure OpenAI Service offers a 99.9% uptime SLA for standard deployments...", "ground_truth": "Azure OpenAI Service provides a 99.9% uptime SLA for standard deployments.", "category": "factual", "difficulty": "easy"}
 {"query": "How do I configure managed identity for my Foundry project?", "context": "Managed identities eliminate the need for credential management...", "ground_truth": "Navigate to your AI Foundry project settings, select Identity, enable System-assigned managed identity, then grant it appropriate RBAC roles.", "category": "how-to", "difficulty": "medium"}
-{"query": "Compare GPT-4o and GPT-4o-mini for summarization tasks", "context": "GPT-4o offers superior reasoning and comprehension...", "ground_truth": "GPT-4o excels in complex summarization requiring nuanced understanding, while GPT-4o-mini is cost-effective for straightforward summaries with comparable quality for simple texts.", "category": "comparison", "difficulty": "hard"}</code></pre>
+{"query": "Compare GPT-5.1 and GPT-5-mini for summarization tasks", "context": "GPT-5.1 offers superior reasoning and comprehension...", "ground_truth": "GPT-5.1 excels in complex summarization requiring nuanced understanding, while GPT-5-mini is cost-effective for straightforward summaries with comparable quality for simple texts.", "category": "comparison", "difficulty": "hard"}</code></pre>
 
                 <h3>How Many Examples Do You Need?</h3>
                 <div class="table-wrapper">
@@ -1245,7 +1245,7 @@ from azure.ai.evaluation import ContentSafetyEvaluator
                 <div class="callout callout-green">
                     <div class="callout-title">✅ Recommended Practices</div>
                     <ul>
-                        <li><strong>Use a stronger model as judge:</strong> GPT-4o judging GPT-4o-mini output is more reliable than self-evaluation.</li>
+                        <li><strong>Use a stronger model as judge:</strong> GPT-5.1 judging GPT-5-mini output is more reliable than self-evaluation.</li>
                         <li><strong>Calibrate with human labels:</strong> Compare judge scores with human ratings on 50–100 examples to validate alignment.</li>
                         <li><strong>Use structured output:</strong> Request JSON responses from the judge to ensure parseable results.</li>
                         <li><strong>Include reasoning:</strong> Ask the judge to explain its score — this helps debug evaluation failures.</li>
@@ -1387,7 +1387,7 @@ tracker.record_run(
         "similarity": 0.85
     },
     metadata={
-        "model": "gpt-4o",
+        "model": "GPT-5.1",
         "prompt_version": "v2.3",
         "dataset_version": "gold-v5"
     }

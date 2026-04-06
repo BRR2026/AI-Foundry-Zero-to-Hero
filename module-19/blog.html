@@ -860,7 +860,7 @@ tbody tr:nth-child(even):hover { background: var(--ms-gray-30); }
     <h3>Prerequisites</h3>
     <ul>
       <li>Completion of Module 18 (Agent Architecture Fundamentals)</li>
-      <li>Azure AI Foundry project with a deployed GPT-4o or GPT-4.1 model</li>
+      <li>Azure AI Foundry project with a deployed GPT-5.1 or GPT-4.1 model</li>
       <li>Python 3.10+ with <code>azure-ai-projects</code> and <code>azure-identity</code> SDKs</li>
       <li>Basic familiarity with REST APIs and JSON Schema</li>
     </ul>
@@ -1058,7 +1058,7 @@ tbody tr:nth-child(even):hover { background: var(--ms-gray-30); }
 
 <span class="comment"># Create the agent with function calling capabilities</span>
 <span class="param">agent</span> = client.agents.create_agent(
-    model=<span class="string">"gpt-4o"</span>,
+    model=<span class="string">"GPT-5.1"</span>,
     name=<span class="string">"scheduling-assistant"</span>,
     instructions=<span class="string">"""You are a scheduling assistant that can check weather 
     and book meetings. Always check weather before suggesting 

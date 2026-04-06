@@ -811,7 +811,7 @@
 <span class="param">code_interpreter</span> = <span class="type">CodeInterpreterTool</span>()
 
 <span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"data-analyst"</span>,
     <span class="param">instructions</span>=<span class="str">"You are a data analyst. Analyze uploaded files and create visualizations."</span>,
     <span class="param">tools</span>=<span class="param">code_interpreter</span>.<span class="fn">definitions</span>,
@@ -899,7 +899,7 @@
 )
 
 <span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"doc-assistant"</span>,
     <span class="param">instructions</span>=<span class="str">"Answer questions using the product documentation. Always cite sources."</span>,
     <span class="param">tools</span>=<span class="param">file_search</span>.<span class="fn">definitions</span>,
@@ -982,7 +982,7 @@
 )
 
 <span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"customer-support"</span>,
     <span class="param">instructions</span>=<span class="str">"You are a customer support agent. Use tools to look up order information."</span>,
     <span class="param">tools</span>=<span class="param">functions</span>.<span class="fn">definitions</span>,
@@ -1061,7 +1061,7 @@
 )
 
 <span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"weather-assistant"</span>,
     <span class="param">instructions</span>=<span class="str">"Provide weather information using the weather API tool."</span>,
     <span class="param">tools</span>=<span class="param">weather_tool</span>.<span class="fn">definitions</span>,
@@ -1166,7 +1166,7 @@
 )
 
 <span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"research-assistant"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are a research assistant with access to real-time web search.
 Always ground your answers in current search results and cite your sources.
@@ -1334,7 +1334,7 @@ If you're unsure about something, search for it before answering."""</span>,
 )
 
 <span class="param">agent</span> = <span class="param">project_client</span>.<span class="fn">agents</span>.<span class="fn">create_agent</span>(
-    <span class="param">model</span>=<span class="str">"gpt-4o"</span>,
+    <span class="param">model</span>=<span class="str">"GPT-5.1"</span>,
     <span class="param">name</span>=<span class="str">"sales-assistant"</span>,
     <span class="param">instructions</span>=<span class="str">"""You are an intelligent sales assistant. You can:
 1. Analyze CSV data and create charts (Code Interpreter)

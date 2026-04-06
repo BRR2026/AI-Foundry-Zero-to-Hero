@@ -1107,12 +1107,12 @@ def search_and_respond(query: str, top_k: int = 5) -&gt; dict:
     # 3. Generate grounded response with Azure OpenAI
     client = AzureOpenAI(
         azure_endpoint=os.environ["AOAI_ENDPOINT"],
-        azure_deployment="gpt-4o",
+        azure_deployment="GPT-5.1",
         api_version="2025-01-01-preview"
     )
 
     completion = client.chat.completions.create(
-        model="gpt-4o",
+        model="GPT-5.1",
         messages=[
             {"role": "system", "content": f"""Answer using ONLY the context below.
             Cite sources using [Source Title] notation.

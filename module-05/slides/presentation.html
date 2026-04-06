@@ -579,7 +579,7 @@
        SLIDE 1 — Title Slide
        ════════════════════════════════════════════════════════════════════ -->
   <div class="slide active" id="slide-1">
-    <!-- Speaker notes: Welcome to Module 5 – this is where we get hands-on. By end of today everyone will have a working dev environment and will have talked to GPT-4o-mini from their own code. -->
+    <!-- Speaker notes: Welcome to Module 5 – this is where we get hands-on. By end of today everyone will have a working dev environment and will have talked to GPT-5-mini from their own code. -->
     <div class="slide-inner title-hero">
       <div class="course-name">Zero to Hero: Azure AI Foundry</div>
       <div class="module-label gradient-text">Module 5</div>
@@ -612,13 +612,13 @@
         </div>
         <div class="card">
           <span class="emoji-icon">🚀</span>
-          <h3>Deploy GPT-4o-mini</h3>
+          <h3>Deploy GPT-5-mini</h3>
           <p>Deploy a model endpoint and understand pricing, quotas, and regions.</p>
         </div>
         <div class="card">
           <span class="emoji-icon">💬</span>
           <h3>Send Your First Prompt</h3>
-          <p>Call GPT-4o-mini four different ways: Playground, Python, REST, and CLI.</p>
+          <p>Call GPT-5-mini four different ways: Playground, Python, REST, and CLI.</p>
         </div>
         <div class="card">
           <span class="emoji-icon">📊</span>
@@ -893,16 +893,16 @@ __pycache__/
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════
-       SLIDE 8 — Deploying GPT-4o-mini
+       SLIDE 8 — Deploying GPT-5-mini
        ════════════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-8">
-    <!-- Speaker notes: GPT-4o-mini is the sweet spot for learning — very capable, very cheap. Compare cost to GPT-4o to justify the choice. Walk through the deployment flow in the portal or CLI. -->
+    <!-- Speaker notes: GPT-5-mini is the sweet spot for learning — very capable, very cheap. Compare cost to GPT-5.1 to justify the choice. Walk through the deployment flow in the portal or CLI. -->
     <div class="slide-inner">
       <div class="section-label">Model Deployment</div>
-      <h1 class="slide-title"><span class="gradient-text-orange">Deploying GPT-4o-mini</span></h1>
+      <h1 class="slide-title"><span class="gradient-text-orange">Deploying GPT-5-mini</span></h1>
       <div class="grid-2col">
         <div>
-          <h2 style="margin-bottom: 12px;">Why GPT-4o-mini?</h2>
+          <h2 style="margin-bottom: 12px;">Why GPT-5-mini?</h2>
           <p style="margin-bottom: 20px;">The perfect model for learning — high capability at a fraction of the cost.</p>
           <table class="mini-table">
             <thead>
@@ -914,24 +914,24 @@ __pycache__/
             </thead>
             <tbody>
               <tr>
-                <td><strong style="color: var(--green);">GPT-4o-mini</strong></td>
+                <td><strong style="color: var(--green);">GPT-5-mini</strong></td>
                 <td style="color: var(--green);">$0.15</td>
                 <td style="color: var(--green);">$0.60</td>
               </tr>
               <tr>
-                <td>GPT-4o</td>
+                <td>GPT-5.1</td>
                 <td>$2.50</td>
                 <td>$10.00</td>
               </tr>
               <tr>
-                <td>GPT-4 Turbo</td>
+                <td>GPT-5.1</td>
                 <td>$10.00</td>
                 <td>$30.00</td>
               </tr>
             </tbody>
           </table>
           <div class="highlight-box highlight-box-green" style="margin-top: 16px;">
-            <p style="font-size: 13px; color: var(--text-muted);">💰 <strong style="color: var(--green);">Cost Savings:</strong> GPT-4o-mini is <strong style="color: var(--green);">~17×</strong> cheaper than GPT-4o on input tokens. Perfect for development &amp; learning.</p>
+            <p style="font-size: 13px; color: var(--text-muted);">💰 <strong style="color: var(--green);">Cost Savings:</strong> GPT-5-mini is <strong style="color: var(--green);">~17×</strong> cheaper than GPT-5.1 on input tokens. Perfect for development &amp; learning.</p>
           </div>
         </div>
         <div>
@@ -939,7 +939,7 @@ __pycache__/
           <ul class="content-list" style="margin-bottom: 20px;">
             <li><span class="step-number">1</span> Open your AI Foundry project</li>
             <li><span class="step-number">2</span> Go to <strong>Model catalog</strong></li>
-            <li><span class="step-number">3</span> Search for <strong style="color: var(--blue);">gpt-4o-mini</strong></li>
+            <li><span class="step-number">3</span> Search for <strong style="color: var(--blue);">GPT-5-mini</strong></li>
             <li><span class="step-number">4</span> Click <strong>Deploy</strong></li>
             <li><span class="step-number">5</span> Set deployment name &amp; TPM quota</li>
             <li><span class="step-number">6</span> Copy your <strong>endpoint</strong> &amp; <strong>key</strong></li>
@@ -950,7 +950,7 @@ __pycache__/
 <span class="fn">az</span> ml online-deployment create \
   <span class="str">--name</span> gpt4o-mini-deploy \
   <span class="str">--endpoint-name</span> my-endpoint \
-  <span class="str">--model</span> <span class="str">"azureml://registries/azure-openai/models/gpt-4o-mini"</span></pre>
+  <span class="str">--model</span> <span class="str">"azureml://registries/azure-openai/models/GPT-5-mini"</span></pre>
           </div>
         </div>
       </div>
@@ -990,7 +990,7 @@ __pycache__/
               <span class="step-number">1</span>
               <div>
                 <h3 style="font-size: 14px; margin: 0;">Select Your Model</h3>
-                <p style="font-size: 13px; margin: 0;">Choose the <strong style="color: var(--blue);">gpt-4o-mini</strong> deployment</p>
+                <p style="font-size: 13px; margin: 0;">Choose the <strong style="color: var(--blue);">GPT-5-mini</strong> deployment</p>
               </div>
             </div>
             <div class="card" style="padding: 16px; display: flex; align-items: center; gap: 14px;">
@@ -1047,7 +1047,7 @@ client <span class="op">=</span> <span class="cls">ChatCompletionsClient</span>(
 
 <span class="cm"># Send a chat completion request</span>
 response <span class="op">=</span> client.<span class="fn">complete</span>(
-    model<span class="op">=</span><span class="str">"gpt-4o-mini"</span>,
+    model<span class="op">=</span><span class="str">"GPT-5-mini"</span>,
     messages<span class="op">=</span>[
         <span class="cls">SystemMessage</span>(content<span class="op">=</span><span class="str">"You are a helpful assistant."</span>),
         <span class="cls">UserMessage</span>(content<span class="op">=</span><span class="str">"Say 'Hello, World!'"</span>)
@@ -1079,7 +1079,7 @@ response <span class="op">=</span> client.<span class="fn">complete</span>(
           <div class="code-block code-block-sm" style="font-size: 12px;">
             <span class="code-block-label">Bash</span>
             <pre><span class="fn">curl</span> <span class="str">-X POST</span> \
-  <span class="str">"${AZURE_AI_ENDPOINT}/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-10-21"</span> \
+  <span class="str">"${AZURE_AI_ENDPOINT}/openai/deployments/GPT-5-mini/chat/completions?api-version=2024-10-21"</span> \
   <span class="str">-H</span> <span class="str">"Content-Type: application/json"</span> \
   <span class="str">-H</span> <span class="str">"api-key: ${AZURE_OPENAI_API_KEY}"</span> \
   <span class="str">-d</span> <span class="str">'{
@@ -1093,7 +1093,7 @@ response <span class="op">=</span> client.<span class="fn">complete</span>(
         "content": "Say Hello, World!"
       }
     ],
-    "model": "gpt-4o-mini"
+    "model": "GPT-5-mini"
   }'</span></pre>
           </div>
         </div>
@@ -1106,7 +1106,7 @@ response <span class="op">=</span> client.<span class="fn">complete</span>(
   deployment invoke \
   <span class="str">--name</span> my-ai-hub \
   <span class="str">--resource-group</span> rg-ai-foundry \
-  <span class="str">--deployment-name</span> gpt-4o-mini \
+  <span class="str">--deployment-name</span> GPT-5-mini \
   <span class="str">--prompt</span> <span class="str">"Say Hello, World!"</span></pre>
           </div>
           <div class="divider"></div>
@@ -1137,7 +1137,7 @@ response <span class="op">=</span> client.<span class="fn">complete</span>(
             <span class="code-block-label">JSON Response</span>
             <pre>{
   <span class="prop">"id"</span>: <span class="str">"chatcmpl-abc123..."</span>,
-  <span class="prop">"model"</span>: <span class="str">"gpt-4o-mini"</span>,
+  <span class="prop">"model"</span>: <span class="str">"GPT-5-mini"</span>,
   <span class="prop">"choices"</span>: [
     {
       <span class="prop">"index"</span>: <span class="num">0</span>,
@@ -1319,7 +1319,7 @@ messages <span class="op">=</span> [
     messages.<span class="fn">append</span>(<span class="cls">UserMessage</span>(content<span class="op">=</span>user_input))
 
     response <span class="op">=</span> client.<span class="fn">complete</span>(
-        model<span class="op">=</span><span class="str">"gpt-4o-mini"</span>,
+        model<span class="op">=</span><span class="str">"GPT-5-mini"</span>,
         messages<span class="op">=</span>messages
     )
 
@@ -1343,7 +1343,7 @@ messages <span class="op">=</span> [
           <div class="card" style="padding: 16px;">
             <span class="emoji-icon" style="font-size: 24px;">📏</span>
             <h3 style="font-size: 14px; color: var(--orange);">Token Management</h3>
-            <p style="font-size: 13px;">GPT-4o-mini has a <strong>128K token</strong> context window. For long conversations, implement a sliding window or summarization strategy to stay within limits.</p>
+            <p style="font-size: 13px;">GPT-5-mini has a <strong>128K token</strong> context window. For long conversations, implement a sliding window or summarization strategy to stay within limits.</p>
           </div>
           <div class="highlight-box highlight-box-green" style="margin-top: 12px;">
             <p style="font-size: 13px; color: var(--text-muted);">🎉 <strong style="color: var(--green);">Try it!</strong> Run <span class="inline-code">python src/chatbot.py</span> and have a conversation with your bot!</p>
@@ -1368,7 +1368,7 @@ messages <span class="op">=</span> [
             <li><span class="check">✓</span> Installed Python, Azure CLI &amp; SDKs</li>
             <li><span class="check">✓</span> Authenticated with Azure</li>
             <li><span class="check">✓</span> Created AI Foundry Hub &amp; Project</li>
-            <li><span class="check">✓</span> Deployed GPT-4o-mini model</li>
+            <li><span class="check">✓</span> Deployed GPT-5-mini model</li>
             <li><span class="check">✓</span> Sent prompts 4 different ways</li>
             <li><span class="check">✓</span> Parsed response objects</li>
             <li><span class="check">✓</span> Explored system prompts &amp; temperature</li>

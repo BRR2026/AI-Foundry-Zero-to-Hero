@@ -970,7 +970,7 @@ body {
         <tr><td><strong>Conversation</strong></td><td>Greeting, tone, persona name</td><td>System prompt template</td></tr>
         <tr><td><strong>Domain</strong></td><td>Custom domain or subdomain</td><td>Azure Front Door / App Service</td></tr>
         <tr><td><strong>Knowledge</strong></td><td>FAQ documents, product catalog</td><td>Per-tenant AI Search indexes</td></tr>
-        <tr><td><strong>Model</strong></td><td>GPT-4o vs. GPT-4o-mini, temperature</td><td>Deployment parameters</td></tr>
+        <tr><td><strong>Model</strong></td><td>GPT-5.1 vs. GPT-5-mini, temperature</td><td>Deployment parameters</td></tr>
         <tr><td><strong>Guardrails</strong></td><td>Blocked topics, response limits</td><td>System prompt + content filters</td></tr>
       </tbody>
     </table>
@@ -995,7 +995,7 @@ body {
   <span class="kw">data_source</span>: <span class="str">"contoso-blob-container"</span>
 
 <span class="kw">model</span>:
-  <span class="kw">deployment</span>: <span class="str">"gpt-4o"</span>
+  <span class="kw">deployment</span>: <span class="str">"GPT-5.1"</span>
   <span class="kw">temperature</span>: <span class="num">0.3</span>
 
 <span class="kw">guardrails</span>:
@@ -1119,8 +1119,8 @@ body {
 <span class="kw">param</span> <span class="fn">location</span> <span class="type">string</span> = resourceGroup().location
 
 <span class="kw">@description</span>(<span class="str">'AI model to deploy'</span>)
-<span class="kw">@allowed</span>([<span class="str">'gpt-4o'</span>, <span class="str">'gpt-4o-mini'</span>, <span class="str">'gpt-4.1'</span>])
-<span class="kw">param</span> <span class="fn">modelName</span> <span class="type">string</span> = <span class="str">'gpt-4o'</span>
+<span class="kw">@allowed</span>([<span class="str">'GPT-5.1'</span>, <span class="str">'GPT-5-mini'</span>, <span class="str">'gpt-4.1'</span>])
+<span class="kw">param</span> <span class="fn">modelName</span> <span class="type">string</span> = <span class="str">'GPT-5.1'</span>
 
 <span class="kw">@description</span>(<span class="str">'Tokens-per-minute quota'</span>)
 <span class="kw">param</span> <span class="fn">tpmQuota</span> <span class="type">int</span> = <span class="num">30000</span>
@@ -1210,7 +1210,7 @@ body {
       <code><span class="cm">Per-conversation pricing example (FAQ bot):</span>
 
   Average tokens per conversation:     <span class="num">2,500</span>
-  GPT-4o cost per 1K tokens:           ~$<span class="num">0.005</span> (blended in/out)
+  GPT-5.1 cost per 1K tokens:           ~$<span class="num">0.005</span> (blended in/out)
   Azure AI Search cost per query:      ~$<span class="num">0.001</span>
   Infrastructure overhead:             ~$<span class="num">0.002</span>
   ─────────────────────────────────────────────────

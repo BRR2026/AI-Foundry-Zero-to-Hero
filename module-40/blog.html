@@ -721,7 +721,7 @@
                     <div class="metric-label">Annual Savings</div>
                 </div>
             </div>
-            <p>Built with Azure AI Foundry agents, Azure AI Search for knowledge retrieval, and GPT-4o for multi-turn conversational reasoning. Deployed across chat, email, and voice channels with unified context.</p>
+            <p>Built with Azure AI Foundry agents, Azure AI Search for knowledge retrieval, and GPT-5.1 for multi-turn conversational reasoning. Deployed across chat, email, and voice channels with unified context.</p>
         </div>
 
         <h4>Architecture Overview</h4>
@@ -738,7 +738,7 @@ client = AIProjectClient(
 
 <span style="color:#569cd6"># Triage agent classifies intent and routes to specialists</span>
 triage_agent = client.agents.create_agent(
-    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    model=<span style="color:#ce9178">"GPT-5.1"</span>,
     name=<span style="color:#ce9178">"support-triage"</span>,
     instructions=<span style="color:#ce9178">"""You are a support triage agent for a financial services firm.
     Classify intent into: account_inquiry, transaction_dispute,
@@ -748,7 +748,7 @@ triage_agent = client.agents.create_agent(
 
 <span style="color:#569cd6"># Specialist agent for transaction disputes</span>
 dispute_agent = client.agents.create_agent(
-    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    model=<span style="color:#ce9178">"GPT-5.1"</span>,
     name=<span style="color:#ce9178">"dispute-specialist"</span>,
     instructions=<span style="color:#ce9178">"""You are a transaction dispute specialist.
     Follow the workflow: verify → investigate → resolve.
@@ -826,7 +826,7 @@ result = doc_client.begin_analyze_document(
 
 <span style="color:#569cd6"># Step 2: AI Foundry agent reasons over extracted data</span>
 claims_agent = client.agents.create_agent(
-    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    model=<span style="color:#ce9178">"GPT-5.1"</span>,
     name=<span style="color:#ce9178">"claims-analyst"</span>,
     instructions=<span style="color:#ce9178">"""Analyze claim data. Determine: (1) validity,
     (2) coverage, (3) payout range, (4) fraud risk.
@@ -842,7 +842,7 @@ claims_agent = client.agents.create_agent(
         <h4>Lessons from Document Processing at Scale</h4>
         <ul>
             <li><strong>Custom models outperform generic</strong> — Training Azure AI Document Intelligence on domain-specific forms improved extraction accuracy from 78% to 92%.</li>
-            <li><strong>Hybrid extraction strategy</strong> — Structured fields (dates, amounts, policy numbers) use Document Intelligence; unstructured narratives (injury descriptions, doctor's notes) route to GPT-4o for reasoning.</li>
+            <li><strong>Hybrid extraction strategy</strong> — Structured fields (dates, amounts, policy numbers) use Document Intelligence; unstructured narratives (injury descriptions, doctor's notes) route to GPT-5.1 for reasoning.</li>
             <li><strong>Confidence-gated automation</strong> — Only claims scoring above 0.95 confidence proceed to auto-approval; this threshold was calibrated through 10,000+ evaluation runs in AI Foundry.</li>
             <li><strong>Audit trail by design</strong> — Every extraction, reasoning step, and decision is logged to Azure Monitor for regulatory compliance.</li>
         </ul>
@@ -887,7 +887,7 @@ claims_agent = client.agents.create_agent(
         <h4>Integration Architecture</h4>
 <pre><span style="color:#569cd6"># Maintenance advisor agent with IoT data integration</span>
 maintenance_agent = client.agents.create_agent(
-    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    model=<span style="color:#ce9178">"GPT-5.1"</span>,
     name=<span style="color:#ce9178">"maintenance-advisor"</span>,
     instructions=<span style="color:#ce9178">"""You are a predictive maintenance advisor.
     Analyze sensor telemetry and maintenance history to:
@@ -963,7 +963,7 @@ client = AIProjectClient(
 )
 
 clinical_agent = client.agents.create_agent(
-    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    model=<span style="color:#ce9178">"GPT-5.1"</span>,
     name=<span style="color:#ce9178">"clinical-doc-assistant"</span>,
     instructions=<span style="color:#ce9178">"""You are a clinical documentation assistant.
     RULES: Never generate diagnoses or treatment recommendations.
@@ -1012,7 +1012,7 @@ clinical_agent = client.agents.create_agent(
         <h4>Personalization Agent Architecture</h4>
 <pre><span style="color:#569cd6"># Shopping assistant agent with product search</span>
 shopping_agent = client.agents.create_agent(
-    model=<span style="color:#ce9178">"gpt-4o"</span>,
+    model=<span style="color:#ce9178">"GPT-5.1"</span>,
     name=<span style="color:#ce9178">"shopping-assistant"</span>,
     instructions=<span style="color:#ce9178">"""You are a friendly shopping assistant.
     Help customers find products by understanding preferences,

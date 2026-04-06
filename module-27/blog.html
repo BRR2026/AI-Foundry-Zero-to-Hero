@@ -815,8 +815,8 @@
           python scripts/deploy_model.py \
             --project-name $AI_PROJECT_NAME \
             --resource-group $RESOURCE_GROUP \
-            --model-name "gpt-4o" \
-            --deployment-name "gpt-4o-prod" \
+            --model-name "GPT-5.1" \
+            --deployment-name "GPT-5.1-prod" \
             --sku-capacity 30
 </pre>
 
@@ -856,7 +856,7 @@
     parser.add_argument(<span class="str">"--project-name"</span>, required=<span class="kw">True</span>)
     parser.add_argument(<span class="str">"--resource-group"</span>, required=<span class="kw">True</span>)
     parser.add_argument(<span class="str">"--subscription-id"</span>, default=<span class="kw">None</span>)
-    parser.add_argument(<span class="str">"--model-name"</span>, default=<span class="str">"gpt-4o"</span>)
+    parser.add_argument(<span class="str">"--model-name"</span>, default=<span class="str">"GPT-5.1"</span>)
     parser.add_argument(<span class="str">"--deployment-name"</span>, required=<span class="kw">True</span>)
     parser.add_argument(<span class="str">"--sku-capacity"</span>, type=<span class="kw">int</span>, default=<span class="num">30</span>)
     deploy_model(parser.parse_args())
@@ -1199,7 +1199,7 @@
 
     <span class="cm"># Initialize evaluators</span>
     model_config = {
-        <span class="str">"azure_deployment"</span>: <span class="str">"gpt-4o-eval"</span>,
+        <span class="str">"azure_deployment"</span>: <span class="str">"GPT-5.1-eval"</span>,
         <span class="str">"azure_endpoint"</span>: <span class="str">"https://ais-contoso.openai.azure.com/"</span>,
     }
 
@@ -1349,7 +1349,7 @@
           python scripts/deploy_model.py \
             --project-name proj-contoso-staging \
             --resource-group rg-ai-foundry-staging \
-            --deployment-name gpt-4o-staging \
+            --deployment-name GPT-5.1-staging \
             --sku-capacity 10
 
   <span class="cm"># ── Job 4: Evaluate ──</span>
@@ -1390,7 +1390,7 @@
           python scripts/deploy_model.py \
             --project-name proj-contoso-prod \
             --resource-group rg-ai-foundry-prod \
-            --deployment-name gpt-4o-prod \
+            --deployment-name GPT-5.1-prod \
             --sku-capacity 50
 </pre>
     </section>
